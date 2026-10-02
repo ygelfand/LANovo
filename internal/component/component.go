@@ -1,0 +1,151 @@
+// Package component is what the device is made of.
+//
+// A component is a part of the device that owns itself: it holds its own hardware or state, says
+// what it needs done to it, and carries whatever it shows Home Assistant. Each lives in its own
+// package as a singleton and registers itself, so adding one touches one place instead of five.
+//
+// Only Name is required. Everything else is an optional interface, found by type assertion, so a
+// component implements what it actually is — a thing with a loop, a thing with entities, both, or
+// neither:
+//
+//	func init() {
+//	    component.Register(component.Hardware, Get, component.Order(10))
+//	}
+package component
+
+import (
+	"context"
+
+	esphome "github.com/ygelfand/go-esphome-device"
+
+	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/lib/hook"
+	"github.com/ygelfand/LANovo/internal/service"
+)
+
+// Phase is when a component comes up. Everything in one phase is up before the next begins, which is
+// the only ordering guarantee between packages: hardware exists before anything presents it, and
+// nothing is on the network until there is something to talk about.
+type Phase int
+
+const (
+	// Hardware takes the device off Android: the panel, the speaker, the microphones, the radio.
+	Hardware Phase = iota
+
+	// Device is what that hardware becomes for Home Assistant, plus the parts with no hardware of
+	// their own.
+	Device
+
+	// Network is the API server, the mDNS advert and anything that reaches outside.
+	Network
+)
+
+func (p Phase) String() string {
+	switch p {
+	case Hardware:
+		return "hardware"
+	case Device:
+		return "device"
+	case Network:
+		return "network"
+	}
+	return "unknown"
+}
+
+// Component is a part of the device.
+type Component interface {
+	// Name is how it appears in logs and diagnostics.
+	Name() string
+}
+
+// The optional halves. Starter, Closer and the Run half of service.Service are the supervisor's
+// own, so a component with a loop is a service without a shim in between.
+type (
+	// Starter acquires whatever the component needs, before Run and again on every restart.
+	Starter = service.Starter
+
+	// Closer releases it again.
+	Closer = service.Closer
+)
+
+// Runner is a loop the supervisor keeps alive.
+type Runner interface {
+	Run(ctx context.Context) error
+}
+
+// Entities is what the component shows Home Assistant.
+type Entities interface {
+	Entities() []esphome.Entity
+}
+
+// Actions is what Home Assistant may call on the component. An action serves what an entity
+// cannot: it takes arguments and can answer with anything that encodes as JSON.
+type Actions interface {
+	Actions() []*esphome.Action
+}
+
+// Handler is a component that answers protocol messages itself rather than through an entity.
+type Handler interface {
+	esphome.Handler
+}
+
+// Startup is a component the boot screen shows while the device comes up.
+//
+// Running is not the same as ready: the radio is running long before it has associated, and the
+// clock is running long before it knows the time. This is the component's own answer.
+type Startup interface {
+	Startup() Progress
+}
+
+// Progress is what one component says about coming up.
+//
+// Implementing Startup is what puts a component on the boot screen. Something the device cannot
+// manage without holds the boot screen until it is Done; something it can manage without says so
+// with Failed, which shows the row as a fault and lets the device carry on.
+type Progress struct {
+	// Name is filled in by the registry.
+	Name string
+
+	Done bool
+
+	// Failed is a component that will not be coming up. The boot screen marks it and stops waiting.
+	Failed bool
+
+	// Doing is what it is waiting on, shown while it is not done, or why it failed.
+	Doing string
+
+	// Background is shown on the boot screen but never holds it.
+	Background bool
+}
+
+// settled reports whether the boot screen has stopped waiting for this one.
+func (p Progress) settled() bool { return p.Done || p.Failed }
+
+// Restorer puts the component back the way the device was left, once, at start-up.
+type Restorer interface {
+	Restore(config.Config)
+}
+
+// Reconnect asks whatever is serving to drop its clients and serve again, which is the only way a
+// change to what the device says it is reaches Home Assistant: device info is read once per
+// connection and never pushed.
+//
+// A hook rather than a call, so a component can ask for one without knowing what is listening — the
+// server is a component like any other and may not exist.
+var Reconnect hook.Hook[struct{}]
+
+// Event is something to put on Home Assistant's bus. A hook for the same reason as Reconnect: the
+// server imports the features whose handlers it serves, so they cannot import it back.
+type Event struct {
+	Name string
+	Data map[string]string
+}
+
+var Fire hook.Hook[Event]
+
+// Subscribed fires when Home Assistant asks for state, which is the first moment anything sent to it
+// will arrive. Something that happened while the device was alone waits for this.
+//
+// It fires on every connection, so a listener has to decide for itself whether it still has anything
+// to say.
+var Subscribed hook.Hook[struct{}]

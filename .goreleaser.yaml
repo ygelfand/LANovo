@@ -1,0 +1,54 @@
+version: 2
+
+before:
+  hooks:
+    - make vet
+    - make test
+    - make payload
+    - make manifest
+
+builds:
+  - id: lanovoctl
+    main: ./cmd/lanovoctl
+    binary: lanovoctl
+    env:
+      - CGO_ENABLED=0
+    tags:
+      - payload
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w -X github.com/ygelfand/LANovo/internal/layout.Version={{.Version}} -X github.com/ygelfand/LANovo/internal/layout.GitCommit={{.Commit}} -X github.com/ygelfand/LANovo/internal/layout.BuildDate={{.Date}}
+
+archives:
+  - formats: ["binary"]
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+
+release:
+  prerelease: auto
+  extra_files:
+    - glob: ./bin/lanovod
+    - glob: ./bin/manifest.json
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"

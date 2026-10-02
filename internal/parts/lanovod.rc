@@ -1,0 +1,140 @@
+service lanovod /system/bin/lanovod run
+    class core
+    user root
+    group root system graphics input audio inet net_raw net_admin
+    seclabel u:r:su:s0
+    disabled
+
+# init's service rather than lanovod's child: ctl.stop kills the cgroup, and a forked supplicant
+# inherits lanovod's. init restarts it if it dies, which is why there is no -B.
+#
+# disabled, and started from post-fs-data: the config is on /data.
+service lanovo_wpa /vendor/bin/hw/wpa_supplicant -i wlan0 -Dnl80211 -c /data/misc/wifi/lanovo_wpa.conf
+    class core
+    user root
+    group root wifi inet net_raw net_admin
+    seclabel u:r:su:s0
+    disabled
+
+service lanovo_surface /system/bin/lanovo-surface
+    class core
+    user root
+    group root graphics system
+    seclabel u:r:su:s0
+    socket lanovo-surface stream 0666 root root
+
+service lanovo_camserver /system/bin/cameraserver
+    class core
+    user root
+    group root audio camera input drmrpc
+    seclabel u:r:su:s0
+    setenv LD_PRELOAD /system/lib/liblanovo-camshim.so
+    disabled
+
+service lanovo_camhal /vendor/bin/hw/camerahalserver
+    class core
+    user root
+    group root audio camera input drmrpc sdcard_rw system media graphics
+    seclabel u:r:su:s0
+    setenv LD_PRELOAD /system/lib/liblanovo-camshim.so
+    disabled
+
+service lanovo_camera /system/bin/lanovo-camera
+    class core
+    user root
+    group root camera graphics media system
+    seclabel u:r:su:s0
+    socket lanovo-camera stream 0666 root root
+    disabled
+
+on post-fs-data
+    mkdir /data/misc/lanovo 0700 root root
+
+    setprop debug.sf.nobootanimation 1
+
+    # sound card
+    stop audioserver
+    stop audio-hal-2-0
+
+    # OTA
+    stop update_engine
+
+    # I2C2: light sensor, accelerometer
+    stop peripheralman
+    stop inputdriverserv
+
+    stop cas-hal-1-0
+
+    # camera
+    stop camera-provider-2-4
+    stop cameraserver
+    stop qcamerasvr
+    stop hidl_memory
+    stop mdnsd
+
+    # telemetry
+    stop metricsd
+    stop metricscollector
+    stop crash_sender
+
+    # no radio for either
+    stop gnss-service-1-0
+    stop lowpandriverserv
+
+    # sensors and backlight are read and written directly
+    stop sensors-hal-1-0
+    stop light-hal-2-0
+
+    # framework support
+    stop gatekeeperd
+    stop keystore
+    stop installd
+    stop storaged
+    stop vr-1-0
+    stop memtrack-hal-1-0
+
+    # wifi is ours: our own supplicant, our own dhcp
+    stop wificond
+    stop wifi_hal_legacy
+
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    start lanovo_wpa
+
+    # Android's bluetooth stack dies with zygote
+    stop bluetooth-1-0
+
+    start lanovod
+
+on post-fs-data && property:ro.board.platform=mt8167
+    setprop debuglog.imageio 6
+    setprop log.tag.MtkOmxVenc S
+    setprop log.tag.VDO_LOG S
+    setprop log.tag.H264VENCLIB S
+    setprop log.tag.AeAlgo S
+    setprop log.tag.AfAlgo S
+    setprop log.tag.MdpMgr S
+    setprop log.tag.IspDrv S
+    setprop log.tag.isp_mgr S
+    setprop log.tag.ResMgrDrv S
+    stop camerahalserver
+    start hidl_memory
+    start lanovo_camhal
+    start lanovo_camserver
+    start lanovo_camera
+
+on post-fs-data && property:ro.board.platform=msm8x53
+    start qcamerasvr
+    start camera-provider-2-4
+    start lanovo_camserver
+    start lanovo_camera
+
+on property:init.svc.camerahalserver=running && property:ro.board.platform=mt8167
+    stop camerahalserver
+
+# init.rc starts zygote here by name, which clears the disable a post-fs-data stop would set
+on zygote-start
+    stop zygote
+    stop webview_zygote32
+
+on property:init.svc.zygote=running
+    stop zygote

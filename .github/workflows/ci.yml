@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: vet
+        run: make vet
+
+      - name: test
+        run: make test
+
+      - name: test -race
+        run: make test-race
+        env:
+          CGO_ENABLED: 1
+
+      - name: native tests
+        run: make test-native
+
+      - name: cross-compile for the device
+        run: make build-lanovod
+
+      - name: build without the assembly
+        run: make build-lanovod TAGS=noasm
+
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "$unformatted"
+            exit 1
+          fi

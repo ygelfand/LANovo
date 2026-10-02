@@ -1,0 +1,108 @@
+package wifi
+
+import (
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/ygelfand/LANovo/internal/host/device"
+	"github.com/ygelfand/LANovo/internal/layout"
+)
+
+const (
+	Supplicant = layout.Supplicant
+	ConfigPath = layout.WifiConf
+
+	// update_config is what lets a join persist: the supplicant writes networks back itself.
+	config = "ctrl_interface=" + sockets + "\nupdate_config=1\n"
+)
+
+// Up makes the radio usable: driver loaded, interface up, supplicant answering. None of it happens
+// on its own once the framework is gone.
+func Up(d *device.Device) error {
+	if err := loadDriver(d); err != nil {
+		return err
+	}
+	if _, err := d.Shell("ip link set " + iface + " up"); err != nil {
+		return fmt.Errorf("wifi: bringing %s up: %w", iface, err)
+	}
+	return startSupplicant(d)
+}
+
+// loadDriver kickstarts qcacld, which registers wlan0. Writing fwpath calls the driver's own
+// kickstart_driver(), which runs its init and downloads firmware to the chip over SDIO.
+func loadDriver(d *device.Device) error {
+	if out, _ := d.Shell("ls /sys/class/net/" + iface + " 2>/dev/null"); strings.TrimSpace(out) != "" {
+		return nil
+	}
+
+	if _, err := d.Shell("echo sta > /sys/module/wlan/parameters/fwpath"); err != nil {
+		return fmt.Errorf("wifi: loading the driver: %w", err)
+	}
+
+	for range 30 {
+		if out, _ := d.Shell("ls /sys/class/net/" + iface + " 2>/dev/null"); strings.TrimSpace(out) != "" {
+			return nil
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	return fmt.Errorf("wifi: %s did not appear after loading the driver", iface)
+}
+
+// startSupplicant runs one against our own configuration, unless one is already answering.
+func startSupplicant(d *device.Device) error {
+	if _, err := (shell{d}).Cmd("ping"); err == nil {
+		return nil
+	}
+
+	if _, err := d.Shell("mkdir -p " + sockets); err != nil {
+		return fmt.Errorf("wifi: %w", err)
+	}
+
+	has, err := d.Exists(ConfigPath)
+	if err != nil {
+		return fmt.Errorf("wifi: %w", err)
+	}
+	if !has {
+		if err := d.WriteFile(ConfigPath, []byte(config), 0o660); err != nil {
+			return fmt.Errorf("wifi: writing %s: %w", ConfigPath, err)
+		}
+	}
+
+	for _, cmd := range []string{
+		"rm -f " + sockets + "/" + iface,
+		"chown wifi:wifi " + ConfigPath,
+		"chmod 660 " + ConfigPath,
+	} {
+		if _, err := d.Shell(cmd); err != nil {
+			return fmt.Errorf("wifi: %w", err)
+		}
+	}
+
+	if err := start(d); err != nil {
+		return err
+	}
+
+	for range 20 {
+		if _, err := (shell{d}).Cmd("ping"); err == nil {
+			return nil
+		}
+		time.Sleep(250 * time.Millisecond)
+	}
+	return fmt.Errorf("wifi: the supplicant did not answer on %s", sockets)
+}
+
+// start asks init for the supplicant. init learns the service by reading InitRC at boot, so the
+// install that first writes it has to run one directly; the reboot hands it over.
+func start(d *device.Device) error {
+	if known, _ := d.Shell("getprop init.svc." + layout.SupplicantService); strings.TrimSpace(known) != "" {
+		_, err := d.Shell("setprop ctl.start " + layout.SupplicantService)
+		return err
+	}
+
+	cmd := fmt.Sprintf("%s -B -i %s -Dnl80211 -c %s", Supplicant, iface, ConfigPath)
+	if _, err := d.Shell(cmd); err != nil {
+		return fmt.Errorf("wifi: starting the supplicant: %w", err)
+	}
+	return nil
+}

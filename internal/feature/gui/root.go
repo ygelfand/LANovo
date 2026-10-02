@@ -1,0 +1,161 @@
+package gui
+
+import (
+	"image"
+	"time"
+
+	gogui "github.com/go-gui-org/go-gui/gui"
+
+	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/assistant"
+	"github.com/ygelfand/LANovo/internal/feature/dashboard"
+	"github.com/ygelfand/LANovo/internal/feature/dashboard/face"
+	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
+	"github.com/ygelfand/LANovo/internal/feature/media"
+	"github.com/ygelfand/LANovo/internal/feature/poster"
+	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/web"
+	"github.com/ygelfand/LANovo/internal/ui"
+	"github.com/ygelfand/LANovo/internal/ui/theme"
+)
+
+func (a *App) root(w *gogui.Window) gogui.View {
+	covering, above := a.nav.Showing(shell.Get().Views())
+	if fullLook() || assistant.StagedFull() {
+		a.seeThrough(true)
+		layers := []gogui.View{gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding})}
+		for _, o := range a.nav.Overlays() {
+			if v := o.Build(w); v != nil {
+				layers = append(layers, floating(o.Priority+1, v))
+			}
+		}
+		return gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding, Content: layers})
+	}
+	a.seeThrough(covering != nil && covering.Clear)
+	base := a.dashboard(w)
+	if addr := web.Get().Offering(); addr != "" {
+		base = onboard(w, addr)
+	}
+	switch {
+	case covering == nil:
+	case covering.Title == "":
+		base = covering.Build(w)
+	default:
+		base = a.page(w, covering)
+	}
+	layers := []gogui.View{base}
+	for _, s := range above {
+		layers = append(layers, floating(0, s.Build(w)))
+	}
+	for _, o := range a.nav.Overlays() {
+		if v := o.Build(w); v != nil {
+			layers = append(layers, floating(o.Priority+1, v))
+		}
+	}
+	if typing(w) {
+		if v := a.keyboard(w); v != nil {
+			layers = append(layers, gogui.Column(gogui.ContainerCfg{Float: true, FloatZIndex: 1001, Sizing: gogui.FillFill, Padding: gogui.NoPadding, Content: []gogui.View{v}}))
+		}
+	}
+	return gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding, Content: layers})
+}
+
+func floating(z int, v gogui.View) gogui.View {
+	return gogui.Column(gogui.ContainerCfg{Float: true, FloatZIndex: z + 1, Sizing: gogui.FillFill, Padding: gogui.NoPadding, Content: []gogui.View{v}})
+}
+
+func (a *App) dashboard(w *gogui.Window) gogui.View {
+	vw, vh := w.WindowSize()
+	cfg := config.Get()
+	pal := palette()
+	ink := cfg.Clock.Ink.Over(pal)
+	r := face.Read(time.Now(), cfg.Screen.Hours == config.TwentyFourHour)
+	if !cfg.Clock.Date {
+		r = r.Undated()
+	}
+	box := dashboard.Box(cfg.Clock.Position, cfg.Clock.Size, vw, vh)
+	board := homecontrol.Dash()
+	tabs := board.Tabs()
+	showing, tiled := board.Showing()
+	margin := int(reach() * 0.5)
+	strip := ui.Rect{X: margin, Y: margin, W: vw - 2*margin, H: int(reach() * 2)}
+	if len(tabs) > 0 && box.Y < strip.Y+strip.H {
+		shift := strip.Y + strip.H - box.Y
+		box.Y += shift
+		box.H = max(box.H-shift, 1)
+	}
+
+	var layers []gogui.View
+	if backdrop, behind := poster.Get().Backdrop(vw, vh, image.Rect(box.X, box.Y, box.X+box.W, box.Y+box.H), pal.Background); backdrop != nil {
+		layers = append(layers, placed(ui.Rect{W: vw, H: vh}, picture(imageSrc("poster/"+behind, backdrop), vw, vh)))
+	}
+	if now := media.Get().Now(); cfg.Screen.Logo && !(now.Playing || now.Paused) {
+		layers = append(layers, logo(vw, vh, pal))
+	}
+
+	switch build, ok := faces[cfg.Clock.Face]; {
+	case tiled:
+		below := strip.Y + strip.H + margin
+		layers = append(layers, tileBoard(ui.Rect{X: margin, Y: below, W: vw - 2*margin, H: vh - below - margin}, showing, pal))
+	case ok:
+		layers = append(layers, placed(box, build(w, box, r, ink)))
+	}
+	if len(tabs) > 0 {
+		layers = append(layers, tabStrip(strip, tabs, showing.Key, pal))
+	}
+
+	frame := gogui.ContainerCfg{
+		ID:      "dashboard",
+		Sizing:  gogui.FillFill,
+		Padding: gogui.NoPadding,
+		Content: layers,
+	}
+	dash := gogui.Column(frame)
+	return gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding, Color: color(pal.Background), Content: []gogui.View{dash}})
+}
+
+func placed(at ui.Rect, v gogui.View) gogui.View {
+	return gogui.Column(gogui.ContainerCfg{
+		Float:        true,
+		FloatOffsetX: float32(at.X),
+		FloatOffsetY: float32(at.Y),
+		Width:        float32(at.W),
+		Height:       float32(at.H),
+		Sizing:       gogui.FixedFixed,
+		Padding:      gogui.NoPadding,
+		Content:      []gogui.View{v},
+	})
+}
+
+func (a *App) page(w *gogui.Window, p *Screen) gogui.View {
+	t := gogui.CurrentTheme()
+	return gogui.Column(gogui.ContainerCfg{
+		Sizing:  gogui.FillFill,
+		Padding: gogui.PaddingLarge,
+		Spacing: gogui.SpacingMedium,
+		Content: []gogui.View{
+			gogui.Row(gogui.ContainerCfg{
+				Sizing:  gogui.FillFit,
+				VAlign:  gogui.VAlignMiddle,
+				Spacing: gogui.SpacingMedium,
+				Content: []gogui.View{
+					gogui.Button(gogui.ButtonCfg{ID: "back", Content: []gogui.View{icon(gogui.IconArrowLeft, t.TextStyleDisplay.Color)}, OnClick: func(e gogui.EventCtx) {
+						shell.Get().Pop()
+						e.Window.InvalidateLayout()
+					}}),
+					gogui.Label(p.Title, t.TextStyleDisplay),
+				},
+			}),
+			gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Scrollable: true, OnGesture: holdStill, Content: []gogui.View{p.Build(w)}}),
+		},
+	})
+}
+
+func logo(vw, vh int, pal theme.Theme) gogui.View {
+	mark := dashboard.Mark(vw, vh)
+	img, name := ui.Logo(), "logo/light"
+	if theme.Dark(pal.Background) {
+		img, name = ui.Night(), "logo/night"
+	}
+	return placed(mark, picture(imageSrc(name, img), mark.W, mark.H))
+}
