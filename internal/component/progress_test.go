@@ -50,21 +50,6 @@ func TestReadyWaitsForWhatHolds(t *testing.T) {
 	}
 }
 
-func TestABackgroundRowIsShownButNotWaitedFor(t *testing.T) {
-	r := &Registry{}
-	r.Add(Hardware, func() Component { return &coming{name: "touch", p: Progress{Done: true}} })
-	r.Add(Network, func() Component {
-		return &coming{name: "dhcp", p: Progress{Doing: "asking for an address", Background: true}}
-	})
-
-	if !r.Ready() {
-		t.Error("a background row held the boot screen")
-	}
-	if got := r.Progress(); len(got) != 2 {
-		t.Errorf("the background row left the screen: %+v", got)
-	}
-}
-
 func TestEverythingElseOnTheScreenIsWaitedFor(t *testing.T) {
 	r := &Registry{}
 	r.Add(Hardware, func() Component { return &coming{name: "wifi", p: Progress{Done: true}} })

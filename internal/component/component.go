@@ -113,9 +113,6 @@ type Progress struct {
 
 	// Doing is what it is waiting on, shown while it is not done, or why it failed.
 	Doing string
-
-	// Background is shown on the boot screen but never holds it.
-	Background bool
 }
 
 // settled reports whether the boot screen has stopped waiting for this one.

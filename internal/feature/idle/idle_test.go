@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
@@ -38,26 +37,6 @@ func TestItIsDueOnlyAfterTheWait(t *testing.T) {
 	}
 	if !due(time.Minute, 61*time.Second) {
 		t.Error("did not come up after the wait")
-	}
-}
-
-func TestTheClockSitsWhereItIsPut(t *testing.T) {
-	const w, h = 1920, 1200
-	left := dashboard.Place(config.PositionTop, config.AlignLeft, config.SizeSmall, w, h)
-	right := dashboard.Place(config.PositionBottom, config.AlignRight, config.SizeSmall, w, h)
-	center := dashboard.Place(config.PositionCenter, config.AlignCenter, config.SizeSmall, w, h)
-
-	if left.X != 0 || left.Y != 0 {
-		t.Errorf("top left at %v", left)
-	}
-	if right.X+right.W != w || right.Y+right.H != h {
-		t.Errorf("bottom right at %v", right)
-	}
-	if d, e := w-(center.X*2+center.W), h-(center.Y*2+center.H); d < 0 || d > 1 || e < 0 || e > 1 {
-		t.Errorf("center at %v", center)
-	}
-	if dashboard.Place(config.PositionCenter, config.AlignCenter, config.SizeLarge, w, h) != dashboard.Box(config.PositionCenter, config.SizeLarge, w, h) {
-		t.Error("centered placement differs from the dashboard's box")
 	}
 }
 

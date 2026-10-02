@@ -52,7 +52,7 @@ func (c *Client) Name() string { return "dhcp" }
 func (c *Client) Startup() component.Progress {
 	lease := c.Lease()
 	if lease == nil {
-		return component.Progress{Doing: "asking for an address", Background: true}
+		return component.Progress{Doing: "asking for an address"}
 	}
 	return component.Progress{Done: true, Doing: lease.Address.IP.String()}
 }
