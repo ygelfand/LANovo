@@ -80,7 +80,9 @@ func upgradeCard(w *gogui.Window) gogui.View {
 
 	return gogui.Column(gogui.ContainerCfg{
 		ID:      "upgrade",
-		Sizing:  gogui.FillFill,
+		Width:   float32(vw),
+		Height:  float32(vh),
+		Sizing:  gogui.FixedFixed,
 		Color:   color(pal.Background),
 		HAlign:  gogui.HAlignCenter,
 		VAlign:  gogui.VAlignMiddle,
