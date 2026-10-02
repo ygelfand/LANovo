@@ -124,6 +124,9 @@ features.speaker.hint: A2DP audio sink
 
 # The device itself: what it runs, where it is, what it leaves open.
 keyboard.done: Done
+upgrade.line: Updating to {{.Version}} · {{.Status}}
+upgrade.installing: Installing…
+upgrade.percent: "{{.N}}%"
 look.title: Visuals
 look.place: Placement
 look.panel: In the panel

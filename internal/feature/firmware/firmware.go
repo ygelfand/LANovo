@@ -17,6 +17,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
 	"github.com/ygelfand/LANovo/internal/layout"
+	"github.com/ygelfand/LANovo/internal/lib/hook"
 	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/update"
 )
@@ -30,15 +31,25 @@ const (
 	EventFailed    = "failed"
 )
 
+type Upgrade struct {
+	Version string
+	At      float32
+}
+
+func (up Upgrade) Active() bool { return up.Version != "" }
+
 type Firmware struct {
+	Upgrading hook.Hook[Upgrade]
+
 	entity  *esphome.Update
 	channel *esphome.Select
 	look    *esphome.Button
 	status  *esphome.TextSensor
 	events  *esphome.Event
 
-	mu    sync.Mutex
-	found update.Manifest
+	mu      sync.Mutex
+	found   update.Manifest
+	upgrade Upgrade
 
 	announced     sync.Once
 	rebootPending bool
@@ -218,6 +229,7 @@ func (u *Firmware) Install(ctx context.Context) {
 	err = update.Install(ctx, found, func(at float32) { u.progress(found, at) })
 	if err != nil {
 		slog.Error("installing an update failed", "version", found.Version, "err", err)
+		u.upgrading(Upgrade{})
 		u.publish(found)
 		u.Settled(EventFailed, "installing "+found.Version+" failed: "+err.Error())
 		feedback.Failure()
@@ -230,6 +242,20 @@ func (u *Firmware) progress(found update.Manifest, at float32) {
 	state := u.state(found)
 	state.InProgress, state.Progress = true, at*100
 	u.entity.Set(state)
+	u.upgrading(Upgrade{Version: found.Version, At: at})
+}
+
+func (u *Firmware) upgrading(up Upgrade) {
+	u.mu.Lock()
+	u.upgrade = up
+	u.mu.Unlock()
+	u.Upgrading.Emit(up)
+}
+
+func (u *Firmware) Upgrade() Upgrade {
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	return u.upgrade
 }
 
 func (u *Firmware) publish(found update.Manifest) { u.entity.Set(u.state(found)) }

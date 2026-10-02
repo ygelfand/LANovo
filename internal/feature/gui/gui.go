@@ -19,6 +19,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/assistant"
+	"github.com/ygelfand/LANovo/internal/feature/firmware"
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/screen"
@@ -240,12 +241,28 @@ func (a *App) Run(ctx context.Context) error {
 		})
 	})
 	defer stopMoved()
-	for _, o := range []*Overlay{{Priority: priorityAlert, Build: messageCard}, {Priority: priorityNotice, Build: timerCard}, {Priority: priorityNotice + 1, Build: assistantPanel}, {Priority: priorityMini, Build: a.mini}, {Priority: priorityMarks, Build: privacyMarks}} {
+	for _, o := range []*Overlay{{Priority: priorityAlert, Build: messageCard}, {Priority: priorityNotice, Build: timerCard}, {Priority: priorityNotice + 1, Build: assistantPanel}, {Priority: priorityMini, Build: a.mini}, {Priority: priorityMarks, Build: privacyMarks}, {Priority: priorityUpgrade, Build: upgradeCard}} {
 		a.nav.Show(o)
 		defer a.nav.Hide(o)
 	}
 	stopMessage := message.Get().Changed.Listen(func(bool) { redraw() })
 	defer stopMessage()
+	var spinning atomic.Bool
+	stopUpgrade := firmware.Get().Upgrading.Listen(func(up firmware.Upgrade) {
+		redraw()
+		if !up.Active() || !spinning.CompareAndSwap(false, true) {
+			return
+		}
+		go func() {
+			defer spinning.Store(false)
+			for firmware.Get().Upgrade().Active() {
+				redraw()
+				time.Sleep(upgradeFrame)
+			}
+			redraw()
+		}()
+	})
+	defer stopUpgrade()
 	stopTimer := timer.Get().Changed.Listen(func(timer.Card) { redraw() })
 	defer stopTimer()
 	stopAssistant := assistant.Get().Frame.Listen(func(assistant.Showing) { redraw() })
