@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/ygelfand/LANovo/internal/component"
+	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/lib/hook"
 )
 
@@ -26,7 +27,10 @@ var (
 	ErrNotAllowed   = errors.New("homeassistant: actions are not allowed for this device; enable them in the ESPHome integration's options")
 )
 
-const probeWait = 5 * time.Second
+const (
+	probeWait = 5 * time.Second
+	syncWait  = 30 * time.Second
+)
 
 type Access int
 
@@ -63,6 +67,7 @@ type HomeAssistant struct {
 	access  Access
 	next    uint32
 	waiting map[uint32]chan reply
+	born    time.Time
 }
 
 var (
@@ -71,7 +76,7 @@ var (
 )
 
 func Get() *HomeAssistant {
-	once.Do(func() { shared = &HomeAssistant{waiting: map[uint32]chan reply{}} })
+	once.Do(func() { shared = &HomeAssistant{waiting: map[uint32]chan reply{}, born: time.Now()} })
 	return shared
 }
 
@@ -99,6 +104,29 @@ func (h *HomeAssistant) Handle(_ context.Context, conn *esphome.Conn, msg proto.
 		ch <- reply{data: m.GetResponseData()}
 	}
 	return nil
+}
+
+func (h *HomeAssistant) Startup() component.Progress {
+	return h.startup(config.Get().API.Adopted, time.Now())
+}
+
+func (h *HomeAssistant) startup(adopted bool, now time.Time) component.Progress {
+	if !adopted {
+		return component.Progress{Done: true, Doing: "not adopted"}
+	}
+	switch h.Access() {
+	case Allowed:
+		return component.Progress{Done: true, Doing: "synced"}
+	case Refused:
+		return component.Progress{Failed: true, Doing: "actions not allowed"}
+	}
+	if now.Sub(h.born) > syncWait {
+		return component.Progress{Failed: true, Doing: "Home Assistant has not connected"}
+	}
+	if h.Connected() {
+		return component.Progress{Doing: "checking access"}
+	}
+	return component.Progress{Doing: "waiting for Home Assistant"}
 }
 
 func (h *HomeAssistant) Access() Access {

@@ -164,3 +164,35 @@ func TestParseEmptyIsNotNil(t *testing.T) {
 		t.Errorf("got %v, %v; want an empty list", got, err)
 	}
 }
+
+func TestStartup(t *testing.T) {
+	born := time.Unix(1000, 0)
+	early, late := born.Add(time.Second), born.Add(syncWait+time.Second)
+	cases := []struct {
+		name    string
+		adopted bool
+		to      bool
+		access  Access
+		at      time.Time
+		done    bool
+		failed  bool
+	}{
+		{name: "never adopted", at: early, done: true},
+		{name: "not connected yet", adopted: true, at: early},
+		{name: "checking access", adopted: true, to: true, at: early},
+		{name: "allowed", adopted: true, to: true, access: Allowed, at: early, done: true},
+		{name: "refused", adopted: true, to: true, access: Refused, at: early, failed: true},
+		{name: "gave up", adopted: true, at: late, failed: true},
+		{name: "allowed after the wait", adopted: true, to: true, access: Allowed, at: late, done: true},
+	}
+	for _, c := range cases {
+		h := &HomeAssistant{waiting: map[uint32]chan reply{}, born: born, access: c.access}
+		if c.to {
+			h.to = &fake{h: h}
+		}
+		p := h.startup(c.adopted, c.at)
+		if p.Done != c.done || p.Failed != c.failed {
+			t.Errorf("%s: done %v failed %v, want %v %v", c.name, p.Done, p.Failed, c.done, c.failed)
+		}
+	}
+}
