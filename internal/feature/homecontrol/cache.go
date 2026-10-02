@@ -37,6 +37,14 @@ var shared = &cache{
 	done:  func() { shell.Get().Redraw() },
 }
 
+func init() {
+	homeassistant.Get().Changed.Listen(func(a homeassistant.Access) {
+		if a == homeassistant.Allowed {
+			shared.retry()
+		}
+	})
+}
+
 func fromHomeAssistant(ctx context.Context, f homeassistant.Filter) ([]homeassistant.Entity, []homeassistant.Label, error) {
 	ha := homeassistant.Get()
 	entities, err := ha.Entities(ctx, f)
@@ -77,6 +85,17 @@ func (c *cache) load(s Selection, r *result) {
 func (c *cache) forget(key string) {
 	c.mu.Lock()
 	delete(c.got, key)
+	c.mu.Unlock()
+	c.done()
+}
+
+func (c *cache) retry() {
+	c.mu.Lock()
+	for k, r := range c.got {
+		if r.err != nil {
+			delete(c.got, k)
+		}
+	}
 	c.mu.Unlock()
 	c.done()
 }

@@ -189,6 +189,32 @@ func TestErrorsAreNotCachedPastRetry(t *testing.T) {
 	}
 }
 
+func TestRetryRefetchesOnlyFailures(t *testing.T) {
+	f := newFake()
+	f.fail = homeassistant.ErrNotConnected
+	pick := config.HomePick{}
+	p := picker(f, &pick)
+	if s := loaded(t, p, f); s.Err == nil {
+		t.Fatal("the failure did not show")
+	}
+
+	f.mu.Lock()
+	f.fail = nil
+	f.mu.Unlock()
+	f.c.retry()
+	f.wait(t)
+	if s := loaded(t, p, f); s.Err != nil || f.calls != 2 {
+		t.Fatalf("after retry: err %v, %d fetches", s.Err, f.calls)
+	}
+
+	f.c.retry()
+	f.wait(t)
+	loaded(t, p, f)
+	if f.calls != 2 {
+		t.Errorf("%d fetches, a good result should survive retry", f.calls)
+	}
+}
+
 func TestClearForgetsEverySelection(t *testing.T) {
 	f := newFake()
 	pick := config.HomePick{}
