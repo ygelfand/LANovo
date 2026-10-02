@@ -127,7 +127,7 @@ func TestViewOnlyWithoutControl(t *testing.T) {
 	}
 }
 
-func TestTabsAndShowing(t *testing.T) {
+func TestTabsAndFind(t *testing.T) {
 	b, _ := testBoard(t)
 	if tabs := b.Tabs(); len(tabs) != 0 {
 		t.Errorf("tabs %v with nothing picked", tabs)
@@ -144,18 +144,11 @@ func TestTabsAndShowing(t *testing.T) {
 	if tabs := b.Tabs(); len(tabs) != 1 || tabs[0].Key != "lights" {
 		t.Errorf("tabs %v", tabs)
 	}
-	b.Show("lights")
-	if s, ok := b.Showing(); !ok || s.Key != "lights" {
-		t.Errorf("showing %v %v", s, ok)
+	if s, ok := b.Find("lights"); !ok || s.Key != "lights" {
+		t.Errorf("find lights: %v %v", s, ok)
 	}
-	b.Show("lights")
-	if _, ok := b.Showing(); ok {
-		t.Error("tapping the open tab again should go back to the clock")
-	}
-	b.Show("lights")
-	b.Clock()
-	if _, ok := b.Showing(); ok {
-		t.Error("Clock left a tab open")
+	if _, ok := b.Find("switches"); ok {
+		t.Error("found switches, which is not a tab")
 	}
 }
 

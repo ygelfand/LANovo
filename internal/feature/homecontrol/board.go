@@ -10,13 +10,26 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
-	"github.com/ygelfand/LANovo/internal/feature/idle"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/states"
 )
 
-const callWait = 10 * time.Second
+const (
+	callWait = 10 * time.Second
+	TabKind  = "home"
+)
+
+func init() {
+	dashboard.AddTabs(func() []dashboard.Tab {
+		var out []dashboard.Tab
+		for _, s := range Dash().Tabs() {
+			out = append(out, dashboard.Tab{Kind: TabKind, Key: s.Key, Name: s.Name()})
+		}
+		return out
+	})
+}
 
 type Tile struct {
 	ID        string
@@ -35,10 +48,9 @@ type AreaTiles struct {
 }
 
 type Board struct {
-	mu      sync.Mutex
-	showing string
-	open    map[string]bool
-	values  map[string]*states.Value
+	mu     sync.Mutex
+	open   map[string]bool
+	values map[string]*states.Value
 
 	from   *cache
 	follow func(entity, attribute string) *states.Value
@@ -61,11 +73,6 @@ func Dash() *Board {
 			call:   homeassistant.Get().Call,
 			redraw: func() { shell.Get().Redraw() },
 		}
-		shell.Get().Changed.Listen(func(c shell.Change) {
-			if _, ok := c.To.(*idle.View); ok {
-				board.Clock()
-			}
-		})
 	})
 	return board
 }
@@ -92,36 +99,13 @@ func (b *Board) sources(s Selection) []Selection {
 	return out
 }
 
-func (b *Board) Showing() (Selection, bool) {
-	b.mu.Lock()
-	key := b.showing
-	b.mu.Unlock()
+func (b *Board) Find(key string) (Selection, bool) {
 	for _, s := range b.Tabs() {
 		if s.Key == key {
 			return s, true
 		}
 	}
 	return Selection{}, false
-}
-
-func (b *Board) Show(key string) {
-	b.mu.Lock()
-	if b.showing == key {
-		key = ""
-	}
-	b.showing = key
-	b.mu.Unlock()
-	b.redraw()
-}
-
-func (b *Board) Clock() {
-	b.mu.Lock()
-	changed := b.showing != ""
-	b.showing = ""
-	b.mu.Unlock()
-	if changed {
-		b.redraw()
-	}
 }
 
 func (b *Board) Expand(s Selection, area string) {

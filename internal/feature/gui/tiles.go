@@ -13,40 +13,6 @@ import (
 
 var lamp = gogui.RGBA(255, 196, 64, 255)
 
-func tabStrip(at ui.Rect, tabs []homecontrol.Selection, open string, pal theme.Theme) gogui.View {
-	var pills []gogui.View
-	for _, s := range tabs {
-		st := gogui.CurrentTheme().Cfg.TextStyleDef
-		st.Size *= 1.6
-		st.Color = color(pal.Text)
-		fill := color(pal.Surface)
-		if s.Key == open {
-			fill = color(pal.Accent)
-			st.Color = color(pal.Background)
-		}
-		mark := iconStyle(st.Color)
-		mark.Size = st.Size
-		pills = append(pills, pressable(gogui.Row, gogui.ContainerCfg{
-			ID:      "tab-" + s.Key,
-			Height:  float32(at.H),
-			Sizing:  gogui.FitFixed,
-			Color:   fill,
-			Radius:  gogui.RadiusLarge,
-			Padding: gogui.NewPadding(0, reach()*0.8, 0, reach()*0.6),
-			Spacing: gogui.SpacingMedium,
-			VAlign:  gogui.VAlignMiddle,
-			Content: []gogui.View{gogui.Label(glyphFor(s), mark), gogui.Label(s.Name(), st)},
-		}, func(gogui.EventCtx) { homecontrol.Dash().Show(s.Key) }))
-	}
-	return placed(at, gogui.Row(gogui.ContainerCfg{
-		Sizing:  gogui.FillFill,
-		Padding: gogui.NoPadding,
-		Spacing: gogui.SpacingMedium,
-		VAlign:  gogui.VAlignMiddle,
-		Content: pills,
-	}))
-}
-
 func tileBoard(at ui.Rect, s homecontrol.Selection, pal theme.Theme) gogui.View {
 	areas, loading := homecontrol.Dash().Tiles(s)
 	gap := reach() * 0.25

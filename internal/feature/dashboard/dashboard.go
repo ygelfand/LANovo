@@ -13,6 +13,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
+	"github.com/ygelfand/LANovo/internal/feature/idle"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
 	"github.com/ygelfand/LANovo/internal/feature/screen"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
@@ -49,6 +50,11 @@ func Get() *Dashboard {
 		screen.Get().Themed.Listen(func(theme.Theme) { shared.Redraw() })
 		sensors.Get().Turned.Listen(func(display.Orientation) { shared.Redraw() })
 		poster.Get().Changed.Listen(func(int) { shared.Redraw() })
+		shell.Get().Changed.Listen(func(c shell.Change) {
+			if _, ok := c.To.(*idle.View); ok {
+				Clock()
+			}
+		})
 	})
 	return shared
 }
