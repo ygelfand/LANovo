@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"syscall"
 )
 
 // Absolute because PATH is not set up when init starts a service.
@@ -39,25 +38,6 @@ type Store interface {
 var Local Store = local{}
 
 type local struct{}
-
-// Setprop writes a property.
-func (local) Setprop(name, value string) error {
-	pid, err := syscall.ForkExec(bin, []string{"setprop", name, value}, &syscall.ProcAttr{
-		Files: []uintptr{0, 1, 2},
-	})
-	if err != nil {
-		return fmt.Errorf("prop: %s %s %s: %w", bin, name, value, err)
-	}
-
-	var status syscall.WaitStatus
-	if _, err := syscall.Wait4(pid, &status, 0, nil); err != nil {
-		return err
-	}
-	if status.ExitStatus() != 0 {
-		return fmt.Errorf("prop: setprop %s %s: exit %d", name, value, status.ExitStatus())
-	}
-	return nil
-}
 
 // Getprop reads a property. An unset one is empty, which is what getprop prints for it.
 func (local) Getprop(name string) (string, error) {
