@@ -200,11 +200,15 @@ func rows(s ui.Surface, in ui.Rect, palette theme.Theme, progress []component.Pr
 	doingFont := ui.MustLoad(ui.Regular, int(float64(row)*doingShare))
 
 	mark := int(float64(row) * markShare)
-	left := in.X + row/2
-	top := in.Y + (in.H-len(progress)*row)/2
+	perColumn, columnW := len(progress), in.W
+	if len(progress)*row > in.H*3/4 {
+		perColumn, columnW = (len(progress)+1)/2, in.W/2
+	}
+	top := in.Y + (in.H-perColumn*row)/2
 
 	for i, at := range progress {
-		y := top + i*row
+		left := in.X + row/2 + (i/perColumn)*columnW
+		y := top + (i%perColumn)*row
 
 		color := palette.Muted
 		switch {

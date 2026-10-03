@@ -38,6 +38,8 @@
 #define OP_UI_TEXTURE 32
 #define OP_UI_FRAME 33
 #define OP_UI_READ 34
+#define OP_DRM_PROVISION 35
+#define OP_DRM_PROVISIONED 36
 
 #define CRYPT_CLEAR 0
 #define CRYPT_CENC 1

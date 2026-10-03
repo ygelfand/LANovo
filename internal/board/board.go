@@ -41,6 +41,8 @@ type Board struct {
 	// Amp and MicADC are codec parts driven over I2C from userspace; nil where the kernel owns them.
 	Amp, MicADC *Chip
 
+	SecureDecoders map[string]string
+
 	// CameraWidth and CameraHeight are a preview size the vendor camera HAL lists.
 	CameraWidth, CameraHeight int
 

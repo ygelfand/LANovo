@@ -26,6 +26,7 @@ import (
 	_ "github.com/ygelfand/LANovo/internal/feature/dhcp"
 	_ "github.com/ygelfand/LANovo/internal/feature/diag"
 	_ "github.com/ygelfand/LANovo/internal/feature/drawer"
+	_ "github.com/ygelfand/LANovo/internal/feature/drm"
 	_ "github.com/ygelfand/LANovo/internal/feature/feedback"
 	_ "github.com/ygelfand/LANovo/internal/feature/firmware"
 	_ "github.com/ygelfand/LANovo/internal/feature/gui"

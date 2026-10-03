@@ -23,6 +23,10 @@ var Ivy = Board{
 	},
 	Amp:    &Chip{Bus: 1, Addr: 0x2d, Enable: 397},
 	MicADC: &Chip{Bus: 1, Addr: 0x1b, Enable: 494, Reset: 406},
+	SecureDecoders: map[string]string{
+		"video/avc":  "OMX.MTK.VIDEO.DECODER.AVC.secure",
+		"video/hevc": "OMX.MTK.VIDEO.DECODER.HEVC.secure",
+	},
 }
 
 func init() { register(Ivy) }

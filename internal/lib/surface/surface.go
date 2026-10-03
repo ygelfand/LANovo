@@ -49,6 +49,9 @@ const (
 	opAudioSample = 27
 	opAudioClose  = 28
 	opScreenRead  = 29
+
+	opDRMProvision   = 35
+	opDRMProvisioned = 36
 )
 
 const (
@@ -337,10 +340,24 @@ func (c *Client) Destroy(id uint32) error {
 	return c.send(opDestroy, id)
 }
 
-func (c *Client) VideoOpen(id, codec uint32, w, h, z int, session uint32) error {
+func MIME(codec uint32) string {
+	switch codec {
+	case VP9:
+		return "video/x-vnd.on2.vp9"
+	case AVC:
+		return "video/avc"
+	case HEVC:
+		return "video/hevc"
+	case VP8:
+		return "video/x-vnd.on2.vp8"
+	}
+	return ""
+}
+
+func (c *Client) VideoOpen(id, codec uint32, w, h, z int, session uint32, decoder string) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	if err := c.send(opVideoOpen, id, codec, uint32(w), uint32(h), uint32(z), session); err != nil {
+	if err := c.sendData(opVideoOpen, []byte(decoder), id, codec, uint32(w), uint32(h), uint32(z), session, uint32(len(decoder))); err != nil {
 		return err
 	}
 	ans, _, err := c.recv(opVideoOpen)
@@ -493,6 +510,49 @@ func (c *Client) DRMProvide(id uint32, license []byte) error {
 		return err
 	}
 	return c.pairStatus(opDRMProvide)
+}
+
+func (c *Client) DRMProvision(scheme [16]byte) ([]byte, string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	var words []uint32
+	for i := range 4 {
+		words = append(words, binary.LittleEndian.Uint32(scheme[4*i:]))
+	}
+	if err := c.send(opDRMProvision, words...); err != nil {
+		return nil, "", err
+	}
+	ans, data, err := c.recvData(opDRMProvision, 3)
+	if err != nil {
+		return nil, "", err
+	}
+	if st := Status(ans[0]); st != 0 {
+		return nil, "", st
+	}
+	n := int(ans[1])
+	if n > len(data) {
+		return nil, "", fmt.Errorf("surface: provision request of %d bytes in a %d byte reply", n, len(data))
+	}
+	return data[:n], string(data[n:]), nil
+}
+
+func (c *Client) DRMProvisioned(response []byte) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if err := c.sendData(opDRMProvisioned, response, uint32(len(response))); err != nil {
+		return err
+	}
+	ans, _, err := c.recv(opDRMProvisioned)
+	if err != nil {
+		return err
+	}
+	if len(ans) != 1 {
+		return fmt.Errorf("surface: short provision reply")
+	}
+	if st := Status(ans[0]); st != 0 {
+		return st
+	}
+	return nil
 }
 
 func (c *Client) DRMClose(id uint32) error {

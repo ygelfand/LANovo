@@ -81,6 +81,38 @@ int drm_provide(uint32_t id, const uint8_t *license, uint32_t len) {
 	return OK;
 }
 
+static AMediaDrm *provisioning;
+
+int drm_provision(const uint8_t uuid[16], const uint8_t **req, size_t *req_len, const char **url) {
+	*req = NULL;
+	*req_len = 0;
+	*url = NULL;
+	if (provisioning) AMediaDrm_release(provisioning);
+	provisioning = AMediaDrm_isCryptoSchemeSupported(uuid, NULL) ? AMediaDrm_createByUUID(uuid) : NULL;
+	if (!provisioning) return ERR_DRM;
+	*req_len = 1;
+	media_status_t st = AMediaDrm_getProvisionRequest(provisioning, req, req_len, url);
+	if (st != AMEDIA_OK) {
+		logw("drm: provision request %d", st);
+		*req_len = 0;
+		return ERR_DRM;
+	}
+	return OK;
+}
+
+int drm_provisioned(const uint8_t *resp, uint32_t len) {
+	if (!provisioning) return ERR_ARGS;
+	media_status_t st = AMediaDrm_provideProvisionResponse(provisioning, resp, len);
+	AMediaDrm_release(provisioning);
+	provisioning = NULL;
+	if (st != AMEDIA_OK) {
+		logw("drm: provision response %d", st);
+		return ERR_DRM;
+	}
+	logi("drm: provisioned");
+	return OK;
+}
+
 void drm_close(uint32_t id) {
 	drm_session *s = find(id);
 	if (!s) return;

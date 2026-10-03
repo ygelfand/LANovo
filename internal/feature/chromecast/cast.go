@@ -264,7 +264,7 @@ func (r *Receiver) Run(ctx context.Context) error {
 	}
 	keys := make(chan error, 1)
 	safe.Go("cast keys", func() { keys <- r.prepare() })
-	if leased(ctx) && r.Enabled() {
+	if dhcp.Get().Wait(ctx) && r.Enabled() {
 		var err error
 		select {
 		case err = <-keys:
@@ -284,29 +284,6 @@ func (r *Receiver) Run(ctx context.Context) error {
 	}
 	<-ctx.Done()
 	return nil
-}
-
-func leased(ctx context.Context) bool {
-	got := make(chan struct{}, 1)
-	stop := dhcp.Get().Leased.Listen(func(l *dhcp.Lease) {
-		if l == nil {
-			return
-		}
-		select {
-		case got <- struct{}{}:
-		default:
-		}
-	})
-	defer stop()
-	if dhcp.Get().Lease() != nil {
-		return true
-	}
-	select {
-	case <-got:
-		return true
-	case <-ctx.Done():
-		return false
-	}
 }
 
 func (r *Receiver) booted(p component.Progress) { r.boot.Store(&p) }

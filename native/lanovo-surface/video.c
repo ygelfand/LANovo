@@ -35,15 +35,6 @@ static const char *mime_of(uint32_t codec) {
 	return NULL;
 }
 
-static const char *secure_name(uint32_t codec) {
-	switch (codec) {
-	case CODEC_VP9: return "OMX.qcom.video.decoder.vp9.secure";
-	case CODEC_AVC: return "OMX.qcom.video.decoder.avc.secure";
-	case CODEC_HEVC: return "OMX.qcom.video.decoder.hevc.secure";
-	}
-	return NULL;
-}
-
 static int64_t media_now(video *v, int *running) {
 	pthread_mutex_lock(&v->mu);
 	int64_t at = v->media_us;
@@ -98,10 +89,12 @@ static void *output(void *arg) {
 static void *make(void *arg) {
 	video *v = arg;
 	const char *mime = mime_of(v->kind);
-	const char *secure = v->crypto && AMediaCrypto_requiresSecureDecoderComponent(mime) ? secure_name(v->kind) : NULL;
-	AMediaCodec *c = secure ? AMediaCodec_createCodecByName(secure) : AMediaCodec_createDecoderByType(mime);
+	int secure = v->crypto && AMediaCrypto_requiresSecureDecoderComponent(mime);
+	AMediaCodec *c = NULL;
+	if (!secure) c = AMediaCodec_createDecoderByType(mime);
+	else if (v->decoder[0]) c = AMediaCodec_createCodecByName(v->decoder);
 	if (!c) {
-		logw("no decoder for %s%s", mime, secure ? " (secure)" : "");
+		logw("no decoder for %s%s%s", mime, secure ? " (secure) " : "", v->decoder);
 		v->failed = 1;
 		return NULL;
 	}
@@ -126,9 +119,10 @@ static void *make(void *arg) {
 	return NULL;
 }
 
-int video_open(video *v, ANativeWindow *win, uint32_t codec, uint32_t w, uint32_t h, AMediaCrypto *crypto) {
+int video_open(video *v, ANativeWindow *win, uint32_t codec, uint32_t w, uint32_t h, AMediaCrypto *crypto, const char *decoder) {
 	if (!mime_of(codec)) return ERR_ARGS;
 	memset(v, 0, sizeof *v);
+	snprintf(v->decoder, sizeof v->decoder, "%s", decoder ? decoder : "");
 	v->win = win;
 	v->crypto = crypto;
 	v->kind = codec;

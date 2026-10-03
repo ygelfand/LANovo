@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
 )
@@ -154,7 +155,11 @@ func On(ctx context.Context, p Screen, s Stream) (Report, error) {
 	}
 	if !reused {
 		id = 1000 + ids.Add(1)
-		if err := c.VideoOpen(id, codec, want.w, want.h, videoZ, s.Session); err != nil {
+		decoder := ""
+		if s.Session != 0 {
+			decoder = board.Current().SecureDecoders[surface.MIME(codec)]
+		}
+		if err := c.VideoOpen(id, codec, want.w, want.h, videoZ, s.Session, decoder); err != nil {
 			return Report{}, fmt.Errorf("video: opening the decoder: %w", err)
 		}
 	}

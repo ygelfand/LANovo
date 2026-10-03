@@ -57,6 +57,29 @@ func (c *Client) Startup() component.Progress {
 	return component.Progress{Done: true, Doing: lease.Address.IP.String()}
 }
 
+func (c *Client) Wait(ctx context.Context) bool {
+	got := make(chan struct{}, 1)
+	stop := c.Leased.Listen(func(l *Lease) {
+		if l == nil {
+			return
+		}
+		select {
+		case got <- struct{}{}:
+		default:
+		}
+	})
+	defer stop()
+	if c.Lease() != nil {
+		return true
+	}
+	select {
+	case <-got:
+		return true
+	case <-ctx.Done():
+		return false
+	}
+}
+
 // Lease is the address currently held, or nil when there is none.
 func (c *Client) Lease() *Lease {
 	c.mu.Lock()
