@@ -4,25 +4,19 @@
 package mtkaudio
 
 import (
-	"archive/zip"
-	"errors"
+	"embed"
 	"fmt"
-	"io"
 	"math"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/gpio"
 	"github.com/ygelfand/LANovo/internal/hardware/i2c"
-	"github.com/ygelfand/LANovo/internal/lib/dex"
 )
 
-const (
-	APK   = "/oem/app/com.google.android.things.sparrow.oem/app.apk"
-	class = "Lcom/google/android/things/sparrow/oemcustom/Ivy;"
-)
+//go:embed tables/*.bin
+var files embed.FS
 
 // Rows are register writes, in order.
 type Rows [][2]byte
@@ -32,89 +26,33 @@ type Tables struct {
 	AmpInit, AmpHiZ, AmpPlay, AmpSleep, AmpMute, MicInit Rows
 }
 
-// Stock is the tables from APK, read once.
-var Stock = sync.OnceValues(func() (Tables, error) { return Load(APK) })
+// Stock is the embedded tables, parsed once.
+var Stock = sync.OnceValues(load)
 
-// Load reads the tables out of the OEM app.
-func Load(path string) (Tables, error) {
-	z, err := zip.OpenReader(path)
-	if err != nil {
-		return Tables{}, fmt.Errorf("mtkaudio: %w", err)
-	}
-	defer z.Close()
-
-	for _, f := range z.File {
-		if !strings.HasPrefix(f.Name, "classes") || !strings.HasSuffix(f.Name, ".dex") {
-			continue
-		}
-		r, err := f.Open()
-		if err != nil {
-			return Tables{}, err
-		}
-		b, err := io.ReadAll(r)
-		r.Close()
-		if err != nil {
-			return Tables{}, err
-		}
-		d, err := dex.Parse(b)
-		if err != nil {
-			return Tables{}, fmt.Errorf("mtkaudio: %s: %w", f.Name, err)
-		}
-		found, err := d.Tables(class)
-		if errors.Is(err, dex.ErrNoClass) {
-			continue
-		}
-		if err != nil {
-			return Tables{}, fmt.Errorf("mtkaudio: %s: %w", f.Name, err)
-		}
-		return tables(found)
-	}
-	return Tables{}, fmt.Errorf("mtkaudio: %s has no %s", path, class)
-}
-
-func tables(found map[string][][]uint16) (Tables, error) {
+func load() (Tables, error) {
 	var t Tables
 	for name, into := range map[string]*Rows{
-		"AMP_INIT":                   &t.AmpInit,
-		"AMPLIFIER_HIZ_STATE":        &t.AmpHiZ,
-		"AMPLIFIER_PLAY_STATE":       &t.AmpPlay,
-		"AMPLIFIER_DEEP_SLEEP_STATE": &t.AmpSleep,
-		"AMP_MUTE":                   &t.AmpMute,
-		"MIC_ADC_INIT":               &t.MicInit,
+		"amp_init":  &t.AmpInit,
+		"amp_hiz":   &t.AmpHiZ,
+		"amp_play":  &t.AmpPlay,
+		"amp_sleep": &t.AmpSleep,
+		"amp_mute":  &t.AmpMute,
+		"mic_init":  &t.MicInit,
 	} {
-		rows, ok := found[name]
-		if !ok || len(rows) == 0 {
-			return Tables{}, fmt.Errorf("mtkaudio: no %s", name)
+		b, err := files.ReadFile("tables/" + name + ".bin")
+		if err != nil {
+			return Tables{}, fmt.Errorf("mtkaudio: %w", err)
 		}
-		for i, r := range rows {
-			if len(r) != 2 {
-				return Tables{}, fmt.Errorf("mtkaudio: %s row %d has %d values", name, i, len(r))
-			}
-			*into = append(*into, [2]byte{byte(r[0]), byte(r[1])})
+		rows, err := i2c.Pairs(b)
+		if err != nil {
+			return Tables{}, fmt.Errorf("mtkaudio: %s: %w", name, err)
 		}
+		*into = rows
 	}
 	return t, nil
 }
 
-func write(c board.Chip, rows Rows) error {
-	bus, err := i2c.Open(c.Bus)
-	if err != nil {
-		return err
-	}
-	defer bus.Close()
-	dev, err := i2c.At(bus, c.Addr)
-	if err != nil {
-		return err
-	}
-	for i, r := range rows {
-		if err := dev.Write(r[0], r[1]); err != nil {
-			if err := dev.Write(r[0], r[1]); err != nil {
-				return fmt.Errorf("mtkaudio: %#02x row %d (%#02x=%#02x): %w", c.Addr, i, r[0], r[1], err)
-			}
-		}
-	}
-	return nil
-}
+func write(c board.Chip, rows Rows) error { return i2c.WriteRows(c.Bus, c.Addr, rows) }
 
 func drive(n int, on bool) error {
 	if n == 0 {

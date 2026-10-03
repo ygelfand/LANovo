@@ -14,6 +14,7 @@ var Blueberry = Board{
 	Mounted:      90,
 	UISize:       "large",
 	Touch:        "goodix-ts",
+	Amp:          &Chip{Bus: 1, Addr: 0x49},
 	Buttons: []Button{
 		{"volume up", 85, false},
 		{"volume down", 1019, false},

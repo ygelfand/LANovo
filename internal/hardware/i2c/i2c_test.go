@@ -256,3 +256,16 @@ func TestScanStaysInTheAddressableRange(t *testing.T) {
 		t.Errorf("Scan probed %#x, above the addressable range", last)
 	}
 }
+
+func TestPairs(t *testing.T) {
+	rows, err := Pairs([]byte{0x00, 0x01, 0x7f, 0x8c})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rows) != 2 || rows[0] != [2]byte{0x00, 0x01} || rows[1] != [2]byte{0x7f, 0x8c} {
+		t.Errorf("rows %v", rows)
+	}
+	if _, err := Pairs([]byte{0x00, 0x01, 0x02}); err == nil {
+		t.Error("an odd table split without complaint")
+	}
+}

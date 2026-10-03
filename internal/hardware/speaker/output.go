@@ -21,7 +21,7 @@ func outputFor(b board.Board) output {
 	if b.SoC == board.MediaTek {
 		return newMediatek(b)
 	}
-	return &qualcomm{}
+	return &qualcomm{chip: b.Amp}
 }
 
 func (s *Speaker) hw() output {

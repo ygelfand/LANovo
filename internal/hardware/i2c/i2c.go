@@ -82,6 +82,39 @@ func (d *Device) WriteU16(reg byte, v uint16) error {
 	return d.Write(reg, b[0], b[1])
 }
 
+// WriteRows opens bus n and writes each (register, value) pair to addr in order.
+func WriteRows(n int, addr uint16, rows [][2]byte) error {
+	bus, err := Open(n)
+	if err != nil {
+		return err
+	}
+	defer bus.Close()
+	dev, err := At(bus, addr)
+	if err != nil {
+		return err
+	}
+	for i, r := range rows {
+		if err := dev.Write(r[0], r[1]); err != nil {
+			if err := dev.Write(r[0], r[1]); err != nil {
+				return fmt.Errorf("i2c: %#02x row %d (%#02x=%#02x): %w", addr, i, r[0], r[1], err)
+			}
+		}
+	}
+	return nil
+}
+
+// Pairs splits a flat (register, value) byte table into rows.
+func Pairs(b []byte) ([][2]byte, error) {
+	if len(b)%2 != 0 {
+		return nil, fmt.Errorf("i2c: a table of %d bytes is not whole pairs", len(b))
+	}
+	rows := make([][2]byte, len(b)/2)
+	for i := range rows {
+		rows[i] = [2]byte{b[2*i], b[2*i+1]}
+	}
+	return rows, nil
+}
+
 // Probe reports whether anything answers at an address. A one byte read is the gentlest question
 // that still needs an acknowledgement: a chip that is not there leaves the bus unacknowledged and
 // the transfer fails.

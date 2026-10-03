@@ -26,11 +26,10 @@ func newMTKAudioCmd() *cobra.Command {
 	capture := 1
 	var hz, seconds, level float64
 	channel := "both"
-	apk := mtkaudio.APK
 
 	c := &cobra.Command{
 		Use:   "mtkaudio",
-		Short: "Load the amplifier from the OEM app's tables and play a tone through it",
+		Short: "Load the amplifier from the stock tables and play a tone through it",
 		Long: "Sets the given mixer switches, plays silence on the device while the amplifier is\n" +
 			"powered and loaded, then plays a tone and puts the amplifier back to sleep.\n\n" +
 			"  lanovod tools mtkaudio --device 0\n" +
@@ -45,11 +44,11 @@ func newMTKAudioCmd() *cobra.Command {
 			if det, err := board.Detect(prop.Local); err == nil {
 				b = det
 			}
-			if b.Amp == nil {
-				return errors.New("this board has no amplifier driven from userspace")
+			if b.SoC != board.MediaTek || b.Amp == nil {
+				return errors.New("this board has no MediaTek amplifier driven from userspace")
 			}
 
-			t, err := mtkaudio.Load(apk)
+			t, err := mtkaudio.Stock()
 			if err != nil {
 				return err
 			}
@@ -135,7 +134,6 @@ func newMTKAudioCmd() *cobra.Command {
 	c.Flags().Float64Var(&seconds, "seconds", 2, "how long to play")
 	c.Flags().Float64Var(&level, "level", 0.1, "amplitude, nought to one")
 	c.Flags().StringVar(&channel, "channel", "both", "both, left, right, or inverted (right is left negated)")
-	c.Flags().StringVar(&apk, "apk", mtkaudio.APK, "OEM app to read the tables from")
 	return c
 }
 

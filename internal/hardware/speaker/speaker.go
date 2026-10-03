@@ -48,6 +48,7 @@ type Speaker struct {
 	hwOnce     sync.Once
 	hwOut      output
 	hardVolume atomic.Bool
+	amp        atomic.Pointer[component.Progress]
 
 	// The queue the write loop drains a period at a time, under its own lock so filling a buffer
 	// does not wait on the card being opened or closed.
@@ -139,13 +140,18 @@ func (s *Speaker) Start(context.Context) error {
 		return nil
 	}
 	if err := s.Open(); err != nil {
+		s.amp.Store(&component.Progress{Failed: true, Doing: err.Error()})
 		return err
 	}
 
 	// After the stream, so the amplifiers come up to a running DAC rather than to a floating one.
+	s.amp.Store(&component.Progress{Doing: "loading"})
 	if err := s.Enable(true); err != nil {
 		slog.Warn("enabling the amplifiers failed", "err", err)
+		s.amp.Store(&component.Progress{Failed: true, Doing: err.Error()})
+		return nil
 	}
+	s.amp.Store(&component.Progress{Done: true})
 	return nil
 }
 

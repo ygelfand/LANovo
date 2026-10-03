@@ -30,12 +30,14 @@ const listFor = 3 * time.Second
 const settle = 500 * time.Millisecond
 
 const (
-	frame    = time.Second / 60
-	traceBy  = 2000 * time.Millisecond
-	traceFor = 1400 * time.Millisecond
-	stepFor  = 350 * time.Millisecond
-	moveFor  = 700 * time.Millisecond
-	finish   = 1100 * time.Millisecond
+	frame     = time.Second / 60
+	traceBy   = 2000 * time.Millisecond
+	traceFor  = 1400 * time.Millisecond
+	stepFor   = 350 * time.Millisecond
+	viewWait  = 10 * time.Second
+	viewEvery = 50 * time.Millisecond
+	moveFor   = 700 * time.Millisecond
+	finish    = 1100 * time.Millisecond
 )
 
 // startSplash runs the reveal, then what the device is still waiting for, and lets go once everything is up.
@@ -162,12 +164,12 @@ func startSplash(ctx context.Context) {
 }
 
 func viewed(ctx context.Context) (int, int) {
-	for range 40 {
+	for range int(viewWait / viewEvery) {
 		fw, fh := display.Get().Native()
 		if w, h := display.Get().Orientation().Size(fw, fh); w > 0 && h > 0 {
 			return w, h
 		}
-		if !wait(ctx, 50*time.Millisecond) {
+		if !wait(ctx, viewEvery) {
 			break
 		}
 	}
