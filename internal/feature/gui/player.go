@@ -177,7 +177,7 @@ func progress(w *gogui.Window, now media.Now, sk media.Seeker, st gogui.TextStyl
 			e.Window.InvalidateLayout()
 		},
 	}
-	if len(marks) > 0 && now.Length > 0 {
+	if now.Length > 0 {
 		cfg.Look = markedLook(marks, now.Length)
 	}
 	bar := grip(gogui.Slider(cfg))
