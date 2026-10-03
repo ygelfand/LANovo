@@ -79,6 +79,7 @@ const (
 	evPlaying                      // the reply has audio, so the pipeline owes nothing more
 	evContinue                     // Home Assistant wants the answer to a question it just asked
 	evSpeaking                     // VAD detected speech has started
+	evAccepted
 )
 
 type event struct {
@@ -117,7 +118,8 @@ type conversation struct {
 	// visible is the phase, published for anything outside the loop that needs to ask. Only the loop
 	// writes it, and a reader tolerates being a moment out of date: the button uses it to choose
 	// between starting and cancelling, and posting either is safe whichever it picks.
-	visible atomic.Int32
+	visible    atomic.Int32
+	quietUntil atomic.Int64
 
 	// Below here belongs to the run goroutine alone.
 	phase phase
@@ -154,6 +156,7 @@ type conversation struct {
 	// run's RUN_END, which would end the new turn instead. Waiting for the old run to close makes
 	// that event the go-ahead rather than a stray.
 	pending *nextTurn
+	asked   *nextTurn
 	grace   *time.Timer
 
 	reply reply
@@ -293,6 +296,11 @@ func (c *conversation) handle(e event) {
 	case evStart:
 		c.start(nextTurn{slot: e.slot})
 
+	case evAccepted:
+		if c.asked != nil && c.phase == phaseIdle {
+			c.listen(*c.asked)
+		}
+
 	case evSpeaking:
 		if c.followUp && c.phase == phaseListening {
 			c.arm(wakeword.MaxListen(c.slot))
@@ -407,6 +415,7 @@ func (c *conversation) handle(e event) {
 		// first and refuses the rest, so this arrives on every device that lost — which is not a failure
 		// of any of them, and a chime and a red ring say the opposite to the room. It ends the turn and
 		// says nothing: the device that won is about to light up and answer.
+		c.asked = nil
 		if e.code == errDuplicate {
 			slog.Info("another device answered first", "slot", c.slot+1, "message", e.msg)
 			c.clearPending()
@@ -518,34 +527,33 @@ func (c *conversation) start(n nextTurn) {
 	c.slot = slot
 	c.followUp = n.followUp
 
-	// Before the chime, and before Home Assistant is told anything. Ducking is what the room hears
-	// first, and it has a second of queued music to get through, so every step it waits behind is a
-	// step of full-volume music over somebody who has already started talking.
-	//
-	// It also keeps the chime out of the duck: the chime is mixed into the queue after this, so it
-	// sounds at its own level rather than being faded along with the track underneath it.
-	c.hold(true)
-
-	// A follow-up chimes like any other turn: the microphone is open with nothing said to say so.
-	// It is not a wake, though, so it does not report a phrase nobody spoke.
-	wakeword.Chime(slot)
+	c.quietUntil.Store(0)
 	if !n.followUp {
 		c.log.Woke(phrase)
 	}
 	c.turn = c.log.Begin(slot+1, phrase)
 	recording.Get().Opens(c.turn.ID(), slot)
 	c.send("start", func() error { return c.vs.StartTurn(phrase, audioSettings()) })
+	c.asked = &n
+	// The phrase is logged for a follow-up too, because it is what chose the pipeline — not because
+	// anyone said it.
+	slog.Info("turn started", "slot", slot+1, "phrase", phrase, "follow_up", n.followUp)
+}
 
+func (c *conversation) listen(n nextTurn) {
+	c.asked = nil
+	c.hold(true)
 	c.said, c.answer = "", ""
 	c.enter(phaseListening)
 	c.turn.Listening()
 	c.reply = reply{}
 
+	wakeword.Chime(n.slot)
+	if wakeword.Tones(n.slot) {
+		c.quietUntil.Store(time.Now().Add(wakeword.ChimeLength(n.slot) + speaker.HardwareTail).UnixNano())
+	}
 	c.arm(c.listenFor(n))
-	c.startAudio(slot)
-	// The phrase is logged for a follow-up too, because it is what chose the pipeline — not because
-	// anyone said it.
-	slog.Info("turn started", "slot", slot+1, "phrase", phrase, "follow_up", n.followUp)
+	c.startAudio(n.slot)
 }
 
 // listenFor is how long a turn may listen. A follow-up gets its own, shorter, window when the slot
@@ -732,6 +740,8 @@ func (c *conversation) phraseFor(slot int) (string, bool) {
 // it does nothing but translate.
 func (c *conversation) pipeline(e esphome.PipelineEvent) {
 	switch e.Type {
+	case api.VoiceAssistantEvent_VOICE_ASSISTANT_STT_START:
+		c.post(event{kind: evAccepted})
 	case api.VoiceAssistantEvent_VOICE_ASSISTANT_STT_END:
 		c.post(event{kind: evHeard, text: e.Data["text"]})
 	case api.VoiceAssistantEvent_VOICE_ASSISTANT_STT_VAD_START:
@@ -850,13 +860,6 @@ func (c *conversation) stream(ctx context.Context, slot int) {
 
 	// What the microphone actually sends is the input to speech recognition, and a quiet or clipped
 	// stream explains a bad transcript better than anything downstream does.
-	// The tone plays as the turn opens and is louder at the array than a talker across the room, so
-	// nothing is sent while it is sounding. What the speaker still has queued says when that is, and
-	// hardwareTail is what the driver holds after the queue runs out.
-	var sounding time.Time
-	if wakeword.Tones(slot) {
-		sounding = time.Now().Add(wakeword.ChimeLength(slot) + speaker.HardwareTail)
-	}
 	var held int
 
 	var peak, samples int
@@ -886,13 +889,15 @@ func (c *conversation) stream(ctx context.Context, slot int) {
 				return
 			}
 
-			if !sounding.IsZero() {
-				if time.Now().Before(sounding) {
+			if until := c.quietUntil.Load(); until != 0 {
+				if time.Now().UnixNano() < until {
 					held += len(frame)
 					continue
 				}
-				sounding = time.Time{}
-				slog.Debug("held the tone back", "ms", held*1000/mic.Voice)
+				if held > 0 {
+					slog.Debug("held the tone back", "ms", held*1000/mic.Voice)
+					held = 0
+				}
 			}
 
 			buf = buf[:0]
