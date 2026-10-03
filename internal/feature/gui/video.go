@@ -206,7 +206,7 @@ func (a *App) videoBand(w *gogui.Window, p *videoplayer.Page, look videoplayer.L
 		if mk, ok := c.(videoplayer.Marked); ok {
 			marks = mk.Marks()
 		}
-		rows = append(rows, progress(now, sk, quiet, marks))
+		rows = append(rows, progress(w, now, sk, quiet, marks))
 		if now.LiveWithin > 0 {
 			rows = append(rows, live(now, c, quiet))
 		}

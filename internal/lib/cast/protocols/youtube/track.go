@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/pion/opus"
@@ -36,6 +37,7 @@ type track struct {
 	dec    opus.Decoder
 
 	station *station
+	stalled atomic.Bool
 
 	mu       sync.Mutex
 	ended    bool
@@ -357,10 +359,18 @@ func (t *track) Logo() string {
 func (t *track) Pictured() bool { return t.station != nil && pictured(t.station.theme) }
 
 func (t *track) Waiting(w bool) {
-	if t.station == nil || t.station.current() != t {
+	if t.station == nil {
 		return
 	}
-	if w {
+	t.stalled.Store(w)
+	go t.tell()
+}
+
+func (t *track) tell() {
+	if t.station.current() != t {
+		return
+	}
+	if t.stalled.Load() {
 		t.station.report(stateLoading)
 		return
 	}
