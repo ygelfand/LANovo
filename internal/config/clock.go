@@ -36,7 +36,9 @@ const (
 	Delay30s   Delay = "30s"
 	Delay1m    Delay = "1m"
 	Delay2m    Delay = "2m"
+	Delay3m    Delay = "3m"
 	Delay5m    Delay = "5m"
+	Delay10m   Delay = "10m"
 	Delay15m   Delay = "15m"
 )
 
@@ -54,8 +56,12 @@ func (d Delay) Label() string {
 		return say.T("delay.1m")
 	case Delay2m:
 		return say.T("delay.2m")
+	case Delay3m:
+		return say.T("delay.3m")
 	case Delay5m:
 		return say.T("delay.5m")
+	case Delay10m:
+		return say.T("delay.10m")
 	case Delay15m:
 		return say.T("delay.15m")
 	}
@@ -72,8 +78,12 @@ func (d Delay) After() time.Duration {
 		return time.Minute
 	case Delay2m:
 		return 2 * time.Minute
+	case Delay3m:
+		return 3 * time.Minute
 	case Delay5m:
 		return 5 * time.Minute
+	case Delay10m:
+		return 10 * time.Minute
 	case Delay15m:
 		return 15 * time.Minute
 	}
@@ -84,6 +94,10 @@ func (d Delay) After() time.Duration {
 // somebody picks on purpose rather than the one they are looking for.
 func Delays() []Delay {
 	return []Delay{Delay30s, Delay1m, Delay2m, Delay5m, Delay15m, DelayNever}
+}
+
+func MediaDelays() []Delay {
+	return []Delay{Delay1m, Delay3m, Delay5m, Delay10m, Delay15m, DelayNever}
 }
 
 // Position is the part of the screen the clock is given.

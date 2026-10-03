@@ -4,6 +4,7 @@ import "github.com/ygelfand/LANovo/internal/lib/say"
 
 type Idle struct {
 	After    Delay      `json:"after"`
+	Media    Delay      `json:"media"`
 	Face     Face       `json:"face"`
 	Position Position   `json:"position"`
 	Align    Align      `json:"align"`
@@ -70,6 +71,7 @@ func Sources() []Source { return []Source{SourceBoth, SourceMic, SourceSpeaker} 
 func defaultIdle() Idle {
 	return Idle{
 		After:    DefaultDelay,
+		Media:    Delay5m,
 		Face:     DefaultFace,
 		Position: DefaultPosition,
 		Align:    AlignCenter,
@@ -83,6 +85,10 @@ type IdleWriter struct{ st *Store }
 
 func (w IdleWriter) After(v Delay) error {
 	return w.st.Update(func(c *Config) { c.Idle.After = v })
+}
+
+func (w IdleWriter) Media(v Delay) error {
+	return w.st.Update(func(c *Config) { c.Idle.Media = v })
 }
 
 func (w IdleWriter) Face(v Face) error {

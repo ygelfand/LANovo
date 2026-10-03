@@ -49,6 +49,7 @@ type Player struct {
 	// when something was last playing.
 	held    *shell.Hold
 	sounded time.Time
+	stalled time.Time
 	live    Source
 	begun   Source
 
@@ -189,12 +190,20 @@ func (p *Player) follow() {
 	playing := now.Playing || now.Hold
 	src := p.source()
 
+	idle := !now.Playing && (now.Paused || now.Hold)
 	p.mu.Lock()
 	begun := p.begun
 	p.begun = nil
 	if playing {
 		p.sounded = time.Now()
 	}
+	switch {
+	case !idle:
+		p.stalled = time.Time{}
+	case p.stalled.IsZero():
+		p.stalled = time.Now()
+	}
+	stalled := time.Since(p.stalled)
 	held, quiet := p.held, time.Since(p.sounded)
 	if !playing && quiet > gap && begun == nil {
 		p.live = nil
@@ -209,6 +218,20 @@ func (p *Player) follow() {
 	case !playing && held.Held() && quiet > gap:
 		slog.Info("the player is done", "quiet", quiet.Round(time.Second))
 		held.Keep(false)
+	}
+
+	if limit := config.Get().Idle.Media.After(); idle && src != nil && limit > 0 && stalled > limit {
+		slog.Info("the player was left idle", "for", stalled.Round(time.Second), "by", fmt.Sprintf("%T", src))
+		p.mu.Lock()
+		p.stalled = time.Time{}
+		p.mu.Unlock()
+		src.Stop()
+	}
+}
+
+func (p *Player) SetIdle(v config.Delay) {
+	if err := config.Set().Idle().Media(v); err != nil {
+		slog.Warn("saving the media idle timeout", "err", err)
 	}
 }
 

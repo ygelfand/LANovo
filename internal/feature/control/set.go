@@ -19,6 +19,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/idle"
+	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/microphone"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
@@ -71,6 +72,9 @@ func settings() []setting {
 
 		{"idle.after", "Idle.After", func(c config.Config) string { return string(c.Idle.After) },
 			choose(config.Delays(), idle.Get().SetAfter)},
+
+		{"idle.media", "Idle.Media", func(c config.Config) string { return string(c.Idle.Media) },
+			choose(config.MediaDelays(), media.Get().SetIdle)},
 
 		{"idle.face", "Idle.Face", func(c config.Config) string { return string(c.Idle.Face) },
 			choose(config.IdleFaces(), idle.Get().SetFace)},

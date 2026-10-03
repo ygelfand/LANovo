@@ -78,6 +78,8 @@ display.idle: Screen saver
 idle.title: Screen saver
 idle.after: Start after
 idle.after.title: Start after
+idle.media: Close paused player after
+idle.media.hint: Audio and video players
 idle.visual1: Visual 1
 idle.visual2: Visual 2
 idle.source1: Visual 1 audio
@@ -254,7 +256,9 @@ delay.never: Never
 delay.30s: 30 seconds
 delay.1m: 1 minute
 delay.2m: 2 minutes
+delay.3m: 3 minutes
 delay.5m: 5 minutes
+delay.10m: 10 minutes
 delay.15m: 15 minutes
 poster.never: Never
 poster.wake: On each wake

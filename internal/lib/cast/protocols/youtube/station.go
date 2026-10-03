@@ -55,6 +55,8 @@ type station struct {
 
 	skipsFor string
 	skips    []Segment
+
+	loud chan struct{}
 }
 
 func (s *station) markAsked(app string) {
@@ -90,11 +92,30 @@ func newStation(ctx context.Context, theme string, env cast.Env) *station {
 	r := NewResolver(env.HTTP)
 	r.Resample = env.Resample
 	r.Tallest = env.Tallest
-	s := &station{theme: theme, env: env, resolve: r, ctx: ctx}
+	s := &station{theme: theme, env: env, resolve: r, ctx: ctx, loud: make(chan struct{}, 1)}
 	if env.VolumeChanged != nil {
-		context.AfterFunc(ctx, env.VolumeChanged(s.volume))
+		go s.tellVolume()
+		context.AfterFunc(ctx, env.VolumeChanged(s.volumeMoved))
 	}
 	return s
+}
+
+func (s *station) volumeMoved() {
+	select {
+	case s.loud <- struct{}{}:
+	default:
+	}
+}
+
+func (s *station) tellVolume() {
+	for {
+		select {
+		case <-s.ctx.Done():
+			return
+		case <-s.loud:
+			s.volume()
+		}
+	}
 }
 
 func (s *station) bind(sess *Session) {

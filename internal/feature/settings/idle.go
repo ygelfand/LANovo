@@ -1,12 +1,14 @@
 package settings
 
 import (
+	"slices"
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard/face"
 	"github.com/ygelfand/LANovo/internal/feature/idle"
+	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
@@ -48,6 +50,7 @@ func idlePage() *shell.Page {
 			i := idle.Get()
 			return []widget.Row{
 					{Label: say.T("idle.after"), Kind: widget.Chevron, Value: c.After.Label()},
+					{Label: say.T("idle.media"), Hint: say.T("idle.media.hint"), Kind: widget.Slider, Level: mediaLevel(c.Media), Snap: mediaSnap, Value: c.Media.Label()},
 					{Label: say.T("idle.visual1"), Kind: widget.Chevron, Value: idle.KindLabel(c.First.Kind)},
 					{Label: say.T("idle.source1"), Kind: widget.Chevron, Value: c.First.Source.Label()},
 					{Label: say.T("idle.visual2"), Kind: widget.Chevron, Value: idle.KindLabel(c.Second.Kind)},
@@ -59,6 +62,7 @@ func idlePage() *shell.Page {
 				}, []func(int){
 					open(choose(say.T("idle.after.title"), config.Delays(),
 						func() config.Delay { return config.Get().Idle.After }, i.SetAfter, nil)),
+					func(level int) { media.Get().SetIdle(config.MediaDelays()[mediaIndex(level)]) },
 					open(idleVisualPage(0)),
 					open(idleSourcePage(0)),
 					open(idleVisualPage(1)),
@@ -84,6 +88,18 @@ func idlePage() *shell.Page {
 		},
 	}
 }
+
+func mediaIndex(level int) int {
+	n := len(config.MediaDelays()) - 1
+	return min(max((level*n+50)/100, 0), n)
+}
+
+func mediaLevel(d config.Delay) int {
+	i := max(slices.Index(config.MediaDelays(), d), 0)
+	return i * 100 / (len(config.MediaDelays()) - 1)
+}
+
+func mediaSnap(level int) int { return mediaLevel(config.MediaDelays()[mediaIndex(level)]) }
 
 func slotVisual(slot int) config.IdleVisual {
 	c := config.Get().Idle
