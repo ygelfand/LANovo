@@ -52,6 +52,7 @@ const (
 
 	opDRMProvision   = 35
 	opDRMProvisioned = 36
+	opDRMProperty    = 37
 )
 
 const (
@@ -534,6 +535,22 @@ func (c *Client) DRMProvision(scheme [16]byte) ([]byte, string, error) {
 		return nil, "", fmt.Errorf("surface: provision request of %d bytes in a %d byte reply", n, len(data))
 	}
 	return data[:n], string(data[n:]), nil
+}
+
+func (c *Client) DRMProperty(id uint32, name string) (string, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if err := c.sendData(opDRMProperty, []byte(name), id, uint32(len(name))); err != nil {
+		return "", err
+	}
+	ans, data, err := c.recvData(opDRMProperty, 3)
+	if err != nil {
+		return "", err
+	}
+	if st := Status(ans[1]); st != 0 {
+		return "", st
+	}
+	return string(data), nil
 }
 
 func (c *Client) DRMProvisioned(response []byte) error {

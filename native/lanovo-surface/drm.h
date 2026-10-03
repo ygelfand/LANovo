@@ -22,6 +22,7 @@ int drm_request(uint32_t id, const uint8_t *init, uint32_t init_len, const uint8
 int drm_provide(uint32_t id, const uint8_t *license, uint32_t len);
 int drm_provision(const uint8_t uuid[16], const uint8_t **req, size_t *req_len, const char **url);
 int drm_provisioned(const uint8_t *resp, uint32_t len);
+int drm_property(uint32_t id, const char *name, const char **value);
 void drm_close(uint32_t id);
 void drm_close_all(void);
 AMediaCrypto *drm_crypto(uint32_t id);

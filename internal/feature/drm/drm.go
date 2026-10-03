@@ -67,10 +67,13 @@ func (d *DRM) bring(ctx context.Context) component.Progress {
 		return component.Progress{Failed: true, Doing: "no display helper"}
 	}
 	began := time.Now()
-	ready, err := provisioned(c)
-	slog.Info("widevine check", "provisioned", ready, "took", time.Since(began), "err", err)
+	level, ready, err := provisioned(c)
+	slog.Info("widevine check", "level", level, "provisioned", ready, "took", time.Since(began), "err", err)
 	if err != nil {
 		return component.Progress{Failed: true, Doing: err.Error()}
+	}
+	if level != "L1" {
+		return component.Progress{Failed: true, Doing: "Widevine " + level + ", no hardware decryption"}
 	}
 	if ready {
 		return component.Progress{Done: true, Doing: "provisioned"}
@@ -89,13 +92,17 @@ func (d *DRM) bring(ctx context.Context) component.Progress {
 	return component.Progress{Done: true, Doing: "provisioned"}
 }
 
-func provisioned(c *surface.Client) (bool, error) {
+func provisioned(c *surface.Client) (string, bool, error) {
 	if err := c.DRMOpen(checkSession, surface.Widevine, false, nil); err != nil {
-		return false, fmt.Errorf("widevine: %w", err)
+		return "", false, fmt.Errorf("widevine: %w", err)
 	}
 	defer c.DRMClose(checkSession)
-	_, err := c.DRMRequest(checkSession, probe)
-	return err == nil, nil
+	level, err := c.DRMProperty(checkSession, "securityLevel")
+	if err != nil {
+		return "", false, fmt.Errorf("widevine security level: %w", err)
+	}
+	_, err = c.DRMRequest(checkSession, probe)
+	return level, err == nil, nil
 }
 
 func provision(ctx context.Context, c *surface.Client) error {

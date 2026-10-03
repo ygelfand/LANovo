@@ -447,6 +447,21 @@ static int drm_prov(int conn, const uint32_t *a) {
 	return r;
 }
 
+static int drm_prop(int conn, const uint32_t *a, uint32_t len) {
+	uint32_t id = a[0], n = a[1];
+	if (!wire_bytes(len, 8, n)) return -1;
+	char name[64];
+	const char *value = NULL;
+	int st = ERR_ARGS;
+	if (n < sizeof name) {
+		memcpy(name, a + 2, n);
+		name[n] = 0;
+		st = drm_property(id, name, &value);
+	}
+	size_t vl = st == OK ? strlen(value) : 0;
+	return reply_data(conn, OP_DRM_PROPERTY, (uint32_t[]){id, (uint32_t)st, (uint32_t)vl}, 3, value, vl);
+}
+
 static int drm_cert(int conn, const uint32_t *a, uint32_t len) {
 	uint32_t n = a[0];
 	if (!wire_bytes(len, 4, n)) return -1;
@@ -866,6 +881,9 @@ static void serve(int conn) {
 			break;
 		case OP_DRM_PROVISION:
 			err = hdr[1] == 16 ? drm_prov(conn, buf) : -1;
+			break;
+		case OP_DRM_PROPERTY:
+			err = hdr[1] >= 8 ? drm_prop(conn, buf, hdr[1]) : -1;
 			break;
 		case OP_DRM_PROVISIONED:
 			err = hdr[1] >= 4 ? drm_cert(conn, buf, hdr[1]) : -1;

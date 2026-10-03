@@ -100,6 +100,14 @@ int drm_provision(const uint8_t uuid[16], const uint8_t **req, size_t *req_len, 
 	return OK;
 }
 
+int drm_property(uint32_t id, const char *name, const char **value) {
+	*value = NULL;
+	drm_session *s = find(id);
+	if (!s) return ERR_ARGS;
+	if (AMediaDrm_getPropertyString(s->drm, name, value) != AMEDIA_OK || !*value) return ERR_DRM;
+	return OK;
+}
+
 int drm_provisioned(const uint8_t *resp, uint32_t len) {
 	if (!provisioning) return ERR_ARGS;
 	media_status_t st = AMediaDrm_provideProvisionResponse(provisioning, resp, len);

@@ -40,6 +40,7 @@
 #define OP_UI_READ 34
 #define OP_DRM_PROVISION 35
 #define OP_DRM_PROVISIONED 36
+#define OP_DRM_PROPERTY 37
 
 #define CRYPT_CLEAR 0
 #define CRYPT_CENC 1
