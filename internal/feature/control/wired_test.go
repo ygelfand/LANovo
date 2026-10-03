@@ -22,6 +22,7 @@ import (
 var manyRows = map[string]bool{
 	"Camera.Settings": true,
 	"Home.Control":    true,
+	"Home.Group":      true,
 }
 
 var byHand = map[string]string{

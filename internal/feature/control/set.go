@@ -250,6 +250,11 @@ func homeRows() []setting {
 			field: "Home.Control",
 			says:  func(c config.Config) string { return knob.OnOff(c.Home.Control[s.Key]) },
 			use:   toggle(s.SetControlled),
+		}, setting{
+			name:  "home.group." + s.Key,
+			field: "Home.Group",
+			says:  func(c config.Config) string { return strconv.Itoa(c.Home.Grouped(s.Key)) },
+			use:   number(0, config.HomeGroupMost, s.SetGroupFrom),
 		})
 	}
 	rows = append(rows, setting{

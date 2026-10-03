@@ -9,7 +9,13 @@ type Home struct {
 	Picks   map[string]HomePick `json:"picks"`
 	Control map[string]bool     `json:"control"`
 	Combine bool                `json:"combine"`
+	Group   map[string]int      `json:"group"`
 }
+
+const (
+	HomeGroupDefault = 2
+	HomeGroupMost    = 5
+)
 
 type HomePick struct {
 	All      bool     `json:"all"`
@@ -33,6 +39,13 @@ func defaultHome() Home { return Home{} }
 
 func (h Home) Picked(key string) HomePick { return h.Picks[key] }
 
+func (h Home) Grouped(key string) int {
+	if n, ok := h.Group[key]; ok {
+		return n
+	}
+	return HomeGroupDefault
+}
+
 type HomeWriter struct{ st *Store }
 
 func (w HomeWriter) Control(key string, on bool) error {
@@ -47,6 +60,17 @@ func (w HomeWriter) Control(key string, on bool) error {
 			delete(control, key)
 		}
 		c.Home.Control = control
+	})
+}
+
+func (w HomeWriter) Group(key string, n int) error {
+	return w.st.Update(func(c *Config) {
+		group := maps.Clone(c.Home.Group)
+		if group == nil {
+			group = map[string]int{}
+		}
+		group[key] = min(max(n, 0), HomeGroupMost)
+		c.Home.Group = group
 	})
 }
 

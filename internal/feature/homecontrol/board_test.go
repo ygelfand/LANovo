@@ -3,6 +3,7 @@ package homecontrol
 import (
 	"context"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -168,8 +169,8 @@ func TestCombineMergesSwitchesIntoLights(t *testing.T) {
 	if err := config.Set().Home().Combine(true); err != nil {
 		t.Fatal(err)
 	}
-	if tabs := b.Tabs(); len(tabs) != 1 || tabs[0].Key != "lights" {
-		t.Fatalf("tabs %v after combining", tabs)
+	if tabs := b.Tabs(); len(tabs) != 2 {
+		t.Fatalf("tabs %v after combining, want both", tabs)
 	}
 
 	areas, _ := b.Tiles(lights())
@@ -204,7 +205,44 @@ func TestCombineMergesSwitchesIntoLights(t *testing.T) {
 	if err := config.Set().Home().Control("switches", false); err != nil {
 		t.Fatal(err)
 	}
-	if Combined() {
-		t.Error("combined with switches no longer controlled")
+	if !Combined() {
+		t.Error("including switches in lights should not need the switches tab")
+	}
+	if tabs := b.Tabs(); len(tabs) != 1 || tabs[0].Key != "lights" {
+		t.Errorf("tabs %v with the switches tab off", tabs)
+	}
+	if !controls("switch") {
+		t.Error("switches shown in lights would not be controllable")
+	}
+}
+
+func TestSplit(t *testing.T) {
+	areas := []AreaTiles{
+		{ID: "kitchen", Tiles: []Tile{{ID: "light.k1", On: true}, {ID: "light.k2"}}},
+		{ID: "porch", Tiles: []Tile{{ID: "light.p"}}},
+	}
+	shape := func(out []AreaTiles) string {
+		var s []string
+		for _, a := range out {
+			if a.Solo {
+				s = append(s, a.Tiles[0].ID)
+			} else {
+				s = append(s, a.ID)
+			}
+		}
+		return strings.Join(s, " ")
+	}
+	for from, want := range map[int]string{
+		0: "light.k1 light.k2 light.p",
+		1: "kitchen porch",
+		2: "kitchen light.p",
+		3: "light.k1 light.k2 light.p",
+	} {
+		if got := shape(split(areas, from)); got != want {
+			t.Errorf("from %d: %q, want %q", from, got, want)
+		}
+	}
+	if solo := split(areas, 0); solo[0].On != 1 || solo[1].On != 0 {
+		t.Errorf("solo on counts %d %d", solo[0].On, solo[1].On)
 	}
 }

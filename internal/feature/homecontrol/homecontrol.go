@@ -3,6 +3,7 @@ package homecontrol
 import (
 	"log/slog"
 	"slices"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -60,6 +61,15 @@ func Summary(p config.HomePick) string {
 
 func (s Selection) Controlled() bool { return config.Get().Home.Control[s.Key] }
 
+func (s Selection) GroupFrom() int { return config.Get().Home.Grouped(s.Key) }
+
+func (s Selection) SetGroupFrom(n int) {
+	if err := config.Set().Home().Group(s.Key, n); err != nil {
+		slog.Error("the grouping setting could not be saved", "selection", s.Key, "err", err)
+	}
+	shell.Get().Redraw()
+}
+
 func (s Selection) SetControlled(on bool) {
 	if err := config.Set().Home().Control(s.Key, on); err != nil {
 		slog.Error("the control setting could not be saved", "selection", s.Key, "err", err)
@@ -68,16 +78,7 @@ func (s Selection) SetControlled(on bool) {
 }
 
 func Combined() bool {
-	return config.Get().Home.Combine && bothControlled()
-}
-
-func bothControlled() bool {
-	for _, s := range Selections {
-		if !s.Controlled() {
-			return false
-		}
-	}
-	return true
+	return config.Get().Home.Combine && Selections[0].Controlled()
 }
 
 func SetCombined(on bool) {
@@ -96,18 +97,53 @@ func SettingsPage() *shell.Page {
 				taps []func(int)
 			)
 			for _, s := range Selections {
-				on := s.Controlled()
-				rows = append(rows, widget.Row{Label: say.T("home.control." + s.Key), Kind: widget.Toggle, On: on})
-				taps = append(taps, func(int) { s.SetControlled(!on) })
-			}
-			if bothControlled() {
-				on := config.Get().Home.Combine
-				rows = append(rows, widget.Row{Label: say.T("home.combine"), Kind: widget.Toggle, On: on})
-				taps = append(taps, func(int) { SetCombined(!on) })
+				rows = append(rows, widget.Row{Label: s.Name(), Kind: widget.Chevron})
+				taps = append(taps, func(int) { shell.Get().Push(selectionPage(s)) })
 			}
 			return rows, taps
 		},
 	}
+}
+
+func selectionPage(s Selection) *shell.Page {
+	return &shell.Page{
+		Title: s.Name(),
+		Build: func() ([]widget.Row, []func(int)) {
+			on, from := s.Controlled(), s.GroupFrom()
+			rows := []widget.Row{
+				{Label: say.T("home.control." + s.Key), Kind: widget.Toggle, On: on},
+				{Label: say.T("home.group"), Hint: groupHint(from), Kind: widget.Slider, Level: groupLevel(from), Snap: groupSnap, Value: strconv.Itoa(from)},
+			}
+			taps := []func(int){
+				func(int) { s.SetControlled(!on) },
+				func(level int) { s.SetGroupFrom(groupOf(level)) },
+			}
+			if s.Key == Selections[0].Key {
+				combine := config.Get().Home.Combine
+				rows = append(rows, widget.Row{Label: say.T("home.combine"), Kind: widget.Toggle, On: combine})
+				taps = append(taps, func(int) { SetCombined(!combine) })
+			}
+			return rows, taps
+		},
+	}
+}
+
+func groupOf(level int) int {
+	return min(max((level*config.HomeGroupMost+50)/100, 0), config.HomeGroupMost)
+}
+
+func groupLevel(n int) int { return n * 100 / config.HomeGroupMost }
+
+func groupSnap(level int) int { return groupLevel(groupOf(level)) }
+
+func groupHint(n int) string {
+	switch n {
+	case 0:
+		return say.T("home.group.none")
+	case 1:
+		return say.T("home.group.all")
+	}
+	return say.F("home.group.from", map[string]any{"N": n})
 }
 
 type Home struct{}

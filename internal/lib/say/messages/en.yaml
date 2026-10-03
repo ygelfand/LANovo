@@ -150,7 +150,11 @@ home.refresh: Refresh
 home.settings: Settings
 home.control.lights: Control lights
 home.control.switches: Control switches
-home.combine: Combine switches with lights
+home.combine: Include switches
+home.group: Group by area
+home.group.none: Every device on its own card
+home.group.all: Every area on one card
+home.group.from: "Areas with {{.N}} or more devices"
 home.selection.lights: Lights
 home.selection.switches: Switches
 home.all: All

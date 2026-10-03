@@ -43,6 +43,7 @@ type AreaTiles struct {
 	ID    string
 	Name  string
 	Open  bool
+	Solo  bool
 	On    int
 	Tiles []Tile
 }
@@ -80,7 +81,7 @@ func Dash() *Board {
 func (b *Board) Tabs() []Selection {
 	var out []Selection
 	for _, s := range Selections {
-		if s.Controlled() && !s.Pick().Empty() && !(s.Key == "switches" && Combined()) {
+		if s.Controlled() && !s.Pick().Empty() {
 			out = append(out, s)
 		}
 	}
@@ -164,7 +165,25 @@ func (b *Board) Tiles(s Selection) ([]AreaTiles, bool) {
 			return cmp.Compare(strings.ToLower(x.Name), strings.ToLower(y.Name))
 		})
 	}
-	return areas, false
+	return split(areas, s.GroupFrom()), false
+}
+
+func split(areas []AreaTiles, from int) []AreaTiles {
+	var out []AreaTiles
+	for _, a := range areas {
+		if from > 0 && len(a.Tiles) >= from {
+			out = append(out, a)
+			continue
+		}
+		for _, t := range a.Tiles {
+			on := 0
+			if t.On {
+				on = 1
+			}
+			out = append(out, AreaTiles{ID: a.ID, Name: a.Name, Solo: true, On: on, Tiles: []Tile{t}})
+		}
+	}
+	return out
 }
 
 func (b *Board) tile(e homeassistant.Entity) Tile {
@@ -216,7 +235,7 @@ func (t Tile) Domain() string { return homeassistant.Entity{ID: t.ID}.Domain() }
 func controls(domain string) bool {
 	for _, s := range Selections {
 		if slices.Contains(s.Filter.Domains, domain) {
-			return s.Controlled()
+			return s.Controlled() || (s.Key == "switches" && Combined())
 		}
 	}
 	return false
