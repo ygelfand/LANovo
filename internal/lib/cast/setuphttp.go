@@ -8,7 +8,9 @@ import (
 
 const SetupPort = 8008
 
-func SetupHandler(eureka func() Eureka, seen func(r *http.Request, status int)) http.Handler {
+const IconPath = "/setup/icon.png"
+
+func SetupHandler(eureka func() Eureka, icon func() []byte, seen func(r *http.Request, status int)) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		status := http.StatusNotFound
 		defer func() {
@@ -16,6 +18,14 @@ func SetupHandler(eureka func() Eureka, seen func(r *http.Request, status int)) 
 				seen(r, status)
 			}
 		}()
+		if r.URL.Path == IconPath && icon != nil {
+			if png := icon(); len(png) > 0 {
+				status = http.StatusOK
+				w.Header().Set("Content-Type", "image/png")
+				_, _ = w.Write(png)
+				return
+			}
+		}
 		if r.URL.Path != "/setup/eureka_info" || eureka == nil {
 			http.NotFound(w, r)
 			return

@@ -356,6 +356,17 @@ func (t *track) Logo() string {
 
 func (t *track) Pictured() bool { return t.station != nil && pictured(t.station.theme) }
 
+func (t *track) Waiting(w bool) {
+	if t.station == nil || t.station.current() != t {
+		return
+	}
+	if w {
+		t.station.report(stateLoading)
+		return
+	}
+	t.station.report(t.station.state())
+}
+
 func pictured(theme string) bool { return theme == ThemeYouTube || theme == ThemeTV }
 
 func (t *track) Pictures(ctx context.Context) (io.ReadCloser, time.Duration, error) {

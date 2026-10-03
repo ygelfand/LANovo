@@ -223,10 +223,8 @@ func TestAnAnswerCarriesTheRequestItAnswers(t *testing.T) {
 	}
 }
 
-// An unsolicited status is one nobody asked for, so it carries no id rather than a zero one — the
-// field is omitted entirely.
-func TestAnUnsolicitedStatusCarriesNoRequestID(t *testing.T) {
-	if got := Status(0, ReceiverStatus{}); strings.Contains(got, "requestId") {
+func TestAnUnsolicitedStatusCarriesAZeroRequestID(t *testing.T) {
+	if got := Status(0, ReceiverStatus{}); !strings.Contains(got, `"requestId":0`) {
 		t.Errorf("came back %q", got)
 	}
 }

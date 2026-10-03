@@ -2,9 +2,11 @@ package cast
 
 import (
 	"crypto/rand"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"time"
 )
 
@@ -39,6 +41,10 @@ type Playing interface {
 
 	// Elapsed is how far in it is, which a status reports.
 	Elapsed() time.Duration
+}
+
+type Stepping interface {
+	Step(by int) error
 }
 
 // Receiver is this device as something to cast to.
@@ -105,6 +111,56 @@ type Receiver struct {
 
 	// sessions counts up, so every launch and every load gets an id nothing else has used.
 	sessions int
+
+	appMedia appPlayer
+}
+
+type appPlayer struct {
+	control  Playing
+	commands int
+	custom   json.RawMessage
+	told     string
+}
+
+type Published struct {
+	Media    Media
+	State    string
+	Commands int
+	Custom   json.RawMessage
+}
+
+func (r *Receiver) Publish(control Playing, p *Published) []Message {
+	if r.app == nil || control == nil {
+		return nil
+	}
+	if p == nil {
+		if r.appMedia.control != control || r.session == 0 {
+			return nil
+		}
+		out := r.cancelled()
+		r.media, r.session, r.appMedia = nil, 0, appPlayer{}
+		return out
+	}
+	told, _ := json.Marshal(p)
+	if r.appMedia.control == control && r.appMedia.told == string(told) && r.session != 0 {
+		return nil
+	}
+	if r.media == nil || r.media.ContentID != p.Media.ContentID || r.session == 0 {
+		var b [4]byte
+		rand.Read(b[:])
+		r.session = int(binary.BigEndian.Uint32(b[:])>>2) + 1
+	}
+	m := p.Media
+	r.media, r.state, r.idle = &m, p.State, ""
+	r.appMedia = appPlayer{control: control, commands: p.Commands, custom: p.Custom, told: string(told)}
+	return []Message{r.mediaBroadcast(r.full())}
+}
+
+func (r *Receiver) control() Playing {
+	if r.appMedia.control != nil {
+		return r.appMedia.control
+	}
+	return r.Player
 }
 
 // NewReceiver is a receiver answering to a name, with nothing running.
@@ -126,7 +182,7 @@ func ptr[T any](v T) *T { return &v }
 
 // Status is what the receiver would report now.
 func (r *Receiver) Status() ReceiverStatus {
-	s := ReceiverStatus{Volume: r.volume}
+	s := ReceiverStatus{Volume: r.volume, IsActiveInput: true}
 	if r.app != nil {
 		s.Applications = []Application{*r.app}
 	}
@@ -254,6 +310,9 @@ func (r *Receiver) connection(m Message) ([]Message, error) {
 	switch h.Type {
 	case TypeConnect:
 		r.senders[m.Source] = true
+		if r.app != nil && m.Destination == r.app.TransportID && r.session != 0 {
+			return []Message{reply(m, NSMedia, MediaStatusPayload(0, r.full()...))}, nil
+		}
 	case TypeClose:
 		delete(r.senders, m.Source)
 	}
@@ -385,8 +444,9 @@ func (r *Receiver) stop(m Message, h Header) ([]Message, error) {
 		return []Message{reply(m, NSReceiver, Invalid(h.RequestID, ReasonInvalidParams))}, nil
 	}
 
+	out := r.cancelled()
 	r.release(IdleCancelled)
-	return r.announce(m, h.RequestID), nil
+	return append(out, r.announce(m, h.RequestID)...), nil
 }
 
 // End stops the running application from this end, and is the status every sender is owed.
@@ -394,12 +454,25 @@ func (r *Receiver) End() []Message {
 	if r.app == nil {
 		return nil
 	}
+	out := r.cancelled()
 	r.release(IdleCancelled)
-	out := make([]Message, 0, len(r.senders))
-	for id := range r.senders {
-		out = append(out, Message{Source: ReceiverID, Destination: id, Namespace: NSReceiver, Payload: Status(0, r.Status())})
+	return append(out, r.broadcast())
+}
+
+func (r *Receiver) broadcast() Message {
+	return Message{Source: ReceiverID, Destination: Broadcast, Namespace: NSReceiver, Payload: Status(0, r.Status())}
+}
+
+func (r *Receiver) mediaBroadcast(status []MediaStatus) Message {
+	return Message{Source: r.app.TransportID, Destination: Broadcast, Namespace: NSMedia, Payload: MediaBroadcastPayload(status...)}
+}
+
+func (r *Receiver) cancelled() []Message {
+	if r.session == 0 || r.app == nil {
+		return nil
 	}
-	return out
+	r.state, r.idle = StateIdle, IdleCancelled
+	return []Message{r.mediaBroadcast(r.playing())}
 }
 
 // release stops whatever is running and says why the player went idle.
@@ -411,6 +484,7 @@ func (r *Receiver) release(why string) {
 	if r.Player != nil {
 		r.Player.Stop()
 	}
+	r.appMedia = appPlayer{}
 
 	app := r.app.AppID
 	r.app = nil
@@ -431,7 +505,11 @@ func (r *Receiver) setVolume(m Message, h Header) ([]Message, error) {
 	if err != nil {
 		return []Message{reply(m, NSReceiver, Invalid(h.RequestID, ReasonInvalidParams))}, nil
 	}
+	r.applyVolume(req)
+	return r.announce(m, h.RequestID), nil
+}
 
+func (r *Receiver) applyVolume(req SetVolumeRequest) {
 	// Only what was asked for. A request carrying a mute and no level must not set the level, and
 	// the two arrive separately all the time.
 	if req.Volume.Level != nil {
@@ -444,8 +522,15 @@ func (r *Receiver) setVolume(m Message, h Header) ([]Message, error) {
 	if r.Volume != nil {
 		r.Volume(*r.volume.Level, *r.volume.Muted)
 	}
+}
 
-	return r.announce(m, h.RequestID), nil
+func (r *Receiver) streamVolume(m Message, h Header) ([]Message, error) {
+	req, err := ParseSetVolume(m.Payload)
+	if err != nil {
+		return []Message{reply(m, NSMedia, Invalid(h.RequestID, ReasonInvalidParams))}, nil
+	}
+	r.applyVolume(req)
+	return append(r.report(m, h.RequestID), r.broadcast()), nil
 }
 
 // Report takes the volume the device is at, and returns the status every sender is owed when it is news.
@@ -454,17 +539,7 @@ func (r *Receiver) Report(level float64, muted bool) []Message {
 		return nil
 	}
 	r.volume.Level, r.volume.Muted = ptr(level), ptr(muted)
-
-	var out []Message
-	for id := range r.senders {
-		out = append(out, Message{
-			Source:      ReceiverID,
-			Destination: id,
-			Namespace:   NSReceiver,
-			Payload:     Status(0, r.Status()),
-		})
-	}
-	return out
+	return []Message{r.broadcast()}
 }
 
 // announce answers the sender that asked and tells everyone else.
@@ -472,20 +547,7 @@ func (r *Receiver) Report(level float64, muted bool) []Message {
 // Both, because a change one sender made has to reach the others: two phones with the app open
 // should not disagree about whether anything is playing.
 func (r *Receiver) announce(m Message, request int) []Message {
-	out := []Message{reply(m, NSReceiver, Status(request, r.Status()))}
-
-	for id := range r.senders {
-		if id == m.Source {
-			continue
-		}
-		out = append(out, Message{
-			Source:      ReceiverID,
-			Destination: id,
-			Namespace:   NSReceiver,
-			Payload:     Status(0, r.Status()),
-		})
-	}
-	return out
+	return []Message{reply(m, NSReceiver, Status(request, r.Status())), r.broadcast()}
 }
 
 // mediaNamespace answers the namespace about what is playing.
@@ -505,9 +567,11 @@ func (r *Receiver) mediaNamespace(m Message) ([]Message, error) {
 	case TypeLoad:
 		return r.load(m, h)
 	case TypeGetStatus:
-		return []Message{reply(m, NSMedia, MediaStatusPayload(h.RequestID, r.playing()...))}, nil
-	case TypePlay, TypePause, TypeStopMedia, TypeSeek:
+		return []Message{reply(m, NSMedia, MediaStatusPayload(h.RequestID, r.full()...))}, nil
+	case TypePlay, TypePause, TypeStopMedia, TypeSeek, TypeQueueNext, TypeQueuePrev, TypeQueueUpdate:
 		return r.transport(m, h)
+	case TypeSetVolume:
+		return r.streamVolume(m, h)
 	}
 
 	return []Message{reply(m, NSMedia, Invalid(h.RequestID, ReasonInvalidCommand))}, nil
@@ -537,7 +601,7 @@ func (r *Receiver) load(m Message, h Header) ([]Message, error) {
 			r.state = StateIdle
 			r.idle = IdleError
 			return []Message{reply(m, NSMedia, LoadFailed(h.RequestID))},
-				fmt.Errorf("cast: loading %q: %w", req.Media.ContentID, err)
+				fmt.Errorf("cast: loading %q: %w", req.Media.URL(), err)
 		}
 	}
 
@@ -566,21 +630,21 @@ func (r *Receiver) transport(m Message, h Header) ([]Message, error) {
 	switch h.Type {
 	case TypePlay:
 		r.state = StatePlaying
-		if r.Player != nil {
-			act = r.Player.Play()
+		if ctl := r.control(); ctl != nil {
+			act = ctl.Play()
 		}
 
 	case TypePause:
 		r.state = StatePaused
-		if r.Player != nil {
-			act = r.Player.Pause()
+		if ctl := r.control(); ctl != nil {
+			act = ctl.Pause()
 		}
 
 	case TypeStopMedia:
 		// Stopping the media is not stopping the application: the sender can load something else
 		// without launching again.
-		if r.Player != nil {
-			act = r.Player.Stop()
+		if ctl := r.control(); ctl != nil {
+			act = ctl.Stop()
 		}
 		r.media = nil
 		r.session = 0
@@ -588,8 +652,11 @@ func (r *Receiver) transport(m Message, h Header) ([]Message, error) {
 		r.idle = IdleCancelled
 
 	case TypeSeek:
-		if r.Player != nil {
-			act = r.Player.Seek(req.Seek())
+		if (r.media != nil && r.media.Streaming()) || req.CurrentTime < 0 || math.IsNaN(req.CurrentTime) || math.IsInf(req.CurrentTime, 0) {
+			return []Message{reply(m, NSMedia, Invalid(h.RequestID, ReasonInvalidParams))}, nil
+		}
+		if ctl := r.control(); ctl != nil {
+			act = ctl.Seek(req.Seek())
 		}
 		switch req.ResumeState {
 		case ResumePlay:
@@ -597,6 +664,17 @@ func (r *Receiver) transport(m Message, h Header) ([]Message, error) {
 		case ResumePause:
 			r.state = StatePaused
 		}
+
+	case TypeQueueNext, TypeQueuePrev, TypeQueueUpdate:
+		by := map[string]int{TypeQueueNext: 1, TypeQueuePrev: -1}[h.Type]
+		if h.Type == TypeQueueUpdate {
+			by = req.Jump
+		}
+		step, ok := r.control().(Stepping)
+		if !ok || by == 0 {
+			return []Message{reply(m, NSMedia, Invalid(h.RequestID, ReasonInvalidCommand))}, nil
+		}
+		act = step.Step(by)
 	}
 
 	if act != nil {
@@ -620,38 +698,34 @@ func (r *Receiver) playing() []MediaStatus {
 		Volume:                 r.volume,
 		IdleReason:             r.idle,
 	}
+	if r.media != nil {
+		s.MediaCategory = r.media.Category()
+		if r.media.Streaming() {
+			s.SupportedMediaCommands &^= CommandSeek
+		}
+	}
 
-	if r.Player != nil {
-		s.CurrentTime = asSeconds(r.Player.Elapsed())
+	if r.appMedia.control != nil {
+		s.SupportedMediaCommands, s.CustomData, s.MediaCategory = r.appMedia.commands, r.appMedia.custom, ""
+	}
+	if ctl := r.control(); ctl != nil {
+		s.CurrentTime = asSeconds(ctl.Elapsed())
 	}
 	return []MediaStatus{s}
 }
 
 // report answers with the media status and tells the other senders.
-//
-// The media itself goes only to the answer. It is a few kilobytes with artwork urls and it has not
-// changed for anybody who was already watching.
-func (r *Receiver) report(m Message, request int) []Message {
+func (r *Receiver) full() []MediaStatus {
 	full := r.playing()
 	if len(full) > 0 {
 		full[0].Media = r.media
 	}
+	return full
+}
 
-	out := []Message{reply(m, NSMedia, MediaStatusPayload(request, full...))}
-
-	brief := r.playing()
-	for id := range r.senders {
-		if id == m.Source {
-			continue
-		}
-		out = append(out, Message{
-			Source:      m.Destination,
-			Destination: id,
-			Namespace:   NSMedia,
-			Payload:     MediaStatusPayload(0, brief...),
-		})
-	}
-	return out
+func (r *Receiver) report(m Message, request int) []Message {
+	full := r.full()
+	return []Message{reply(m, NSMedia, MediaStatusPayload(request, full...)), r.mediaBroadcast(full)}
 }
 
 // Finished is the player having reached the end on its own, which nothing asked for and every
@@ -667,17 +741,10 @@ func (r *Receiver) Finished() []Message {
 
 	status := r.playing()
 	r.session = 0
-
-	var out []Message
-	for id := range r.senders {
-		out = append(out, Message{
-			Source:      ReceiverID,
-			Destination: id,
-			Namespace:   NSMedia,
-			Payload:     MediaStatusPayload(0, status...),
-		})
+	if r.app == nil {
+		return nil
 	}
-	return out
+	return []Message{r.mediaBroadcast(status)}
 }
 
 // Forget drops everything, for a connection that has gone away.

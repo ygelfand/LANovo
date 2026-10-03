@@ -199,6 +199,7 @@ func TestASenderConnectsOverTLSAndIsAnswered(t *testing.T) {
 		`{"type":"LAUNCH","requestId":2,"appId":"`+DefaultMediaReceiver+`"}`))
 
 	launched := phone.expect()
+	phone.expect()
 	transport := status(t, launched.Payload).Applications[0].TransportID
 
 	long := strings.Repeat("a very long track title ", 400)

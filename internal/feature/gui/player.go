@@ -10,6 +10,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/videoplayer"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
@@ -122,7 +123,7 @@ func playerBody(w *gogui.Window) gogui.View {
 	}
 	if now.Length > 0 {
 		sk, _ := media.Transport().(media.Seeker)
-		words = append(words, progress(now, sk, secondary()))
+		words = append(words, progress(now, sk, secondary(), nil))
 	}
 	words = append(words, transport(now), loudness())
 
@@ -141,10 +142,10 @@ func playerBody(w *gogui.Window) gogui.View {
 	})
 }
 
-func progress(now media.Now, sk media.Seeker, st gogui.TextStyle) gogui.View {
+func progress(now media.Now, sk media.Seeker, st gogui.TextStyle, marks []videoplayer.Mark) gogui.View {
 	at := seeking.shown(now.Elapsed)
 	canSeek := sk != nil && sk.CanSeek()
-	bar := grip(gogui.Slider(gogui.SliderCfg{
+	cfg := gogui.SliderCfg{
 		ID:       "seek",
 		Height:   reach(),
 		Sizing:   gogui.FillFit,
@@ -155,7 +156,11 @@ func progress(now media.Now, sk media.Seeker, st gogui.TextStyle) gogui.View {
 			seeking.move(sk, time.Duration(v*float32(time.Second)))
 			e.Window.InvalidateLayout()
 		},
-	}))
+	}
+	if len(marks) > 0 && now.Length > 0 {
+		cfg.Look = markedLook(marks, now.Length)
+	}
+	bar := grip(gogui.Slider(cfg))
 	content := []gogui.View{bar}
 	if now.LiveWithin == 0 {
 		content = []gogui.View{gogui.Label(clockText(at), st), bar, gogui.Label(clockText(now.Length), st)}
@@ -166,6 +171,38 @@ func progress(now media.Now, sk media.Seeker, st gogui.TextStyle) gogui.View {
 		Spacing: gogui.SpacingMedium,
 		Content: content,
 	})
+}
+
+func markedLook(marks []videoplayer.Mark, length time.Duration) func(gogui.SliderLookState) gogui.SliderParts {
+	t := gogui.CurrentTheme().Cfg
+	size, thumb := t.SizeSlider, t.SizeSliderThumb
+	played := t.ColorSelect
+	if !played.IsSet() {
+		played = t.ColorAccent
+	}
+	return func(s gogui.SliderLookState) gogui.SliderParts {
+		track := gogui.DrawCanvas(gogui.DrawCanvasCfg{
+			Sizing:  gogui.FillFixed,
+			Height:  size,
+			Version: uint64(s.Pct*1e6) + uint64(len(marks))<<32,
+			OnDraw: func(dc *gogui.DrawContext) {
+				half, span := thumb/2, max(dc.Width-thumb, 1)
+				at := func(d time.Duration) float32 { return half + span*float32(d)/float32(length) }
+				dc.FilledRoundedRect(0, 0, dc.Width, size, size/2, t.ColorInterior)
+				dc.FilledRoundedRect(0, 0, half+span*s.Pct, size, size/2, played)
+				for _, m := range marks {
+					x0 := at(m.From)
+					x1 := max(at(m.To), x0+1)
+					dc.FilledRect(x0, 0, x1-x0, size, color(m.Color))
+				}
+			},
+		})
+		return gogui.SliderParts{
+			Track:  track,
+			Fill:   gogui.Row(gogui.ContainerCfg{Height: size, Sizing: gogui.FixedFixed, Padding: gogui.NoPadding}),
+			Handle: gogui.Row(gogui.ContainerCfg{Width: thumb, Height: thumb, Sizing: gogui.FixedFixed, Radius: gogui.RadiusPx(thumb / 2), Color: t.ColorPanel, Padding: gogui.NoPadding}),
+		}
+	}
 }
 
 type control struct {

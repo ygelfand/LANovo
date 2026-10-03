@@ -3,6 +3,7 @@ package cast
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 )
 
@@ -86,10 +87,11 @@ type Metadata struct {
 
 // Media is the thing itself.
 type Media struct {
-	// ContentID is the url to play, for everything this device will ever be given.
 	ContentID   string `json:"contentId"`
+	ContentURL  string `json:"contentUrl,omitempty"`
 	StreamType  string `json:"streamType"`
 	ContentType string `json:"contentType"`
+	Live        bool   `json:"isLiveMedia,omitempty"`
 
 	Metadata Metadata `json:"metadata,omitempty"`
 
@@ -99,6 +101,25 @@ type Media struct {
 	// CustomData is whatever the sender put there. Kept as raw JSON and handed back untouched: it
 	// is the sender's own, and parsing it would only be a way to lose it.
 	CustomData json.RawMessage `json:"customData,omitempty"`
+}
+
+func (m Media) URL() string {
+	if m.ContentURL != "" {
+		return m.ContentURL
+	}
+	return m.ContentID
+}
+
+func (m Media) Streaming() bool { return m.Live || m.StreamType == StreamLive }
+
+func (m Media) Category() string {
+	switch {
+	case strings.HasPrefix(m.ContentType, "audio/"):
+		return "AUDIO"
+	case strings.HasPrefix(m.ContentType, "video/"):
+		return "VIDEO"
+	}
+	return ""
 }
 
 // Length is the duration as the rest of this tree counts time.
@@ -131,8 +152,10 @@ type MediaStatus struct {
 	// be right when it is sent rather than continuously.
 	CurrentTime float64 `json:"currentTime"`
 
-	SupportedMediaCommands int    `json:"supportedMediaCommands"`
-	Volume                 Volume `json:"volume"`
+	SupportedMediaCommands int             `json:"supportedMediaCommands"`
+	Volume                 Volume          `json:"volume"`
+	MediaCategory          string          `json:"mediaCategory,omitempty"`
+	CustomData             json.RawMessage `json:"customData,omitempty"`
 
 	// Media is sent in full on the status that follows a LOAD and left out afterwards, because it
 	// does not change and a sender already has it. It is a few kilobytes with artwork urls.
@@ -154,6 +177,18 @@ func (s MediaStatus) Elapsed() time.Duration { return seconds(s.CurrentTime) }
 type mediaStatusEnvelope struct {
 	Header
 	Status []MediaStatus `json:"status"`
+}
+
+type mediaBroadcastEnvelope struct {
+	Type   string        `json:"type"`
+	Status []MediaStatus `json:"status"`
+}
+
+func MediaBroadcastPayload(s ...MediaStatus) string {
+	if s == nil {
+		s = []MediaStatus{}
+	}
+	return payload(mediaBroadcastEnvelope{Type: TypeMediaStatus, Status: s})
 }
 
 // MediaStatusPayload is a MEDIA_STATUS answering a request, or unsolicited when the id is zero.
@@ -195,7 +230,7 @@ func ParseLoad(p string) (LoadRequest, error) {
 	if err := json.Unmarshal([]byte(p), &r); err != nil {
 		return r, fmt.Errorf("cast: reading a load: %w", err)
 	}
-	if r.Media.ContentID == "" {
+	if r.Media.ContentID == "" && r.Media.ContentURL == "" {
 		return r, fmt.Errorf("cast: a load naming nothing to play")
 	}
 	return r, nil
@@ -213,6 +248,8 @@ type MediaRequest struct {
 	// ResumeState is what a seek should do about playing: PLAYBACK_START or PLAYBACK_PAUSE, and
 	// empty to leave it as it was.
 	ResumeState string `json:"resumeState,omitempty"`
+
+	Jump int `json:"jump,omitempty"`
 }
 
 // What a seek may ask for.

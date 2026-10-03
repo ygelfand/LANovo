@@ -181,3 +181,21 @@ func TestAVideoPlaysThroughToItsEnd(t *testing.T) {
 		t.Errorf("played %s, want about 2m53s", got)
 	}
 }
+
+func TestTheStationPublishesToCast(t *testing.T) {
+	var got []*cast.Published
+	s := newStation(context.Background(), ThemeTV, cast.Env{Publish: func(_ cast.Playing, p *cast.Published) { got = append(got, p) }})
+	s.list, s.index = "PL1", 2
+	s.reportLoading("vid", 0)
+	s.report(stateStopped)
+	if len(got) != 2 || got[1] != nil {
+		t.Fatalf("published %+v", got)
+	}
+	p := got[0]
+	if p.Media.ContentID != "vid" || p.Media.ContentType != "x-youtube/video" || p.State != cast.StateBuffering || p.Commands != castCommands {
+		t.Errorf("loading %+v", p)
+	}
+	if string(p.Media.CustomData) != `{"currentIndex":2,"listId":"PL1"}` || string(p.Custom) != `{"playerState":3}` {
+		t.Errorf("custom %s %s", p.Media.CustomData, p.Custom)
+	}
+}

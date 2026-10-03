@@ -53,10 +53,16 @@ type OptIn struct {
 }
 
 type DeviceInfo struct {
-	CloudDeviceID string `json:"cloud_device_id"`
-	Manufacturer  string `json:"manufacturer"`
-	ProductName   string `json:"product_name"`
-	UDN           string `json:"ssdp_udn"`
+	CloudDeviceID string       `json:"cloud_device_id"`
+	Manufacturer  string       `json:"manufacturer"`
+	ProductName   string       `json:"product_name"`
+	UDN           string       `json:"ssdp_udn"`
+	Capabilities  Capabilities `json:"capabilities"`
+}
+
+type Capabilities struct {
+	DisplaySupported   bool `json:"display_supported"`
+	MultizoneSupported bool `json:"multizone_supported"`
 }
 
 type BuildInfo struct {
@@ -96,6 +102,7 @@ func NewEureka(d Device, manufacturer, system string) Eureka {
 			Manufacturer:  manufacturer,
 			ProductName:   d.Model,
 			UDN:           d.UDN(),
+			Capabilities:  Capabilities{DisplaySupported: true},
 		},
 		BuildInfo: BuildInfo{
 			BuildType:         BuildType,

@@ -202,12 +202,11 @@ func (a *App) videoBand(w *gogui.Window, p *videoplayer.Page, look videoplayer.L
 	rows := []gogui.View{gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Spacing: gogui.SpacingMedium, VAlign: gogui.VAlignMiddle, Content: heading})}
 	if now.Length > 0 {
 		var sk media.Seeker = c
-		rows = append(rows, progress(now, sk, quiet))
+		var marks []videoplayer.Mark
 		if mk, ok := c.(videoplayer.Marked); ok {
-			if marks := mk.Marks(); len(marks) > 0 {
-				rows = append(rows, markStrip(marks, now.Length))
-			}
+			marks = mk.Marks()
 		}
+		rows = append(rows, progress(now, sk, quiet, marks))
 		if now.LiveWithin > 0 {
 			rows = append(rows, live(now, c, quiet))
 		}
@@ -224,22 +223,6 @@ func (a *App) videoBand(w *gogui.Window, p *videoplayer.Page, look videoplayer.L
 		OnClick: func(e gogui.EventCtx) {
 			p.Linger()
 			e.Consume()
-		},
-	})
-}
-
-func markStrip(marks []videoplayer.Mark, length time.Duration) gogui.View {
-	h := float32(6)
-	return gogui.DrawCanvas(gogui.DrawCanvasCfg{
-		Sizing: gogui.FillFixed, Height: h,
-		Version: uint64(len(marks)),
-		OnDraw: func(dc *gogui.DrawContext) {
-			wide := dc.Width
-			for _, m := range marks {
-				x0 := wide * float32(m.From) / float32(length)
-				x1 := max(wide*float32(m.To)/float32(length), x0+1)
-				dc.FilledRect(x0, 0, x1-x0, h, color(m.Color))
-			}
 		},
 	})
 }

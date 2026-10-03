@@ -133,13 +133,12 @@ func TestAChangeReachesTheOtherSendersOwnConnection(t *testing.T) {
 		t.Errorf("the answer carries request %d", h.RequestID)
 	}
 
-	// And the hall heard about it, on its own connection, with no request id.
 	told := hall.expect()
-	if told.Destination != "sender-hall" {
+	if told.Destination != Broadcast {
 		t.Errorf("the broadcast went to %q", told.Destination)
 	}
 	if h, _ := Kind(told.Payload); h.RequestID != 0 {
-		t.Errorf("the broadcast carries request %d, want none", h.RequestID)
+		t.Errorf("the broadcast carries request %d, want 0", h.RequestID)
 	}
 }
 
@@ -320,14 +319,15 @@ func TestFinishingReachesEveryConnection(t *testing.T) {
 	kitchen.send(from("sender-kitchen", NSReceiver,
 		`{"type":"LAUNCH","requestId":1,"appId":"`+DefaultMediaReceiver+`"}`))
 
-	// The launch answer to the kitchen, and the broadcast to the hall.
 	launched := kitchen.expect()
+	kitchen.expect()
 	hall.expect()
 
 	transport := status(t, launched.Payload).Applications[0].TransportID
 
 	kitchen.send(toApp("sender-kitchen", transport, NSMedia,
 		`{"type":"LOAD","requestId":2,"media":{"contentId":"http://example/a.mp3"}}`))
+	kitchen.expect()
 	kitchen.expect()
 	hall.expect()
 
@@ -393,9 +393,11 @@ func TestFinishingDoesNotWaitOnTheSocket(t *testing.T) {
 	kitchen.send(from("sender-kitchen", NSReceiver,
 		`{"type":"LAUNCH","requestId":1,"appId":"`+DefaultMediaReceiver+`"}`))
 	transport := status(t, kitchen.expect().Payload).Applications[0].TransportID
+	kitchen.expect()
 
 	kitchen.send(toApp("sender-kitchen", transport, NSMedia,
 		`{"type":"LOAD","requestId":2,"media":{"contentId":"http://example/a.mp3"}}`))
+	kitchen.expect()
 	kitchen.expect()
 
 	// Nothing is reading now. Finishing has to return anyway.

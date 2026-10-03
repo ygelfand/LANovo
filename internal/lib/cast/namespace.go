@@ -45,6 +45,7 @@ const (
 	TypeSetVolume   = "SET_VOLUME"
 	TypeQueueNext   = "QUEUE_NEXT"
 	TypeQueuePrev   = "QUEUE_PREV"
+	TypeQueueUpdate = "QUEUE_UPDATE"
 	TypeLoadFailed  = "LOAD_FAILED"
 )
 
@@ -54,7 +55,7 @@ type Header struct {
 
 	// RequestID pairs an answer with its question. Zero means unsolicited — a status the receiver
 	// sent because something changed rather than because it was asked.
-	RequestID int `json:"requestId,omitempty"`
+	RequestID int `json:"requestId"`
 }
 
 // Kind reads the type out of a payload without caring what else is in it, which is what says how to
@@ -133,10 +134,8 @@ type ReceiverStatus struct {
 
 	Volume Volume `json:"volume"`
 
-	// IsActiveInput and IsStandBy are about an HDMI device knowing whether it is being looked at.
-	// A speaker is neither, and leaving them out is what says so.
-	IsActiveInput bool `json:"isActiveInput,omitempty"`
-	IsStandBy     bool `json:"isStandBy,omitempty"`
+	IsActiveInput bool `json:"isActiveInput"`
+	IsStandBy     bool `json:"isStandBy"`
 }
 
 // statusEnvelope is how a receiver status goes on the wire: the header, then the status under a

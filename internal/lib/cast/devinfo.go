@@ -50,7 +50,7 @@ func (r *Receiver) discovery(m Message) ([]Message, error) {
 		FriendlyName:         d.Name,
 		DeviceModel:          d.Model,
 		DeviceCapabilities:   InfoCapabilities,
-		DeviceIconURL:        "/setup/icon.png",
+		DeviceIconURL:        IconPath,
 		ControlNotifications: 1,
 		WifiProximityID:      d.Proximity(),
 	})

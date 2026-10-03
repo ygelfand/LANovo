@@ -12,8 +12,8 @@ func TestTheDeviceVolumeIsReportedOnlyWhenItMoved(t *testing.T) {
 	}
 
 	out := r.Report(0.4, false)
-	if len(out) != 2 {
-		t.Fatalf("a new level went to %d senders, want both", len(out))
+	if len(out) != 1 || out[0].Destination != Broadcast {
+		t.Fatalf("a new level sent %+v, want one broadcast", out)
 	}
 	got := status(t, out[0].Payload).Volume
 	if *got.Level != 0.4 || *got.Muted {
@@ -23,8 +23,8 @@ func TestTheDeviceVolumeIsReportedOnlyWhenItMoved(t *testing.T) {
 	if again := r.Report(0.4, false); len(again) != 0 {
 		t.Errorf("the same level was sent again, %d messages", len(again))
 	}
-	if muted := r.Report(0.4, true); len(muted) != 2 {
-		t.Errorf("a mute went to %d senders, want both", len(muted))
+	if muted := r.Report(0.4, true); len(muted) != 1 {
+		t.Errorf("a mute sent %d messages, want one broadcast", len(muted))
 	}
 }
 

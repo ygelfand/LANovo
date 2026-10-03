@@ -27,6 +27,10 @@ type Marked interface {
 	Marks() []Mark
 }
 
+type Waiter interface {
+	Waiting(w bool)
+}
+
 type Pictures interface {
 	Pictured() bool
 	Pictures(ctx context.Context) (webm io.ReadCloser, from time.Duration, err error)

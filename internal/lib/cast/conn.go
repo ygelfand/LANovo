@@ -240,14 +240,24 @@ func (s *Service) handle(m Message) ([]Message, error) {
 // while a broadcast was being built is ordinary, not a fault.
 func (s *Service) Send(m Message) {
 	s.mu.Lock()
-	c := s.conns[m.Destination]
+	var to []*Conn
+	if m.Destination == Broadcast {
+		seen := map[*Conn]bool{}
+		for _, c := range s.conns {
+			if !seen[c] {
+				seen[c] = true
+				to = append(to, c)
+			}
+		}
+	} else if c := s.conns[m.Destination]; c != nil {
+		to = append(to, c)
+	}
 	s.mu.Unlock()
 
-	if c == nil {
-		return
-	}
-	if err := c.Write(m); err != nil && !errors.Is(err, ErrGone) && s.Fault != nil {
-		s.Fault(err)
+	for _, c := range to {
+		if err := c.Write(m); err != nil && !errors.Is(err, ErrGone) && s.Fault != nil {
+			s.Fault(err)
+		}
 	}
 }
 
@@ -264,6 +274,15 @@ func (s *Service) Report(level float64, muted bool) {
 	s.mu.Lock()
 	out := s.Receiver.Report(level, muted)
 	s.mu.Unlock()
+	s.Announce(out)
+}
+
+// Publish is what an application is playing on its own, told to everyone watching.
+func (s *Service) Publish(control Playing, p *Published) {
+	s.mu.Lock()
+	out := s.Receiver.Publish(control, p)
+	s.mu.Unlock()
+
 	s.Announce(out)
 }
 

@@ -116,7 +116,7 @@ func (d Device) Records() []string {
 		"rm=",
 		"ve=" + Version,
 		"md=" + d.Model,
-		"ic=/setup/icon.png",
+		"ic=" + IconPath,
 		"fn=" + d.Name,
 		"ca=" + fmt.Sprint(d.Capabilities),
 		"st=" + status,

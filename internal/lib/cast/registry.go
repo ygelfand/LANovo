@@ -22,8 +22,11 @@ type Env struct {
 	Tallest int
 
 	// Volume is the media volume, 0 to 100, and SetVolume moves it.
-	Volume    func() int
-	SetVolume func(level int)
+	Volume        func() int
+	SetVolume     func(level int)
+	VolumeChanged func(do func()) (stop func())
+
+	Publish func(control Playing, p *Published)
 
 	// Output plays what a protocol hands it.
 	Output playback.Output
