@@ -182,7 +182,7 @@ type queued struct {
 	index int
 }
 
-const queueShown = 5
+const queueShown = 10
 
 func (s *station) coming() []playback.Upcoming {
 	s.mu.Lock()
