@@ -104,7 +104,7 @@ func (v *View) shade() {
 			continue
 		}
 		if g.fresh {
-			slog.Info("idle: visual ready", "slot", n, "took", time.Since(now).Round(time.Millisecond))
+			slog.Debug("idle: visual ready", "slot", n, "took", time.Since(now).Round(time.Millisecond))
 		}
 		g.fresh = false
 	}

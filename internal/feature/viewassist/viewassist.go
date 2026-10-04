@@ -79,7 +79,7 @@ func (s *Satellite) Navigate(path string) error {
 	s.view = v
 	s.mu.Unlock()
 
-	slog.Info("view assist navigated", "view", v, "path", path)
+	slog.Debug("view assist navigated", "view", v, "path", path)
 	return nil
 }
 

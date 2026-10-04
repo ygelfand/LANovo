@@ -111,7 +111,7 @@ func (g *Group) Run(ctx context.Context) error {
 			slog.Error("service unavailable, still asking for it",
 				"service", e.svc.Name(), "err", err)
 		} else {
-			slog.Info("service started", "service", e.svc.Name(),
+			slog.Debug("service started", "service", e.svc.Name(),
 				"in", time.Since(began).Round(time.Millisecond))
 			acquired = true
 		}
@@ -158,7 +158,7 @@ func (g *Group) supervise(ctx context.Context, e *entry, acquired bool) {
 		if err == nil {
 			// Finished on its own, which is what a one-shot service does.
 			e.set(StateStopped, nil)
-			slog.Info("service finished", "service", e.svc.Name(), "ran", ran.Round(time.Millisecond))
+			slog.Debug("service finished", "service", e.svc.Name(), "ran", ran.Round(time.Millisecond))
 			return
 		}
 		if !e.policy.restart {

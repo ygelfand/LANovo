@@ -449,7 +449,7 @@ func (p *pace) report(s *Stream) {
 		}
 		return (sum / time.Duration(n)).Round(time.Millisecond)
 	}
-	slog.Info("hls pace", "track", p.name,
+	slog.Debug("hls pace", "track", p.name,
 		"playlists", p.playlists, "playlist_mean", mean(p.playlistSum, p.playlists), "playlist_max", p.playlistMost.Round(time.Millisecond),
 		"segments", p.segments, "segment_mean", mean(p.segSum, p.segments), "segment_max", p.segMost.Round(time.Millisecond),
 		"misses", p.misses, "buffered", s.buffered().Round(100*time.Millisecond))
@@ -636,7 +636,7 @@ func (s *Stream) aac(cfg mpeg4audio.AudioSpecificConfig, at time.Duration, aus [
 		if s.o.Resample != nil && dec.SampleRate() != outRate {
 			s.resample = s.o.Resample(dec.SampleRate())
 		}
-		slog.Info("hls audio", "rate", dec.SampleRate(), "channels", s.channels)
+		slog.Debug("hls audio", "rate", dec.SampleRate(), "channels", s.channels)
 		s.anchor.Do(func() {
 			s.origin = at
 			s.mu.Lock()

@@ -270,6 +270,6 @@ func Report() {
 			slog.Warn("listing mixer controls failed", "err", err)
 			return
 		}
-		slog.Info("mixer controls", "matching", want, "names", found)
+		slog.Debug("mixer controls", "matching", want, "names", found)
 	}
 }

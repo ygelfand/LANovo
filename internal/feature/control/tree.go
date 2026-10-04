@@ -275,6 +275,12 @@ func (c *Control) showing() []*cobra.Command {
 				"With a name and a value, that one changed.",
 			Args: cobra.MaximumNArgs(2),
 		}, set),
+		says(&cobra.Command{
+			Use:       "log [debug|info|warn|error]",
+			Short:     "Read or change how much goes to logcat, until lanovod restarts",
+			Args:      cobra.MaximumNArgs(1),
+			ValidArgs: []string{"debug", "info", "warn", "error"},
+		}, logLevel),
 	}
 }
 

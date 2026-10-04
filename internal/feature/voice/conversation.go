@@ -310,7 +310,7 @@ func (c *conversation) handle(e event) {
 		// The pipeline asked a question. Its answer is owed after the reply has been spoken, so this
 		// only records the intent; evPlayed opens it.
 		if c.phase != phaseIdle {
-			slog.Info("pipeline asked for an answer", "slot", c.slot+1)
+			slog.Debug("pipeline asked for an answer", "slot", c.slot+1)
 			c.pending = &nextTurn{slot: c.slot, followUp: true}
 		}
 
@@ -750,7 +750,7 @@ func (c *conversation) pipeline(e esphome.PipelineEvent) {
 		c.post(event{kind: evHeard})
 	case api.VoiceAssistantEvent_VOICE_ASSISTANT_INTENT_PROGRESS:
 		if e.Data["tts_start_streaming"] == "1" {
-			slog.Info("early tts streaming offered", "slot", c.slot+1)
+			slog.Debug("early tts streaming offered", "slot", c.slot+1)
 		}
 
 	case api.VoiceAssistantEvent_VOICE_ASSISTANT_INTENT_END:
@@ -869,7 +869,7 @@ func (c *conversation) stream(ctx context.Context, slot int) {
 			return
 		}
 		rms := math.Sqrt(energy / float64(samples))
-		slog.Info("sent audio",
+		slog.Debug("sent audio",
 			"slot", slot+1,
 			"seconds", float64(samples)/float64(mic.Voice),
 			"peak", peak,
@@ -926,7 +926,7 @@ func (c *conversation) reported(dry time.Time) {
 	took := dry.Sub(s.playingAt).Seconds()
 
 	_, splices, underruns, _ := c.speaker.Stats()
-	slog.Info("reply played",
+	slog.Debug("reply played",
 		"via", wakeword.Delivery(c.slot),
 		"bytes", s.bytes,
 		"seconds", math.Round(seconds*100)/100,

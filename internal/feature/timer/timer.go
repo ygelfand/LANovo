@@ -139,7 +139,7 @@ func (t *Timers) counting() bool {
 
 // Event is a timer event from Home Assistant.
 func (t *Timers) Event(e esphome.TimerEvent) {
-	slog.Info("timer",
+	slog.Debug("timer",
 		"event", e.Type, "name", e.Name, "left", e.SecondsLeft, "total", e.TotalSeconds, "active", e.IsActive)
 
 	switch e.Type {

@@ -51,7 +51,7 @@ func WebM(r io.Reader, from time.Duration) (Stream, error) {
 			return Stream{}, err
 		}
 		off, at, ok := demux.Cue(int64(from))
-		slog.Info("video cue", "want", from, "cue", time.Duration(at), "at", off, "found", ok)
+		slog.Debug("video cue", "want", from, "cue", time.Duration(at), "at", off, "found", ok)
 		if ok {
 			s.From(off)
 			demux.Restart(r, off)

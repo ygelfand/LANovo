@@ -199,7 +199,7 @@ func (o *out) frameFor(at int64) uint64 {
 
 	// Both conversions of the same timestamp: ahead_ms goes through local time, lead_ms stays in the
 	// server's frame, and correct() holds the room to the second. They should agree.
-	slog.Info("sendspin anchored", "frame", o.frame, "ahead_ms", ahead.Milliseconds(),
+	slog.Debug("sendspin anchored", "frame", o.frame, "ahead_ms", ahead.Milliseconds(),
 		"lead_ms", (at-o.clock.ServerMicrosNow())/1000, "written", o.p.Written(),
 		"quality", o.clock.CheckQuality())
 	return o.frame
@@ -269,7 +269,7 @@ func (o *out) correct(from uint64) {
 	// there. Where it does not, these say whether the room, the anchor or the server clock is moving.
 	if from >= o.nextReport {
 		o.nextReport = from + speaker.Rate
-		slog.Info("sendspin correction", "off_ms", int64(off)*1000/speaker.Rate,
+		slog.Debug("sendspin correction", "off_ms", int64(off)*1000/speaker.Rate,
 			"drift_ms", int64(o.drift)*1000/speaker.Rate, "from", from, "want", want,
 			"anchor_frame", o.frame, "corrected", o.corrected,
 			"queued_ms", len(o.pcm)/speaker.Channels*1000/speaker.Rate)
@@ -290,14 +290,14 @@ func (o *out) correct(from uint64) {
 		o.frame += uint64(n)
 		o.corrected += int64(n)
 		o.drift = 0
-		slog.Info("sendspin snapped later", "ms", n*1000/speaker.Rate)
+		slog.Debug("sendspin snapped later", "ms", n*1000/speaker.Rate)
 	case o.drift < -snapBand:
 		n := min(int(-o.drift), len(o.pcm)/speaker.Channels-1)
 		o.pcm = append(o.pcm[:0], o.pcm[n*speaker.Channels:]...)
 		o.frame -= uint64(n)
 		o.corrected -= int64(n)
 		o.drift = 0
-		slog.Info("sendspin snapped earlier", "ms", n*1000/speaker.Rate)
+		slog.Debug("sendspin snapped earlier", "ms", n*1000/speaker.Rate)
 	case o.drift > driftBand:
 		// Early: say the first frame twice, and move the anchor with it so what arrives next lands in
 		// step with what is already queued.

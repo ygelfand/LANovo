@@ -45,7 +45,7 @@ func (a *align) observe(capturing uint64, at time.Time, playing uint64, played t
 	median := sorted[len(sorted)/2]
 	if !a.locked || median-a.offset > relock || a.offset-median > relock {
 		if a.locked {
-			slog.Info("echo reference moved", "from", a.offset, "to", median)
+			slog.Debug("echo reference moved", "from", a.offset, "to", median)
 		}
 		a.offset, a.locked = median, true
 	}
@@ -88,7 +88,7 @@ func newCanceller() *canceller {
 func (c *canceller) begin(ref, left, right []int16, adapting bool) {
 	if !c.active {
 		c.active, c.since = true, time.Now()
-		slog.Info("echo cancellation running", "engine", "speex", "taps", cancelTaps)
+		slog.Debug("echo cancellation running", "engine", "speex", "taps", cancelTaps)
 	}
 	c.left.SetAdapting(adapting)
 	c.right.SetAdapting(adapting)
@@ -108,7 +108,7 @@ func (c *canceller) idle() {
 	if !c.active {
 		return
 	}
-	slog.Info("echo cancellation idle",
+	slog.Debug("echo cancellation idle",
 		"best_db", []float64{round1(c.best[0]), round1(c.best[1])},
 		"last_db", []float64{round1(c.last[0]), round1(c.last[1])},
 		"ref_dbfs", meanDBFS(c.refE, c.blocks), "mic_dbfs", meanDBFS(c.micE, c.blocks),

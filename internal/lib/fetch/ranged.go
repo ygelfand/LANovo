@@ -143,7 +143,7 @@ func wait(ctx context.Context, d time.Duration) bool {
 func (r *Ranged) get(ctx context.Context, off int64, later bool) ([]byte, int64, error) {
 	data, total, err := r.once(ctx, off)
 	for n := 0; later && r.rate > 0 && errors.Is(err, errRefused) && n < retries; n++ {
-		slog.Info("fetch retry", "at", off, "attempt", n+1, "in", r.retry)
+		slog.Warn("fetch retry", "at", off, "attempt", n+1, "in", r.retry)
 		if !wait(ctx, r.retry) {
 			return nil, 0, ctx.Err()
 		}
@@ -152,7 +152,7 @@ func (r *Ranged) get(ctx context.Context, off int64, later bool) ([]byte, int64,
 	if !errors.Is(err, errRefused) || r.renew == nil {
 		return data, total, err
 	}
-	slog.Info("fetch renew", "at", off)
+	slog.Warn("fetch renew", "at", off)
 	fresh, rerr := r.renew(ctx)
 	if rerr != nil {
 		return nil, 0, fmt.Errorf("%w; renewing: %v", err, rerr)
@@ -202,7 +202,7 @@ func (r *Ranged) once(ctx context.Context, off int64) ([]byte, int64, error) {
 		return nil, 0, nil
 	case resp.StatusCode == http.StatusOK && off == 0:
 		data, err := io.ReadAll(io.LimitReader(resp.Body, r.chunk+1))
-		slog.Info("fetch", "range", span, "size", r.chunk, "status", resp.Status, "got", len(data), "took", time.Since(began))
+		slog.Debug("fetch", "range", span, "size", r.chunk, "status", resp.Status, "got", len(data), "took", time.Since(began))
 		if int64(len(data)) > r.chunk {
 			return nil, 0, fmt.Errorf("fetch: %s ignores ranges", url)
 		}
@@ -213,7 +213,7 @@ func (r *Ranged) once(ctx context.Context, off int64) ([]byte, int64, error) {
 		return nil, 0, fmt.Errorf("fetch: range %s: %s", span, resp.Status)
 	}
 	data, err := io.ReadAll(io.LimitReader(resp.Body, r.chunk))
-	slog.Info("fetch", "range", span, "size", r.chunk, "status", resp.Status, "got", len(data),
+	slog.Debug("fetch", "range", span, "size", r.chunk, "status", resp.Status, "got", len(data),
 		"content-range", resp.Header.Get("Content-Range"), "took", time.Since(began), "err", err)
 	return data, total(resp.Header.Get("Content-Range")), err
 }
@@ -266,7 +266,7 @@ func (r *Ranged) Read(p []byte) (int, error) {
 
 // From drops what is ahead and starts again from a byte offset.
 func (r *Ranged) From(off int64) {
-	slog.Info("fetch from", "at", off)
+	slog.Debug("fetch from", "at", off)
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.cancel()

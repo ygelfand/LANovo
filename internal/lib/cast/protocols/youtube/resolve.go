@@ -174,11 +174,11 @@ func (r *Resolver) open(ctx context.Context, id, what string, pick func(yt.Forma
 		if c.AudioTrack != nil {
 			track = c.AudioTrack.ID
 		}
-		slog.Info("youtube format", "video", id, "what", what, "chosen", c == f, "itag", c.ItagNo, "mime", c.MimeType,
+		slog.Debug("youtube format", "video", id, "what", what, "chosen", c == f, "itag", c.ItagNo, "mime", c.MimeType,
 			"bitrate", c.Bitrate, "length", c.ContentLength, "ms", c.ApproxDurationMs, "track", track,
 			"init", c.InitRange, "index", c.IndexRange)
 	}
-	slog.Info("youtube stream", "video", id, "what", what, "itag", f.ItagNo, "chunk", chunkFor(f), "rate", rateOf(f), "lead", lead, "ahead", ahead)
+	slog.Debug("youtube stream", "video", id, "what", what, "itag", f.ItagNo, "chunk", chunkFor(f), "rate", rateOf(f), "lead", lead, "ahead", ahead)
 	url, err := r.client.GetStreamURLContext(ctx, v, f)
 	if err != nil {
 		return Track{}, nil, fmt.Errorf("youtube: opening %s: %w", id, err)

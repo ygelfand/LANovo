@@ -86,7 +86,7 @@ func Serve(ctx context.Context, s *Session, on Classic) error {
 	if err != nil {
 		return err
 	}
-	slog.Info("bluetooth link", "packet", size, "buffers", total)
+	slog.Debug("bluetooth link", "packet", size, "buffers", total)
 
 	ctx, stop := context.WithCancel(ctx)
 	defer stop()

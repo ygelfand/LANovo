@@ -157,7 +157,7 @@ func (o *output) hold(c videoplayer.Controls) (*videoplayer.Page, *video.Beneath
 		o.viewTimer.Stop()
 		o.viewTimer = nil
 	}
-	slog.Info("cast video view held", "new", o.view == nil, "by", fmt.Sprintf("%T", c))
+	slog.Debug("cast video view held", "new", o.view == nil, "by", fmt.Sprintf("%T", c))
 	if o.view == nil {
 		ctx, stop := context.WithCancel(context.Background())
 		o.view, o.viewStop, o.under = videoplayer.NewPage(c), stop, &video.Beneath{}

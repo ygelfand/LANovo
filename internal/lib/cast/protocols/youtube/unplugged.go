@@ -426,7 +426,7 @@ func (u *unplugged) heartbeat(ctx context.Context, token, data, interval string)
 			every = time.Duration(ms) * time.Millisecond
 		}
 		if seq == 0 {
-			slog.Info("youtube tv heartbeat", "video", u.id, "every", every)
+			slog.Debug("youtube tv heartbeat", "video", u.id, "every", every)
 		}
 	}
 }
@@ -508,7 +508,7 @@ func openUnplugged(ctx context.Context, env surfaceEnv, id, params, ctt string, 
 			u.info.Thumbnail = "https:" + u.info.Thumbnail
 		}
 	}
-	slog.Info("youtube tv formats", "video", id, "picture", fmt.Sprintf("%dx%d@%d itag %d", video.Width, video.Height, video.FPS, video.Itag), "audio itag", audio.Itag)
+	slog.Debug("youtube tv formats", "video", id, "picture", fmt.Sprintf("%dx%d@%d itag %d", video.Width, video.Height, video.FPS, video.Itag), "audio itag", audio.Itag)
 
 	head, err := u.head(run, audio.URL, a.PlayerConfig.Live.MinDvrSequence)
 	if err != nil {

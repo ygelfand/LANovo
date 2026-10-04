@@ -136,7 +136,7 @@ func (s *station) segments(ctx context.Context, r *Resolver, id string) []Segmen
 		return nil
 	}
 	if len(segs) > 0 {
-		slog.Info("youtube sponsorblock", "video", id, "segments", len(segs))
+		slog.Debug("youtube sponsorblock", "video", id, "segments", len(segs))
 	}
 	s.mu.Lock()
 	s.skipsFor, s.skips = id, segs

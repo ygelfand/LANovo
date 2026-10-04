@@ -57,7 +57,7 @@ func (t *conversation) play(ctx context.Context, url string) error {
 	if err != nil {
 		return err
 	}
-	slog.Info("playing announcement", "samples", len(samples))
+	slog.Debug("playing announcement", "samples", len(samples))
 
 	t.post(event{kind: evPlaying})
 	t.speaker.PlayVoice(samples)

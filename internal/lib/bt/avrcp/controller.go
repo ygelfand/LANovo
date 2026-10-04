@@ -369,7 +369,7 @@ func (c *Controller) refused(label, asked byte, frame AVC) ([]Transport, error) 
 	}
 
 	c.supported[event] = false
-	slog.Info("the far end will not report an event",
+	slog.Debug("the far end will not report an event",
 		"event", fmt.Sprintf("%#02x", event), "status", fmt.Sprintf("%#02x", status))
 	return nil, nil
 }
@@ -386,7 +386,7 @@ func (c *Controller) capabilities(p PDU) ([]Transport, error) {
 		c.supported[e] = true
 	}
 
-	slog.Info("the far end reports these events", "events", fmt.Sprintf("% #02x", events))
+	slog.Debug("the far end reports these events", "events", fmt.Sprintf("% #02x", events))
 
 	// The last two are the multi-player half and a phone offers them only when it believes this end
 	// speaks that much of the profile. They are what says the metadata now belongs to something
@@ -528,7 +528,7 @@ func (c *Controller) notified(label byte, p PDU, interim bool) ([]Transport, err
 		c.state.Player = n.Player
 
 		if moved {
-			slog.Info("the far end addressed a different player", "player", n.Player)
+			slog.Debug("the far end addressed a different player", "player", n.Player)
 		}
 
 	case EventNowPlaying:

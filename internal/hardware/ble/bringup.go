@@ -110,7 +110,7 @@ func start(p *Port) (Version, error) {
 	if _, err := Ask(p); err != nil {
 		return none, fmt.Errorf("the chip stopped answering after the rate change: %w", err)
 	}
-	slog.Info("bluetooth line", "rate", "3M")
+	slog.Debug("bluetooth line", "rate", "3M")
 
 	for _, f := range []struct {
 		what string
@@ -129,7 +129,7 @@ func start(p *Port) (Version, error) {
 			return none, fmt.Errorf("the %s: %w", f.what, err)
 		}
 		if b.Patch != nil {
-			slog.Info("bluetooth patch", "says", b.Patch.String())
+			slog.Debug("bluetooth patch", "says", b.Patch.String())
 		}
 
 		if err := Send(p, b); err != nil {
@@ -155,7 +155,7 @@ func start(p *Port) (Version, error) {
 	slog.Info("bluetooth controller", "says", local)
 
 	if can, err := ReadFeatures(p); err == nil {
-		slog.Info("bluetooth controller", "can", can)
+		slog.Debug("bluetooth controller", "can", can)
 	}
 
 	return v, nil
@@ -420,7 +420,7 @@ func quiet(p *Port) {
 		if err != nil {
 			return
 		}
-		slog.Info("bluetooth after a silent download",
+		slog.Debug("bluetooth after a silent download",
 			"event", fmt.Sprintf("%#02x", e.Code), "params", fmt.Sprintf("% x", e.Params))
 	}
 }

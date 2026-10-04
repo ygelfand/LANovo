@@ -157,7 +157,7 @@ func (p *Protocol) Receive(app *cast.Application, m cast.Message) ([]cast.Messag
 	if err := json.Unmarshal([]byte(m.Payload), &in); err != nil {
 		return nil, fmt.Errorf("prime video: %w", err)
 	}
-	slog.Info("prime video message", "type", in.Type, "device", in.Device, "marketplace", in.Marketplace, "content", in.Content)
+	slog.Debug("prime video message", "type", in.Type, "device", in.Device, "marketplace", in.Marketplace, "content", in.Content)
 
 	switch in.Type {
 	case "AmIRegistered":
@@ -315,7 +315,7 @@ func (p *Protocol) describe(t *title) {
 	defer cancel()
 	name, series, err := Catalog(ctx, p.env.HTTP, t.acct, t.id)
 	if err != nil || name == "" && series == "" {
-		slog.Info("prime video catalog", "title", t.id, "err", err)
+		slog.Debug("prime video catalog", "title", t.id, "err", err)
 		return
 	}
 	p.mu.Lock()
@@ -326,7 +326,7 @@ func (p *Protocol) describe(t *title) {
 	t.name, t.series = name, series
 	p.media.Metadata.Title, p.media.Metadata.Subtitle = first(name, "Prime Video"), series
 	p.mu.Unlock()
-	slog.Info("prime video catalog", "title", t.id, "name", name, "series", series)
+	slog.Debug("prime video catalog", "title", t.id, "name", name, "series", series)
 	p.env.Output.Changed(t)
 	state := cast.StatePlaying
 	if p.paused(t) {
@@ -366,7 +366,7 @@ func (p *Protocol) resolved(req loadRequest) (*title, error) {
 	defer cancel()
 	if env.Correlation != "" {
 		if fresh, err := RefreshEnvelope(ctx, p.env.HTTP, a, id, env.Correlation); err != nil {
-			slog.Info("prime video envelope kept", "err", err)
+			slog.Debug("prime video envelope kept", "err", err)
 		} else {
 			env = fresh
 		}

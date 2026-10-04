@@ -100,9 +100,15 @@ func (h *Handler) Close() error {
 	return h.conn.Close()
 }
 
-func (h *Handler) Enabled(_ context.Context, level slog.Level) bool {
-	return level >= slog.LevelInfo
+func (h *Handler) Enabled(_ context.Context, l slog.Level) bool {
+	return l >= threshold.Level()
 }
+
+var threshold slog.LevelVar
+
+func SetThreshold(l slog.Level) { threshold.Set(l) }
+
+func Threshold() slog.Level { return threshold.Level() }
 
 func (h *Handler) WithAttrs(attrs []slog.Attr) slog.Handler {
 	out := *h

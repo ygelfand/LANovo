@@ -212,7 +212,7 @@ func (s *screens) bound(ctx context.Context, st *station) error {
 			if m.Name == "noop" {
 				return
 			}
-			slog.Info("youtube lounge in", "theme", theme, "aid", m.AID, "name", m.Name, "payload", string(m.Payload))
+			slog.Debug("youtube lounge in", "theme", theme, "aid", m.AID, "name", m.Name, "payload", string(m.Payload))
 			st.touch()
 			st.handle(m)
 		})

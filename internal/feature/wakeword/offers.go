@@ -21,7 +21,7 @@ func Answer(offered []esphome.ExternalWakeWord) []esphome.WakeWord {
 	lib.Offered(offered)
 	words, shadowed := lib.Advertise()
 
-	slog.Info("wake words offered", "count", len(offered),
+	slog.Debug("wake words offered", "count", len(offered),
 		"ours", len(lib.Ours()), "advertised", len(words), "shadowed", shadowed)
 	return words
 }

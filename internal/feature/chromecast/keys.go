@@ -131,7 +131,7 @@ func (k *keys) revocations(ctx context.Context) {
 			wait = Retry
 		default:
 			k.crl.Store(&body)
-			slog.Info("cast revocation list", "bytes", len(body))
+			slog.Debug("cast revocation list", "bytes", len(body))
 		}
 
 		t := time.NewTimer(wait)

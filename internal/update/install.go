@@ -126,7 +126,7 @@ func swap(staged, version string) error {
 		}
 		return err
 	}
-	slog.Warn("update installed, restarting into it", "version", version)
+	slog.Info("update installed, restarting into it", "version", version)
 	return nil
 }
 

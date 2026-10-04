@@ -91,7 +91,7 @@ func (s *stream) take(data []byte, p *speaker.Speaker, started func()) {
 
 	// The first chunk is the pipeline delivering, so its limit is done with.
 	if s.bytes == 0 {
-		slog.Info("reply audio started", "bytes", len(data))
+		slog.Debug("reply audio started", "bytes", len(data))
 		started()
 	}
 

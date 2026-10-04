@@ -452,7 +452,7 @@ func (r *Receiver) up() error {
 			return
 		}
 		unspoken[namespace] = true
-		slog.Info("a cast sender used a namespace this does not speak", "namespace", namespace, "type", kind)
+		slog.Debug("a cast sender used a namespace this does not speak", "namespace", namespace, "type", kind)
 	}
 	service.Receiver.Volume = r.loud.asked
 	service.Receiver.Credentials = r.keys.Current
@@ -511,10 +511,10 @@ func (r *Receiver) up() error {
 		return e
 	}
 	service.Receiver.Setup = func(kind string, data json.RawMessage) {
-		slog.Info("a cast sender sent a setup request", "type", kind, "data", string(data))
+		slog.Debug("a cast sender sent a setup request", "type", kind, "data", string(data))
 	}
 	service.Receiver.Challenged = func(c cast.Challenge, answered bool) {
-		slog.Info("a cast sender asked for device authentication",
+		slog.Debug("a cast sender asked for device authentication",
 			"hash", c.Hash, "algorithm", c.Algorithm, "nonce", len(c.Nonce) > 0, "answered", answered)
 	}
 
@@ -529,7 +529,7 @@ func (r *Receiver) up() error {
 		Addr:              fmt.Sprintf(":%d", cast.SetupPort),
 		ReadHeaderTimeout: 5 * time.Second,
 		Handler: cast.SetupHandler(service.Receiver.Eureka, ui.LogoPNG, func(req *http.Request, status int) {
-			slog.Info("a cast sender asked the setup endpoint", "peer", req.RemoteAddr, "method", req.Method,
+			slog.Debug("a cast sender asked the setup endpoint", "peer", req.RemoteAddr, "method", req.Method,
 				"url", req.URL.String(), "status", status)
 		}),
 	}
@@ -603,9 +603,9 @@ func (r *Receiver) accept(ctx context.Context, listener net.Listener, service *c
 			}
 
 			c.Trace = func(in bool, m cast.Message) { trace(peer, in, m) }
-			slog.Info("cast connection opened", "peer", peer)
+			slog.Debug("cast connection opened", "peer", peer)
 			err := service.Serve(c)
-			slog.Info("cast connection closed", "peer", peer, "err", err)
+			slog.Debug("cast connection closed", "peer", peer, "err", err)
 		})
 	}
 }
@@ -626,7 +626,7 @@ func trace(peer string, in bool, m cast.Message) {
 	if m.Binary != nil {
 		body = hex.EncodeToString(m.Binary)
 	}
-	slog.Info("cast "+dir, "peer", peer, "from", m.Source, "to", m.Destination,
+	slog.Debug("cast "+dir, "peer", peer, "from", m.Source, "to", m.Destination,
 		"namespace", m.Namespace, "body", body)
 }
 

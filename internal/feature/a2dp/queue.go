@@ -110,7 +110,7 @@ func (s *Sink) listed(b avrcp.Browse) {
 		counter, _ := avrcp.Counter(b.Params)
 		s.walk(counter, items)
 
-		slog.Info("bluetooth queued", "items", len(items))
+		slog.Debug("bluetooth queued", "items", len(items))
 		if tracing() {
 			for i, it := range items {
 				slog.Info("bluetooth queued", "at", i, "uid", it.UID,
@@ -124,7 +124,7 @@ func (s *Sink) listed(b avrcp.Browse) {
 		if len(b.Params) > 0 {
 			status = b.Params[0]
 		}
-		slog.Info("bluetooth browsing answered", "pdu", fmt.Sprintf("%#02x", b.ID),
+		slog.Debug("bluetooth browsing answered", "pdu", fmt.Sprintf("%#02x", b.ID),
 			"status", fmt.Sprintf("%#02x", status))
 	}
 }
@@ -246,7 +246,7 @@ func (s *Sink) describe() {
 		}
 		s.mu.Unlock()
 
-		slog.Info("bluetooth entry artwork", "found", got, "asked", asked, "queued", queued)
+		slog.Debug("bluetooth entry artwork", "found", got, "asked", asked, "queued", queued)
 
 		if len(next) > 0 {
 			s.describe()

@@ -142,7 +142,7 @@ func (s *session) run(ctx context.Context) error {
 
 		case <-s.client.StreamEnd:
 			late, dropped := s.out.misses()
-			slog.Info("sendspin stream end", "queued_ms", s.out.queuedMs(), "late", late, "dropped", dropped)
+			slog.Debug("sendspin stream end", "queued_ms", s.out.queuedMs(), "late", late, "dropped", dropped)
 			s.ended()
 
 		case chunk, ok := <-s.client.AudioChunks:
@@ -202,7 +202,7 @@ func (s *session) began(start protocol.StreamStart) {
 		s.bg.Took(s.out)
 		s.player.setState(statePlaying)
 	}
-	slog.Info("sendspin stream", "codec", p.Codec, "rate", p.SampleRate, "ch", p.Channels, "bits", p.BitDepth)
+	slog.Debug("sendspin stream", "codec", p.Codec, "rate", p.SampleRate, "ch", p.Channels, "bits", p.BitDepth)
 }
 
 // cleared drops what has not been heard, both what is still coded and what is queued.
@@ -213,7 +213,7 @@ func (s *session) cleared() {
 		case <-s.client.AudioChunks:
 			drained++
 		default:
-			slog.Info("sendspin clear", "undecoded", drained, "queued_ms", s.out.queuedMs())
+			slog.Debug("sendspin clear", "undecoded", drained, "queued_ms", s.out.queuedMs())
 			s.out.flush()
 			return
 		}
@@ -237,7 +237,7 @@ func (s *session) said(st protocol.ServerStateMessage) {
 		s.mu.Lock()
 		s.commands = c.SupportedCommands
 		s.mu.Unlock()
-		slog.Info("sendspin server commands", "commands", c.SupportedCommands)
+		slog.Debug("sendspin server commands", "commands", c.SupportedCommands)
 	}
 
 	if m := st.Metadata; m != nil {
@@ -313,7 +313,7 @@ func (s *session) heard(chunk protocol.AudioChunk) {
 	// follow on or to replace what is still queued. Both look the same at stream/end.
 	if s.opened {
 		s.opened = false
-		slog.Info("sendspin stream first chunk",
+		slog.Debug("sendspin stream first chunk",
 			"lead_ms", (chunk.Timestamp-s.clock.ServerMicrosNow())/1000,
 			"prev_last_lead_ms", (s.lastTS-s.clock.ServerMicrosNow())/1000,
 			"overlap_ms", (s.lastTS-chunk.Timestamp)/1000,
@@ -326,7 +326,7 @@ func (s *session) heard(chunk protocol.AudioChunk) {
 	if s.chunks++; s.chunks%250 == 0 {
 		late, dropped := s.out.misses()
 		drift, corrected := s.out.drifting()
-		slog.Info("sendspin ahead",
+		slog.Debug("sendspin ahead",
 			"queued_ms", s.out.queuedMs(),
 			"undecoded", len(s.client.AudioChunks),
 			"lead_ms", (chunk.Timestamp-s.clock.ServerMicrosNow())/1000,

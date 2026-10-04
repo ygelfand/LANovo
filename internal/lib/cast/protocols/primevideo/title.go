@@ -125,7 +125,7 @@ func (t *title) period(ctx context.Context, n int, part Part, rep Rep, video, fi
 	if k := len(frags); k > 0 {
 		covered = frags[k-1].At + frags[k-1].Duration - frags[0].At
 	}
-	slog.Info("prime video index", "period", n, "video", video, "fragments", len(frags), "covers", covered.Round(time.Second))
+	slog.Debug("prime video index", "period", n, "video", video, "fragments", len(frags), "covers", covered.Round(time.Second))
 	if err := t.p.License(ctx, track.PSSH); err != nil {
 		return err
 	}
@@ -296,5 +296,5 @@ func logTitle(t *title) {
 		"video", fmt.Sprintf("%dx%d@%dk %s", m.Video.Width, m.Video.Height, m.Video.Bandwidth/1000, m.Video.Codecs),
 		"audio", fmt.Sprintf("%s %dk %s", m.Audio.Lang, m.Audio.Bandwidth/1000, m.Audio.Codecs),
 		"length", t.length.Round(time.Second), "from", t.from.Round(time.Second), "periods", len(t.parts))
-	slog.Info("prime video periods", "title", t.id, "parts", Describe(t.parts))
+	slog.Debug("prime video periods", "title", t.id, "parts", Describe(t.parts))
 }

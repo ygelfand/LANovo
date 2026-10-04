@@ -322,7 +322,7 @@ func (s *Sensors) publish() {
 			s.seen.Store(now.UnixNano())
 		}
 		if changed {
-			slog.Info("presence", "near", here, "counts", near, "baseline", int(s.nearby.base))
+			slog.Debug("presence", "near", here, "counts", near, "baseline", int(s.nearby.base))
 			s.present.Set(here)
 			s.Arrived.Emit(here)
 		}

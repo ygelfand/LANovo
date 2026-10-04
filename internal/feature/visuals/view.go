@@ -153,7 +153,7 @@ func (w *View) say() {
 		return
 	}
 	held := time.Since(w.began)
-	slog.Info("visual shown",
+	slog.Debug("visual shown",
 		"kind", string(w.kind),
 		"shaded", fmt.Sprintf("%.1f/s", float64(w.frames)/held.Seconds()),
 		"shade", (w.spent / time.Duration(w.frames)).Round(100*time.Microsecond),

@@ -371,14 +371,14 @@ func (s *Sink) start(name string) {
 			art, served := sdp.MorePSM(r, sdp.UUIDOBEX)
 			browse, browsable := sdp.MorePSM(r, sdp.UUIDAVCTP)
 
-			slog.Info("bluetooth the far end serves",
+			slog.Debug("bluetooth the far end serves",
 				"classes", fmt.Sprintf("%#x", sdp.Classes(r)),
 				"features", fmt.Sprintf("%#04x", bits),
 				"cover_art_psm", fmt.Sprintf("%#04x", art), "cover_art", served,
 				"browse_psm", fmt.Sprintf("%#04x", browse), "browsable", browsable)
 		}
 		if more {
-			slog.Info("bluetooth the far end held back more records than fitted")
+			slog.Debug("bluetooth the far end held back more records than fitted")
 		}
 		s.looked(records)
 	}

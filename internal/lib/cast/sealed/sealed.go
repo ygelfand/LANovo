@@ -108,7 +108,7 @@ func (p *Player) License(ctx context.Context, boxes [][]byte) error {
 	challenge, err := p.surf.DRMRequest(p.drm, init)
 	if err != nil && len(p.licensed) > 0 {
 		p.licensed[key] = true
-		slog.Info("kept the license already held", "player", p.Name, "err", err)
+		slog.Debug("kept the license already held", "player", p.Name, "err", err)
 		return nil
 	}
 	if err != nil {
@@ -122,7 +122,7 @@ func (p *Player) License(ctx context.Context, boxes [][]byte) error {
 		return fmt.Errorf("%s: key response: %w", p.Name, err)
 	}
 	p.licensed[key] = true
-	slog.Info("licensed", "player", p.Name, "keys", len(p.licensed))
+	slog.Debug("licensed", "player", p.Name, "keys", len(p.licensed))
 	return nil
 }
 

@@ -104,7 +104,7 @@ func openLive(ctx context.Context, r *Resolver, st *station, l *Live, at time.Du
 	if oldest, _, ok := s.Window(); ok {
 		t.base = oldest
 	}
-	slog.Info("youtube live", "video", l.Track.ID, "from", from, "base", t.base, "size", fmt.Sprintf("%dx%d", s.Width, s.Height))
+	slog.Debug("youtube live", "video", l.Track.ID, "from", from, "base", t.base, "size", fmt.Sprintf("%dx%d", s.Width, s.Height))
 	return t, nil
 }
 
@@ -234,7 +234,7 @@ func newTrack(info Track, stream io.ReadCloser, st *station, at time.Duration) (
 			return nil, fmt.Errorf("youtube: %s: %w", info.ID, err)
 		}
 		off, cue, ok := demux.Cue(int64(at))
-		slog.Info("youtube audio cue", "video", info.ID, "want", at, "cue", time.Duration(cue), "at", off, "found", ok)
+		slog.Debug("youtube audio cue", "video", info.ID, "want", at, "cue", time.Duration(cue), "at", off, "found", ok)
 		if ok {
 			s.From(off)
 			demux.Restart(stream, off)

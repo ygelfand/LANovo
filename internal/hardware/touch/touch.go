@@ -197,7 +197,7 @@ func (s *Screen) Deliver(c Contact) {
 	s.Contacts.Emit(c)
 
 	if g, ok := s.recognize(c); ok {
-		slog.Info("gesture", "kind", g.Kind, "from", g.From, "toward", g.Toward,
+		slog.Debug("gesture", "kind", g.Kind, "from", g.From, "toward", g.Toward,
 			"at", fmt.Sprintf("%d,%d", g.EndX, g.EndY))
 		s.Gestures.Emit(g)
 	}

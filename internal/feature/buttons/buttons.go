@@ -38,7 +38,7 @@ func (b *Buttons) Name() string { return "button actions" }
 
 // on runs on the driver's reader goroutine, so anything slow goes on a goroutine of its own.
 func (b *Buttons) on(e buttons.Event) {
-	slog.Info("button", "which", e.Button, "pressed", e.Pressed)
+	slog.Debug("button", "which", e.Button, "pressed", e.Pressed)
 
 	// Acted on when the button goes down, not when it comes back up.
 	if !e.Pressed {
