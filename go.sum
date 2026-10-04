@@ -86,8 +86,8 @@ github.com/go-gl/gl v0.0.0-20181026044259-55b76b7df9d2/go.mod h1:482civXOzJJCPzJ
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gui-org/go-glyph v1.26.1 h1:TzPA7Od2KqKLrbpB6dmSByfnnHhUb2PCHZeiAFq6+Co=
 github.com/go-gui-org/go-glyph v1.26.1/go.mod h1:/+5j3gCHzWP/3Yog3vDUGBxL33/ml541IUsIgZfHyKw=
-github.com/go-gui-org/go-gui v0.83.0 h1:I0Yf41oX9hAXJvGcQu/C2VKk+3GYKJDqiu1As1p1rvI=
-github.com/go-gui-org/go-gui v0.83.0/go.mod h1:HBT8Dbp4s3J+2zL7s3QmsnXamAJASws+3L5DgDGdMN8=
+github.com/go-gui-org/go-gui v0.84.0 h1:wqYP2CE+ivFyxYzAeAjaSZhC1NWxSMCgEwLm29MxxKg=
+github.com/go-gui-org/go-gui v0.84.0/go.mod h1:HBT8Dbp4s3J+2zL7s3QmsnXamAJASws+3L5DgDGdMN8=
 github.com/go-pdf/fpdf v0.9.0 h1:PPvSaUuo1iMi9KkaAn90NuKi+P4gwMedWPHhj8YlJQw=
 github.com/go-pdf/fpdf v0.9.0/go.mod h1:oO8N111TkmKb9D7VvWGLvLJlaZUQVPM+6V42pp3iV4Y=
 github.com/go-sourcemap/sourcemap v2.1.4+incompatible h1:a+iTbH5auLKxaNwQFg0B+TCYl6lbukKPc7b5x0n1s6Q=
@@ -182,6 +182,7 @@ github.com/stretchr/testify v1.12.1 h1:EuwCh5fleGS7H32xRwO3wRGT7DxrDhLAT6FF8MpWD
 github.com/stretchr/testify v1.12.1/go.mod h1:MDEgiDPPsNp5cuIrHPPCyornHKgEVbtFUmoNlxoYthg=
 github.com/tdewolff/parse/v2 v2.8.16 h1:bLk5svUOQRkW/Y2SJ+DeENSIkZBcTIkq+Atyv5D8feI=
 github.com/tdewolff/parse/v2 v2.8.16/go.mod h1:XdsoSFThlVIRIajAuqz1evNY7bagZS8LBOPA3aVopwQ=
+github.com/tdewolff/test v1.0.12 h1:7F21DqIajswxuche0geHdrUZRCWE4oko4b7bcmkkrxk=
 github.com/tdewolff/test v1.0.12/go.mod h1:XPuWBzvdUzhCuxWO1ojpXsyzsA5bFoS3tO/Q3kFuTG8=
 github.com/tfriedel6/canvas v0.12.1 h1:Oc4gww+cOtix69IaYo8TmRbwpbTl6D1jza2mBM4ZOPo=
 github.com/tfriedel6/canvas v0.12.1/go.mod h1:WIe1YgsQiKA1awmU6tSs8e5DkceDHC5MHgV5vQQZr/0=

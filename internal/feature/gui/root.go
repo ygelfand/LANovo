@@ -145,7 +145,7 @@ func (a *App) page(w *gogui.Window, p *Screen) gogui.View {
 					gogui.Label(p.Title, t.TextStyleDisplay),
 				},
 			}),
-			gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Scrollable: true, OnGesture: holdStill, Content: []gogui.View{p.Build(w)}}),
+			gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Scrollable: !p.Fixed, OnGesture: holdStill, Content: []gogui.View{p.Build(w)}}),
 		},
 	})
 }

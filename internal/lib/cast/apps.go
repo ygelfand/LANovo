@@ -22,6 +22,10 @@ type Protocol interface {
 	Run(ctx context.Context)
 }
 
+type Loader interface {
+	Load(app *Application, m Message) ([]Message, error)
+}
+
 type Starter interface {
 	Started(app App)
 	Ended(app App)
@@ -99,6 +103,7 @@ var Apps = []App{
 	{ID: "9AC194DC", Name: "Plex", Icon: "https://lh3.ggpht.com/F-carnehpMLNP_IxDt3-IhX9qlnPZcgnC1Ri8E9xkkkIWoeWI_GcD5ZeIQlNkKblg2jOvZLHUm-metNK"},
 	{ID: "6D389446", Name: "Pocket Casts", Icon: "https://lh3.googleusercontent.com/PattgyzMJFe51uzqambxu0o4yDn7T_kc_e_IVse-rr42JHKseH3bmsyJo1_7K0oV-S7DAnpjSXY5hdkW"},
 	{ID: "19DFF678", Name: "Podcast Addict", Icon: "https://lh4.ggpht.com/fUFdDbK4tLbnF3m7fZh6SecpTzLOGiGzEAnqNiuuriffXeJEw9nAcN7bQ2FEyGTlRYqBueIvvLEUOIIX"},
+	{ID: "17608BC8", Name: "Prime Video", Icon: "https://lh3.googleusercontent.com/QYGuZRR5YakSPcLFA65pr9BSwrvCpOjcsWiRaMN58t8374iv1HxlRs1mNQm3o0MEq5jmwMtEarN2CLI", Protocols: []string{"primevideo"}, SupportsVideo: true},
 	{ID: "674A0243", Name: "Screen Mirroring"}, // TODO: icon
 	{ID: "DD107DDB", Name: "Sendspin"},         // TODO: icon
 	{ID: "DCAC4134", Name: "SoundCloud"},       // TODO: icon
@@ -174,6 +179,18 @@ func (r *Receiver) namespaces(a App) []Namespace {
 }
 
 // protocol is the running application's protocol that owns a namespace, if any.
+func (r *Receiver) loader() Loader {
+	if r.app == nil {
+		return nil
+	}
+	for _, p := range r.speaks(Lookup(r.app.AppID)) {
+		if l, ok := p.(Loader); ok {
+			return l
+		}
+	}
+	return nil
+}
+
 func (r *Receiver) protocol(namespace string) Protocol {
 	if r.app == nil {
 		return nil

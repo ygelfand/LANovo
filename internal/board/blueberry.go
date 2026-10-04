@@ -15,6 +15,7 @@ var Blueberry = Board{
 	UISize:       "large",
 	Touch:        "goodix-ts",
 	Amp:          &Chip{Bus: 1, Addr: 0x49},
+	MaxFPS:       60,
 	SecureDecoders: map[string]string{
 		"video/x-vnd.on2.vp9": "OMX.qcom.video.decoder.vp9.secure",
 		"video/avc":           "OMX.qcom.video.decoder.avc.secure",

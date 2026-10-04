@@ -124,8 +124,13 @@ func (p *Page) SetPicture(on bool) {
 
 func (p *Page) Wakes() bool {
 	p.mu.Lock()
-	defer p.mu.Unlock()
-	return p.picture
+	picture, c := p.picture, p.c
+	p.mu.Unlock()
+	if picture {
+		return true
+	}
+	w, ok := c.(shell.Waker)
+	return ok && w.Wakes()
 }
 
 func (p *Page) SetLoading(on bool) {

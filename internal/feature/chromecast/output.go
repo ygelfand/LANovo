@@ -83,6 +83,7 @@ type playing struct {
 	artURL  string
 	mark    *ui.Image
 	markURL string
+	thumbs  map[string]*ui.Image
 
 	seen     chan struct{}
 	seenOnce sync.Once
@@ -773,25 +774,41 @@ func fetchImage(url string) *ui.Image {
 	return img
 }
 
-func (o *output) fetchArt(p *playing, url string) {
+func download(url string) (*ui.Image, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return
+		return nil, err
 	}
 	resp, err := fetch.Client(15 * time.Second).Do(req)
 	if err != nil {
-		slog.Debug("cast art", "err", err)
-		return
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(io.LimitReader(resp.Body, 4<<20))
 	if err != nil {
+		return nil, err
+	}
+	return ui.Decode(body)
+}
+
+func (o *output) fetchThumb(p *playing, url string) {
+	img, err := download(url)
+	if err != nil {
+		slog.Debug("cast queue art", "err", err)
 		return
 	}
-	img, err := ui.Decode(body)
+	o.mu.Lock()
+	if o.cur == p {
+		p.thumbs[url] = img
+	}
+	o.mu.Unlock()
+	media.Get().Changed()
+}
+
+func (o *output) fetchArt(p *playing, url string) {
+	img, err := download(url)
 	if err != nil {
 		slog.Debug("cast art", "err", err)
 		return
@@ -829,8 +846,22 @@ func (c *card) Now() media.Now {
 		can |= media.CanPrevious
 	}
 	queue := make([]media.Track, 0, len(s.Upcoming))
+	var wanted []string
+	c.o.mu.Lock()
+	if c.p.thumbs == nil {
+		c.p.thumbs = map[string]*ui.Image{}
+	}
 	for _, u := range s.Upcoming {
-		queue = append(queue, media.Track{Title: u.Title, Artist: u.Artist, Length: u.Length, Play: u.Play})
+		img, seen := c.p.thumbs[u.Art]
+		if u.Art != "" && !seen {
+			c.p.thumbs[u.Art] = nil
+			wanted = append(wanted, u.Art)
+		}
+		queue = append(queue, media.Track{Title: u.Title, Artist: u.Artist, Length: u.Length, Art: img, Play: u.Play})
+	}
+	c.o.mu.Unlock()
+	for _, url := range wanted {
+		safe.Go("cast queue art", func() { c.o.fetchThumb(c.p, url) })
 	}
 	return media.Now{
 		Queue:   queue,
@@ -928,6 +959,12 @@ func (b *standby) Open() bool {
 		view.SetLogo(art)
 	}
 	return true
+}
+
+func (b *standby) Wakes() bool {
+	b.o.mu.Lock()
+	defer b.o.mu.Unlock()
+	return b.o.sess != nil && b.o.sess.Pictured
 }
 
 func (b *standby) Seek(time.Duration) {}

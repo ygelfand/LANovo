@@ -118,6 +118,27 @@ features.sendspin: Sendspin
 features.sendspin.hint: Whole-home audio server
 features.cast: Chromecast
 features.cast.hint: Google Cast protocol
+cast.enable: Enable
+cast.apps: Apps
+cast.prime: Prime Video
+cast.prime.persist: Persistent registration
+cast.prime.persist.hint: Every cast plays as the account that registered first
+cast.prime.reset: Reset registration
+cast.prime.skipintro: Skip intro
+cast.prime.skipintro.hint: Start after Amazon's opening bumper
+cast.youtube: YouTube
+cast.youtube.sponsorblock: SponsorBlock
+sponsorblock.sponsor: Sponsor
+sponsorblock.selfpromo: Self-promotion
+sponsorblock.interaction: Interaction reminder
+sponsorblock.intro: Intro
+sponsorblock.outro: Outro
+sponsorblock.preview: Preview
+sponsorblock.hook: Hook
+sponsorblock.music_offtopic: Non-music section
+sponsorblock.filler: Filler
+cast.prime.registered: Registered
+cast.prime.unregistered: Not registered
 features.rtsp.hint: RTSP on port 8554
 features.proxy: Bluetooth proxy
 features.proxy.hint: Bluetooth LE proxy

@@ -96,7 +96,7 @@ func openLive(ctx context.Context, r *Resolver, st *station, l *Live, at time.Du
 	if wallClock(at) {
 		from = time.Unix(0, int64(at))
 	}
-	s, err := hls.Open(ctx, l.HLS, hls.Options{HTTP: r.http, Ask: ask, Tallest: tallest, Fastest: fastest, Lead: lead, From: from, Resample: r.Resample})
+	s, err := hls.Open(ctx, l.HLS, hls.Options{HTTP: r.http, Ask: ask, Tallest: r.limits().Tallest, Fastest: r.limits().Fastest, Lead: lead, From: from, Resample: r.Resample})
 	if err != nil {
 		return nil, fmt.Errorf("youtube: %s: %w", l.Track.ID, err)
 	}
@@ -112,7 +112,7 @@ func openTV(ctx context.Context, st *station, id string, at time.Duration) (*tra
 	st.mu.Lock()
 	ctt, params := st.ctt, st.params
 	st.mu.Unlock()
-	u, err := openUnplugged(ctx, surfaceEnv{http: st.env.HTTP, surface: st.env.Surface, resample: st.env.Resample}, id, params, ctt, at)
+	u, err := openUnplugged(ctx, surfaceEnv{http: st.env.HTTP, surface: st.env.Surface, resample: st.env.Resample, limits: st.resolve.limits()}, id, params, ctt, at)
 	if err != nil {
 		return nil, err
 	}

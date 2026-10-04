@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/ygelfand/LANovo/internal/hardware/video"
 	"github.com/ygelfand/LANovo/internal/lib/cast/protocols/youtube"
 	"github.com/ygelfand/LANovo/internal/lib/fetch"
 )
@@ -39,11 +40,11 @@ func ytLive(args []string) (string, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), hold+30*time.Second)
 	defer cancel()
-	return youtube.NewResolver(fetch.Client(30*time.Second)).Probe(ctx, args[0], hold, back)
+	return youtube.NewResolver(fetch.Client(30*time.Second), video.Target).Probe(ctx, args[0], hold, back)
 }
 
 func ytFormats(args []string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	return youtube.NewResolver(fetch.Client(30*time.Second)).Formats(ctx, args[0])
+	return youtube.NewResolver(fetch.Client(30*time.Second), video.Target).Formats(ctx, args[0])
 }

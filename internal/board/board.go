@@ -43,6 +43,8 @@ type Board struct {
 
 	SecureDecoders map[string]string
 
+	MaxFPS int
+
 	// CameraWidth and CameraHeight are a preview size the vendor camera HAL lists.
 	CameraWidth, CameraHeight int
 

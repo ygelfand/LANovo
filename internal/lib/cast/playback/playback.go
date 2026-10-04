@@ -27,6 +27,12 @@ type Marked interface {
 	Marks() []Mark
 }
 
+type Target struct {
+	Width, Height int
+	Tallest       int
+	Fastest       int
+}
+
 type Waiter interface {
 	Waiting(w bool)
 }
@@ -123,6 +129,7 @@ type Upcoming struct {
 	Title  string
 	Artist string
 	Length time.Duration
+	Art    string
 
 	// Play jumps to it, nil where the source cannot.
 	Play func()

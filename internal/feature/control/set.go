@@ -174,6 +174,12 @@ func settings() []setting {
 		{"cast.youtube.skip", "Cast.YouTube.Skip", func(c config.Config) string { return orNone(strings.Join(c.Cast.YouTube.Skip, ",")) },
 			words(chromecast.Get().SetSkip)},
 
+		{"cast.prime.persist", "Cast.Prime.Persist", func(c config.Config) string { return knob.OnOff(c.Cast.Prime.Persist) },
+			toggle(chromecast.Get().SetPrimePersist)},
+
+		{"cast.prime.skipintro", "Cast.Prime.SkipIntro", func(c config.Config) string { return knob.OnOff(c.Cast.Prime.SkipIntro) },
+			toggle(chromecast.Get().SetPrimeSkipIntro)},
+
 		{"cast.youtube.livedelay", "Cast.YouTube.LiveDelay", func(c config.Config) string { return strconv.Itoa(c.Cast.YouTube.LiveDelay) + " s" },
 			number(config.LiveDelayLeast, config.LiveDelayMost, chromecast.Get().SetLiveDelay)},
 

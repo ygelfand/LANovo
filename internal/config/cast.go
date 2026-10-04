@@ -10,6 +10,13 @@ type Cast struct {
 
 	// YouTube is this device's lounge identity, made the first time it is needed.
 	YouTube YouTube `json:"youtube,omitzero"`
+
+	Prime Prime `json:"prime,omitzero"`
+}
+
+type Prime struct {
+	Persist   bool `json:"persist,omitempty"`
+	SkipIntro bool `json:"skipIntro,omitempty"`
 }
 
 // YouTube is the device id a lounge screen binds with and the screen id YouTube issued per theme.
@@ -51,6 +58,14 @@ func (w CastWriter) Screens(device, music, video string) error {
 	return w.st.Update(func(c *Config) {
 		c.Cast.YouTube.Device, c.Cast.YouTube.Music, c.Cast.YouTube.Video = device, music, video
 	})
+}
+
+func (w CastWriter) PrimeSkipIntro(v bool) error {
+	return w.st.Update(func(c *Config) { c.Cast.Prime.SkipIntro = v })
+}
+
+func (w CastWriter) PrimePersist(v bool) error {
+	return w.st.Update(func(c *Config) { c.Cast.Prime.Persist = v })
 }
 
 func (w CastWriter) Skip(categories []string) error {

@@ -44,10 +44,9 @@ type station struct {
 	sender  string
 	phones  []string
 
-	// prev and next are what YouTube says is either side of the current video in the phone's
-	// queue, and upcoming is next's title for the card.
 	prev, next *Entry
-	upcoming   *Track
+	upcoming   []queued
+	known      map[string]Track
 
 	asked, lastHeard time.Time
 	commanded        bool
@@ -89,9 +88,8 @@ func (s *station) quiet(d time.Duration) bool {
 }
 
 func newStation(ctx context.Context, theme string, env cast.Env) *station {
-	r := NewResolver(env.HTTP)
+	r := NewResolver(env.HTTP, env.Video)
 	r.Resample = env.Resample
-	r.Tallest = env.Tallest
 	s := &station{theme: theme, env: env, resolve: r, ctx: ctx, loud: make(chan struct{}, 1)}
 	if env.VolumeChanged != nil {
 		go s.tellVolume()
@@ -179,18 +177,86 @@ func (s *station) around() (prev, next bool) {
 }
 
 // coming is what the card lists as up next.
+type queued struct {
+	Track
+	index int
+}
+
+const queueShown = 5
+
 func (s *station) coming() []playback.Upcoming {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.upcoming == nil {
-		return nil
+	out := make([]playback.Upcoming, 0, len(s.upcoming))
+	for _, q := range s.upcoming {
+		play := func() { s.step(1) }
+		if q.index >= 0 {
+			play = func() { s.jump(q.index) }
+		}
+		out = append(out, playback.Upcoming{Title: q.Title, Artist: q.Author, Length: q.Duration, Art: "https://i.ytimg.com/vi/" + q.ID + "/mqdefault.jpg", Play: play})
 	}
-	return []playback.Upcoming{{
-		Title:  s.upcoming.Title,
-		Artist: s.upcoming.Author,
-		Length: s.upcoming.Duration,
-		Play:   func() { s.step(1) },
-	}}
+	return out
+}
+
+func (s *station) describe(ctx context.Context, ids []string, from, to int) []queued {
+	found := make([]*Track, to-from)
+	var wg sync.WaitGroup
+	for k := range found {
+		id := ids[from+k]
+		s.mu.Lock()
+		info, ok := s.known[id]
+		s.mu.Unlock()
+		if ok {
+			found[k] = &info
+			continue
+		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			info, err := s.resolve.Info(ctx, id)
+			if err != nil {
+				slog.Info("youtube queue", "theme", s.theme, "video", id, "err", err)
+				return
+			}
+			found[k] = &info
+		}()
+	}
+	wg.Wait()
+
+	keep := map[string]bool{}
+	for _, id := range ids {
+		keep[id] = true
+	}
+	s.mu.Lock()
+	if s.known == nil {
+		s.known = map[string]Track{}
+	}
+	for id := range s.known {
+		if !keep[id] {
+			delete(s.known, id)
+		}
+	}
+	var out []queued
+	for k, f := range found {
+		if f == nil {
+			continue
+		}
+		s.known[ids[from+k]] = *f
+		out = append(out, queued{Track: *f, index: from + k})
+	}
+	s.mu.Unlock()
+	return out
+}
+
+func (s *station) jump(i int) {
+	s.mu.Lock()
+	if i < 0 || i >= len(s.ids) {
+		s.mu.Unlock()
+		return
+	}
+	pos := Position{Video: s.ids[i], List: s.list, Index: i}
+	s.mu.Unlock()
+	s.start(pos, 0)
 }
 
 // handle acts on one lounge message.
@@ -303,8 +369,14 @@ func (s *station) open(pos Position, at time.Duration, held bool) {
 	s.end(true)
 
 	s.mu.Lock()
+	same := pos.List != "" && pos.List == s.list
 	s.index, s.list, s.params, s.want, s.held = pos.Index, pos.List, pos.Params, pos, held
-	s.prev, s.next, s.upcoming = nil, nil, nil
+	s.prev, s.next = nil, nil
+	if same {
+		s.upcoming = slices.DeleteFunc(slices.Clone(s.upcoming), func(q queued) bool { return q.index <= pos.Index })
+	} else {
+		s.upcoming = nil
+	}
 	s.mu.Unlock()
 
 	ctx, cancel := context.WithCancel(s.ctx)
@@ -358,22 +430,28 @@ func (s *station) open(pos Position, at time.Duration, held bool) {
 func (s *station) lookAround(ctx context.Context, t *track, pos Position) {
 	s.mu.Lock()
 	phones := slices.Clone(s.phones)
-	listed := len(s.ids) > 1
+	ids, index := slices.Clone(s.ids), s.index
 	s.mu.Unlock()
-	if listed || pos.List == "" {
-		return
-	}
 
-	prev, next, err := neighbours(ctx, s.env.HTTP, pos, phones)
-	if err != nil {
-		slog.Debug("youtube queue", "theme", s.theme, "err", err)
-		return
-	}
-	var up *Track
-	if next != nil {
-		if info, err := s.resolve.Info(ctx, next.ID); err == nil {
-			up = &info
+	var prev, next *Entry
+	var up []queued
+	switch {
+	case len(ids) > 1:
+		up = s.describe(ctx, ids, index+1, min(index+1+queueShown, len(ids)))
+	case pos.List != "":
+		var err error
+		prev, next, err = neighbours(ctx, s.env.HTTP, pos, phones)
+		if err != nil {
+			slog.Info("youtube queue", "theme", s.theme, "list", pos.List, "index", pos.Index, "err", err)
+			return
 		}
+		if next != nil {
+			if info, err := s.resolve.Info(ctx, next.ID); err == nil {
+				up = []queued{{Track: info, index: -1}}
+			}
+		}
+	default:
+		return
 	}
 
 	s.mu.Lock()

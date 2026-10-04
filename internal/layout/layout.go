@@ -72,6 +72,8 @@ const (
 	// CastAuthorityPath holds the device's own certificate chain and key, made once.
 	CastAuthorityPath = StateDir + "/cast-authority.json"
 
+	CastAppDir = StateDir + "/cast"
+
 	// CrashPath holds the Go runtime's report of a run that died; init sends stderr to /dev/null.
 	CrashPath = StateDir + "/crash"
 

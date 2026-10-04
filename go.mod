@@ -13,7 +13,7 @@ require (
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/charmbracelet/x/term v0.2.2
 	github.com/go-gui-org/go-glyph v1.26.1
-	github.com/go-gui-org/go-gui v0.83.0
+	github.com/go-gui-org/go-gui v0.84.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/insomniacslk/dhcp v0.0.0-20260901064844-234b97448fae
 	github.com/jsimonetti/rtnetlink v1.4.2

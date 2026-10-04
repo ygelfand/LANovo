@@ -13,6 +13,7 @@ type Screen struct {
 	Title string
 	Build func(w *gogui.Window) gogui.View
 	Clear bool
+	Fixed bool
 	View  shell.View
 }
 

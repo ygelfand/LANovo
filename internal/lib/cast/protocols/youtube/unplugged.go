@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -16,11 +15,11 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/lib/cast/playback"
+	"github.com/ygelfand/LANovo/internal/lib/cast/sealed"
 	"github.com/ygelfand/LANovo/internal/lib/cenc"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
 )
@@ -45,14 +44,11 @@ const (
 	// Google's license.widevine.com service certificate, as tv.youtube.com's player serves it.
 	widevineCert = "CsECCAMSEBcFuRfMEgSGiwYzOi93KowYgrSCkgUijgIwggEKAoIBAQCZ7Vs7Mn2rXiTvw7YqlbWYUgrVvMs3UD4GRbgU2Ha430BRBEGtjOOtsRu4jE5yWl5KngeVKR1YWEAjp-GvDjipEnk5MAhhC28VjIeMfiG_-_7qd-EBnh5XgeikX0YmPRTmDoBYqGB63OBPrIRXsTeo1nzN6zNwXZg6IftO7L1KEMpHSQykfqpdQ4IY3brxyt4zkvE9b_tkQv0x4b9AsMYE0cS6TJUgpL-X7r1gkpr87vVbuvVk4tDnbNfFXHOggrmWEguDWe3OJHBwgmgNb2fG2CxKxfMTRJCnTuw3r0svAQxZ6ChD4lgvC2ufXbD8Xm7fZPvTCLRxG88SUAGcn1oJAgMBAAE6FGxpY2Vuc2Uud2lkZXZpbmUuY29tEoADrjRzFLWoNSl_JxOI-3u4y1J30kmCPN3R2jC5MzlRHrPMveoEuUS5J8EhNG79verJ1BORfm7BdqEEOEYKUDvBlSubpOTOD8S_wgqYCKqvS_zRnB3PzfV0zKwo0bQQQWz53ogEMBy9szTK_NDUCXhCOmQuVGE98K_PlspKkknYVeQrOnA-8XZ_apvTbWv4K-drvwy6T95Z0qvMdv62Qke4XEMfvKUiZrYZ_DaXlUP8qcu9u_r6DhpV51Wjx7zmVflkb1gquc9wqgi5efhn9joLK3_bNixbxOzVVdhbyqnFk8ODyFfUnaq3fkC3hR3f0kmYgI41sljnXXjqwMoW9wRzBMINk-3k6P8cbxfmJD4_Paj8FwmHDsRfuoI6Jj8M76H3CTsZCZKDJjM3BQQ6Kb2m-bQ0LMjfVDyxoRgvfF__M_EEkPrKWyU2C3YBXpxaBquO4C8A0ujVmGEEqsxN1HX9lu6c5OMm8huDxwWFd7OHMs3avGpr7RP7DUnTikXrh6X0"
 
-	unpluggedTallest = 720
-	segmentWait      = time.Second
-	heldSeconds      = 30
-	tvStartWait      = 20 * time.Second
-	segmentLimit     = 32 << 20
+	segmentWait  = time.Second
+	heldSeconds  = 30
+	tvStartWait  = 20 * time.Second
+	segmentLimit = 32 << 20
 )
-
-var drmIDs, audioIDs atomic.Uint32
 
 type unpluggedFormat struct {
 	Itag       int    `json:"itag"`
@@ -153,11 +149,11 @@ func unpluggedPlay(ctx context.Context, hc *http.Client, ctt, id, params string)
 	return &a, nil
 }
 
-func pickUnplugged(fs []unpluggedFormat) (video, audio *unpluggedFormat) {
+func pickUnplugged(fs []unpluggedFormat, limits playback.Target) (video, audio *unpluggedFormat) {
 	for i := range fs {
 		f := &fs[i]
 		switch {
-		case strings.HasPrefix(f.MimeType, "video/mp4") && strings.Contains(f.MimeType, "avc1") && f.Height <= unpluggedTallest && f.FPS <= fastest:
+		case strings.HasPrefix(f.MimeType, "video/mp4") && strings.Contains(f.MimeType, "avc1") && within(f.Height, limits.Tallest) && within(f.FPS, limits.Fastest):
 			if video == nil || f.Height > video.Height || f.Height == video.Height && f.Bitrate > video.Bitrate {
 				video = f
 			}
@@ -457,22 +453,13 @@ func (u *unplugged) onChange(f func()) {
 	u.mu.Unlock()
 }
 
-type sealedFrame struct {
-	data  []byte
-	at    time.Duration
-	crypt *surface.Crypt
-}
-
 type unplugged struct {
-	hc       *http.Client
-	surf     *surface.Client
-	resample func(from int) func([]int16) []int16
-	ctt, id  string
-	cpn      string
-	session  string
-	params   string
-	drm      uint32
-	audioID  uint32
+	hc      *http.Client
+	p       *sealed.Player
+	ctt, id string
+	cpn     string
+	session string
+	params  string
 
 	Width, Height int
 	info          Track
@@ -480,25 +467,10 @@ type unplugged struct {
 	mark          string
 	changed       func()
 
-	cancel    context.CancelFunc
-	done      chan struct{}
-	once      sync.Once
-	ready     chan struct{}
-	readyOnce sync.Once
+	cancel context.CancelFunc
 
-	mu       sync.Mutex
-	room     *sync.Cond
-	pcm      []int16
-	err      error
-	origin   time.Duration
-	based    bool
-	heard    bool
-	licensed map[string]bool
-	licMu    sync.Mutex
-	resamp   func([]int16) []int16
-	rate     int
-
-	frames chan sealedFrame
+	mu    sync.Mutex
+	licMu sync.Mutex
 }
 
 func openUnplugged(ctx context.Context, env surfaceEnv, id, params, ctt string, at time.Duration) (*unplugged, error) {
@@ -506,14 +478,11 @@ func openUnplugged(ctx context.Context, env surfaceEnv, id, params, ctt string, 
 		return nil, errors.New("youtube tv: the phone sent no credential")
 	}
 	surf := env.surface()
-	if surf == nil {
-		return nil, errors.New("youtube tv: the display helper is not connected")
-	}
 	a, err := unpluggedPlay(ctx, env.http, ctt, id, params)
 	if err != nil {
 		return nil, err
 	}
-	video, audio := pickUnplugged(a.StreamingData.AdaptiveFormats)
+	video, audio := pickUnplugged(a.StreamingData.AdaptiveFormats, env.limits)
 	if video == nil || audio == nil {
 		return nil, errors.New("youtube tv: no H.264 and AAC formats offered")
 	}
@@ -521,20 +490,17 @@ func openUnplugged(ctx context.Context, env surfaceEnv, id, params, ctt string, 
 	if err != nil {
 		return nil, err
 	}
-	drm := 1 + drmIDs.Add(1)
-	if err := surf.DRMOpen(drm, surface.Widevine, true, cert); err != nil {
-		return nil, fmt.Errorf("youtube tv: widevine: %w", err)
+	u := &unplugged{
+		hc: env.http, ctt: ctt, id: id, cpn: nonce(),
+		session: a.HeartbeatParams.DRMSessionID, params: a.StreamingData.DRMParams,
+		Width: video.Width, Height: video.Height,
+	}
+	u.p, err = sealed.Open("youtube tv", surf, cert, u.licensed, env.resample)
+	if err != nil {
+		return nil, err
 	}
 	run, cancel := context.WithCancel(context.Background())
-	u := &unplugged{
-		hc: env.http, surf: surf, resample: env.resample, ctt: ctt, id: id, cpn: nonce(),
-		session: a.HeartbeatParams.DRMSessionID, params: a.StreamingData.DRMParams,
-		drm: drm, audioID: 1 + audioIDs.Add(1),
-		Width: video.Width, Height: video.Height,
-		cancel: cancel, done: make(chan struct{}), ready: make(chan struct{}),
-		licensed: map[string]bool{}, frames: make(chan sealedFrame, 300),
-	}
-	u.room = sync.NewCond(&u.mu)
+	u.cancel = cancel
 	u.info = Track{ID: id, Title: a.VideoDetails.Title, Author: a.VideoDetails.Author, Codec: "aac"}
 	if th := a.VideoDetails.Thumbnail.Thumbnails; len(th) > 0 {
 		u.info.Thumbnail = th[len(th)-1].URL
@@ -559,10 +525,10 @@ func openUnplugged(ctx context.Context, env surfaceEnv, id, params, ctt string, 
 	wait := time.NewTimer(tvStartWait)
 	defer wait.Stop()
 	select {
-	case <-u.ready:
+	case <-u.p.Ready():
 		return u, nil
-	case <-u.done:
-		err := u.failure()
+	case <-u.p.Done():
+		err := u.p.Failure()
 		u.shut()
 		return nil, err
 	case <-ctx.Done():
@@ -647,23 +613,20 @@ func (u *unplugged) follow(ctx context.Context, base string, sq int64, video boo
 		if err != nil {
 			return fmt.Errorf("youtube tv: sq %d: %w", sq, err)
 		}
-		if err := u.license(ctx, append(track.PSSH, pssh...)); err != nil {
+		if err := u.p.License(ctx, append(track.PSSH, pssh...)); err != nil {
 			return err
 		}
 		if first && !video {
-			if err := u.surf.AudioOpen(u.audioID, u.drm, t.Rate, t.Channels, t.Config); err != nil {
-				return fmt.Errorf("youtube tv: audio decoder: %w", err)
+			if err := u.p.OpenAudio(t); err != nil {
+				return err
 			}
-			u.mu.Lock()
-			u.rate = t.Rate
-			u.mu.Unlock()
 		}
 		for _, s := range samples {
 			if video {
-				if err := u.picture(ctx, *track, s); err != nil {
+				if err := u.p.Picture(ctx, *track, s); err != nil {
 					return err
 				}
-			} else if err := u.sound(s); err != nil {
+			} else if err := u.p.Sound(s); err != nil {
 				return err
 			}
 		}
@@ -672,224 +635,25 @@ func (u *unplugged) follow(ctx context.Context, base string, sq int64, video boo
 	return ctx.Err()
 }
 
-func widevinePSSH(boxes [][]byte) []byte {
-	for _, b := range boxes {
-		if len(b) >= 28 && bytes.Equal(b[12:28], surface.Widevine[:]) {
-			return b
-		}
-	}
-	return nil
-}
-
-func (u *unplugged) license(ctx context.Context, boxes [][]byte) error {
-	init := widevinePSSH(boxes)
-	if init == nil {
-		return nil
-	}
-	key := string(init)
+func (u *unplugged) licensed(ctx context.Context, challenge []byte) ([]byte, error) {
 	u.licMu.Lock()
-	defer u.licMu.Unlock()
-	if u.licensed[key] {
-		return nil
-	}
-	challenge, err := u.surf.DRMRequest(u.drm, init)
-	if err != nil {
-		return fmt.Errorf("youtube tv: key request: %w", err)
-	}
-	lic, err := unpluggedLicense(ctx, u.hc, u.ctt, u.id, u.cpn, u.session, u.params, challenge)
-	if err != nil {
-		return err
-	}
-	if err := u.surf.DRMProvide(u.drm, lic); err != nil {
-		return fmt.Errorf("youtube tv: key response: %w", err)
-	}
-	u.licensed[key] = true
-	slog.Info("youtube tv licensed", "video", u.id, "keys", len(u.licensed))
-	return nil
+	ctt := u.ctt
+	u.licMu.Unlock()
+	return unpluggedLicense(ctx, u.hc, ctt, u.id, u.cpn, u.session, u.params, challenge)
 }
 
-func crypt(s cenc.Sample, subs []cenc.Subsample) *surface.Crypt {
-	if !s.Encrypted {
-		return nil
-	}
-	k := &surface.Crypt{Mode: surface.CryptCENC, Key: s.KeyID, IV: s.IV}
-	for _, x := range subs {
-		k.Subsamples = append(k.Subsamples, surface.Subsample{Clear: x.Clear, Encrypted: x.Encrypted})
-	}
-	return k
-}
+func (u *unplugged) Read(out []int16) (int, error) { return u.p.Read(out) }
 
-func (u *unplugged) anchor(at time.Duration) time.Duration {
-	u.mu.Lock()
-	defer u.mu.Unlock()
-	if !u.based {
-		u.origin, u.based = at, true
-		u.room.Broadcast()
-	}
-	return at - u.origin
-}
-
-func (u *unplugged) picture(ctx context.Context, t cenc.Track, s cenc.Sample) error {
-	data, subs, err := t.AnnexB(s)
-	if err != nil {
-		return err
-	}
-	at := u.anchor(s.At)
-	if at < 0 {
-		return nil
-	}
-	select {
-	case u.frames <- sealedFrame{data: data, at: at, crypt: crypt(s, subs)}:
-		u.readyOnce.Do(func() { close(u.ready) })
-		return nil
-	case <-ctx.Done():
-		return ctx.Err()
-	}
-}
-
-func (u *unplugged) sound(s cenc.Sample) error {
-	u.mu.Lock()
-	for !u.based {
-		select {
-		case <-u.done:
-			u.mu.Unlock()
-			return io.EOF
-		default:
-		}
-		u.room.Wait()
-	}
-	origin, first := u.origin, !u.heard
-	u.mu.Unlock()
-	if s.At < origin {
-		return nil
-	}
-	if first {
-		u.mu.Lock()
-		u.heard = true
-		gap := int(int64(s.At-origin) * rate / int64(time.Second))
-		u.pcm = append(u.pcm, make([]int16, gap*channels)...)
-		u.mu.Unlock()
-	}
-	k := crypt(s, s.Subsamples)
-	for {
-		out, err := u.surf.AudioSample(u.audioID, s.At-origin, 0, k, s.Data)
-		if len(out.Data) > 0 {
-			if err := u.keep(out); err != nil {
-				return err
-			}
-		}
-		if !errors.Is(err, surface.Full) {
-			if err != nil {
-				return fmt.Errorf("youtube tv: audio: %w", err)
-			}
-			return nil
-		}
-		select {
-		case <-u.done:
-			return io.EOF
-		case <-time.After(5 * time.Millisecond):
-		}
-	}
-}
-
-func (u *unplugged) keep(out surface.PCM) error {
-	pcm := make([]int16, len(out.Data)/2)
-	for i := range pcm {
-		pcm[i] = int16(binary.LittleEndian.Uint16(out.Data[2*i:]))
-	}
-	if out.Channels == 1 {
-		st := make([]int16, 2*len(pcm))
-		for i, v := range pcm {
-			st[2*i], st[2*i+1] = v, v
-		}
-		pcm = st
-	}
-	u.mu.Lock()
-	if u.resamp == nil || out.Rate != u.rate {
-		u.rate = out.Rate
-		if out.Rate != rate && u.resample != nil {
-			u.resamp = u.resample(out.Rate)
-		} else {
-			u.resamp = func(x []int16) []int16 { return x }
-		}
-	}
-	pcm = u.resamp(pcm)
-	for len(u.pcm) > heldSeconds*rate*channels {
-		u.room.Wait()
-		select {
-		case <-u.done:
-			u.mu.Unlock()
-			return io.EOF
-		default:
-		}
-	}
-	u.pcm = append(u.pcm, pcm...)
-	u.mu.Unlock()
-	return nil
-}
-
-func (u *unplugged) Read(out []int16) (int, error) {
-	u.mu.Lock()
-	defer u.mu.Unlock()
-	n := copy(out, u.pcm)
-	u.pcm = u.pcm[n:]
-	if n > 0 {
-		u.room.Broadcast()
-		return n, nil
-	}
-	select {
-	case <-u.done:
-		return 0, u.err
-	default:
-		return 0, nil
-	}
-}
-
-func (u *unplugged) next() ([]byte, time.Duration, *surface.Crypt, error) {
-	select {
-	case f := <-u.frames:
-		return f.data, f.at, f.crypt, nil
-	case <-u.done:
-		return nil, 0, nil, u.failure()
-	}
-}
-
-func (u *unplugged) Picture() playback.Picture {
-	return playback.Picture{H264: true, Width: u.Width, Height: u.Height, Session: u.drm, Sealed: u.next}
-}
+func (u *unplugged) Picture() playback.Picture { return u.p.Video(u.Width, u.Height) }
 
 func (u *unplugged) fail(err error) {
-	u.mu.Lock()
-	if u.err == nil {
-		u.err = err
-	}
-	u.mu.Unlock()
-	u.stop()
-}
-
-func (u *unplugged) stop() {
-	u.once.Do(func() {
-		u.cancel()
-		close(u.done)
-		u.mu.Lock()
-		u.room.Broadcast()
-		u.mu.Unlock()
-	})
-}
-
-func (u *unplugged) failure() error {
-	u.mu.Lock()
-	defer u.mu.Unlock()
-	if u.err == nil {
-		return io.EOF
-	}
-	return u.err
+	u.p.Fail(err)
+	u.cancel()
 }
 
 func (u *unplugged) shut() {
-	u.fail(io.EOF)
-	u.surf.AudioClose(u.audioID)
-	u.surf.DRMClose(u.drm)
+	u.cancel()
+	u.p.Close()
 }
 
 func (u *unplugged) Close() { u.shut() }
@@ -915,4 +679,7 @@ type surfaceEnv struct {
 	http     *http.Client
 	surface  func() *surface.Client
 	resample func(from int) func([]int16) []int16
+	limits   playback.Target
 }
+
+func within(v, most int) bool { return most <= 0 || v <= most }

@@ -3,6 +3,7 @@ package chromecast
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log/slog"
@@ -316,4 +317,31 @@ func (k *keys) save(url string, answer []byte) error {
 		return err
 	}
 	return os.Rename(tmp, k.path)
+}
+
+type kept struct{ path string }
+
+func keep(app string) cast.Kept { return kept{path: filepath.Join(layout.CastAppDir, app+".json")} }
+
+func (k kept) Load(v any) bool {
+	data, err := os.ReadFile(k.path)
+	return err == nil && json.Unmarshal(data, v) == nil
+}
+
+func (k kept) Save(v any) error {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(k.path), 0o700); err != nil {
+		return err
+	}
+	return writeKept(k.path, data)
+}
+
+func (k kept) Clear() error {
+	if err := os.Remove(k.path); err != nil && !errors.Is(err, os.ErrNotExist) {
+		return err
+	}
+	return nil
 }

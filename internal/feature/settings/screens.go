@@ -34,6 +34,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
+	"github.com/ygelfand/LANovo/internal/lib/cast/protocols/youtube"
 	"github.com/ygelfand/LANovo/internal/lib/tz"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
 	"github.com/ygelfand/LANovo/internal/setting"
@@ -635,6 +636,95 @@ func networkPage() *shell.Page {
 	}
 }
 
+func castPage() *shell.Page {
+	return &shell.Page{
+		Title: say.T("features.cast"),
+		Build: func() ([]widget.Row, []func(int)) {
+			on := config.Get().Cast.Receiver
+			return []widget.Row{
+					{Label: say.T("cast.enable"), Kind: widget.Toggle, On: on},
+					{Label: say.T("cast.apps"), Kind: widget.Chevron},
+				}, []func(int){
+					func(int) { chromecast.Get().SetReceiver(!on) },
+					open(castAppsPage()),
+				}
+		},
+	}
+}
+
+func castAppsPage() *shell.Page {
+	return &shell.Page{
+		Title: say.T("cast.apps"),
+		Build: func() ([]widget.Row, []func(int)) {
+			return []widget.Row{
+					{Label: say.T("cast.youtube"), Kind: widget.Chevron},
+					{Label: say.T("cast.prime"), Kind: widget.Chevron},
+				}, []func(int){
+					open(youtubePage()),
+					open(primePage()),
+				}
+		},
+	}
+}
+
+func youtubePage() *shell.Page {
+	return &shell.Page{
+		Title: say.T("cast.youtube"),
+		Build: func() ([]widget.Row, []func(int)) {
+			return []widget.Row{
+					{Label: say.T("cast.youtube.sponsorblock"), Kind: widget.Chevron, Value: strconv.Itoa(len(config.Get().Cast.YouTube.Skip))},
+				}, []func(int){
+					open(sponsorPage()),
+				}
+		},
+	}
+}
+
+func sponsorPage() *shell.Page {
+	return &shell.Page{
+		Title: say.T("cast.youtube.sponsorblock"),
+		Build: func() ([]widget.Row, []func(int)) {
+			chosen := config.Get().Cast.YouTube.Skip
+			rows := make([]widget.Row, 0, len(youtube.Categories))
+			acts := make([]func(int), 0, len(youtube.Categories))
+			for _, c := range youtube.Categories {
+				on := slices.Contains(chosen, c)
+				rows = append(rows, widget.Row{Label: say.T("sponsorblock." + c), Kind: widget.Toggle, On: on})
+				acts = append(acts, func(int) {
+					next := slices.DeleteFunc(slices.Clone(chosen), func(x string) bool { return x == c })
+					if !on {
+						next = append(next, c)
+					}
+					chromecast.Get().SetSkip(strings.Join(next, ","))
+				})
+			}
+			return rows, acts
+		},
+	}
+}
+
+func primePage() *shell.Page {
+	return &shell.Page{
+		Title: say.T("cast.prime"),
+		Build: func() ([]widget.Row, []func(int)) {
+			persist, skip := config.Get().Cast.Prime.Persist, config.Get().Cast.Prime.SkipIntro
+			state := say.T("cast.prime.unregistered")
+			if chromecast.Get().PrimeRegistered() {
+				state = say.T("cast.prime.registered")
+			}
+			return []widget.Row{
+					{Label: say.T("cast.prime.persist"), Hint: say.T("cast.prime.persist.hint"), Kind: widget.Toggle, On: persist},
+					{Label: say.T("cast.prime.reset"), Kind: widget.Plain, Value: state},
+					{Label: say.T("cast.prime.skipintro"), Hint: say.T("cast.prime.skipintro.hint"), Kind: widget.Toggle, On: skip},
+				}, []func(int){
+					func(int) { chromecast.Get().SetPrimePersist(!persist) },
+					func(int) { chromecast.Get().ResetPrime() },
+					func(int) { chromecast.Get().SetPrimeSkipIntro(!skip) },
+				}
+		},
+	}
+}
+
 // featuresPage is what the device does at all, as opposed to how it looks or how loud it is.
 //
 // These are whole subsystems rather than settings on one: each opens a port, holds hardware, or
@@ -657,8 +747,7 @@ func featuresPage() *shell.Page {
 					{
 						Label: say.T("features.cast"),
 						Hint:  say.T("features.cast.hint"),
-						Kind:  widget.Toggle,
-						On:    cfg.Cast.Receiver,
+						Kind:  widget.Chevron,
 					},
 					{
 						Label: say.T("features.proxy"),
@@ -674,7 +763,7 @@ func featuresPage() *shell.Page {
 					},
 				}, []func(int){
 					func(int) { sendspin.Get().SetEnabled(!cfg.Sendspin.Enabled) },
-					func(int) { chromecast.Get().SetReceiver(!cfg.Cast.Receiver) },
+					open(castPage()),
 					func(int) { bluetooth.Get().SetProxy(!cfg.Bluetooth.Proxy) },
 					func(int) { a2dp.Get().SetEnabled(!cfg.Bluetooth.Speaker) },
 				}

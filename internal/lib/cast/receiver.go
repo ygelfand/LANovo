@@ -127,6 +127,9 @@ type Published struct {
 	State    string
 	Commands int
 	Custom   json.RawMessage
+
+	Answer  *Message
+	Request int
 }
 
 func (r *Receiver) Publish(control Playing, p *Published) []Message {
@@ -141,8 +144,13 @@ func (r *Receiver) Publish(control Playing, p *Published) []Message {
 		r.media, r.session, r.appMedia = nil, 0, appPlayer{}
 		return out
 	}
-	told, _ := json.Marshal(p)
-	if r.appMedia.control == control && r.appMedia.told == string(told) && r.session != 0 {
+	told, _ := json.Marshal(struct {
+		Media    Media
+		State    string
+		Commands int
+		Custom   json.RawMessage
+	}{p.Media, p.State, p.Commands, p.Custom})
+	if p.Answer == nil && r.appMedia.control == control && r.appMedia.told == string(told) && r.session != 0 {
 		return nil
 	}
 	if r.media == nil || r.media.ContentID != p.Media.ContentID || r.session == 0 {
@@ -153,6 +161,9 @@ func (r *Receiver) Publish(control Playing, p *Published) []Message {
 	m := p.Media
 	r.media, r.state, r.idle = &m, p.State, ""
 	r.appMedia = appPlayer{control: control, commands: p.Commands, custom: p.Custom, told: string(told)}
+	if p.Answer != nil {
+		return r.report(*p.Answer, p.Request)
+	}
 	return []Message{r.mediaBroadcast(r.full())}
 }
 
@@ -579,6 +590,9 @@ func (r *Receiver) mediaNamespace(m Message) ([]Message, error) {
 
 // load takes something new to play.
 func (r *Receiver) load(m Message, h Header) ([]Message, error) {
+	if l := r.loader(); l != nil {
+		return l.Load(r.app, m)
+	}
 	req, err := ParseLoad(m.Payload)
 	if err != nil {
 		return []Message{reply(m, NSMedia, LoadFailed(h.RequestID))}, nil

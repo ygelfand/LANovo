@@ -13,7 +13,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/lib/surface"
+	"github.com/ygelfand/LANovo/internal/lib/cast/playback"
+
+	"github.com/ygelfand/LANovo/internal/lib/cast/sealed"
 )
 
 func TestTheTallestH264UnderTheCapAndTheDefaultAACArePicked(t *testing.T) {
@@ -33,29 +35,12 @@ func TestTheTallestH264UnderTheCapAndTheDefaultAACArePicked(t *testing.T) {
 		{Itag: 148, MimeType: `audio/mp4; codecs="mp4a.40.5"`, Bitrate: 64_000, AudioTrack: def(true)},
 		{Itag: 150, MimeType: `audio/mp4; codecs="mp4a.40.2"`, Bitrate: 128_000, AudioTrack: def(true)},
 	}
-	v, a := pickUnplugged(fs)
+	v, a := pickUnplugged(fs, playback.Target{Tallest: 720, Fastest: 60})
 	if v == nil || v.Itag != 145 {
 		t.Errorf("video %+v", v)
 	}
 	if a == nil || a.Itag != 150 {
 		t.Errorf("audio %+v", a)
-	}
-}
-
-func TestTheWidevinePSSHIsChosenOverOthers(t *testing.T) {
-	box := func(system [16]byte) []byte {
-		b := make([]byte, 32)
-		copy(b[4:], "pssh")
-		copy(b[12:], system[:])
-		return b
-	}
-	playready := [16]byte{0x9a, 0x04, 0xf0, 0x79}
-	wv := box(surface.Widevine)
-	if got := widevinePSSH([][]byte{box(playready), wv}); !bytes.Equal(got, wv) {
-		t.Errorf("chose %x", got)
-	}
-	if got := widevinePSSH([][]byte{box(playready)}); got != nil {
-		t.Errorf("chose %x with no Widevine box", got)
 	}
 }
 
@@ -150,8 +135,8 @@ func TestTheGuideReadsTheAiringAndAFreshCredential(t *testing.T) {
 
 func bareUnplugged() *unplugged {
 	_, cancel := context.WithCancel(context.Background())
-	u := &unplugged{hc: http.DefaultClient, id: "chan", cpn: "nonce", ctt: "ctt-1", cancel: cancel, done: make(chan struct{})}
-	u.room = sync.NewCond(&u.mu)
+	u := &unplugged{hc: http.DefaultClient, id: "chan", cpn: "nonce", ctt: "ctt-1", cancel: cancel}
+	u.p = sealed.New("youtube tv", nil, u.licensed, nil)
 	return u
 }
 
@@ -164,11 +149,11 @@ func TestARefusedHeartbeatEndsTheStreamWithTheReason(t *testing.T) {
 	defer cancel()
 	u.heartbeat(ctx, "token", "data", "1")
 	select {
-	case <-u.done:
+	case <-u.p.Done():
 	default:
 		t.Fatal("the stream kept going")
 	}
-	if err := u.failure(); err == nil || !strings.Contains(err.Error(), "too many streams") {
+	if err := u.p.Failure(); err == nil || !strings.Contains(err.Error(), "too many streams") {
 		t.Errorf("failure %v", err)
 	}
 	b := (*seen)[0]
@@ -208,7 +193,7 @@ func TestHeartbeatsCarryTheServersDataForwardAndSurviveErrors(t *testing.T) {
 	cancel()
 	<-done
 	select {
-	case <-u.done:
+	case <-u.p.Done():
 		t.Fatal("a failed beat ended the stream")
 	default:
 	}
