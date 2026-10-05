@@ -24,25 +24,26 @@ func volumeCard(w *gogui.Window) gogui.View {
 	stream, open := vol.Picked()
 	level := vol.Level(stream)
 
+	meter := gogui.SliderCfg{
+		ID:        "volume-card",
+		Vertical:  true,
+		Value:     float32(100 - level),
+		Color:     t.Cfg.ColorAccent,
+		ColorLeft: t.Cfg.ColorInterior,
+		Max:       100,
+		Width:     reach(),
+		Size:      reach() * 0.3,
+		ThumbSize: reach() * 0.65,
+		Height:    float32(vh) * 0.45,
+		OnChange: func(v float32, e gogui.EventCtx) {
+			vol.Set(stream, 100-int(v+0.5))
+			vol.Linger()
+			e.Window.InvalidateLayout()
+		},
+	}
 	capsule := []gogui.View{
 		gogui.Label(fmt.Sprintf("%d", level), t.TextStyleTitle),
-		grip(gogui.Slider(gogui.SliderCfg{
-			ID:        "volume-card",
-			Vertical:  true,
-			Value:     float32(100 - level),
-			Color:     t.Cfg.ColorAccent,
-			ColorLeft: t.Cfg.ColorInterior,
-			Max:       100,
-			Width:     reach(),
-			Size:      reach() * 0.3,
-			ThumbSize: reach() * 0.65,
-			Height:    float32(vh) * 0.45,
-			OnChange: func(v float32, e gogui.EventCtx) {
-				vol.Set(stream, 100-int(v+0.5))
-				vol.Linger()
-				e.Window.InvalidateLayout()
-			},
-		})),
+		grip(slider(meter)),
 		pressable(gogui.Row, gogui.ContainerCfg{
 			ID:      "volume-stream",
 			Padding: gogui.PaddingSmall,
@@ -65,10 +66,8 @@ func volumeCard(w *gogui.Window) gogui.View {
 		}
 	}
 
-	card := gogui.Column(gogui.ContainerCfg{
+	card := gogui.Column(panel(gogui.ContainerCfg{
 		ID:      "volume",
-		Color:   t.Cfg.ColorPanel,
-		Radius:  gogui.RadiusLarge,
 		Padding: gogui.PaddingMedium,
 		Spacing: gogui.SpacingMedium,
 		HAlign:  gogui.HAlignCenter,
@@ -77,7 +76,7 @@ func volumeCard(w *gogui.Window) gogui.View {
 			e.Consume()
 		},
 		Content: capsule,
-	})
+	}))
 
 	side := gogui.HAlignRight
 	if config.Get().Screen.Volume == config.EdgeLeft {

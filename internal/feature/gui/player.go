@@ -15,6 +15,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
+	"github.com/ygelfand/LANovo/internal/ui/style"
 )
 
 const (
@@ -127,12 +128,11 @@ func playerBody(w *gogui.Window) gogui.View {
 	} else {
 		st := t.TextStyleIconXLarge
 		st.Color = t.Cfg.ColorTextSecondary
-		cover = gogui.Column(gogui.ContainerCfg{
+		cover = gogui.Column(panel(gogui.ContainerCfg{
 			Width: side, Height: side, Sizing: gogui.FixedFixed,
 			HAlign: gogui.HAlignCenter, VAlign: gogui.VAlignMiddle,
-			Color: t.Cfg.ColorPanel, Radius: gogui.RadiusLarge,
 			Content: []gogui.View{gogui.Label(gogui.IconMusic, st)},
-		})
+		}))
 	}
 
 	words := []gogui.View{gogui.Text(gogui.TextCfg{Text: media.Heading(now), TextStyle: t.TextStyleTitle, Mode: gogui.TextModeWrap})}
@@ -211,10 +211,7 @@ func progress(w *gogui.Window, now media.Now, sk media.Seeker, st gogui.TextStyl
 			e.Window.InvalidateLayout()
 		},
 	}
-	if now.Length > 0 {
-		cfg.Look = markedLook(marks, now.Length)
-	}
-	bar := grip(gogui.Slider(cfg))
+	bar := grip(seekBar(cfg, spans(marks, now.Length)))
 	content := []gogui.View{bar}
 	if now.LiveWithin == 0 {
 		wide := clockWidth(w, now.Length, st)
@@ -226,52 +223,6 @@ func progress(w *gogui.Window, now media.Now, sk media.Seeker, st gogui.TextStyl
 		Spacing: gogui.SpacingMedium,
 		Content: content,
 	})
-}
-
-func markedLook(marks []videoplayer.Mark, length time.Duration) func(gogui.SliderLookState) gogui.SliderParts {
-	t := gogui.CurrentTheme().Cfg
-	size, thumb := t.SizeSlider, t.SizeSliderThumb
-	played := t.ColorSelect
-	if !played.IsSet() {
-		played = t.ColorAccent
-	}
-	return func(s gogui.SliderLookState) gogui.SliderParts {
-		track := gogui.DrawCanvas(gogui.DrawCanvasCfg{
-			Sizing:  gogui.FillFixed,
-			Height:  size,
-			Version: uint64(s.Pct*1e6) + uint64(len(marks))<<32,
-			OnDraw: func(dc *gogui.DrawContext) {
-				half, span := thumb/2, max(dc.Width-thumb, 1)
-				at := func(d time.Duration) float32 { return half + span*float32(d)/float32(length) }
-				dc.FilledRoundedRect(0, 0, dc.Width, size, size/2, t.ColorInterior)
-				head := half + span*s.Pct
-				dc.FilledRoundedRect(0, 0, head, size, size/2, played)
-				if head > size {
-					dc.FilledRect(head-size/2, 0, size/2, size, played)
-				}
-				for _, m := range marks {
-					x0 := at(m.From)
-					x1 := max(at(m.To), x0+1)
-					dc.FilledRect(x0, 0, x1-x0, size, color(m.Color))
-				}
-			},
-		})
-		return gogui.SliderParts{
-			Track: track,
-			Fill:  gogui.Row(gogui.ContainerCfg{Height: size, Sizing: gogui.FixedFixed, Padding: gogui.NoPadding}),
-			Handle: gogui.DrawCanvas(gogui.DrawCanvasCfg{
-				Sizing: gogui.FixedFixed,
-				Width:  thumb,
-				Height: thumb,
-				OnDraw: func(dc *gogui.DrawContext) {
-					w, edge := max(thumb/6, 4), max(thumb/24, 1.5)
-					x := (thumb - w) / 2
-					dc.FilledRoundedRect(x-edge, 0, w+2*edge, thumb, (w+2*edge)/2, t.ColorBackground)
-					dc.FilledRoundedRect(x, edge, w, thumb-2*edge, w/2, t.TextStyleDef.Color)
-				},
-			}),
-		}
-	}
 }
 
 type control struct {
@@ -298,13 +249,12 @@ func transport(now media.Now) gogui.View {
 			continue
 		}
 		do := b.do
-		st, fill := t.TextStyleIconLarge, t.Cfg.ColorPanel
-		st.Color, st.Size = t.Cfg.TextStyleDef.Color, reach()*0.45
+		st := t.TextStyleIconLarge
+		st.Size = reach() * 0.45
 		if b.primary {
-			fill = t.Cfg.ColorAccent
-			st.Color, st.Size = t.Cfg.ColorBackground, reach()*0.75
+			st.Size = reach() * 0.75
 		}
-		shown = append(shown, button(fmt.Sprintf("transport-%d", i), b.glyph, st, fill, func(gogui.EventCtx) { do(media.Transport()) }))
+		shown = append(shown, keyButton(fmt.Sprintf("transport-%d", i), b.glyph, st, chosen(b.primary), func(gogui.EventCtx) { do(media.Transport()) }))
 	}
 	return gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, VAlign: gogui.VAlignMiddle, Spacing: gogui.SpacingMedium, Content: shown})
 }
@@ -316,7 +266,7 @@ func loudness() gogui.View {
 		Spacing: gogui.SpacingMedium,
 		Content: []gogui.View{
 			icon(gogui.IconSpeaker, gogui.CurrentTheme().Cfg.ColorTextSecondary),
-			grip(gogui.Slider(gogui.SliderCfg{
+			grip(slider(gogui.SliderCfg{
 				ID:     "media-volume",
 				Height: reach(),
 				Sizing: gogui.FillFit,
@@ -352,7 +302,7 @@ func queue(now media.Now) gogui.View {
 		if tr.Length > 0 {
 			content = append(content, gogui.Label(clockText(tr.Length), secondary()))
 		}
-		rows = append(rows, pressable(gogui.Row, gogui.ContainerCfg{
+		row := gogui.ContainerCfg{
 			ID:      fmt.Sprintf("queue-%d", i),
 			Sizing:  gogui.FillFit,
 			VAlign:  gogui.VAlignMiddle,
@@ -360,7 +310,9 @@ func queue(now media.Now) gogui.View {
 			Spacing: gogui.SpacingMedium,
 			Radius:  gogui.RadiusMedium,
 			Content: content,
-		}, onClick))
+		}
+		listRow(&row, style.Rest)
+		rows = append(rows, pressable(gogui.Row, row, onClick))
 	}
 	return gogui.Column(gogui.ContainerCfg{ID: "queue", Sizing: gogui.FillFill, Scrollable: true, OnGesture: holdStill, Spacing: gogui.SpacingSmall, Content: rows})
 }
@@ -409,7 +361,7 @@ func (a *App) mini(w *gogui.Window) gogui.View {
 
 	content := []gogui.View{art, gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Clip: true, Content: words})}
 	for i, c := range controls {
-		content = append(content, pressable(gogui.Row, gogui.ContainerCfg{
+		content = append(content, iconKey(gogui.ContainerCfg{
 			ID:      fmt.Sprintf("mini-%d", i),
 			Width:   side,
 			Height:  side,
@@ -418,21 +370,18 @@ func (a *App) mini(w *gogui.Window) gogui.View {
 			VAlign:  gogui.VAlignMiddle,
 			Padding: gogui.NoPadding,
 			Radius:  gogui.RadiusMedium,
-			Content: []gogui.View{gogui.Label(c.glyph, mark)},
-		}, c.do))
+		}, c.glyph, mark, style.Rest, c.do))
 	}
-	bar := gogui.Row(gogui.ContainerCfg{
+	bar := gogui.Row(panel(gogui.ContainerCfg{
 		ID:      "mini",
 		Sizing:  gogui.FillFit,
 		VAlign:  gogui.VAlignMiddle,
-		Color:   t.Cfg.ColorPanel,
-		Radius:  gogui.RadiusLarge,
 		Padding: gogui.PaddingSmall,
 		Spacing: gogui.SpacingMedium,
 		Shadow:  &gogui.BoxShadow{Color: gogui.Black.WithOpacity(0.5), OffsetY: 4, BlurRadius: 18},
 		OnClick: func(e gogui.EventCtx) { e.Consume() },
 		Content: content,
-	})
+	}))
 	return gogui.Column(gogui.ContainerCfg{
 		Width:   float32(vw),
 		Height:  float32(vh),

@@ -19,6 +19,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
+	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
 )
@@ -148,6 +149,8 @@ func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) go
 	content := []gogui.View{}
 	build, native := faces[c.Face]
 	switch {
+	case c.Style != "":
+		content = append(content, styleSample(c.Style, float32(tw), float32(th)))
 	case c.Palette != nil:
 		content = append(content, swatchView(*c.Palette, float32(tw), float32(th)))
 	case native:
@@ -156,21 +159,21 @@ func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) go
 		content = append(content, picture(painted("tile/"+page+"/"+c.Label+"/"+time.Now().Format("15:04"), tw, th, palette().Surface, c.Paint), tw, th))
 	}
 	content = append(content, gogui.Label(c.Label, gogui.TextStyle{}))
-	border := gogui.Color{}
-	if c.Chosen {
-		border = t.ColorAccent
+	cfg := gogui.ContainerCfg{
+		ID:         id,
+		HAlign:     gogui.HAlignCenter,
+		Padding:    gogui.PaddingSmall,
+		Spacing:    gogui.SpacingSmall,
+		Radius:     gogui.RadiusMedium,
+		SizeBorder: gogui.BorderPx(3),
+		Clip:       true,
+		Content:    content,
 	}
-	return pressable(gogui.Column, gogui.ContainerCfg{
-		ID:          id,
-		HAlign:      gogui.HAlignCenter,
-		Padding:     gogui.PaddingSmall,
-		Spacing:     gogui.SpacingSmall,
-		Radius:      gogui.RadiusMedium,
-		ColorBorder: border,
-		SizeBorder:  gogui.BorderPx(3),
-		Clip:        true,
-		Content:     content,
-	}, tapped(tap, 0))
+	if c.Chosen {
+		cfg.ColorBorder = t.ColorAccent
+	}
+	controls().Tile(&cfg, chosen(c.Chosen))
+	return pressable(gogui.Column, cfg, tapped(tap, 0))
 }
 
 func preview(page string, r widget.Row) gogui.View {
@@ -203,7 +206,7 @@ func rowView(id, page string, r widget.Row, tap func(int), glyphs bool) gogui.Vi
 	var onClick func(gogui.EventCtx)
 	switch r.Kind {
 	case widget.Toggle:
-		content = append(content, gogui.Switch(gogui.SwitchCfg{ID: id + "-switch", Selected: r.On, FocusDisabled: true}))
+		content = append(content, controls().Toggle(id+"-switch", r.On))
 		onClick = tapped(tap, 0)
 	case widget.Slider:
 		snap := r.Snap
@@ -215,7 +218,7 @@ func rowView(id, page string, r widget.Row, tap func(int), glyphs bool) gogui.Vi
 			Padding: gogui.NewPadding(0, reach()*0.4, 0, 0),
 			Content: []gogui.View{gogui.Label(says, secondary())},
 		}))
-		content = append(content, grip(gogui.Slider(gogui.SliderCfg{
+		level := gogui.SliderCfg{
 			ID: id + "-slider", Value: float32(r.Level), Min: 0, Max: 100, Sizing: gogui.FillFit, Height: reach(),
 			OnChange: func(v float32, e gogui.EventCtx) {
 				level := int(v + 0.5)
@@ -227,7 +230,8 @@ func rowView(id, page string, r widget.Row, tap func(int), glyphs bool) gogui.Vi
 				}
 				e.Window.InvalidateLayout()
 			},
-		})))
+		}
+		content = append(content, grip(slider(level)))
 	case widget.Chevron:
 		if r.Value != "" {
 			content = append(content, gogui.Label(r.Value, secondary()))
@@ -256,9 +260,7 @@ func rowView(id, page string, r widget.Row, tap func(int), glyphs bool) gogui.Vi
 		Disabled: r.Dim,
 		Content:  content,
 	}
-	if r.Kind == widget.Toggle && r.Chosen {
-		highlight(&cfg)
-	}
+	listRow(&cfg, chosen(r.Kind == widget.Toggle && r.Chosen))
 	return pressable(gogui.Row, cfg, onClick)
 }
 
@@ -283,7 +285,7 @@ func panning(e gogui.EventCtx) (gogui.GesturePhase, bool) {
 	return e.Event.GesturePhase, true
 }
 
-func reach() float32 { return gogui.CurrentTheme().Cfg.TextStyleDef.Size * 2.4 }
+func reach() float32 { return style.Reach() }
 
 func grip(v gogui.View) gogui.View {
 	return gogui.Row(gogui.ContainerCfg{

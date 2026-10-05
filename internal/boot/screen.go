@@ -10,6 +10,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/reveal"
+	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
@@ -48,7 +49,8 @@ func DrawBoot(p *display.Panel, progress []component.Progress) error {
 // chosen is the theme to draw in, so a dark device does not flash white while it starts. A missing
 // file, an unreadable one and an unknown name all land on the default, which is light.
 func chosen() theme.Theme {
-	t, ok := theme.ByName(config.Get().Screen.Theme)
+	s := config.Get().Screen
+	t, ok := theme.ByName(style.Theme(s.Style, s.Theme))
 	if !ok {
 		return theme.Default()
 	}

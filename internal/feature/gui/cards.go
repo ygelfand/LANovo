@@ -33,14 +33,12 @@ func messageCard(w *gogui.Window) gogui.View {
 	}
 	words = append(words, gogui.Text(gogui.TextCfg{Text: m.Body, TextStyle: t.TextStyleTitle, Mode: gogui.TextModeWrap}))
 
-	card := gogui.Row(gogui.ContainerCfg{
+	card := gogui.Row(panel(gogui.ContainerCfg{
 		ID:        "message",
 		Width:     float32(vw) * 0.82,
 		MinHeight: float32(vh) * 0.4,
 		Sizing:    gogui.FixedFit,
 		VAlign:    gogui.VAlignMiddle,
-		Color:     t.Cfg.ColorPanel,
-		Radius:    gogui.RadiusLarge,
 		Padding:   gogui.PaddingLarge,
 		Spacing:   gogui.SpacingLarge,
 		Clip:      true,
@@ -48,7 +46,7 @@ func messageCard(w *gogui.Window) gogui.View {
 			gogui.Column(gogui.ContainerCfg{Width: t.Cfg.RadiusMedium, Sizing: gogui.FixedFill, Color: tint, Radius: gogui.RadiusSmall, Padding: gogui.NoPadding}),
 			gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Spacing: gogui.SpacingMedium, Content: words}),
 		},
-	})
+	}))
 	return gogui.Column(gogui.ContainerCfg{
 		Width:   float32(vw),
 		Height:  float32(vh),
@@ -87,23 +85,21 @@ func timerCard(w *gogui.Window) gogui.View {
 	}
 	content := []gogui.View{gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, VAlign: gogui.VAlignMiddle, Padding: gogui.NoPadding, Spacing: gogui.SpacingMedium, Content: line})}
 	if !c.Ringing && c.Of > 0 {
-		content = append(content, gogui.ProgressBar(gogui.ProgressBarCfg{Percent: float32(min(max(c.Left.Seconds()/c.Of.Seconds(), 0), 1)), Sizing: gogui.FillFit}))
+		content = append(content, progressBar(gogui.ProgressBarCfg{Percent: float32(min(max(c.Left.Seconds()/c.Of.Seconds(), 0), 1)), Sizing: gogui.FillFit}))
 	}
 
 	var stop func(gogui.EventCtx)
 	if c.Ringing {
 		stop = func(gogui.EventCtx) { timer.Get().Stop() }
 	}
-	card := pressable(gogui.Column, gogui.ContainerCfg{
+	card := pressable(gogui.Column, panel(gogui.ContainerCfg{
 		ID:      "timer",
 		Width:   float32(vw) * 0.84,
 		Sizing:  gogui.FixedFit,
-		Color:   t.Cfg.ColorPanel,
-		Radius:  gogui.RadiusLarge,
 		Padding: gogui.PaddingMedium,
 		Spacing: gogui.SpacingSmall,
 		Content: content,
-	}, stop)
+	}), stop)
 	return gogui.Column(gogui.ContainerCfg{
 		Width:   float32(vw),
 		Height:  float32(vh),
@@ -189,20 +185,18 @@ func assistantPanel(w *gogui.Window) gogui.View {
 	if show.Reply != "" {
 		content = append(content, gogui.Text(gogui.TextCfg{Text: assistant.Revealed(show.Reply, show.Reveal), TextStyle: t.TextStyleTitle, Mode: gogui.TextModeWrap}))
 	}
-	return gogui.Column(gogui.ContainerCfg{
+	return gogui.Column(panel(gogui.ContainerCfg{
 		ID:           "assistant",
 		Float:        true,
 		FloatOffsetY: deep * (float32(show.Down) - 1),
 		Width:        float32(vw),
 		MaxHeight:    float32(vh) * 0.7,
 		Sizing:       gogui.FixedFit,
-		Color:        t.Cfg.ColorPanel,
-		Radius:       gogui.RadiusLarge,
 		Padding:      gogui.PaddingLarge,
 		Spacing:      gogui.SpacingSmall,
 		Clip:         true,
 		Content:      content,
-	})
+	}))
 }
 
 func captions(w *gogui.Window, show assistant.Showing) gogui.View {

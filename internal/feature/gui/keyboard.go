@@ -10,6 +10,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
+	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
@@ -17,6 +18,7 @@ var fields sync.Map
 
 func textField(cfg gogui.InputCfg) gogui.View {
 	fields.Store(cfg.ID, true)
+	controls().Field(&cfg)
 	return gogui.Input(cfg)
 }
 
@@ -53,14 +55,20 @@ func (a *App) keyboard(w *gogui.Window) gogui.View {
 	high := reach() * rowScale
 	unit := min((float32(vw)-2*pad-9*gap)/10, high*1.6)
 
+	plain := pal.Background.Blend(pal.Text, 0.18)
+	special := pal.Background.Blend(pal.Text, 0.10)
 	key := func(id, label string, width float32, fill theme.Color, do func()) gogui.View {
+		state := style.Rest
+		if fill == special {
+			state = style.Partial
+		}
 		st := gogui.CurrentTheme().Cfg.TextStyleDef
 		if label == gogui.IconArrowUp || label == gogui.IconArrowLeft {
 			st = gogui.CurrentTheme().TextStyleIconMedium
 		}
 		st.Size *= textScale
 		st.Color = color(pal.Text)
-		return gogui.Row(gogui.ContainerCfg{
+		cfg := gogui.ContainerCfg{
 			ID:      "key-" + id,
 			Width:   width,
 			Height:  high,
@@ -70,16 +78,16 @@ func (a *App) keyboard(w *gogui.Window) gogui.View {
 			HAlign:  gogui.HAlignCenter,
 			VAlign:  gogui.VAlignMiddle,
 			Padding: gogui.NoPadding,
-			Content: []gogui.View{gogui.Label(label, st)},
 			OnClick: func(e gogui.EventCtx) {
 				do()
 				e.Window.InvalidateLayout()
 				e.Consume()
 			},
-		})
+		}
+		controls().Key(&cfg, &st, state)
+		cfg.Content = []gogui.View{gogui.Label(label, st)}
+		return gogui.Row(cfg)
 	}
-	plain := pal.Background.Blend(pal.Text, 0.18)
-	special := pal.Background.Blend(pal.Text, 0.10)
 
 	typeRune := func(ch rune) func() {
 		return func() {
@@ -140,7 +148,7 @@ func (a *App) keyboard(w *gogui.Window) gogui.View {
 		at.X = vw - at.W
 		corners = gogui.RadiusLarge
 	}
-	return placed(at, gogui.Column(gogui.ContainerCfg{
+	tray := gogui.ContainerCfg{
 		ID:      "keyboard",
 		Sizing:  gogui.FillFill,
 		Padding: gogui.NewPadding(pad, pad, pad*1.5, pad),
@@ -150,7 +158,9 @@ func (a *App) keyboard(w *gogui.Window) gogui.View {
 		HAlign:  gogui.HAlignCenter,
 		Content: lines,
 		OnClick: func(e gogui.EventCtx) { e.Consume() },
-	}))
+	}
+	controls().Panel(&tray)
+	return placed(at, gogui.Column(tray))
 }
 
 func keySize(k config.KeyboardSize) (row, text float32) {

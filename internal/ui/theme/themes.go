@@ -62,6 +62,34 @@ var All = []Theme{
 		Success: rgb(0x7ac77a), Warning: rgb(0xd6b45c), Danger: rgb(0xdc6a6a),
 	},
 	{
+		Name: "Phosphor", Dark: true,
+		Background: rgb(0x050a05), Surface: rgb(0x0b140b),
+		Text: rgb(0x5cff6e), Muted: rgb(0x2f8a3a),
+		Accent: rgb(0x9dffa6), Accent2: rgb(0x3fd158),
+		Success: rgb(0x5cff6e), Warning: rgb(0xd8ff5c), Danger: rgb(0xff5c5c),
+	},
+	{
+		Name: "Amber", Dark: true,
+		Background: rgb(0x0d0800), Surface: rgb(0x170f02),
+		Text: rgb(0xffb000), Muted: rgb(0x9a6a08),
+		Accent: rgb(0xffd06a), Accent2: rgb(0xff8c00),
+		Success: rgb(0xffd06a), Warning: rgb(0xff8c00), Danger: rgb(0xff4a2a),
+	},
+	{
+		Name: "Graphite", Dark: true,
+		Background: rgb(0x1b1b1a), Surface: rgb(0x272725),
+		Text: rgb(0xe9e6df), Muted: rgb(0x8f8c85),
+		Accent: rgb(0xff6a1a), Accent2: rgb(0x7fb39c),
+		Success: rgb(0x7fb39c), Warning: rgb(0xe8b23a), Danger: rgb(0xe8553a),
+	},
+	{
+		Name: "Synthwave", Dark: true,
+		Background: rgb(0x0d0221), Surface: rgb(0x1a0b3a),
+		Text: rgb(0xf6e7ff), Muted: rgb(0xa58fcc),
+		Accent: rgb(0xff2a6d), Accent2: rgb(0x05d9e8),
+		Success: rgb(0x05d9a0), Warning: rgb(0xffc857), Danger: rgb(0xff4a4a),
+	},
+	{
 		Name: "Paper", Dark: false,
 		Background: rgb(0xf7f5f1), Surface: rgb(0xffffff),
 		Text: rgb(0x22252a), Muted: rgb(0x6d7480),
@@ -88,6 +116,13 @@ var All = []Theme{
 		Text: rgb(0x2e2329), Muted: rgb(0x7d6a73),
 		Accent: rgb(0xd1547d), Accent2: rgb(0x9a6ad1),
 		Success: rgb(0x4f9e6b), Warning: rgb(0xbb8226), Danger: rgb(0xcf4356),
+	},
+	{
+		Name: "Braun", Dark: false,
+		Background: rgb(0xe8e5de), Surface: rgb(0xf4f2ed),
+		Text: rgb(0x1e1e1c), Muted: rgb(0x7a7770),
+		Accent: rgb(0xf05a1a), Accent2: rgb(0x3d6f5d),
+		Success: rgb(0x3d6f5d), Warning: rgb(0xd9a21b), Danger: rgb(0xc8361b),
 	},
 }
 

@@ -8,6 +8,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/setting"
+	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
@@ -78,15 +79,15 @@ func rows() []Setting {
 			Name:  "style",
 			Group: Panel,
 			ID:    "screen_style", Icon: "mdi:shape-outline",
-			Kind: setting.Choice, Options: plain(config.ScreenStyles()),
+			Kind: setting.Choice, Options: plain(style.Names()),
 			Read: func(s *config.Screen) string {
 				if s.Style == "" {
-					return config.StyleStandard
+					return style.Standard
 				}
 				return s.Style
 			},
 			Write: func(s *config.Screen, v string) error {
-				if !slices.Contains(config.ScreenStyles(), v) {
+				if !slices.Contains(style.Names(), v) {
 					return Table().Row("style").Bad(v, "")
 				}
 				s.Style = v
@@ -119,7 +120,7 @@ func rows() []Setting {
 			Kind: setting.Choice, Options: themes(),
 			Read: func(s *config.Screen) string { return s.Theme },
 			Write: func(s *config.Screen, v string) error {
-				if _, ok := theme.ByName(v); !ok {
+				if _, ok := theme.ByName(v); !ok && v != style.ThemeDefault {
 					return Table().Row("theme").Bad(v, "")
 				}
 				s.Theme = v
@@ -155,7 +156,7 @@ func plain(values []string) []setting.Option {
 }
 
 func themes() []setting.Option {
-	out := make([]setting.Option, 0, len(theme.Names()))
+	out := []setting.Option{{Value: style.ThemeDefault, Label: style.ThemeDefault}}
 	for _, name := range theme.Names() {
 		out = append(out, setting.Option{Value: name, Label: name})
 	}

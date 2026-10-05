@@ -12,6 +12,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 	"github.com/ygelfand/LANovo/internal/ui/reveal"
+	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
@@ -26,7 +27,8 @@ func bootFrame(args []string) (string, error) {
 	m := reveal.Moment{At: time.Duration(secs * float64(time.Second))}
 	nums := []*float64{&m.Trace, &m.Header, &m.Ready}
 	w, h := board.Current().PanelWidth, board.Current().PanelHeight
-	palette, ok := theme.ByName(config.Get().Screen.Theme)
+	s := config.Get().Screen
+	palette, ok := theme.ByName(style.Theme(s.Style, s.Theme))
 	if !ok {
 		palette = theme.Default()
 	}

@@ -12,6 +12,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/lib/say"
+	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
 )
 
@@ -118,17 +119,24 @@ func pickerBody(p *homecontrol.Picker) gogui.View {
 		return column([]gogui.View{search, rowView("loading", "picker", widget.Row{Label: say.T("home.loading")}, nil, false)})
 	}
 
-	tabs := gogui.TabControl(gogui.TabControlCfg{
-		ID:       "home-tabs",
-		Selected: string(s.Tab),
-		Sizing:   gogui.FillFit,
-		OnSelect: func(id string, _ gogui.EventCtx) { p.SetTab(homecontrol.Tab(id)) },
-		Items: []gogui.TabItemCfg{
-			gogui.NewTabItem(string(homecontrol.TabLabels), say.T("home.tab.labels"), []gogui.View{labelsTab(p, s)}),
-			gogui.NewTabItem(string(homecontrol.TabManual), say.T("home.tab.manual"), []gogui.View{manualTab(p, s)}),
-		},
-	})
-	return column([]gogui.View{search, tabs})
+	var strip []gogui.View
+	for _, it := range []struct {
+		tab   homecontrol.Tab
+		label string
+	}{{homecontrol.TabLabels, say.T("home.tab.labels")}, {homecontrol.TabManual, say.T("home.tab.manual")}} {
+		st := gogui.CurrentTheme().Cfg.TextStyleDef
+		cfg := gogui.ContainerCfg{ID: "home-tab-" + string(it.tab), Padding: gogui.PaddingMedium, VAlign: gogui.VAlignMiddle}
+		tab(&cfg, &st, chosen(s.Tab == it.tab))
+		cfg.Content = []gogui.View{gogui.Label(it.label, st)}
+		pick := it.tab
+		strip = append(strip, pressable(gogui.Row, cfg, func(gogui.EventCtx) { p.SetTab(pick) }))
+	}
+	shown := labelsTab(p, s)
+	if s.Tab == homecontrol.TabManual {
+		shown = manualTab(p, s)
+	}
+	tabs := gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Spacing: gogui.SpacingSmall, Content: strip})
+	return column([]gogui.View{search, tabs, shown})
 }
 
 func failure(err error) string {
@@ -219,7 +227,7 @@ func areaHeader(p *homecontrol.Picker, s homecontrol.Snapshot, i int, a homecont
 			ID:      id + "-switch",
 			Padding: gogui.NoPadding,
 			VAlign:  gogui.VAlignMiddle,
-			Content: []gogui.View{gogui.Switch(gogui.SwitchCfg{ID: id + "-sw", Selected: a.On, FocusDisabled: true})},
+			Content: []gogui.View{controls().Toggle(id+"-sw", a.On)},
 		}, func(gogui.EventCtx) { p.ToggleArea(a.ID) }))
 	}
 	cfg := gogui.ContainerCfg{
@@ -231,11 +239,13 @@ func areaHeader(p *homecontrol.Picker, s homecontrol.Snapshot, i int, a homecont
 		Radius:  gogui.RadiusMedium,
 		Content: content,
 	}
+	state := style.Rest
 	switch {
 	case a.On || s.Pick.All:
-		highlight(&cfg)
+		state = style.Chosen
 	case a.Included > 0:
-		outline(&cfg)
+		state = style.Partial
 	}
+	listRow(&cfg, state)
 	return gogui.Row(cfg)
 }

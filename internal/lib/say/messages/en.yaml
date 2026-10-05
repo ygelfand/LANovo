@@ -39,6 +39,17 @@ display.title: Display
 display.brightness: Brightness
 display.auto: Adaptive brightness
 display.theme: Theme
+display.style: Style
+style.title: Style
+style.standard: Standard
+style.material: Material You
+style.glass: Glass
+style.eink: E-ink
+style.metro: Metro
+style.terminal: Terminal
+style.hifi: Hi-fi
+style.neon: Neon
+style.skeuo: Skeuo
 display.clock: Clock
 display.poster: Wallpaper
 poster.off: Off
@@ -72,6 +83,7 @@ clock.size.title: Clock size
 clock.color.title: Clock color
 
 theme.title: Theme
+theme.default: Default
 zone.title: Time zone
 
 display.idle: Screen saver

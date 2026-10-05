@@ -35,29 +35,23 @@ func tabStrip(at ui.Rect, tabs []dashboard.Tab, open string, pal theme.Theme) go
 	for _, t := range tabs {
 		st := gogui.CurrentTheme().Cfg.TextStyleDef
 		st.Size *= 1.6
-		st.Color = color(pal.Text)
-		fill := color(pal.Surface)
-		if t.Key == open {
-			fill = color(pal.Accent)
-			st.Color = color(pal.Background)
+		cfg := gogui.ContainerCfg{
+			ID:      "tab-" + t.Key,
+			Height:  float32(at.H),
+			Sizing:  gogui.FitFixed,
+			Padding: gogui.NewPadding(0, reach()*0.8, 0, reach()*0.6),
+			Spacing: gogui.SpacingMedium,
+			VAlign:  gogui.VAlignMiddle,
 		}
+		tab(&cfg, &st, chosen(t.Key == open))
 		content := []gogui.View{gogui.Label(t.Name, st)}
 		if kind, ok := tabKinds[t.Kind]; ok && kind.glyph != nil {
 			mark := iconStyle(st.Color)
 			mark.Size = st.Size
 			content = append([]gogui.View{gogui.Label(kind.glyph(t), mark)}, content...)
 		}
-		pills = append(pills, pressable(gogui.Row, gogui.ContainerCfg{
-			ID:      "tab-" + t.Key,
-			Height:  float32(at.H),
-			Sizing:  gogui.FitFixed,
-			Color:   fill,
-			Radius:  gogui.RadiusLarge,
-			Padding: gogui.NewPadding(0, reach()*0.8, 0, reach()*0.6),
-			Spacing: gogui.SpacingMedium,
-			VAlign:  gogui.VAlignMiddle,
-			Content: content,
-		}, func(gogui.EventCtx) { dashboard.Show(t.Key) }))
+		cfg.Content = content
+		pills = append(pills, pressable(gogui.Row, cfg, func(gogui.EventCtx) { dashboard.Show(t.Key) }))
 	}
 	return placed(at, gogui.Row(gogui.ContainerCfg{
 		Sizing:  gogui.FillFill,

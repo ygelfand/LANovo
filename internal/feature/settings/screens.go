@@ -39,6 +39,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/wake"
 	"github.com/ygelfand/LANovo/internal/setting"
 	"github.com/ygelfand/LANovo/internal/ui"
+	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
@@ -59,7 +60,7 @@ func root() *shell.Page {
 			return []widget.Row{
 					{Glyph: gogui.IconGlobe, Label: say.T("settings.network"), Kind: widget.Chevron, Value: wifi.Get().Network()},
 					{Glyph: gogui.IconPlug, Label: say.T("settings.features"), Kind: widget.Chevron},
-					{Glyph: gogui.IconSunnyO, Label: say.T("settings.display"), Kind: widget.Chevron, Value: cfg.Screen.Theme},
+					{Glyph: gogui.IconSunnyO, Label: say.T("settings.display"), Kind: widget.Chevron, Value: themeSays(cfg.Screen.Theme)},
 					{Glyph: gogui.IconHome, Label: say.T("home.title"), Kind: widget.Chevron},
 					{Glyph: gogui.IconSpeaker, Label: say.T("settings.volume"), Kind: widget.Chevron,
 						Value: fmt.Sprintf("%d%%", cfg.Volume.Level(config.StreamMedia))},
@@ -165,7 +166,8 @@ func displayPage() *shell.Page {
 			return []widget.Row{
 					{Label: say.T("display.brightness"), Kind: widget.Slider, Level: cfg.Screen.Backlight},
 					{Label: say.T("display.auto"), Kind: widget.Toggle, On: auto},
-					{Glyph: gogui.IconPalette, Label: say.T("display.theme"), Kind: widget.Chevron, Value: cfg.Screen.Theme},
+					{Glyph: gogui.IconPalette, Label: say.T("display.theme"), Kind: widget.Chevron, Value: themeSays(cfg.Screen.Theme)},
+					{Label: say.T("display.style"), Kind: widget.Chevron, Value: say.T("style." + style.ByName(cfg.Screen.Style).Name)},
 					{Glyph: gogui.IconClock, Label: say.T("display.clock"), Kind: widget.Chevron, Value: cfg.Clock.Face.Label()},
 					{Glyph: gogui.IconMoon, Label: say.T("display.idle"), Kind: widget.Chevron, Value: cfg.Idle.After.Label()},
 					{Glyph: gogui.IconPicture, Label: say.T("display.poster"), Kind: widget.Chevron, Value: posterSays(cfg.Poster)},
@@ -177,6 +179,7 @@ func displayPage() *shell.Page {
 					setBrightness,
 					func(int) { toggleAuto(auto) },
 					open(themePage()),
+					open(stylePage()),
 					open(clockPage()),
 					open(idlePage()),
 					open(posterPage()),
@@ -511,6 +514,26 @@ func inking(ink config.Ink) func(ui.Surface, ui.Rect, theme.Theme) {
 	}
 }
 
+func stylePage() *shell.Page {
+	return &shell.Page{
+		Title: say.T("style.title"),
+		Tiles: func() ([]widget.Cell, []func(int)) {
+			now := style.ByName(config.Get().Screen.Style).Name
+			var cells []widget.Cell
+			var taps []func(int)
+			for _, name := range style.Names() {
+				cells = append(cells, widget.Cell{Label: say.T("style." + name), Chosen: name == now, Style: name})
+				taps = append(taps, func(int) {
+					if err := screen.Get().Set("style", name); err != nil {
+						slog.Error("the style could not be saved", "style", name, "err", err)
+					}
+				})
+			}
+			return cells, taps
+		},
+	}
+}
+
 func themePage() *shell.Page {
 	return &shell.Page{
 		Title: say.T("theme.title"),
@@ -518,10 +541,11 @@ func themePage() *shell.Page {
 		// A grid rather than a row each: a row spends its width on a label and a small swatch, and
 		// twelve of them do not fit on a screen. A tile is the swatch, with the name on it.
 		Tiles: func() ([]widget.Cell, []func(int)) {
-			now := screen.Get().Theme().Name
+			now := config.Get().Screen.Theme
+			follow, _ := theme.ByName(style.Theme(config.Get().Screen.Style, style.ThemeDefault))
 
-			cells := make([]widget.Cell, 0, len(theme.All))
-			acts := make([]func(int), 0, len(theme.All))
+			cells := []widget.Cell{{Label: say.T("theme.default"), Chosen: now == style.ThemeDefault, Palette: &follow}}
+			acts := []func(int){use(style.ThemeDefault)}
 
 			for _, t := range theme.All {
 				cells = append(cells, widget.Cell{
@@ -595,6 +619,13 @@ func swatch(t theme.Theme) func(ui.Surface, ui.Rect, theme.Theme) {
 			ui.FillRect(s, ui.Rect{X: x + i*(side+gap), Y: y, W: side, H: side}, c)
 		}
 	}
+}
+
+func themeSays(name string) string {
+	if name == style.ThemeDefault {
+		return say.T("theme.default")
+	}
+	return name
 }
 
 func use(name string) func(int) {

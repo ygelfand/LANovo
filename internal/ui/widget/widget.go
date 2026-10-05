@@ -43,4 +43,6 @@ type Cell struct {
 	Palette *theme.Theme
 
 	Face config.Face
+
+	Style string
 }

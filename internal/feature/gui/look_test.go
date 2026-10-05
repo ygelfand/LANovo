@@ -3,13 +3,16 @@ package gui
 import (
 	"strings"
 	"testing"
+
+	"github.com/ygelfand/LANovo/internal/ui/style"
+	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
-func TestEveryStylePaletteAndSizeMakesATheme(t *testing.T) {
-	for _, st := range Styles() {
-		for _, p := range PalettesFor(st) {
+func TestEveryStyleThemeAndSizeMakesATheme(t *testing.T) {
+	for _, st := range style.Names() {
+		for _, p := range theme.Names() {
 			for _, sz := range Sizes() {
-				th := Look(st, p, sz, family)
+				th := Look(st, p, sz)
 				if want := st + "/" + p + "/" + sz; th.Cfg.Name != want {
 					t.Errorf("made %q, want %q", th.Cfg.Name, want)
 				}
@@ -18,18 +21,36 @@ func TestEveryStylePaletteAndSizeMakesATheme(t *testing.T) {
 	}
 }
 
-func TestAPaletteTheStyleDoesNotOfferFallsBackToItsFirst(t *testing.T) {
-	th := Look(StyleStandard, "no-such-palette", SizeCompact, family)
-	first := PalettesFor(StyleStandard)[0]
-	if !strings.Contains(th.Cfg.Name, "/"+first+"/") {
-		t.Errorf("got %q, want the first palette %q", th.Cfg.Name, first)
+func TestAnUnknownThemeFallsBackToTheDefault(t *testing.T) {
+	th := Look(style.Standard, "no-such-palette", SizeCompact)
+	if !strings.Contains(th.Cfg.Name, "/"+theme.DefaultName+"/") {
+		t.Errorf("got %q, want the default theme %q", th.Cfg.Name, theme.DefaultName)
+	}
+}
+
+func TestEachStyleBringsItsTypeface(t *testing.T) {
+	for _, st := range style.All {
+		if got := Look(st.Name, theme.DefaultName, SizeLarge).Cfg.TextStyleDef.Family; got != st.Family {
+			t.Errorf("%s draws in %q, want %q", st.Name, got, st.Family)
+		}
 	}
 }
 
 func TestSizesDiffer(t *testing.T) {
-	large := Look(StyleStandard, "", SizeLarge, family)
-	compact := Look(StyleStandard, "", SizeCompact, family)
+	large := Look(style.Standard, "", SizeLarge)
+	compact := Look(style.Standard, "", SizeCompact)
 	if large.Cfg.SizeTextMedium <= compact.Cfg.SizeTextMedium {
 		t.Errorf("large text %v is not bigger than compact %v", large.Cfg.SizeTextMedium, compact.Cfg.SizeTextMedium)
+	}
+}
+
+func TestDefaultTakesEachStylesPalette(t *testing.T) {
+	for _, st := range style.All {
+		if _, ok := theme.ByName(st.Palette); !ok {
+			t.Errorf("%s recommends %q, which is not a theme", st.Name, st.Palette)
+		}
+		if got := Look(st.Name, style.ThemeDefault, SizeLarge).Cfg.Name; !strings.Contains(got, "/"+st.Palette+"/") {
+			t.Errorf("%s with the default theme made %q, want its palette %q", st.Name, got, st.Palette)
+		}
 	}
 }

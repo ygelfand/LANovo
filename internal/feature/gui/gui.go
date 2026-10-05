@@ -2,18 +2,13 @@ package gui
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"log/slog"
-	"slices"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
-	"golang.org/x/image/font/gofont/gobold"
-	"golang.org/x/image/font/gofont/gomedium"
-	"golang.org/x/image/font/gofont/goregular"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
@@ -39,7 +34,6 @@ const (
 	sweep      = 120
 	layerID    = 60
 	layerZ     = 5
-	family     = "Go"
 	helperWait = 200 * time.Millisecond
 )
 
@@ -57,9 +51,6 @@ var (
 
 func init() {
 	component.Register(component.Device, Get, component.Order(36))
-	gogui.RegisterAppFontBytes(goregular.TTF)
-	gogui.RegisterAppFontBytes(gomedium.TTF)
-	gogui.RegisterAppFontBytes(weighted(gobold.TTF, 700))
 }
 
 func Get() *App {
@@ -84,7 +75,7 @@ func sizeSetting() string {
 
 func current() gogui.Theme {
 	s := config.Get().Screen
-	return Look(s.Style, s.Theme, sizeSetting(), family)
+	return Look(s.Style, s.Theme, sizeSetting())
 }
 
 func (a *App) Restyle() {
@@ -290,14 +281,3 @@ func (a *App) Run(ctx context.Context) error {
 }
 
 // Go Bold declares OS/2 usWeightClass 600; go-glyph files only 700 and up as bold.
-func weighted(ttf []byte, weight uint16) []byte {
-	out := slices.Clone(ttf)
-	tables := int(binary.BigEndian.Uint16(out[4:]))
-	for i := range tables {
-		rec := out[12+16*i:]
-		if string(rec[:4]) == "OS/2" {
-			binary.BigEndian.PutUint16(out[binary.BigEndian.Uint32(rec[8:])+4:], weight)
-		}
-	}
-	return out
-}
