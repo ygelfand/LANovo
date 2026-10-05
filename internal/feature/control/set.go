@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ygelfand/LANovo/internal/feature/api"
+	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
 	panel "github.com/ygelfand/LANovo/internal/feature/settings"
@@ -267,6 +268,12 @@ func homeRows() []setting {
 			use:   number(0, config.HomeGroupMost, s.SetGroupFrom),
 		})
 	}
+	rows = append(rows, setting{
+		name:  "home.check.actions",
+		field: "API.CheckActions",
+		says:  func(c config.Config) string { return knob.OnOff(c.API.CheckActions) },
+		use:   toggle(homeassistant.Get().SetCheckActions),
+	})
 	rows = append(rows, setting{
 		name:  "home.combine",
 		field: "Home.Combine",

@@ -28,7 +28,7 @@ func homeBody(w *gogui.Window) gogui.View {
 	switch {
 	case !ha.Connected():
 		return blocked(w, say.T("home.unconnected"), say.F("home.unconnected.hint", device), nil)
-	case ha.Access() == homeassistant.Unknown:
+	case ha.Access() == homeassistant.Unknown && config.Get().API.CheckActions:
 		return blocked(w, say.T("home.checking"), "", nil)
 	case ha.Access() == homeassistant.Refused:
 		return blocked(w, say.T("home.refused"), say.F("home.refused.hint", device), func(int) { ha.Probe() })

@@ -100,6 +100,12 @@ func SettingsPage() *shell.Page {
 				rows = append(rows, widget.Row{Label: s.Name(), Kind: widget.Chevron})
 				taps = append(taps, func(int) { shell.Get().Push(selectionPage(s)) })
 			}
+			check := config.Get().API.CheckActions
+			rows = append(rows, widget.Row{Label: say.T("home.check.actions"), Hint: say.T("home.check.actions.hint"), Kind: widget.Toggle, On: check})
+			taps = append(taps, func(int) {
+				homeassistant.Get().SetCheckActions(!check)
+				shell.Get().Redraw()
+			})
 			return rows, taps
 		},
 	}

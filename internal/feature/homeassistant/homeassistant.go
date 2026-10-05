@@ -114,6 +114,9 @@ func (h *HomeAssistant) startup(adopted bool, now time.Time) component.Progress 
 	if !adopted {
 		return component.Progress{Done: true, Doing: "not adopted"}
 	}
+	if !config.Get().API.CheckActions {
+		return component.Progress{Done: true, Doing: "actions not checked"}
+	}
 	switch h.Access() {
 	case Allowed:
 		return component.Progress{Done: true, Doing: "synced"}
@@ -151,6 +154,9 @@ func (h *HomeAssistant) Probe() {
 }
 
 func (h *HomeAssistant) reprobe(conn sender) {
+	if !config.Get().API.CheckActions {
+		return
+	}
 	h.mu.Lock()
 	current := h.to == conn
 	if current {
@@ -174,6 +180,23 @@ func (h *HomeAssistant) probe(conn sender) {
 	case errors.Is(err, context.DeadlineExceeded):
 		slog.Warn("Home Assistant does not answer actions from this device; enable them in the ESPHome integration's options")
 		h.settle(conn, Refused)
+	}
+}
+
+func (h *HomeAssistant) SetCheckActions(on bool) {
+	if err := config.Set().API().CheckActions(on); err != nil {
+		slog.Error("the action check setting could not be saved", "err", err)
+	}
+	if on {
+		h.Probe()
+		return
+	}
+	h.mu.Lock()
+	moved := h.access != Unknown
+	h.access = Unknown
+	h.mu.Unlock()
+	if moved {
+		h.Changed.Emit(Unknown)
 	}
 }
 
