@@ -181,12 +181,10 @@ home.checking: Checking Home Assistant…
 home.refused: Actions not allowed
 home.refused.hint: Open ESPHome, press the settings cog on {{.Name}}, and enable “Allow the device to perform Home Assistant actions.”
 home.check: Check again
-home.check.actions: Check action access
-home.check.actions.hint: Ask Home Assistant on connect whether this device may perform actions
+home.enabled: Enable home control
 home.refresh: Refresh
-home.settings: Settings
-home.control.lights: Control lights
-home.control.switches: Control switches
+home.devices: Select devices
+home.enable: Enable
 home.combine: Include switches
 home.group: Group by area
 home.group.none: Every device on its own card

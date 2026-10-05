@@ -19,6 +19,7 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/bluetooth"
@@ -95,6 +96,7 @@ func (a *API) Start(context.Context) error {
 			Manufacturer: layout.Manufacturer,
 			Model:        device.Model,
 			Version:      layout.Version,
+			ProjectName:  layout.Manufacturer + "." + board.Current().Name,
 
 			Devices: subDevices(device.Name),
 

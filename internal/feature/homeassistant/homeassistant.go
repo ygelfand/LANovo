@@ -114,8 +114,8 @@ func (h *HomeAssistant) startup(adopted bool, now time.Time) component.Progress 
 	if !adopted {
 		return component.Progress{Done: true, Doing: "not adopted"}
 	}
-	if !config.Get().API.CheckActions {
-		return component.Progress{Done: true, Doing: "actions not checked"}
+	if !config.Get().Home.Enabled {
+		return component.Progress{Done: true, Doing: "home control off"}
 	}
 	switch h.Access() {
 	case Allowed:
@@ -154,7 +154,7 @@ func (h *HomeAssistant) Probe() {
 }
 
 func (h *HomeAssistant) reprobe(conn sender) {
-	if !config.Get().API.CheckActions {
+	if !config.Get().Home.Enabled {
 		return
 	}
 	h.mu.Lock()
@@ -183,10 +183,7 @@ func (h *HomeAssistant) probe(conn sender) {
 	}
 }
 
-func (h *HomeAssistant) SetCheckActions(on bool) {
-	if err := config.Set().API().CheckActions(on); err != nil {
-		slog.Error("the action check setting could not be saved", "err", err)
-	}
+func (h *HomeAssistant) Enable(on bool) {
 	if on {
 		h.Probe()
 		return

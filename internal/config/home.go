@@ -6,6 +6,7 @@ import (
 )
 
 type Home struct {
+	Enabled bool                `json:"enabled"`
 	Picks   map[string]HomePick `json:"picks"`
 	Control map[string]bool     `json:"control"`
 	Combine bool                `json:"combine"`
@@ -35,7 +36,7 @@ func (p HomePick) clone() HomePick {
 	return p
 }
 
-func defaultHome() Home { return Home{} }
+func defaultHome() Home { return Home{Enabled: true} }
 
 func (h Home) Picked(key string) HomePick { return h.Picks[key] }
 
@@ -72,6 +73,10 @@ func (w HomeWriter) Group(key string, n int) error {
 		group[key] = min(max(n, 0), HomeGroupMost)
 		c.Home.Group = group
 	})
+}
+
+func (w HomeWriter) Enabled(v bool) error {
+	return w.st.Update(func(c *Config) { c.Home.Enabled = v })
 }
 
 func (w HomeWriter) Combine(v bool) error {

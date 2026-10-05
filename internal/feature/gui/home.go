@@ -26,25 +26,27 @@ func homeScreen(h *homecontrol.Home) *Screen {
 func homeBody(w *gogui.Window) gogui.View {
 	ha := homeassistant.Get()
 	device := map[string]any{"Name": config.Get().Device.Name}
+	on := homecontrol.Enabled()
+	master := rowView("enabled", "home", widget.Row{Label: say.T("home.enabled"), Kind: widget.Toggle, On: on},
+		func(int) { homecontrol.SetEnabled(!on) }, false)
 	switch {
+	case !on:
+		return column([]gogui.View{master})
 	case !ha.Connected():
-		return blocked(w, say.T("home.unconnected"), say.F("home.unconnected.hint", device), nil)
-	case ha.Access() == homeassistant.Unknown && config.Get().API.CheckActions:
-		return blocked(w, say.T("home.checking"), "", nil)
+		return column([]gogui.View{master, blocked(w, say.T("home.unconnected"), say.F("home.unconnected.hint", device), nil)})
+	case ha.Access() == homeassistant.Unknown:
+		return column([]gogui.View{master, blocked(w, say.T("home.checking"), "", nil)})
 	case ha.Access() == homeassistant.Refused:
-		return blocked(w, say.T("home.refused"), say.F("home.refused.hint", device), func(int) { ha.Probe() })
+		return column([]gogui.View{master, blocked(w, say.T("home.refused"), say.F("home.refused.hint", device), func(int) { ha.Probe() })})
 	}
 
-	var views []gogui.View
+	views := []gogui.View{master}
 	for i, s := range homecontrol.Selections {
 		views = append(views, rowView(fmt.Sprintf("sel-%d", i), "home",
 			widget.Row{Label: s.Name(), Kind: widget.Chevron, Value: homecontrol.Summary(s.Pick())},
-			func(int) { shell.Get().Push(homecontrol.NewPicker(s)) }, false))
+			func(int) { shell.Get().Push(homecontrol.SelectionPage(s)) }, false))
 	}
 	views = append(views, separator())
-	views = append(views, rowView("settings", "home",
-		widget.Row{Label: say.T("home.settings"), Kind: widget.Chevron},
-		func(int) { shell.Get().Push(homecontrol.SettingsPage()) }, false))
 	views = append(views, rowView("refresh", "home",
 		widget.Row{Label: say.T("home.refresh")},
 		func(int) { homecontrol.Refresh() }, false))

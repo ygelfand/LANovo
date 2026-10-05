@@ -59,7 +59,17 @@ func Summary(p config.HomePick) string {
 	return strings.Join(parts, ", ")
 }
 
-func (s Selection) Controlled() bool { return config.Get().Home.Control[s.Key] }
+func (s Selection) Controlled() bool { return Enabled() && config.Get().Home.Control[s.Key] }
+
+func Enabled() bool { return config.Get().Home.Enabled }
+
+func SetEnabled(on bool) {
+	if err := config.Set().Home().Enabled(on); err != nil {
+		slog.Error("the home control setting could not be saved", "err", err)
+	}
+	homeassistant.Get().Enable(on)
+	shared.clear()
+}
 
 func (s Selection) GroupFrom() int { return config.Get().Home.Grouped(s.Key) }
 
@@ -88,40 +98,19 @@ func SetCombined(on bool) {
 	shell.Get().Redraw()
 }
 
-func SettingsPage() *shell.Page {
-	return &shell.Page{
-		Title: say.T("home.settings"),
-		Build: func() ([]widget.Row, []func(int)) {
-			var (
-				rows []widget.Row
-				taps []func(int)
-			)
-			for _, s := range Selections {
-				rows = append(rows, widget.Row{Label: s.Name(), Kind: widget.Chevron})
-				taps = append(taps, func(int) { shell.Get().Push(selectionPage(s)) })
-			}
-			check := config.Get().API.CheckActions
-			rows = append(rows, widget.Row{Label: say.T("home.check.actions"), Hint: say.T("home.check.actions.hint"), Kind: widget.Toggle, On: check})
-			taps = append(taps, func(int) {
-				homeassistant.Get().SetCheckActions(!check)
-				shell.Get().Redraw()
-			})
-			return rows, taps
-		},
-	}
-}
-
-func selectionPage(s Selection) *shell.Page {
+func SelectionPage(s Selection) *shell.Page {
 	return &shell.Page{
 		Title: s.Name(),
 		Build: func() ([]widget.Row, []func(int)) {
 			on, from := s.Controlled(), s.GroupFrom()
 			rows := []widget.Row{
-				{Label: say.T("home.control." + s.Key), Kind: widget.Toggle, On: on},
+				{Label: say.T("home.enable"), Kind: widget.Toggle, On: on},
+				{Label: say.T("home.devices"), Kind: widget.Chevron, Value: Summary(s.Pick())},
 				{Label: say.T("home.group"), Hint: groupHint(from), Kind: widget.Slider, Level: groupLevel(from), Snap: groupSnap, Value: strconv.Itoa(from)},
 			}
 			taps := []func(int){
 				func(int) { s.SetControlled(!on) },
+				func(int) { shell.Get().Push(NewPicker(s)) },
 				func(level int) { s.SetGroupFrom(groupOf(level)) },
 			}
 			if s.Key == Selections[0].Key {
