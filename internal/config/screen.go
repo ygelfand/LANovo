@@ -93,11 +93,16 @@ func (w ScreenWriter) Theme(v string) error {
 }
 
 const (
-	UISizeLarge   = "large"
+	UISizeMini    = "mini"
 	UISizeCompact = "compact"
+	UISizeMedium  = "medium"
+	UISizeLarge   = "large"
+	UISizeXLarge  = "xlarge"
 )
 
-func ScreenSizes() []string { return []string{UISizeLarge, UISizeCompact} }
+func ScreenSizes() []string {
+	return []string{UISizeMini, UISizeCompact, UISizeMedium, UISizeLarge, UISizeXLarge}
+}
 
 func (w ScreenWriter) Style(v string) error {
 	return w.st.Update(func(c *Config) { c.Screen.Style = v })

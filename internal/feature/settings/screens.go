@@ -12,6 +12,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/lib/say"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	"github.com/ygelfand/LANovo/internal/feature/access"
@@ -168,6 +169,7 @@ func displayPage() *shell.Page {
 					{Label: say.T("display.auto"), Kind: widget.Toggle, On: auto},
 					{Glyph: gogui.IconPalette, Label: say.T("display.theme"), Kind: widget.Chevron, Value: themeSays(cfg.Screen.Theme)},
 					{Label: say.T("display.style"), Kind: widget.Chevron, Value: say.T("style." + style.ByName(cfg.Screen.Style).Name)},
+					{Label: say.T("display.size"), Kind: widget.Slider, Level: sizeLevel(uiSize()), Snap: sizeSnap, Value: say.T("uisize." + uiSize())},
 					{Glyph: gogui.IconClock, Label: say.T("display.clock"), Kind: widget.Chevron, Value: cfg.Clock.Face.Label()},
 					{Glyph: gogui.IconMoon, Label: say.T("display.idle"), Kind: widget.Chevron, Value: cfg.Idle.After.Label()},
 					{Glyph: gogui.IconPicture, Label: say.T("display.poster"), Kind: widget.Chevron, Value: posterSays(cfg.Poster)},
@@ -180,6 +182,7 @@ func displayPage() *shell.Page {
 					func(int) { toggleAuto(auto) },
 					open(themePage()),
 					open(stylePage()),
+					func(level int) { setSize(sizeOf(level)) },
 					open(clockPage()),
 					open(idlePage()),
 					open(posterPage()),
@@ -511,6 +514,35 @@ func inking(ink config.Ink) func(ui.Surface, ui.Rect, theme.Theme) {
 		reading := face.Read(time.Now(), cfg.Screen.Hours == config.TwentyFourHour)
 
 		face.Of(cfg.Clock.Face).Draw(s, at, reading.Undated(), ink.Over(palette))
+	}
+}
+
+func uiSize() string {
+	if s := config.Get().Screen.Size; s != "" {
+		return s
+	}
+	return board.Current().UISize
+}
+
+func sizeOf(level int) string {
+	all := config.ScreenSizes()
+	last := len(all) - 1
+	return all[min(max((level*last+50)/100, 0), last)]
+}
+
+func sizeLevel(name string) int {
+	all := config.ScreenSizes()
+	return max(slices.Index(all, name), 0) * 100 / (len(all) - 1)
+}
+
+func sizeSnap(level int) int { return sizeLevel(sizeOf(level)) }
+
+func setSize(name string) {
+	if name == uiSize() {
+		return
+	}
+	if err := screen.Get().Set("size", name); err != nil {
+		slog.Error("the size could not be saved", "size", name, "err", err)
 	}
 }
 

@@ -54,3 +54,14 @@ func TestDefaultTakesEachStylesPalette(t *testing.T) {
 		}
 	}
 }
+
+func TestSizesGrowInOrder(t *testing.T) {
+	var last float32
+	for _, sz := range Sizes() {
+		body := Look(style.Standard, "", sz).Cfg.TextStyleDef.Size
+		if body <= last {
+			t.Errorf("%s body text %v is not bigger than the size before it (%v)", sz, body, last)
+		}
+		last = body
+	}
+}

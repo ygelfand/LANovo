@@ -40,6 +40,12 @@ display.brightness: Brightness
 display.auto: Adaptive brightness
 display.theme: Theme
 display.style: Style
+display.size: Size
+uisize.mini: Mini
+uisize.compact: Compact
+uisize.medium: Medium
+uisize.large: Large
+uisize.xlarge: Extra large
 style.title: Style
 style.standard: Standard
 style.material: Material You
