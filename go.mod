@@ -29,7 +29,7 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef
 	github.com/tfriedel6/canvas v0.12.1
 	github.com/tphakala/go-aac v0.7.0
-	github.com/ygelfand/go-esphome-device v0.0.11
+	github.com/ygelfand/go-esphome-device v0.0.12
 	github.com/zserge/microwakeword v0.0.0-20260330234603-bfaf3840114e
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 	golang.org/x/image v0.46.0
