@@ -173,6 +173,7 @@ type layer struct {
 	open   bool
 	shown  bool
 	hidden bool
+	closed bool
 	frames uint64
 	failed error
 }
@@ -201,10 +202,14 @@ func (l *layer) Show(f rtc.Frame) {
 	}
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if l.closed {
+		return
+	}
 	if !l.open {
 		if !f.Key || l.size.Width == 0 {
 			return
 		}
+		c.VideoClose(l.id)
 		if err := c.VideoOpen(l.id, surface.AVC, l.size.Width, l.size.Height, l.z, 0, ""); err != nil {
 			slog.Warn("call video open", "layer", l.id, "width", l.size.Width, "height", l.size.Height, "err", err)
 			l.failed = err
@@ -287,6 +292,7 @@ func (l *layer) reorient() {
 func (l *layer) close() {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	l.closed = true
 	if !l.open {
 		return
 	}
