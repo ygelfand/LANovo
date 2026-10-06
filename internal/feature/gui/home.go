@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
+	"github.com/ygelfand/LANovo/internal/feature/settings"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
 
@@ -46,6 +47,14 @@ func homeBody(w *gogui.Window) gogui.View {
 			widget.Row{Label: s.Name(), Kind: widget.Chevron, Value: homecontrol.Summary(s.Pick())},
 			func(int) { shell.Get().Push(homecontrol.SelectionPage(s)) }, false))
 	}
+	wc := config.Get().Weather
+	says := say.T("weather.off")
+	if wc.Entity != "" {
+		says = wc.Entity
+	}
+	views = append(views, rowView("weather", "home",
+		widget.Row{Label: say.T("weather.title"), Kind: widget.Chevron, Value: says},
+		func(int) { shell.Get().Push(settings.WeatherPage()) }, false))
 	views = append(views, separator())
 	views = append(views, rowView("refresh", "home",
 		widget.Row{Label: say.T("home.refresh")},

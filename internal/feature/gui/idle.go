@@ -63,6 +63,11 @@ func (a *App) idle(w *gogui.Window, v *idle.View) gogui.View {
 			})))
 		}
 	}
+	if wc := cfg.Weather; wc.Idle {
+		if v := weatherLayer(w, vw, vh, 0, pal); v != nil {
+			layers = append(layers, v)
+		}
+	}
 	return gogui.Column(gogui.ContainerCfg{
 		ID:      "idle",
 		Sizing:  gogui.FillFill,

@@ -479,3 +479,39 @@ camera.option.noise.off: Off
 camera.option.noise.fast: Fast
 camera.option.noise.high_quality: High quality
 camera.option.noise.minimal: Minimal
+weather.title: Weather
+weather.off: "Off"
+weather.entity: Weather entity
+weather.none: No weather entities in Home Assistant
+weather.dashboard: Show on dashboard
+weather.idle: Show on screen saver
+weather.look: Look
+weather.animate: Animate
+weather.themed: Themed colors
+weather.themed.hint: "Off uses natural colors: a yellow sun, grey clouds, blue rain"
+weather.size: Size
+weather.look.compact: Compact
+weather.look.stack: Stack
+weather.look.icon: Icon
+weather.look.words: Words
+weather.look.card: Card
+weather.look.detail: Detail
+weather.humidity: "Humidity {{.N}}%"
+weather.feels: "Feels like {{.T}}"
+weather.wind: "Wind {{.N}} {{.Unit}}"
+weather.uv: "UV {{.N}}"
+weather.cond.sunny: Sunny
+weather.cond.clear-night: Clear
+weather.cond.partlycloudy: Partly cloudy
+weather.cond.cloudy: Cloudy
+weather.cond.fog: Fog
+weather.cond.rainy: Rain
+weather.cond.pouring: Heavy rain
+weather.cond.snowy: Snow
+weather.cond.snowy-rainy: Sleet
+weather.cond.hail: Hail
+weather.cond.lightning: Thunderstorm
+weather.cond.lightning-rainy: Thunderstorm
+weather.cond.windy: Windy
+weather.cond.windy-variant: Windy
+weather.cond.exceptional: Warning

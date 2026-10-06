@@ -190,6 +190,8 @@ func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) go
 	content := []gogui.View{}
 	build, native := faces[c.Face]
 	switch {
+	case c.Weather != "":
+		content = append(content, weatherSample(w, c.Weather, float32(tw), float32(th)))
 	case c.Style != "":
 		content = append(content, styleSample(c.Style, float32(tw), float32(th)))
 	case c.Palette != nil:

@@ -46,6 +46,7 @@ type Config struct {
 	Poster     Poster     `json:"poster"`
 	Update     Update     `json:"update"`
 	Home       Home       `json:"home"`
+	Weather    Weather    `json:"weather"`
 }
 
 // Defaults is a device nobody has set anything on.
@@ -74,6 +75,7 @@ func Defaults() Config {
 		Poster:     defaultPoster(),
 		Update:     defaultUpdate(),
 		Home:       defaultHome(),
+		Weather:    defaultWeather(),
 	}
 }
 
@@ -117,6 +119,7 @@ func (w Writer) Presence() PresenceWriter     { return PresenceWriter(w) }
 func (w Writer) Poster() PosterWriter         { return PosterWriter(w) }
 func (w Writer) Update() UpdateWriter         { return UpdateWriter(w) }
 func (w Writer) Home() HomeWriter             { return HomeWriter(w) }
+func (w Writer) Weather() WeatherWriter       { return WeatherWriter(w) }
 
 // Labeled is a setting whose values name themselves. The entity layer binds any of these to a
 // select without knowing which setting it is.

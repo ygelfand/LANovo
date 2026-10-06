@@ -11,6 +11,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
+	"github.com/ygelfand/LANovo/internal/feature/weather"
 	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
@@ -161,5 +162,83 @@ func idlePlaced(change func(*config.Idle)) func(ui.Surface, ui.Rect, theme.Theme
 		within.X += box.X
 		within.Y += box.Y
 		face.Of(c.Face).Draw(s, within, r.Undated(), cfg.Clock.Ink.Over(palette))
+	}
+}
+
+func WeatherPage() *shell.Page {
+	return &shell.Page{
+		Title: say.T("weather.title"),
+		Build: func() ([]widget.Row, []func(int)) {
+			c := config.Get().Weather
+			return []widget.Row{
+					{Label: say.T("weather.entity"), Kind: widget.Chevron, Value: weather.Get().Title(c.Entity)},
+					{Label: say.T("weather.dashboard"), Kind: widget.Toggle, On: c.Dashboard},
+					{Label: say.T("weather.idle"), Kind: widget.Toggle, On: c.Idle},
+					{Label: say.T("weather.look"), Kind: widget.Chevron, Value: c.Look.Label()},
+					{Label: say.T("weather.animate"), Kind: widget.Toggle, On: c.Animate},
+					{Label: say.T("weather.themed"), Hint: say.T("weather.themed.hint"), Kind: widget.Toggle, On: c.Themed},
+					{Label: say.T("idle.vertical"), Kind: widget.Chevron, Value: c.Position.Label()},
+					{Label: say.T("idle.horizontal"), Kind: widget.Chevron, Value: c.Align.Label()},
+					{Label: say.T("weather.size"), Kind: widget.Chevron, Value: c.Size.Label()},
+				}, []func(int){
+					func(int) {
+						weather.Get().Fetch()
+						shell.Get().Push(weatherEntityPage())
+					},
+					func(int) { weather.SetDashboard(!c.Dashboard) },
+					func(int) { weather.SetIdle(!c.Idle) },
+					open(weatherLookPage()),
+					func(int) { weather.SetAnimate(!c.Animate) },
+					func(int) { weather.SetThemed(!c.Themed) },
+					open(choose(say.T("idle.vertical"), config.Positions(),
+						func() config.Position { return config.Get().Weather.Position }, weather.SetPosition, nil)),
+					open(choose(say.T("idle.horizontal"), config.Aligns(),
+						func() config.Align { return config.Get().Weather.Align }, weather.SetAlign, nil)),
+					open(choose(say.T("weather.size"), config.Sizes(),
+						func() config.Size { return config.Get().Weather.Size }, weather.SetSize, nil)),
+				}
+		},
+	}
+}
+
+func weatherEntityPage() *shell.Page {
+	return &shell.Page{
+		Title: say.T("weather.entity"),
+		Build: func() ([]widget.Row, []func(int)) {
+			list, err, fetched := weather.Get().Offered()
+			switch {
+			case !fetched:
+				return []widget.Row{{Label: say.T("home.loading")}}, []func(int){nil}
+			case err != nil:
+				return []widget.Row{{Label: say.T("home.failed"), Hint: err.Error()}, {Label: say.T("home.retry")}},
+					[]func(int){nil, func(int) { weather.Get().Fetch() }}
+			case len(list) == 0:
+				return []widget.Row{{Label: say.T("weather.none")}}, []func(int){nil}
+			}
+			now := config.Get().Weather.Entity
+			rows := make([]widget.Row, 0, len(list))
+			taps := make([]func(int), 0, len(list))
+			for _, e := range list {
+				rows = append(rows, widget.Row{Label: e.Name, Hint: e.ID, Chosen: e.ID == now})
+				taps = append(taps, func(int) { weather.SetEntity(e.ID) })
+			}
+			return rows, taps
+		},
+	}
+}
+
+func weatherLookPage() *shell.Page {
+	return &shell.Page{
+		Title: say.T("weather.look"),
+		Tiles: func() ([]widget.Cell, []func(int)) {
+			now := config.Get().Weather.Look
+			var cells []widget.Cell
+			var taps []func(int)
+			for _, l := range config.WeatherLooks() {
+				cells = append(cells, widget.Cell{Label: l.Label(), Chosen: l == now, Weather: l})
+				taps = append(taps, func(int) { weather.SetLook(l) })
+			}
+			return cells, taps
+		},
 	}
 }

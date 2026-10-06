@@ -48,4 +48,6 @@ type Cell struct {
 	Face config.Face
 
 	Style string
+
+	Weather config.WeatherLook
 }

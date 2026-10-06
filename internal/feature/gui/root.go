@@ -100,6 +100,15 @@ func (a *App) dashboard(w *gogui.Window) gogui.View {
 	case ok:
 		layers = append(layers, placed(box, build(w, box, r, ink)))
 	}
+	if wc := cfg.Weather; wc.Dashboard && !(tabbed && drawn) {
+		top := float32(0)
+		if len(tabs) > 0 {
+			top = float32(strip.Y + strip.H)
+		}
+		if v := weatherLayer(w, vw, vh, top, pal); v != nil {
+			layers = append(layers, v)
+		}
+	}
 	if len(tabs) > 0 {
 		layers = append(layers, tabStrip(strip, tabs, showing.Key, pal))
 	}
