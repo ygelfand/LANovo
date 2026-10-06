@@ -1,6 +1,7 @@
 package dashboard
 
 import (
+	"slices"
 	"sync"
 
 	"github.com/ygelfand/LANovo/internal/feature/shell"
@@ -12,20 +13,21 @@ type Tab struct {
 	Name string
 }
 
+type source struct {
+	order int
+	list  func() []Tab
+}
+
 type tabs struct {
 	mu      sync.Mutex
-	sources []func() []Tab
+	sources []source
 	showing string
 	redraw  func()
 }
 
 var strip = &tabs{redraw: func() { shell.Get().Redraw() }}
 
-func AddTabs(source func() []Tab) {
-	strip.mu.Lock()
-	strip.sources = append(strip.sources, source)
-	strip.mu.Unlock()
-}
+func AddTabs(order int, list func() []Tab) { strip.add(order, list) }
 
 func Tabs() []Tab { return strip.list() }
 
@@ -35,13 +37,20 @@ func Show(key string) { strip.show(key) }
 
 func Clock() { strip.clock() }
 
+func (t *tabs) add(order int, list func() []Tab) {
+	t.mu.Lock()
+	t.sources = append(t.sources, source{order, list})
+	slices.SortStableFunc(t.sources, func(a, b source) int { return a.order - b.order })
+	t.mu.Unlock()
+}
+
 func (t *tabs) list() []Tab {
 	t.mu.Lock()
 	sources := t.sources
 	t.mu.Unlock()
 	var out []Tab
-	for _, source := range sources {
-		out = append(out, source()...)
+	for _, s := range sources {
+		out = append(out, s.list()...)
 	}
 	return out
 }

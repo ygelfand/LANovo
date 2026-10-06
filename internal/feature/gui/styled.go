@@ -29,19 +29,19 @@ func seekBar(cfg gogui.SliderCfg, marks []style.Span) gogui.View {
 }
 
 func keyButton(id, glyph string, st gogui.TextStyle, state style.State, do func(gogui.EventCtx)) gogui.View {
-	t := gogui.CurrentTheme().Cfg
 	side := st.Size * 2
-	cfg := gogui.ContainerCfg{
-		ID:      id,
-		Width:   side,
-		Height:  side,
-		Sizing:  gogui.FixedFixed,
-		Color:   t.ColorPanel,
-		Radius:  gogui.RadiusLarge,
-		Padding: gogui.NoPadding,
-		HAlign:  gogui.HAlignCenter,
-		VAlign:  gogui.VAlignMiddle,
-	}
+	return keyed(gogui.ContainerCfg{ID: id, Width: side, Height: side, Sizing: gogui.FixedFixed, Radius: gogui.RadiusLarge, Color: gogui.CurrentTheme().Cfg.ColorPanel}, glyph, st, state, do)
+}
+
+func wideKey(id, glyph string, st gogui.TextStyle, height float32, state style.State, do func(gogui.EventCtx)) gogui.View {
+	return keyed(gogui.ContainerCfg{ID: id, Height: height, Sizing: gogui.FillFixed, Radius: gogui.RadiusMedium, Color: gogui.CurrentTheme().Cfg.ColorBackground}, glyph, st, state, do)
+}
+
+func keyed(cfg gogui.ContainerCfg, glyph string, st gogui.TextStyle, state style.State, do func(gogui.EventCtx)) gogui.View {
+	t := gogui.CurrentTheme().Cfg
+	cfg.Padding = gogui.NoPadding
+	cfg.HAlign = gogui.HAlignCenter
+	cfg.VAlign = gogui.VAlignMiddle
 	st.Color = t.TextStyleDef.Color
 	if state == style.Chosen {
 		cfg.Color, st.Color = t.ColorAccent, t.ColorBackground

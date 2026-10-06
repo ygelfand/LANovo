@@ -22,7 +22,7 @@ const (
 )
 
 func init() {
-	dashboard.AddTabs(func() []dashboard.Tab {
+	dashboard.AddTabs(10, func() []dashboard.Tab {
 		var out []dashboard.Tab
 		for _, s := range Dash().Tabs() {
 			out = append(out, dashboard.Tab{Kind: TabKind, Key: s.Key, Name: s.Name()})

@@ -281,6 +281,11 @@ func (c *Control) showing() []*cobra.Command {
 			Args:      cobra.MaximumNArgs(1),
 			ValidArgs: []string{"debug", "info", "warn", "error"},
 		}, logLevel),
+		says(&cobra.Command{
+			Use:   "peers",
+			Short: "Other devices on the network",
+			Args:  cobra.NoArgs,
+		}, peers),
 	}
 }
 

@@ -6,10 +6,8 @@ func TestTabs(t *testing.T) {
 	draws := 0
 	var offered []Tab
 	strip := &tabs{redraw: func() { draws++ }}
-	strip.sources = []func() []Tab{
-		func() []Tab { return offered },
-		func() []Tab { return []Tab{{Kind: "b", Key: "two"}} },
-	}
+	strip.add(100, func() []Tab { return []Tab{{Kind: "b", Key: "two"}} })
+	strip.add(10, func() []Tab { return offered })
 
 	offered = []Tab{{Kind: "a", Key: "one"}}
 	if got := strip.list(); len(got) != 2 || got[0].Key != "one" || got[1].Key != "two" {

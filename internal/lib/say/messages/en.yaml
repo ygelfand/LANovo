@@ -515,3 +515,5 @@ weather.cond.lightning-rainy: Thunderstorm
 weather.cond.windy: Windy
 weather.cond.windy-variant: Windy
 weather.cond.exceptional: Warning
+call.tab: Call
+call.empty: No other devices found

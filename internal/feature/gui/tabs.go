@@ -4,6 +4,7 @@ import (
 	gogui "github.com/go-gui-org/go-gui/gui"
 
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
+	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
@@ -16,6 +17,7 @@ type tabKind struct {
 
 var tabKinds = map[string]tabKind{
 	homecontrol.TabKind: {glyph: homeGlyph, board: homeBoard},
+	discovery.TabKind:   {glyph: func(dashboard.Tab) string { return gogui.IconPhone }, board: callsBoard},
 }
 
 func homeGlyph(t dashboard.Tab) string {
