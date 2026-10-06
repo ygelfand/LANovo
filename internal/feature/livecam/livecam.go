@@ -129,6 +129,15 @@ func Leave(s *Session, frames <-chan mtkcamera.Frame) {
 	hub.release(s)
 }
 
+func RequestKey() error {
+	hub.mu.Lock()
+	defer hub.mu.Unlock()
+	if hub.cur == nil {
+		return fmt.Errorf("livecam: no camera open")
+	}
+	return hub.cur.stream.AskKey()
+}
+
 // Still is a picture of the main stream.
 func Still(within time.Duration) (Picture, error) {
 	hub.mu.Lock()

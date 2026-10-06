@@ -6,9 +6,11 @@ import (
 	"errors"
 	"math"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/pion/rtcp"
 	"github.com/pion/webrtc/v4"
 )
 
@@ -148,7 +150,11 @@ func TestMutedSendsSilence(t *testing.T) {
 	}
 }
 
-type film struct{}
+type film struct {
+	asked atomic.Int32
+}
+
+func (f *film) Key() { f.asked.Add(1) }
 
 func au(types ...byte) []byte {
 	var out []byte
@@ -176,15 +182,16 @@ func (f *film) Frames() (<-chan Frame, func()) {
 		tick := time.NewTicker(33 * time.Millisecond)
 		defer tick.Stop()
 		for n := 0; ; n++ {
+			key := n%10 == 0
 			data := au(1)
-			if n%10 == 0 {
+			if key {
 				data = au(7, 8, 5)
 			}
 			select {
 			case <-ctx.Done():
 				return
 			case <-tick.C:
-				ch <- Frame{Data: data, PTS: time.Duration(n) * 33 * time.Millisecond, Key: n%10 == 0}
+				ch <- Frame{Data: data, PTS: time.Duration(n) * 33 * time.Millisecond, Key: key}
 			}
 		}
 	}()
@@ -384,4 +391,61 @@ func TestMessagesGoBothWays(t *testing.T) {
 	}
 	check("b", "status", note{Text: "muted", N: 1})
 	check("a", "hello", note{Text: "hi", N: 2})
+}
+
+func TestPictureLossAsksTheCameraForAKeyframe(t *testing.T) {
+	cam := &film{}
+	a, err := New(Media{Audio: &tone{freq: 440}, Camera: cam}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer a.Close()
+	screen := &wall{}
+	b, err := New(Media{Audio: &tone{freq: 660}, Screen: screen}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer b.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	offer, err := a.Offer(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	answer, err := b.Accept(ctx, offer)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := a.Answered(answer); err != nil {
+		t.Fatal(err)
+	}
+
+	var ssrc uint32
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) && ssrc == 0 {
+		for _, r := range b.pc.GetReceivers() {
+			if tr := r.Track(); tr != nil && tr.Kind() == webrtc.RTPCodecTypeVideo && len(screen.frames()) > 0 {
+				ssrc = uint32(tr.SSRC())
+			}
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if ssrc == 0 {
+		t.Fatal("no video arrived")
+	}
+	for range 20 {
+		if err := b.pc.WriteRTCP([]rtcp.Packet{&rtcp.PictureLossIndication{MediaSSRC: ssrc}}); err != nil {
+			t.Fatal(err)
+		}
+		time.Sleep(50 * time.Millisecond)
+	}
+	time.Sleep(200 * time.Millisecond)
+	asked := cam.asked.Load()
+	if asked == 0 {
+		t.Fatalf("20 picture loss reports never reached the camera: %+v", a.Stats())
+	}
+	if asked > 3 {
+		t.Fatalf("camera asked %d times for 20 reports in a second: not limited", asked)
+	}
 }

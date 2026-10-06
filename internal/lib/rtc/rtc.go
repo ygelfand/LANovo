@@ -31,6 +31,7 @@ const (
 	videoClock   = 90000
 	videoLate    = 256
 	videoFrame   = 33 * time.Millisecond
+	keyEvery     = 500 * time.Millisecond
 )
 
 type Audio interface {
@@ -46,6 +47,7 @@ type Frame struct {
 
 type Camera interface {
 	Frames() (<-chan Frame, func())
+	Key()
 }
 
 type Screen interface {
@@ -71,6 +73,7 @@ type Stats struct {
 	AudioSent, AudioRecv, AudioLost uint64
 	VideoSent, VideoRecv, VideoKeys uint64
 	VideoWaiting                    uint64
+	KeysRequested, KeysAsked        uint64
 	EncodeTotal                     time.Duration
 }
 
@@ -85,6 +88,7 @@ type counters struct {
 	audioSent, audioRecv, audioLost atomic.Uint64
 	videoSent, videoRecv, videoKeys atomic.Uint64
 	videoWaiting                    atomic.Uint64
+	keysRequested, keysAsked        atomic.Uint64
 	encode                          atomic.Int64
 }
 
@@ -155,7 +159,7 @@ func New(m Media, ended func(webrtc.PeerConnectionState)) (*Link, error) {
 		if err == nil {
 			var vs *webrtc.RTPSender
 			if vs, err = pc.AddTrack(l.video); err == nil {
-				go l.drain(vs)
+				go l.listen(vs)
 			}
 		}
 	case m.Screen != nil:
@@ -285,6 +289,27 @@ func (l *Link) drain(sender *webrtc.RTPSender) {
 	}
 }
 
+func (l *Link) listen(sender *webrtc.RTPSender) {
+	var last time.Time
+	for {
+		packets, _, err := sender.ReadRTCP()
+		if err != nil {
+			return
+		}
+		for _, p := range packets {
+			switch p.(type) {
+			case *rtcp.PictureLossIndication, *rtcp.FullIntraRequest:
+				if time.Since(last) < keyEvery {
+					continue
+				}
+				last = time.Now()
+				l.count.keysAsked.Add(1)
+				l.media.Camera.Key()
+			}
+		}
+	}
+}
+
 func (l *Link) send() {
 	enc, err := opus.NewEncoder(opus.WithChannels(1), opus.WithApplication(opus.ApplicationVoIP))
 	if err != nil {
@@ -407,7 +432,16 @@ func (l *Link) film() {
 func (l *Link) watch(t *webrtc.TrackRemote) {
 	sb := samplebuilder.New(videoLate, &codecs.H264Packet{}, videoClock)
 	var first uint32
+	var asked time.Time
 	started, broken := false, true
+	ask := func() {
+		if time.Since(asked) < keyEvery {
+			return
+		}
+		asked = time.Now()
+		l.count.keysRequested.Add(1)
+		l.pc.WriteRTCP([]rtcp.Packet{&rtcp.PictureLossIndication{MediaSSRC: uint32(t.SSRC())}})
+	}
 	for {
 		p, _, err := t.ReadRTP()
 		if err != nil {
@@ -420,12 +454,12 @@ func (l *Link) watch(t *webrtc.TrackRemote) {
 			if key {
 				l.count.videoKeys.Add(1)
 			}
-			if s.PrevDroppedPackets > 0 {
-				broken = true
+			if s.PrevDroppedPackets > 0 && !broken {
+				broken, asked = true, time.Time{}
 			}
 			if broken && !key {
 				l.count.videoWaiting.Add(1)
-				l.pc.WriteRTCP([]rtcp.Packet{&rtcp.PictureLossIndication{MediaSSRC: uint32(t.SSRC())}})
+				ask()
 				continue
 			}
 			broken = false
@@ -455,7 +489,8 @@ func (l *Link) Stats() Stats {
 	return Stats{
 		AudioSent: c.audioSent.Load(), AudioRecv: c.audioRecv.Load(), AudioLost: c.audioLost.Load(),
 		VideoSent: c.videoSent.Load(), VideoRecv: c.videoRecv.Load(), VideoKeys: c.videoKeys.Load(),
-		VideoWaiting: c.videoWaiting.Load(), EncodeTotal: time.Duration(c.encode.Load()),
+		VideoWaiting: c.videoWaiting.Load(), KeysRequested: c.keysRequested.Load(), KeysAsked: c.keysAsked.Load(),
+		EncodeTotal: time.Duration(c.encode.Load()),
 	}
 }
 

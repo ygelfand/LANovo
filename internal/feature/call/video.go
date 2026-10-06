@@ -102,6 +102,12 @@ type camera struct {
 	sized func(livecam.Size)
 }
 
+func (camera) Key() {
+	if err := livecam.RequestKey(); err != nil {
+		slog.Debug("call keyframe not requested", "err", err)
+	}
+}
+
 func (c camera) Frames() (<-chan rtc.Frame, func()) {
 	out := make(chan rtc.Frame, 8)
 	ctx, stop := context.WithCancel(context.Background())

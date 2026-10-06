@@ -331,6 +331,17 @@ static int open_camera(session *s, uint32_t w, uint32_t h, uint32_t fps, uint32_
 	return OK;
 }
 
+static void request_key(session *s) {
+	AMediaFormat *f = AMediaFormat_new();
+	AMediaFormat_setInt32(f, "request-sync", 0);
+	for (int i = 0; i < 2; i++) {
+		if (!s->codec[i]) continue;
+		media_status_t st = AMediaCodec_setParameters(s->codec[i], f);
+		if (st != AMEDIA_OK) logw("request-sync on stream %d: %d", i, st);
+	}
+	AMediaFormat_delete(f);
+}
+
 static int gone(int conn, session *s) {
 	struct pollfd p = {.fd = conn, .events = POLLIN};
 	if (poll(&p, 1, 0) <= 0) return 0;
@@ -357,6 +368,7 @@ static int gone(int conn, session *s) {
 		return 0;
 	}
 	if (c == ASK_STILL) s->still = 1;
+	if (c == ASK_KEY) request_key(s);
 	return 0;
 }
 

@@ -24,6 +24,7 @@ const (
 
 	askStill  = 'S'
 	askParams = 'P'
+	askKey    = 'K'
 	maxParams = 4096
 
 	maxFrame   = 16 << 20
@@ -169,6 +170,11 @@ func idr(b []byte) bool {
 // AskStill asks for an RGBA picture of the main stream, which arrives among the frames, empty on failure.
 func (s *Stream) AskStill() error {
 	_, err := s.c.Write([]byte{askStill})
+	return err
+}
+
+func (s *Stream) AskKey() error {
+	_, err := s.c.Write([]byte{askKey})
 	return err
 }
 

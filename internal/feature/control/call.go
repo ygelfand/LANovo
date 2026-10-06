@@ -75,7 +75,7 @@ func callState([]string) (string, error) {
 	}
 	l := st.Link
 	out += fmt.Sprintf("\naudio\tsent=%d recv=%d lost=%d encode=%s", l.AudioSent, l.AudioRecv, l.AudioLost, l.EncodeAverage())
-	out += fmt.Sprintf("\nvideo\tsent=%d recv=%d keys=%d waiting=%d", l.VideoSent, l.VideoRecv, l.VideoKeys, l.VideoWaiting)
+	out += fmt.Sprintf("\nvideo\tsent=%d recv=%d keys=%d waiting=%d key_requests=%d key_asked=%d", l.VideoSent, l.VideoRecv, l.VideoKeys, l.VideoWaiting, l.KeysRequested, l.KeysAsked)
 	for _, side := range []struct {
 		name string
 		s    call.LayerStats
