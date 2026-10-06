@@ -119,7 +119,10 @@ const (
 
 var ErrVersion = errors.New("surface: the helper speaks another protocol version")
 
-const Full Status = 6
+const (
+	Broken Status = 5
+	Full   Status = 6
+)
 
 type Status uint32
 

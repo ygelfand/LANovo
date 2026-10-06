@@ -53,6 +53,16 @@ static void park(video *v) {
 	pthread_mutex_unlock(&v->park_mu);
 }
 
+static int fatal(ssize_t r) {
+	return r < 0 && r != AMEDIACODEC_INFO_TRY_AGAIN_LATER && r != AMEDIACODEC_INFO_OUTPUT_FORMAT_CHANGED &&
+		r != AMEDIACODEC_INFO_OUTPUT_BUFFERS_CHANGED;
+}
+
+static void broke(video *v, const char *where, ssize_t r) {
+	if (!v->failed) logw("video decoder failed in %s: %zd", where, r);
+	v->failed = 1;
+}
+
 static void *output(void *arg) {
 	video *v = arg;
 	while (!v->closing) {
@@ -62,7 +72,13 @@ static void *output(void *arg) {
 		}
 		AMediaCodecBufferInfo info;
 		ssize_t idx = AMediaCodec_dequeueOutputBuffer(v->codec, &info, 10000);
-		if (idx < 0) continue;
+		if (idx < 0) {
+			if (fatal(idx)) {
+				broke(v, "output", idx);
+				return NULL;
+			}
+			continue;
+		}
 		if (info.flags & AMEDIACODEC_BUFFER_FLAG_END_OF_STREAM) {
 			AMediaCodec_releaseOutputBuffer(v->codec, idx, 0);
 			v->ended = 1;
@@ -140,7 +156,11 @@ int video_sample(video *v, int64_t pts, uint32_t flags, const drm_sample *crypt,
 	if (v->failed) return ERR_CODEC;
 	if (!v->ready) return ERR_AGAIN;
 	ssize_t idx = AMediaCodec_dequeueInputBuffer(v->codec, 5000);
-	if (idx < 0) return ERR_AGAIN;
+	if (idx < 0) {
+		if (!fatal(idx)) return ERR_AGAIN;
+		broke(v, "input", idx);
+		return ERR_CODEC;
+	}
 	size_t cap = 0;
 	uint8_t *buf = AMediaCodec_getInputBuffer(v->codec, idx, &cap);
 	int st;

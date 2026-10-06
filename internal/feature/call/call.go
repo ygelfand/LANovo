@@ -361,7 +361,7 @@ func (c *Calls) media(s *session) (rtc.Media, livecam.Size) {
 	if !video {
 		return m, livecam.Size{}
 	}
-	pics := c.newPictures(remote)
+	pics := c.newPictures(s, remote)
 	m.Screen = pics.remote
 	at, own, ok := cameraStream()
 	c.mu.Lock()
@@ -493,7 +493,9 @@ func (c *Calls) changed(s *session) {
 		c.mu.Lock()
 		s.hold = h
 	}
+	pics := s.pics
 	c.mu.Unlock()
+	pics.replace()
 	c.publish(s)
 	shell.Get().Redraw()
 }

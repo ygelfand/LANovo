@@ -103,6 +103,7 @@ type Link struct {
 	ended func(webrtc.PeerConnectionState)
 
 	muted   atomic.Bool
+	remote  atomic.Uint32
 	blind   atomic.Bool
 	sending sync.Once
 	stop    context.CancelFunc
@@ -433,6 +434,7 @@ func (l *Link) watch(t *webrtc.TrackRemote) {
 	sb := samplebuilder.New(videoLate, &codecs.H264Packet{}, videoClock)
 	var first uint32
 	var asked time.Time
+	l.remote.Store(uint32(t.SSRC()))
 	started, broken := false, true
 	ask := func() {
 		if time.Since(asked) < keyEvery {
@@ -482,6 +484,15 @@ func Keyframe(annexB []byte) bool {
 		}
 	}
 	return false
+}
+
+func (l *Link) RequestKey() {
+	ssrc := l.remote.Load()
+	if ssrc == 0 {
+		return
+	}
+	l.count.keysRequested.Add(1)
+	l.pc.WriteRTCP([]rtcp.Packet{&rtcp.PictureLossIndication{MediaSSRC: ssrc}})
 }
 
 func (l *Link) Stats() Stats {
