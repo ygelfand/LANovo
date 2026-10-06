@@ -14,7 +14,7 @@ const (
 	ConfigPath = layout.WifiConf
 
 	// update_config is what lets a join persist: the supplicant writes networks back itself.
-	config = "ctrl_interface=" + sockets + "\nupdate_config=1\n"
+	config = "ctrl_interface=" + sockets + "\nupdate_config=1\nbgscan=\"" + layout.WifiBgscan + "\"\n"
 )
 
 // Up makes the radio usable: driver loaded, interface up, supplicant answering. None of it happens

@@ -31,6 +31,7 @@ func (c *Control) tree() *cobra.Command {
 	root.AddCommand(watching()...)
 	root.AddCommand(casting()...)
 	root.AddCommand(homeAssistant()...)
+	root.AddCommand(calling()...)
 	literal(root)
 	return root
 }

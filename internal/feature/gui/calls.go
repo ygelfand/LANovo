@@ -3,10 +3,12 @@ package gui
 import (
 	"embed"
 	"fmt"
+	"log/slog"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
 
 	"github.com/ygelfand/LANovo/internal/board"
+	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/lib/say"
@@ -72,11 +74,11 @@ func peerTile(id string, side float32, p discovery.Peer, pal theme.Theme) gogui.
 	}
 	var video func(gogui.EventCtx)
 	if p.Video() && board.Current().CameraWidth > 0 {
-		video = func(gogui.EventCtx) { discovery.Get().Call(p, true) }
+		video = func(gogui.EventCtx) { dial(p, true) }
 	}
 	buttons := []gogui.View{
-		action("audio", gogui.IconPhone, func(gogui.EventCtx) { discovery.Get().Call(p, false) }),
-		action("info", gogui.IconInfo, nil),
+		action("audio", gogui.IconPhone, func(gogui.EventCtx) { dial(p, false) }),
+		action("info", gogui.IconInfo, func(gogui.EventCtx) { call.Get().Open(p) }),
 		action("video", gogui.IconVideo, video),
 	}
 	tall := min(reach()*1.4, inner*pictureAspect)
@@ -99,4 +101,10 @@ func peerTile(id string, side float32, p discovery.Peer, pal theme.Theme) gogui.
 	}
 	controls().Tile(&cfg, style.Rest)
 	return gogui.Column(cfg)
+}
+
+func dial(p discovery.Peer, video bool) {
+	if err := call.Get().Start(p, video); err != nil {
+		slog.Warn("call not placed", "to", p.Name, "err", err)
+	}
 }

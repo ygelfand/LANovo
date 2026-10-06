@@ -120,7 +120,7 @@ func camPlay() error {
 	if err != nil {
 		return err
 	}
-	defer livecam.Leave(s, at)
+	defer livecam.Leave(s, frames)
 
 	if err := c.VideoOpen(camLayer, surface.AVC, sz.Width, sz.Height, camZ, 0, ""); err != nil {
 		return err

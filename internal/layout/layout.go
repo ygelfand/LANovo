@@ -105,6 +105,7 @@ const (
 	WifiUser    = 1010
 	WifiDir     = "/data/misc/wifi"
 	WifiConf    = WifiDir + "/lanovo_wpa.conf"
+	WifiBgscan  = "simple:30:-65:300"
 	WifiSockets = WifiDir + "/sockets"
 	WifiIface   = "wlan0"
 )

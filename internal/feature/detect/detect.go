@@ -10,6 +10,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/voice"
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
@@ -76,7 +77,7 @@ func newDetect() *Detect {
 	// A muted microphone is not scored at all: the slider is the one thing in this device that has
 	// to mean what it says.
 	mic.Get().Speech.Listen(func(f mic.Frame) {
-		if privacy.Get().MicMuted() {
+		if privacy.Get().MicMuted() || call.Get().PausesWake() {
 			return
 		}
 		e.Feed(f.Samples)

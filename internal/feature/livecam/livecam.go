@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"slices"
 	"sync"
 	"time"
 
@@ -72,7 +73,7 @@ type Picture struct {
 
 type Session struct {
 	stream *mtkcamera.Stream
-	out    [2]chan mtkcamera.Frame
+	out    [2][]chan mtkcamera.Frame
 	config [2][]byte
 	stills []chan mtkcamera.Frame
 	users  int
@@ -114,15 +115,17 @@ func Join(at int) (*Session, <-chan mtkcamera.Frame, error) {
 	if s.config[at] != nil {
 		ch <- mtkcamera.Frame{Data: s.config[at], Config: true}
 	}
-	s.out[at] = ch
+	s.out[at] = append(s.out[at], ch)
 	return s, ch, nil
 }
 
 // Leave ends a Join.
-func Leave(s *Session, at int) {
+func Leave(s *Session, frames <-chan mtkcamera.Frame) {
 	hub.mu.Lock()
 	defer hub.mu.Unlock()
-	s.out[at] = nil
+	for at := range s.out {
+		s.out[at] = slices.DeleteFunc(s.out[at], func(ch chan mtkcamera.Frame) bool { return ch == frames })
+	}
 	hub.release(s)
 }
 
@@ -290,7 +293,7 @@ func read(s *Session) {
 		if f.Config {
 			s.config[at] = f.Data
 		}
-		if ch := s.out[at]; ch != nil {
+		for _, ch := range s.out[at] {
 			select {
 			case ch <- f:
 			default:

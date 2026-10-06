@@ -67,11 +67,27 @@ func Get() *Server {
 
 func (s *Server) Name() string { return "web" }
 
+var (
+	routesMu sync.Mutex
+	routes   = map[string]http.Handler{}
+)
+
+func Handle(pattern string, h http.Handler) {
+	routesMu.Lock()
+	routes[pattern] = h
+	routesMu.Unlock()
+}
+
 // Run serves until ctx is canceled, and holds the onboarding screen until the device has been
 // adopted.
 func (s *Server) Run(ctx context.Context) error {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", s.status)
+	routesMu.Lock()
+	for pattern, h := range routes {
+		mux.Handle(pattern, h)
+	}
+	routesMu.Unlock()
 
 	s.srv = &http.Server{
 		Addr:              ":" + strconv.Itoa(Port),

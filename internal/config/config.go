@@ -32,6 +32,7 @@ type Config struct {
 	Feedback   Feedback   `json:"feedback"`
 	Microphone Microphone `json:"microphone"`
 	Sendspin   Sendspin   `json:"sendspin"`
+	Call       Call       `json:"call"`
 	Diag       Diag       `json:"diag"`
 	Time       Time       `json:"time"`
 	Network    Network    `json:"network"`
@@ -61,6 +62,7 @@ func Defaults() Config {
 		Feedback:   defaultFeedback(),
 		Microphone: defaultMicrophone(),
 		Sendspin:   defaultSendspin(),
+		Call:       defaultCall(),
 		Diag:       defaultDiag(),
 		Time:       defaultTime(),
 		Network:    defaultNetwork(),
@@ -105,6 +107,7 @@ func (w Writer) Stop() StopWriter             { return StopWriter(w) }
 func (w Writer) Feedback() FeedbackWriter     { return FeedbackWriter(w) }
 func (w Writer) Microphone() MicrophoneWriter { return MicrophoneWriter(w) }
 func (w Writer) Sendspin() SendspinWriter     { return SendspinWriter(w) }
+func (w Writer) Call() CallWriter             { return CallWriter(w) }
 func (w Writer) Diag() DiagWriter             { return DiagWriter(w) }
 func (w Writer) API() APIWriter               { return APIWriter(w) }
 func (w Writer) Time() TimeWriter             { return TimeWriter(w) }

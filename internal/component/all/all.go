@@ -18,6 +18,7 @@ import (
 	_ "github.com/ygelfand/LANovo/internal/feature/assistant"
 	_ "github.com/ygelfand/LANovo/internal/feature/bluetooth"
 	_ "github.com/ygelfand/LANovo/internal/feature/buttons"
+	_ "github.com/ygelfand/LANovo/internal/feature/call"
 	_ "github.com/ygelfand/LANovo/internal/feature/chromecast"
 	_ "github.com/ygelfand/LANovo/internal/feature/clock"
 	_ "github.com/ygelfand/LANovo/internal/feature/control"

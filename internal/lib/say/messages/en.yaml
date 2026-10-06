@@ -517,3 +517,36 @@ weather.cond.windy-variant: Windy
 weather.cond.exceptional: Warning
 call.tab: Call
 call.empty: No other devices found
+call.calling: Calling…
+call.incoming: Incoming call
+call.mute: Mute
+call.unmute: Unmute
+call.incoming.video: Incoming video call
+call.volume: Volume
+call.camera.off: Camera off
+call.camera.on: Camera on
+call.declined: Declined
+call.unanswered: No answer
+call.busy: Busy
+call.unavailable: Not taking calls
+call.dropped: Call dropped
+call.failed: Call failed
+call.gone: No longer on the network
+call.model: Model
+call.address: Address
+call.version: Version
+call.video: Video calls
+call.seen: Last seen
+call.yes: "Yes"
+call.no: "No"
+call.settings: Calls
+call.settings.hint: Incoming calls and auto-answer
+call.incoming.allow: Incoming calls
+call.auto: Auto-answer
+call.auto.hint: Answers at once
+call.pausewake: Pause wake word during calls
+call.autovideo: Auto-answer with camera on
+call.stream: Video stream
+call.stream.hint: Sub uses less bandwidth; falls back to main when the sub stream is off
+call.stream.main: Main
+call.stream.sub: Sub

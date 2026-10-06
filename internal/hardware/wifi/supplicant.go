@@ -142,7 +142,7 @@ func AwaitSupplicant() error {
 		return fmt.Errorf("wifi: %w", err)
 	}
 	if _, err := os.Stat(ConfigPath); err != nil {
-		const minimal = "ctrl_interface=" + SocketDir + "\nupdate_config=1\n"
+		const minimal = "ctrl_interface=" + SocketDir + "\nupdate_config=1\nbgscan=\"" + layout.WifiBgscan + "\"\n"
 		if err := os.WriteFile(ConfigPath, []byte(minimal), 0o660); err != nil {
 			return fmt.Errorf("wifi: writing %s: %w", ConfigPath, err)
 		}

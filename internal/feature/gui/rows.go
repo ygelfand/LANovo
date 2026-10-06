@@ -8,6 +8,7 @@ import (
 	gogui "github.com/go-gui-org/go-gui/gui"
 
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard/face"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
@@ -38,6 +39,10 @@ func (a *App) screenFor(v shell.View) *Screen {
 		return homeScreen(t)
 	case *homecontrol.Picker:
 		return pickerScreen(t)
+	case *call.View:
+		return callScreen(t)
+	case *call.Profile:
+		return profileScreen(t)
 	}
 	switch v {
 	case media.Page():

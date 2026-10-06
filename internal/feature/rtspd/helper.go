@@ -26,7 +26,7 @@ func (p *pump) helper(stop chan struct{}) error {
 	if err != nil {
 		return err
 	}
-	defer livecam.Leave(s, p.at)
+	defer livecam.Leave(s, frames)
 	sz := livecam.Sizes()[p.at]
 	slog.Info("rtsp stream up", "stream", streamName(p.at), "size", fmt.Sprintf("%dx%d", sz.Width, sz.Height),
 		"fps", livecam.FPS, "source", "lanovo-camera")

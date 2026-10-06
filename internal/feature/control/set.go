@@ -17,6 +17,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	"github.com/ygelfand/LANovo/internal/feature/access"
 	"github.com/ygelfand/LANovo/internal/feature/bluetooth"
+	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/idle"
@@ -243,6 +244,16 @@ func settings() []setting {
 		}, number(4, 20, microphone.Get().SetSensitivity)},
 		{"features.sendspin", "Sendspin.Enabled", func(c config.Config) string { return knob.OnOff(c.Sendspin.Enabled) },
 			toggle(sendspin.Get().SetEnabled)},
+		{"call.incoming", "Call.Incoming", func(c config.Config) string { return knob.OnOff(c.Call.Incoming) },
+			toggle(call.SetIncoming)},
+		{"call.auto_answer", "Call.AutoAnswer", func(c config.Config) string { return knob.OnOff(c.Call.AutoAnswer) },
+			toggle(call.SetAutoAnswer)},
+		{"call.pause_wake", "Call.PauseWake", func(c config.Config) string { return knob.OnOff(c.Call.PauseWake) },
+			toggle(call.SetPauseWake)},
+		{"call.auto_video", "Call.AutoVideo", func(c config.Config) string { return knob.OnOff(c.Call.AutoVideo) },
+			toggle(call.SetAutoVideo)},
+		{"call.stream", "Call.Stream", func(c config.Config) string { return string(c.Call.Stream) },
+			choose(config.CallStreams(), call.SetStream)},
 
 		{"features.bluetooth", "Bluetooth.Proxy", func(c config.Config) string { return knob.OnOff(c.Bluetooth.Proxy) },
 			toggle(bluetooth.Get().SetProxy)},

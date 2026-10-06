@@ -40,7 +40,7 @@ const (
 	ttl     = 120
 	listen  = 4 * time.Second
 	every   = 30 * time.Second
-	missed  = 3
+	missed  = 6
 )
 
 type Peer struct {
@@ -87,12 +87,29 @@ func (d *Discovery) Peers() []Peer {
 
 func (p Peer) Video() bool { return slices.Contains(p.Caps, "video") }
 
-func (d *Discovery) Call(p Peer, video bool) {
-	slog.Info("call requested", "to", p.Name, "id", p.ID, "video", video)
+func (d *Discovery) Touch(id string) {
+	d.mu.Lock()
+	if p, ok := d.peers[id]; ok {
+		p.Seen = time.Now()
+		d.peers[id] = p
+	}
+	d.mu.Unlock()
+}
+
+func Self() Peer {
+	b := board.Current()
+	return Peer{ID: ID(), Name: config.Get().Device.Name, Model: b.Model, Board: b.Name, Caps: caps()}
+}
+
+func (d *Discovery) Find(id string) (Peer, bool) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	p, ok := d.peers[id]
+	return p, ok
 }
 
 func (d *Discovery) Run(ctx context.Context) error {
-	self := id()
+	self := ID()
 	safe.Go("discovery advertise", func() { advertise(ctx, self) })
 	for {
 		d.sweep(ctx, self)
@@ -104,7 +121,7 @@ func (d *Discovery) Run(ctx context.Context) error {
 	}
 }
 
-func id() string { return strings.ToLower(strings.ReplaceAll(wifi.Get().MAC(), ":", "")) }
+func ID() string { return strings.ToLower(strings.ReplaceAll(wifi.Get().MAC(), ":", "")) }
 
 func caps() []string {
 	c := []string{"audio"}
