@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
-	"github.com/ygelfand/LANovo/internal/lib/bt/avrcp"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/avrcp"
 )
 
 // sink asks the speaker side for things nothing on screen has an opinion about.

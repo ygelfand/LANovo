@@ -36,15 +36,15 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/cast/protocols/youtube"
-	"github.com/ygelfand/LANovo/internal/lib/tz"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
 	"github.com/ygelfand/LANovo/internal/setting"
 	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
+	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube"
+	"github.com/ygelfand/libcountertop/pkg/timezone"
 )
 
 // none is a row that does nothing when it is touched.

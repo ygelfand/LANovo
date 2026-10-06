@@ -33,13 +33,13 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/hardware/video"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/cast"
-	_ "github.com/ygelfand/LANovo/internal/lib/cast/protocols/all"
-	"github.com/ygelfand/LANovo/internal/lib/cast/protocols/youtube"
-	"github.com/ygelfand/LANovo/internal/lib/fetch"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
 	"github.com/ygelfand/LANovo/internal/ui"
+	"github.com/ygelfand/libcountertop/pkg/fetch"
+	"github.com/ygelfand/libcountertop/pkg/media/cast"
+	_ "github.com/ygelfand/libcountertop/pkg/media/cast/protocols/all"
+	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {

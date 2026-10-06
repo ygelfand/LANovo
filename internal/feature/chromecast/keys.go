@@ -16,8 +16,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/cast"
-	"github.com/ygelfand/LANovo/internal/lib/fetch"
+	"github.com/ygelfand/libcountertop/pkg/fetch"
+	"github.com/ygelfand/libcountertop/pkg/media/cast"
 )
 
 // Retry is how long to wait after an oracle answer that could not be used.

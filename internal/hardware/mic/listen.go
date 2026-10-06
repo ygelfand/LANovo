@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/ygelfand/LANovo/internal/lib/hook"
+	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 // tapDepth is how many frames a listener may fall behind by. Short on purpose: audio nobody took in

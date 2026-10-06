@@ -15,8 +15,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/analysis"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
+	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
 )
 
 const (

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/bt/sbc"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/sbc"
 )
 
 // What the arbiter asks of this, and what happens to audio while something else has the speaker.

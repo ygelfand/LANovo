@@ -17,9 +17,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/hook"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/update"
+	"github.com/ygelfand/libcountertop/pkg/hook"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {

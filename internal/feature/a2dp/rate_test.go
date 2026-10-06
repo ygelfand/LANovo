@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/bt/sbc"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/sbc"
 )
 
 // The card runs at one rate and everything handed to it has to arrive at that rate. A phone picks

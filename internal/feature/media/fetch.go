@@ -11,7 +11,7 @@ import (
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/fetch"
+	"github.com/ygelfand/libcountertop/pkg/fetch"
 )
 
 // Formats is what Home Assistant is asked to convert to. It runs the conversion through ffmpeg, so

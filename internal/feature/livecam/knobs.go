@@ -311,12 +311,7 @@ func Reset() error {
 
 // Apply sends the saved knobs to the camera, if it is running.
 func Apply() {
-	hub.mu.Lock()
-	defer hub.mu.Unlock()
-	if hub.cur == nil {
-		return
-	}
-	if err := hub.cur.stream.SetParams(Params(Saved())); err != nil {
+	if err := hub.SetParams(Params(Saved())); err != nil {
 		slog.Warn("the camera settings could not be applied", "err", err)
 	}
 }

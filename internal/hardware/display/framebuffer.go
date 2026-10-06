@@ -10,8 +10,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/ygelfand/LANovo/internal/lib/hook"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
+	"github.com/ygelfand/libcountertop/pkg/hook"
 	"time"
 	"unsafe"
 )

@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
 )
 
 func TestEveryStyleThemeAndSizeMakesATheme(t *testing.T) {

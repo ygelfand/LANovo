@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	esphome "github.com/ygelfand/go-esphome-device"
@@ -26,8 +27,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/voice"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/service"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {
@@ -45,6 +46,7 @@ type API struct {
 
 	reconnect chan struct{}
 	announced sync.Once
+	listening atomic.Bool
 }
 
 var (
@@ -135,12 +137,21 @@ func subDevices(name string) []esphome.Device {
 	return out
 }
 
+func (a *API) Startup() component.Progress {
+	if !a.listening.Load() {
+		return component.Progress{Doing: "opening the port"}
+	}
+	return component.Progress{Done: true, Doing: fmt.Sprintf("port %d", layout.Port)}
+}
+
 func (a *API) Run(ctx context.Context) error {
+	defer a.listening.Store(false)
 	for {
 		ln, err := net.Listen("tcp", a.srv.Addr)
 		if err != nil {
 			return fmt.Errorf("api: listen %s: %w", a.srv.Addr, err)
 		}
+		a.listening.Store(true)
 		slog.Info("serving", "addr", ln.Addr(), "node", a.name)
 
 		a.announced.Do(func() {
@@ -158,6 +169,7 @@ func (a *API) Run(ctx context.Context) error {
 
 		err = a.srv.Serve(serving, ln)
 		stop()
+		a.listening.Store(false)
 
 		if err != nil || ctx.Err() != nil {
 			return err

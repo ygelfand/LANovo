@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/lib/tz"
+	"github.com/ygelfand/libcountertop/pkg/timezone"
 )
 
 // The whole point: a zone set here outranks whatever Home Assistant sends, and nothing the server

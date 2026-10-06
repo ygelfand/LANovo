@@ -7,7 +7,7 @@ import (
 
 	gogui "github.com/go-gui-org/go-gui/gui"
 
-	backend "github.com/ygelfand/LANovo/pkg/gogui"
+	backend "github.com/ygelfand/libcountertop/pkg/display/gogui"
 )
 
 type frames chan struct{}

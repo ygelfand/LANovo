@@ -15,12 +15,13 @@ package component
 
 import (
 	"context"
+	"github.com/ygelfand/libcountertop/pkg/runtime/startup"
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/lib/hook"
 	"github.com/ygelfand/LANovo/internal/service"
+	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 // Phase is when a component comes up. Everything in one phase is up before the next begins, which is
@@ -102,21 +103,7 @@ type Startup interface {
 // Implementing Startup is what puts a component on the boot screen. Something the device cannot
 // manage without holds the boot screen until it is Done; something it can manage without says so
 // with Failed, which shows the row as a fault and lets the device carry on.
-type Progress struct {
-	// Name is filled in by the registry.
-	Name string
-
-	Done bool
-
-	// Failed is a component that will not be coming up. The boot screen marks it and stops waiting.
-	Failed bool
-
-	// Doing is what it is waiting on, shown while it is not done, or why it failed.
-	Doing string
-}
-
-// settled reports whether the boot screen has stopped waiting for this one.
-func (p Progress) settled() bool { return p.Done || p.Failed }
+type Progress = startup.Progress
 
 // Restorer puts the component back the way the device was left, once, at start-up.
 type Restorer interface {

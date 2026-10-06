@@ -2,7 +2,7 @@ package a2dp
 
 import (
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/bt/avrcp"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/avrcp"
 )
 
 var _ speaker.Producer = (*Sink)(nil)

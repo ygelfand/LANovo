@@ -2,6 +2,7 @@ package voice
 
 import (
 	"context"
+	"github.com/ygelfand/libcountertop/pkg/inference/wakeslots"
 	"log/slog"
 	"math"
 	"sync/atomic"
@@ -19,8 +20,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 // errDuplicate is what Home Assistant reports to the devices that lost a race to answer: "Duplicate
@@ -100,6 +101,7 @@ type event struct {
 // being written and an event that does not fit the phase is dropped by the transition rather than by
 // a guard flag.
 type conversation struct {
+	word    func(int) (string, bool)
 	vs      *esphome.VoiceSatellite
 	source  *mic.Mics
 	speaker *speaker.Speaker
@@ -723,13 +725,13 @@ func (c *conversation) trouble() {
 // spoken phrase, not the model's id. Which pipeline runs is resolved by comparing that phrase against
 // each slot's select, so a turn from slot n has to report slot n's own phrase.
 func (c *conversation) phraseFor(slot int) (string, bool) {
-	if slot < 0 || slot >= len(c.vs.ActiveWakeWords) {
+	if c.word == nil {
 		return "", false
 	}
-
-	// From what is on disk, because a slot is only active once its model loaded, and the advertised list
-	// is not kept anywhere to be read.
-	id := c.vs.ActiveWakeWords[slot]
+	id, ok := c.word(slot)
+	if !ok {
+		return "", false
+	}
 	if m, ok := wake.Find(wake.Lib().Ours(), id); ok {
 		return m.Phrase, true
 	}
@@ -938,34 +940,19 @@ func (c *conversation) reported(dry time.Time) {
 		"clipped", c.speaker.Clipped())
 }
 
-// wanted is the per-slot selection the user last made, filtered to what the device can actually
-// load. Home Assistant takes it as authoritative, so claiming a model that is not here would leave a
-// slot looking armed and deaf.
-//
-// Positional, with a gap for a slot that names nothing: each slot is paired with its own pipeline,
-// so closing the gaps would answer with the wrong assistant.
-func wanted(models []wake.Model, slots int) []string {
-	saved := config.Get().Wake
-
-	active := make([]string, slots)
-	for i := range slots {
-		if id := saved.Slot(i).ID; id != "" {
-			if _, ok := wake.Find(models, id); ok {
-				active[i] = id
-			}
+// wanted retains assistant positions and explicit disables. Only a fresh configuration gets a default.
+func wanted(models []wake.Model, count int) []string {
+	saved := config.Get().Wake.Words
+	var ids []string
+	if saved != nil {
+		ids = make([]string, len(saved))
+		for i, word := range saved {
+			ids[i] = word.ID
 		}
 	}
-
-	// Nothing chosen yet: start listening for something rather than nothing, or a fresh device looks
-	// broken until the user finds the select. The shipped default when it is installed, and otherwise
-	// whatever this device does have — a device carrying one model somebody copied on should listen for
-	// that one rather than for nothing.
-	if len(chosen(active)) == 0 {
-		if m, ok := wake.Find(models, wake.DefaultModel); ok {
-			active[0] = m.ID
-		} else if len(models) > 0 {
-			active[0] = models[0].ID
-		}
+	installed := make([]string, len(models))
+	for i, m := range models {
+		installed[i] = m.ID
 	}
-	return active
+	return wakeslots.Initial(ids, installed, wake.DefaultModel, count)
 }

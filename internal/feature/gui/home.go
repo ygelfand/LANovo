@@ -13,8 +13,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/lib/say"
-	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
 )
 
 //go:embed esphome.svg

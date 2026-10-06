@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/lib/analysis"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
+	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
 )
 
 func heard() visual.Input {

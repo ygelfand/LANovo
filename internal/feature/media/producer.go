@@ -1,11 +1,12 @@
 package media
 
-import "github.com/ygelfand/LANovo/internal/hardware/speaker"
+import (
+	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/hardware/speaker"
+	"github.com/ygelfand/libcountertop/pkg/audio/ducking"
+)
 
 var _ speaker.Producer = (*Player)(nil)
-
-// ducked is the multiplier applied under a voice turn.
-const ducked = 0.2
 
 // Stand implements speaker.Producer. The same standing twice is the arbiter repeating itself.
 func (p *Player) Stand(down bool) {
@@ -38,7 +39,7 @@ func (p *Player) Stand(down bool) {
 func (p *Player) Duck(on bool) {
 	gain := float32(1)
 	if on {
-		gain = ducked
+		gain = ducking.Gain(config.Get().Media.DuckDB)
 	}
 
 	p.mu.Lock()

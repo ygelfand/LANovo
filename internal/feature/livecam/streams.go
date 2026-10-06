@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/ygelfand/LANovo/internal/board"
-	"github.com/ygelfand/LANovo/internal/lib/hook"
 	"github.com/ygelfand/LANovo/internal/setting"
+	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 const StreamGroup setting.Group = "Streams"

@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ygelfand/LANovo/internal/lib/bt/sbc"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/sbc"
 )
 
 func main() {

@@ -6,6 +6,7 @@
 package volume
 
 import (
+	"github.com/ygelfand/libcountertop/pkg/audio/ducking"
 	"log/slog"
 	"sync"
 
@@ -16,7 +17,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/hook"
+	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 func init() {
@@ -44,6 +45,7 @@ type Volume struct {
 	sounding config.Stream
 
 	card card
+	duck *esphome.Number
 }
 
 var (
@@ -70,11 +72,12 @@ func (v *Volume) Entities() []esphome.Entity {
 	for _, s := range config.Streams() {
 		out = append(out, v.numbers[s])
 	}
-	return out
+	return append(out, v.duck)
 }
 
 // Restore puts the levels back where they were left.
 func (v *Volume) Restore(c config.Config) {
+	v.duck.Set(float32(c.Media.DuckDB))
 	for _, s := range config.Streams() {
 		v.hold(s, c.Volume.Level(s))
 	}
@@ -184,7 +187,23 @@ func (v *Volume) hold(s config.Stream, level int) {
 	v.Changed.Emit(Change{Stream: s, Level: level})
 }
 
+// SetDuckDB saves the media ducking depth and publishes its effective value.
+func (v *Volume) SetDuckDB(db float64) error {
+	if err := config.Set().Media().DuckDB(db); err != nil {
+		return err
+	}
+	v.duck.Set(float32(db))
+	return nil
+}
+
 func (v *Volume) build() {
+	v.duck = &esphome.Number{Base: esphome.Base{ObjectID: "media_duck_level", Name: "Music ducking", Icon: "mdi:volume-medium", Category: esphome.CategoryConfig, DeviceID: component.DevicePlayback}, Min: ducking.MinimumDB, Max: ducking.MaximumDB, Step: 1, Unit: "dB", Mode: esphome.NumberBox}
+	v.duck.OnCommand = func(db float32) {
+		if err := v.SetDuckDB(float64(db)); err != nil {
+			slog.Error("saving the ducking level failed", "err", err)
+		}
+	}
+
 	for _, s := range config.Streams() {
 		stream := s
 

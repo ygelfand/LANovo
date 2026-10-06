@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/aec"
+	"github.com/ygelfand/libcountertop/pkg/audio/aec"
 )
 
 const (

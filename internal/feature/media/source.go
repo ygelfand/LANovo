@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/LANovo/internal/ui/mark"
+	"github.com/ygelfand/libcountertop/pkg/display/mark"
 )
 
 // Source is audio this player did not start, playing through the same speaker: a group the room has

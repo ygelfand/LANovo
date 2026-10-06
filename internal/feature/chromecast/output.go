@@ -15,12 +15,12 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/videoplayer"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/hardware/video"
-	"github.com/ygelfand/LANovo/internal/lib/cast/playback"
-	"github.com/ygelfand/LANovo/internal/lib/fetch"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/fetch"
+	"github.com/ygelfand/libcountertop/pkg/media/playback"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 // Queued caps how far decoding may run ahead of the speaker. The speaker's queue is the buffer; this

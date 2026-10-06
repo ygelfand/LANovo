@@ -152,14 +152,28 @@ func TestSetPersists(t *testing.T) {
 // Every stream needs an entity, or one of them cannot be set from Home Assistant at all.
 func TestEveryStreamHasAnEntity(t *testing.T) {
 	v := fresh(t)
-
-	if got, want := len(v.Entities()), len(config.Streams()); got != want {
-		t.Fatalf("%d entities for %d streams", got, want)
-	}
-	for _, e := range v.Entities() {
-		if e == nil {
-			t.Fatal("a stream has no entity")
+	for _, stream := range config.Streams() {
+		number := v.numbers[stream]
+		found := false
+		for _, entity := range v.Entities() {
+			if entity == number {
+				found = true
+			}
 		}
+		if number == nil || !found {
+			t.Fatalf("%s has no exported volume entity", stream)
+		}
+	}
+}
+
+func TestDuckingIsASeparateSavedPlaybackSetting(t *testing.T) {
+	v := fresh(t)
+	if v.duck == nil || v.duck.ObjectID != "media_duck_level" {
+		t.Fatal("no ducking control")
+	}
+	v.duck.OnCommand(-20)
+	if got := config.Get().Media.DuckDB; got != -20 {
+		t.Fatal(got)
 	}
 }
 

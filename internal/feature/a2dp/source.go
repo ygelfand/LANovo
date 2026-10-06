@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/feature/media"
-	"github.com/ygelfand/LANovo/internal/lib/bt"
-	"github.com/ygelfand/LANovo/internal/lib/bt/avrcp"
-	"github.com/ygelfand/LANovo/internal/lib/bt/l2cap"
-	"github.com/ygelfand/LANovo/internal/lib/bt/sdp"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/avrcp"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/l2cap"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/sdp"
 )
 
 // A connected phone behind media.Source, so the player shows it like any other.

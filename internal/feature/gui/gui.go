@@ -26,7 +26,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/touch"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
-	backend "github.com/ygelfand/LANovo/pkg/gogui"
+	backend "github.com/ygelfand/libcountertop/pkg/display/gogui"
 )
 
 const (

@@ -20,6 +20,7 @@ func models(ids ...string) []wake.Model {
 // What a device listens for when nothing has been chosen decides whether a fresh install can be
 // spoken to at all, and it must not come down to which model sorts first.
 func TestNothingChosenPreselectsTheDefault(t *testing.T) {
+	config.Use(t.TempDir() + "/state.json")
 	for name, tc := range map[string]struct {
 		installed []string
 		want      string
@@ -67,7 +68,7 @@ func TestASlotNamingAMissingModelIsEmpty(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got := chosen(wanted(models("hey_jarvis"), wakeword.Slots)); len(got) != 1 || got[0] == "never_installed" {
+	if got := chosen(wanted(models("hey_jarvis"), wakeword.Slots)); len(got) != 0 {
 		t.Errorf("advertised %v for a model that is not on the device", got)
 	}
 }

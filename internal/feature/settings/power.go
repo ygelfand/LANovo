@@ -7,9 +7,9 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
 	"github.com/ygelfand/LANovo/internal/update"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 // powerPage is the two ways to make the device go away and come back.

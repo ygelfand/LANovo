@@ -10,7 +10,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/cast/playback"
+	"github.com/ygelfand/libcountertop/pkg/media/playback"
 )
 
 type ending struct {

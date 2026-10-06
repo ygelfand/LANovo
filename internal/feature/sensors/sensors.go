@@ -22,8 +22,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/i2c"
 	"github.com/ygelfand/LANovo/internal/hardware/light"
 	"github.com/ygelfand/LANovo/internal/hardware/motion"
-	"github.com/ygelfand/LANovo/internal/lib/hook"
 	"github.com/ygelfand/LANovo/internal/service"
+	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 func init() {

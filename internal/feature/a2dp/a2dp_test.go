@@ -3,8 +3,8 @@ package a2dp
 import (
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/lib/bt/pair"
-	"github.com/ygelfand/LANovo/internal/lib/bt/sbc"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/pair"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/sbc"
 )
 
 // The wiring, checked where it can be without a radio.

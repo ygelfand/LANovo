@@ -7,7 +7,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/videoplayer"
-	"github.com/ygelfand/LANovo/internal/ui/style"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
 )
 
 func controls() style.Kit { return style.ByName(config.Get().Screen.Style).Kit }

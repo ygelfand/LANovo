@@ -1,31 +1,29 @@
-// Package livecam shares one lanovo-camera session between everything that wants the camera.
+// Package livecam supplies board-specific configuration to the shared camera-session hub.
 package livecam
 
 import (
 	"errors"
 	"fmt"
-	"log/slog"
-	"slices"
-	"sync"
-	"time"
-
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/board"
+	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/mtkcamera"
+	camerasession "github.com/ygelfand/libcountertop/pkg/camera/session"
+	"log/slog"
+	"time"
 )
 
-const (
-	FPS    = 30
-	Wait   = 2 * time.Second
-	Settle = 2 * time.Second
-	depth  = 64
-)
+const FPS = 30
+const Wait = 2 * time.Second
+const Settle = 2 * time.Second
 
-var ErrNoStill = errors.New("livecam: the helper could not make a picture")
-
+var ErrNoStill = camerasession.ErrNoStill
+var ErrMuted = camerasession.ErrMuted
 var ErrRestarted = errors.New("livecam: the panel turned or the streams changed")
 
+type Picture = camerasession.Picture
+type Session = camerasession.Session
 type Size struct{ Width, Height int }
 
 // Sizes is each stream as it is encoded, turned to stand upright.
@@ -66,165 +64,29 @@ const Keyframe = 2
 
 func Bitrate(w, h int) int { return bitrateFor(Saved(), w, h) }
 
-type Picture struct {
-	RGBA          []byte
-	Width, Height int
-}
+var hub = camerasession.New(camerasession.Options{
+	Snapshot: cameraSnapshot,
+	Open:     func(c mtkcamera.Config) (camerasession.Transport, error) { return mtkcamera.Open(c) },
+	Muted:    muted, Recover: revive, RestartError: ErrRestarted, Wait: Wait, Settle: Settle,
+})
 
-type Session struct {
-	stream *mtkcamera.Stream
-	out    [2][]chan mtkcamera.Frame
-	config [2][]byte
-	stills []chan mtkcamera.Frame
-	users  int
-	err    error
-	done   chan struct{}
-	opened time.Time
-	turn   int
-	shape  string
-}
-
-// Done closes when the session ends; Err says why.
-func (s *Session) Done() <-chan struct{} { return s.done }
-
-func (s *Session) Err() error {
-	hub.mu.Lock()
-	defer hub.mu.Unlock()
-	if s.err == nil {
-		return fmt.Errorf("livecam: the camera helper went away")
-	}
-	return s.err
-}
-
-type helperHub struct {
-	mu  sync.Mutex
-	cur *Session
-}
-
-var hub helperHub
-
-// Join subscribes to stream at, opening the camera when nothing holds it.
-func Join(at int) (*Session, <-chan mtkcamera.Frame, error) {
-	hub.mu.Lock()
-	defer hub.mu.Unlock()
-	s, err := hub.session()
-	if err != nil {
-		return nil, nil, err
-	}
-	ch := make(chan mtkcamera.Frame, depth)
-	if s.config[at] != nil {
-		ch <- mtkcamera.Frame{Data: s.config[at], Config: true}
-	}
-	s.out[at] = append(s.out[at], ch)
-	return s, ch, nil
-}
-
-// Leave ends a Join.
-func Leave(s *Session, frames <-chan mtkcamera.Frame) {
-	hub.mu.Lock()
-	defer hub.mu.Unlock()
-	for at := range s.out {
-		s.out[at] = slices.DeleteFunc(s.out[at], func(ch chan mtkcamera.Frame) bool { return ch == frames })
-	}
-	hub.release(s)
-}
-
-func RequestKey() error {
-	hub.mu.Lock()
-	defer hub.mu.Unlock()
-	if hub.cur == nil {
-		return fmt.Errorf("livecam: no camera open")
-	}
-	return hub.cur.stream.AskKey()
-}
-
-// Still is a picture of the main stream.
-func Still(within time.Duration) (Picture, error) {
-	hub.mu.Lock()
-	s, err := hub.session()
-	if err != nil {
-		hub.mu.Unlock()
-		return Picture{}, err
-	}
-	young := Settle - time.Since(s.opened)
-	hub.mu.Unlock()
-	defer func() {
-		hub.mu.Lock()
-		hub.release(s)
-		hub.mu.Unlock()
-	}()
-	if young > 0 {
-		select {
-		case <-time.After(young):
-		case <-s.done:
-			return Picture{}, s.Err()
-		}
-	}
-
-	got := make(chan mtkcamera.Frame, 1)
-	hub.mu.Lock()
-	s.stills = append(s.stills, got)
-	if len(s.stills) == 1 {
-		err = s.stream.AskStill()
-	}
-	hub.mu.Unlock()
-	if err != nil {
-		return Picture{}, err
-	}
-
-	select {
-	case f := <-got:
-		if len(f.Data) == 0 {
-			return Picture{}, ErrNoStill
-		}
-		return Picture{RGBA: f.Data, Width: f.Width, Height: f.Height}, nil
-	case <-s.done:
-		return Picture{}, s.Err()
-	case <-time.After(within):
-		return Picture{}, fmt.Errorf("livecam: no picture within %s", within)
-	}
-}
-
-func (h *helperHub) session() (*Session, error) {
-	if h.cur == nil {
-		s, err := open()
-		if err != nil {
-			return nil, err
-		}
-		h.cur = s
-	}
-	h.cur.users++
-	return h.cur, nil
-}
-
-func (h *helperHub) release(s *Session) {
-	s.users--
-	if s.users == 0 && h.cur == s {
-		h.cur = nil
-		s.stream.Close()
-	}
-}
-
-func open() (*Session, error) {
+func cameraSnapshot() camerasession.Snapshot {
 	q := Turn()
 	k := Saved()
-	sz := sizesFor(q)
-	cfg := mtkcamera.Config{Width: sz[0].Width, Height: sz[0].Height, FPS: FPS,
-		Bitrate: bitrateFor(k, sz[0].Width, sz[0].Height), Keyframe: k.Keyframe, Params: Params(k), Turn: q, Mirror: board.Current().CameraMirror}
-	if len(sz) > 1 {
-		cfg.SubWidth, cfg.SubHeight = sz[1].Width, sz[1].Height
-		cfg.SubBitrate = bitrateFor(k, sz[1].Width, sz[1].Height)
+	sizes := sizesFor(q)
+	cfg := mtkcamera.Config{Width: sizes[0].Width, Height: sizes[0].Height, FPS: FPS, Bitrate: bitrateFor(k, sizes[0].Width, sizes[0].Height), Keyframe: k.Keyframe, Params: Params(k), Turn: q, Mirror: board.Current().CameraMirror}
+	if len(sizes) > 1 {
+		cfg.SubWidth = sizes[1].Width
+		cfg.SubHeight = sizes[1].Height
+		cfg.SubBitrate = bitrateFor(k, sizes[1].Width, sizes[1].Height)
 	}
-	st, err := mtkcamera.Open(cfg)
-	if err != nil {
-		revive(err)
-		return nil, err
-	}
-	s := &Session{stream: st, done: make(chan struct{}), opened: time.Now(), turn: q, shape: shapeOf(k)}
-	go read(s)
-	go follow(s)
-	return s, nil
+	return camerasession.Snapshot{Config: cfg, Key: fmt.Sprintf("%d:%s", q, shapeOf(k))}
 }
+func Join(at int) (*Session, <-chan mtkcamera.Frame, error) { return hub.Join(at) }
+func Leave(s *Session, frames <-chan mtkcamera.Frame)       { hub.Leave(s, frames) }
+func RequestKey() error                                     { return hub.RequestKey() }
+func Still(within time.Duration) (Picture, error)           { return hub.Still(within) }
+func muted() bool                                           { return board.Current().MicMutesCamera && privacy.Get().MicMuted() }
 
 const reviveEvery = 30 * time.Second
 
@@ -242,72 +104,3 @@ func revive(cause error) {
 }
 
 const helperService = "lanovo_camera"
-
-func follow(s *Session) {
-	t := time.NewTicker(time.Second)
-	defer t.Stop()
-	for {
-		select {
-		case <-s.done:
-			return
-		case <-t.C:
-			if Turn() == s.turn && shapeOf(Saved()) == s.shape {
-				continue
-			}
-			hub.mu.Lock()
-			if hub.cur == s {
-				s.err = ErrRestarted
-				hub.cur = nil
-				s.stream.Close()
-			}
-			hub.mu.Unlock()
-			return
-		}
-	}
-}
-
-func read(s *Session) {
-	defer close(s.done)
-	for {
-		f, err := s.stream.Next(Wait)
-		if err != nil {
-			if mtkcamera.Timeout(err) {
-				err = fmt.Errorf("livecam: no frame from the camera within %s", Wait)
-			}
-			hub.mu.Lock()
-			if s.err == nil {
-				s.err = err
-			}
-			if hub.cur == s {
-				hub.cur = nil
-				s.stream.Close()
-			}
-			hub.mu.Unlock()
-			return
-		}
-
-		hub.mu.Lock()
-		if f.Still {
-			for _, ch := range s.stills {
-				ch <- f
-			}
-			s.stills = nil
-			hub.mu.Unlock()
-			continue
-		}
-		at := 0
-		if f.Sub {
-			at = 1
-		}
-		if f.Config {
-			s.config[at] = f.Data
-		}
-		for _, ch := range s.out[at] {
-			select {
-			case ch <- f:
-			default:
-			}
-		}
-		hub.mu.Unlock()
-	}
-}

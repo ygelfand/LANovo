@@ -22,14 +22,14 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/ble"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/bt"
-	"github.com/ygelfand/LANovo/internal/lib/bt/avdtp"
-	"github.com/ygelfand/LANovo/internal/lib/bt/avrcp"
-	"github.com/ygelfand/LANovo/internal/lib/bt/l2cap"
-	"github.com/ygelfand/LANovo/internal/lib/bt/pair"
-	"github.com/ygelfand/LANovo/internal/lib/bt/sbc"
-	"github.com/ygelfand/LANovo/internal/lib/bt/sdp"
 	"github.com/ygelfand/LANovo/internal/service"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/avdtp"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/avrcp"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/l2cap"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/pair"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/sbc"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/sdp"
 )
 
 func init() {

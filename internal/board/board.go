@@ -26,6 +26,9 @@ type Board struct {
 	// Motion is whether there is an accelerometer.
 	Motion bool
 
+	// MicMutesCamera is a physical microphone mute that also cuts the camera.
+	MicMutesCamera bool
+
 	CameraMirror bool
 
 	UISize string

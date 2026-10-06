@@ -15,7 +15,7 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
-	"github.com/ygelfand/LANovo/internal/lib/fetch"
+	"github.com/ygelfand/libcountertop/pkg/fetch"
 )
 
 // Models Home Assistant offers from its own custom_wake_words directory, which is how a wake word is

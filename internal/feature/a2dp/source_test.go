@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/ygelfand/LANovo/internal/feature/media"
-	"github.com/ygelfand/LANovo/internal/lib/bt/avrcp"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/avrcp"
 )
 
 // The phone as the player sees it.

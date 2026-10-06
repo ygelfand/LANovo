@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
-	"github.com/ygelfand/LANovo/internal/lib/wpa"
+	"github.com/ygelfand/libcountertop/pkg/network/wpa"
 )
 
 // scanFor is how long a scan is given. Results arrive over several seconds and the scan reads until

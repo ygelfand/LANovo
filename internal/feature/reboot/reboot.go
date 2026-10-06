@@ -10,7 +10,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {

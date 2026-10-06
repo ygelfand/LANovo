@@ -20,10 +20,10 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/parts"
 	"github.com/ygelfand/LANovo/internal/service"
 	"github.com/ygelfand/LANovo/internal/update"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 // Run brings everything up and stays until ctx is canceled.

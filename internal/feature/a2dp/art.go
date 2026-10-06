@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/feature/media"
-	"github.com/ygelfand/LANovo/internal/lib/bt"
-	"github.com/ygelfand/LANovo/internal/lib/bt/l2cap"
-	"github.com/ygelfand/LANovo/internal/lib/bt/obex"
-	"github.com/ygelfand/LANovo/internal/lib/bt/sdp"
 	"github.com/ygelfand/LANovo/internal/ui"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/l2cap"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/obex"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/sdp"
 )
 
 // The artwork, which is three protocols deep: a channel of its own, OBEX on top of it, and the

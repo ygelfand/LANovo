@@ -9,6 +9,7 @@ package voice
 
 import (
 	"context"
+	"github.com/ygelfand/libcountertop/pkg/inference/wakeslots"
 	"log/slog"
 	"sync"
 
@@ -43,7 +44,7 @@ type Voice struct {
 	// slots is the selection by slot, empty where a slot is off. What Home Assistant is told is this
 	// with the gaps taken out, because it reads that list as a set; the engine is given the list
 	// itself, because a word in slot 2 has to load into slot 2 or it arms the wrong pipeline.
-	slots []string
+	selection wakeslots.Selection
 }
 
 var (
@@ -66,14 +67,15 @@ func build() *Voice {
 	slots := wanted(ours, wakeword.Slots)
 
 	v := &Voice{
-		slots: slots,
 		vs: &esphome.VoiceSatellite{
 			ActiveWakeWords:     chosen(slots),
 			MaxActiveWakeWords:  wakeword.Slots,
 			OnExternalWakeWords: wakeword.Answer,
 		},
 	}
+	v.selection.Set(slots)
 	v.turn = newConversation(v.vs)
+	v.turn.word = v.selection.ID
 	slog.Info("wake words", "ours", len(ours), "slots", slots)
 
 	v.vs.OnTimer = timer.Get().Event
@@ -191,7 +193,7 @@ func (v *Voice) OnWakeWord(load func(slots []string) []string) {
 				slog.Error("saving the wake word failed", "slot", slot+1, "err", err)
 			}
 		}
-		if len(v.vs.ActiveWakeWords) != len(ids) {
+		if len(chosen(accepted)) != len(chosen(ids)) {
 			slog.Warn("some wake words were refused", "asked", ids, "running", v.vs.ActiveWakeWords)
 		}
 	}
@@ -199,25 +201,10 @@ func (v *Voice) OnWakeWord(load func(slots []string) []string) {
 
 // ActiveWakeWords is what the device is advertising as listening, by slot.
 // Slots is the selection by slot, which is what the engine loads from.
-func (v *Voice) Slots() []string { return v.slots }
-
-// SetSlots corrects what is advertised to what is actually running. The engine loads at start-up
-// rather than waiting to be told, so this is how the advertisement is reconciled with what came up:
-// anything that failed to load is not claimed.
+func (v *Voice) Slots() []string { return v.selection.Get() }
 func (v *Voice) SetSlots(slots []string) {
-	v.slots = slots
+	v.selection.Set(slots)
 	v.vs.ActiveWakeWords = chosen(slots)
 	slog.Info("wake words listening", "slots", slots)
 }
-
-// chosen is the wake words a slot list actually names, with the empty slots taken out. The positions
-// matter to the device and mean nothing to Home Assistant.
-func chosen(slots []string) []string {
-	out := make([]string, 0, len(slots))
-	for _, id := range slots {
-		if id != "" {
-			out = append(out, id)
-		}
-	}
-	return out
-}
+func chosen(slots []string) []string { return wakeslots.Advertised(slots) }

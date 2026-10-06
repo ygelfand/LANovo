@@ -14,8 +14,8 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/lib/immich"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/media/immich"
 )
 
 func jpegOf(w, h int, c color.RGBA) []byte {

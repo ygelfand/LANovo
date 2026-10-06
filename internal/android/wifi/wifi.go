@@ -13,7 +13,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/host/device"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/wpa"
+	"github.com/ygelfand/libcountertop/pkg/network/wpa"
 )
 
 const (

@@ -12,8 +12,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 	"github.com/ygelfand/LANovo/internal/ui/reveal"
-	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
 )
 
 func bootFrame(args []string) (string, error) {

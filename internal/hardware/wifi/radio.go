@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/LANovo/internal/lib/hook"
 	"github.com/ygelfand/LANovo/internal/service"
+	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 func init() {

@@ -10,10 +10,11 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/lib/fetch"
+	"github.com/ygelfand/libcountertop/pkg/fetch"
 )
 
 func init() {
+	fetch.UseAsDefault()
 	// Before anything downloads, so nothing goes out under a policy that is about to change.
 	component.Register(component.Network, Get, component.Order(5))
 }

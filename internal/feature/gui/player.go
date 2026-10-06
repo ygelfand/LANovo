@@ -15,7 +15,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/LANovo/internal/ui/style"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
 )
 
 const (

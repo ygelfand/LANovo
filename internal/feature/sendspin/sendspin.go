@@ -3,6 +3,7 @@ package sendspin
 import (
 	"context"
 	"fmt"
+	core "github.com/ygelfand/libcountertop/pkg/audio/sendspin"
 	"log/slog"
 	"sync"
 	"time"
@@ -14,9 +15,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/feature/media"
-	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/ui"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {
@@ -31,7 +31,7 @@ type Player struct {
 	title   *esphome.TextSensor
 	artist  *esphome.TextSensor
 
-	out *out
+	out *core.Output
 
 	mu      sync.Mutex
 	running context.CancelFunc
@@ -39,7 +39,7 @@ type Player struct {
 
 	// joined is the server holding the room, set while one is connected. Home Assistant's transport
 	// controls go to it, and there is nothing to send them to when it is nil.
-	joined *session
+	joined *core.Session
 
 	// playing is the group's own playback state, which is the only thing that tells a pause from a
 	// track that ended: both leave this room silent.
@@ -74,10 +74,9 @@ func Get() *Player {
 
 func build() *Player {
 	p := &Player{
-		out:  newOut(speaker.Get()),
+		out:  newOutput(),
 		wake: make(chan struct{}, 1),
 	}
-	p.out.pause = p.Pause
 
 	p.enabled = &esphome.Switch{
 		Base: esphome.Base{
@@ -129,7 +128,7 @@ func (p *Player) stepped(by time.Duration) {
 		return
 	}
 	slog.Info("the clock was stepped, starting the sendspin session again", "by", by.Round(time.Millisecond))
-	joined.client.Close()
+	joined.Close()
 }
 
 // What the state sensor says, from switched off to audible.
@@ -172,7 +171,7 @@ func (p *Player) tell(want ...string) {
 	// Off the caller's thread: this arrives on Home Assistant's read loop, and the send holds a lock
 	// around a websocket write with no deadline on it. A server that stopped reading would take the
 	// device's own connection down with it.
-	safe.Go("sendspin command", func() { s.tell(want...) })
+	safe.Go("sendspin command", func() { s.Command(want...) })
 }
 
 // Playing implements media.Source.
@@ -246,7 +245,7 @@ func (p *Player) moved(progress protocol.ProgressState, stamp int64, serverNow f
 // holds says which session owns the room, and nil when none does. The media player follows it: the
 // group answers Home Assistant's transport controls for as long as it is connected, whether or not
 // audio happens to be arriving this second.
-func (p *Player) holds(s *session) {
+func (p *Player) holds(s *core.Session) {
 	p.mu.Lock()
 	p.joined = s
 	p.paused = false
@@ -399,10 +398,10 @@ func (p *Player) settle(parent context.Context) {
 	// Nothing to open: this device's INPUT policy is ACCEPT, where the Echo's vendor firewall
 	// dropped whatever it had not been told about.
 	name := config.Get().Device.Name
-	l := newListener(p.out, speaker.Sound().Backgrounds(), p)
+	l := newListener(p)
 
 	safe.Go("sendspin listen", func() {
-		if err := l.serve(ctx, name); err != nil {
+		if err := l.Serve(ctx, name); err != nil {
 			slog.Error("sendspin listener stopped", "err", err)
 		}
 	})

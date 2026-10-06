@@ -16,8 +16,8 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 // Hold is how long scoring continues after a detection fires, to record the peak the utterance

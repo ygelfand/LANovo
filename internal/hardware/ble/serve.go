@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/lib/bt/pair"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/pair"
 )
 
 // Serving a classic connection: the loop that owns the line while a phone is connected.

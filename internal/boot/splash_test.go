@@ -53,8 +53,8 @@ func TestSummaryOfEverythingDone(t *testing.T) {
 		{Name: "dhcp", Doing: "asking", Done: true},
 	}
 
-	if got := summary(all); got != "" {
-		t.Errorf("summary = %q, want empty once everything is up", got)
+	if got := summary(all); got == "" {
+		t.Errorf("summary = %q, want completed rows retained for redraw tracking", got)
 	}
 	if summary(nil) != "" {
 		t.Error("nothing to wait for should summarize to nothing")

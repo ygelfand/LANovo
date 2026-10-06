@@ -87,55 +87,5 @@ func DrawLogo(s Surface, r Rect, on theme.Color) {
 	if theme.Dark(on) {
 		img = Night()
 	}
-	if img == nil {
-		return
-	}
-
-	b := img.Bounds()
-	if b.Dx() == 0 || b.Dy() == 0 || r.W <= 0 || r.H <= 0 {
-		return
-	}
-
-	// Scale by whichever edge runs out first.
-	w, h := b.Dx(), b.Dy()
-	if w*r.H > h*r.W {
-		h = h * r.W / w
-		w = r.W
-	} else {
-		w = w * r.H / h
-		h = r.H
-	}
-
-	at := Rect{X: r.X + (r.W-w)/2, Y: r.Y + (r.H-h)/2, W: w, H: h}
-	drawScaled(s, img, at, on)
-}
-
-// drawScaled paints img into a box, nearest-neighbor, composited over a background color.
-func drawScaled(s Surface, img image.Image, at Rect, on theme.Color) {
-	b := img.Bounds()
-
-	for y := range at.H {
-		sy := b.Min.Y + y*b.Dy()/at.H
-		for x := range at.W {
-			sx := b.Min.X + x*b.Dx()/at.W
-
-			// RGBA() is alpha-premultiplied, which is what source-over wants:
-			// out = src + dst*(1-alpha).
-			sr, sg, sb, sa := img.At(sx, sy).RGBA()
-			if sa == 0 {
-				continue
-			}
-
-			c := theme.Color{R: byte(sr >> 8), G: byte(sg >> 8), B: byte(sb >> 8)}
-			if sa < 0xffff {
-				inv := 0xffff - sa
-				c = theme.Color{
-					R: byte((sr + uint32(on.R)*0x101*inv/0xffff) >> 8),
-					G: byte((sg + uint32(on.G)*0x101*inv/0xffff) >> 8),
-					B: byte((sb + uint32(on.B)*0x101*inv/0xffff) >> 8),
-				}
-			}
-			setClipped(s, at.X+x, at.Y+y, c)
-		}
-	}
+	DrawImageFit(s, img, r, on)
 }

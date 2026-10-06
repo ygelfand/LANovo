@@ -14,8 +14,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
 	"github.com/ygelfand/LANovo/internal/feature/web"
-	"github.com/ygelfand/LANovo/internal/lib/fetch"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
+	"github.com/ygelfand/libcountertop/pkg/fetch"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 const postWait = 5 * time.Second

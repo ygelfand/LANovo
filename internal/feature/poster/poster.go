@@ -18,9 +18,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/hardware/touch"
-	"github.com/ygelfand/LANovo/internal/lib/hook"
-	"github.com/ygelfand/LANovo/internal/lib/immich"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/hook"
+	"github.com/ygelfand/libcountertop/pkg/media/immich"
 )
 
 const (

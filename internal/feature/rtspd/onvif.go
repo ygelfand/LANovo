@@ -57,7 +57,7 @@ func describe() *describer {
 	}
 	go d.http.Serve(ln)
 
-	d.found = &onvif.Responder{UUID: onvif.NewUUID(), Name: dev.Name, XAddr: func(ip net.IP) string {
+	d.found = &onvif.Responder{Hardware: "LANovo", UUID: onvif.NewUUID(), Name: dev.Name, XAddr: func(ip net.IP) string {
 		return "http://" + net.JoinHostPort(ip.String(), strconv.Itoa(ONVIFPort)) + onvif.DevicePath
 	}}
 	if err := d.found.Listen(); err != nil {

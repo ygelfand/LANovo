@@ -12,7 +12,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/lib/bt/pair"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/pair"
 )
 
 // The loop that carries a link, driven over a socketpair with no controller behind it.

@@ -15,7 +15,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/voice"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/hardware/touch"
-	"github.com/ygelfand/LANovo/internal/lib/hook"
+	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 func init() {

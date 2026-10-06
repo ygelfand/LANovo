@@ -18,7 +18,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/ygelfand/LANovo/internal/ui/mark"
+	"github.com/ygelfand/libcountertop/pkg/display/mark"
 )
 
 const (

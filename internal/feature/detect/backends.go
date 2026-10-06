@@ -7,8 +7,8 @@ import (
 
 	"github.com/zserge/microwakeword"
 
-	"github.com/ygelfand/LANovo/internal/lib/oww"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
+	"github.com/ygelfand/libcountertop/pkg/inference/oww"
 )
 
 // backend runs the wake words of one Kind. It is the whole engine rather than one detector because

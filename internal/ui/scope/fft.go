@@ -3,7 +3,7 @@ package scope
 import (
 	"math"
 
-	"github.com/ygelfand/LANovo/internal/lib/analysis"
+	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
 )
 
 // size is the transform's window, in samples. A power of two because the transform needs one, and

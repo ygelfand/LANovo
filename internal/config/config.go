@@ -27,6 +27,7 @@ type Config struct {
 	Clock  Clock  `json:"clock"`
 	Idle   Idle   `json:"idle"`
 	Volume Volume `json:"volume"`
+	Media  Media  `json:"media"`
 	Wake   Wake   `json:"wake"`
 
 	Feedback   Feedback   `json:"feedback"`
@@ -57,6 +58,7 @@ func Defaults() Config {
 		Clock:  defaultClock(),
 		Idle:   defaultIdle(),
 		Volume: defaultVolume(),
+		Media:  defaultMedia(),
 		Wake:   defaultWake(),
 
 		Feedback:   defaultFeedback(),
@@ -101,6 +103,7 @@ type Writer struct{ st *Store }
 func (w Writer) Screen() ScreenWriter         { return ScreenWriter(w) }
 func (w Writer) Clock() ClockWriter           { return ClockWriter(w) }
 func (w Writer) Idle() IdleWriter             { return IdleWriter(w) }
+func (w Writer) Media() MediaWriter           { return MediaWriter{st: w.st} }
 func (w Writer) Volume() VolumeWriter         { return VolumeWriter(w) }
 func (w Writer) Wake(slot int) WakeWriter     { return WakeWriter{st: w.st, slot: slot} }
 func (w Writer) Stop() StopWriter             { return StopWriter(w) }

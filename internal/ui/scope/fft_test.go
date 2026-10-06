@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/lib/analysis"
+	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
 )
 
 // tone is a pure sine at a frequency, sampled at rate, as int16.

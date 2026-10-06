@@ -20,8 +20,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/lib/say"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {

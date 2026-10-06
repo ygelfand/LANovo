@@ -6,8 +6,8 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
-	"github.com/ygelfand/LANovo/internal/lib/cast"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
+	"github.com/ygelfand/libcountertop/pkg/media/cast"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 // loudness is cast as a client of the media volume: it passes on what senders set and reports what the volume is.

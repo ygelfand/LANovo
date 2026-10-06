@@ -9,9 +9,10 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/LANovo/internal/ui/reveal"
-	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	bootview "github.com/ygelfand/libcountertop/pkg/display/boot"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
+	"github.com/ygelfand/libcountertop/pkg/runtime/startup"
 )
 
 // How the screen is divided, and how big the lettering is, as fractions.
@@ -134,114 +135,10 @@ func drawLogo(s ui.Surface) error {
 	return nil
 }
 
-func drawVersion(s ui.Surface, palette theme.Theme) {
-	w, h := s.Size()
-
-	font := ui.MustLoad(ui.Regular, int(float64(min(w, h))*versionShare))
-	tw, th := font.Measure(layout.Version)
-
-	pad := th
-	ui.DrawText(s, font, w-tw-pad, h-th-pad, palette.Muted, palette.Background, layout.Version)
-}
-
-// drawBoot paints the mark and the list.
-//
-// The list sits beside the mark when the picture is wide and under it when it is tall, so the
-// device says the same thing whichever way it is stood.
+func drawVersion(s ui.Surface, palette theme.Theme) { bootview.Version(s, palette, layout.Version) }
 func drawBoot(s ui.Surface, progress []component.Progress) error {
-	w, h := s.Size()
-
-	palette := chosen()
-	logo, list := reveal.Split(w, h)
-	ui.Clear(s, logo)
-	ui.FillRect(s, list, palette.Background)
-
-	rows(s, list, palette, progress)
-	drawVersion(s, palette)
-	if !Settled(progress) {
-		drawSkip(s, palette)
-	}
+	bootview.Raster(s, chosen(), progress, layout.Version, say.T("boot.skip"))
 	return nil
 }
-
-func Settled(progress []component.Progress) bool {
-	for _, p := range progress {
-		if !p.Done && !p.Failed {
-			return false
-		}
-	}
-	return true
-}
-
-func Skip(w, h int) ui.Rect {
-	short := min(w, h)
-	high := int(float64(short) * skipShare)
-	wide := high * 3
-	pad := int(float64(short) * versionShare * 2)
-	return ui.Rect{X: w - wide - pad, Y: h - high - 2*pad, W: wide, H: high}
-}
-
-func drawSkip(s ui.Surface, palette theme.Theme) {
-	w, h := s.Size()
-	at := Skip(w, h)
-	ui.FillRounded(s, at, at.H/2, palette.Surface)
-	font := ui.MustLoad(ui.Medium, at.H*2/5)
-	tw, th := font.Measure(say.T("boot.skip"))
-	ui.DrawText(s, font, at.X+(at.W-tw)/2, at.Y+(at.H-th)/2, palette.Text, palette.Surface, say.T("boot.skip"))
-}
-
-// rows draws the list, centered in the space it was given.
-func rows(s ui.Surface, in ui.Rect, palette theme.Theme, progress []component.Progress) {
-	if len(progress) == 0 {
-		return
-	}
-
-	row := int(float64(min(in.W, in.H)) * rowShare)
-
-	labelFont := ui.MustLoad(ui.Medium, int(float64(row)*labelShare))
-	doingFont := ui.MustLoad(ui.Regular, int(float64(row)*doingShare))
-
-	mark := int(float64(row) * markShare)
-	perColumn, columnW := len(progress), in.W
-	if len(progress)*row > in.H*3/4 {
-		perColumn, columnW = (len(progress)+1)/2, in.W/2
-	}
-	top := in.Y + (in.H-perColumn*row)/2
-
-	for i, at := range progress {
-		left := in.X + row/2 + (i/perColumn)*columnW
-		y := top + (i%perColumn)*row
-
-		color := palette.Muted
-		switch {
-		case at.Failed:
-			color = palette.Warning
-		case at.Done:
-			color = palette.Accent
-		}
-		dot(s, left, y+row/2, mark/2, color, at.Done || at.Failed, palette.Background)
-
-		x := left + mark*2
-		ui.DrawText(s, labelFont, x, y+row/8, palette.Text, palette.Background, at.Name)
-
-		if at.Doing != "" {
-			said := palette.Muted
-			if at.Failed {
-				said = palette.Warning
-			}
-			_, lh := labelFont.Measure(at.Name)
-			ui.DrawText(s, doingFont, x, y+row/8+lh, said, palette.Background, at.Doing)
-		}
-	}
-}
-
-// dot is the mark beside a row: filled once the component is ready, a ring while it is not.
-func dot(s ui.Surface, cx, cy, r int, c theme.Color, filled bool, back theme.Color) {
-	ui.FillRounded(s, ui.Rect{X: cx - r, Y: cy - r, W: r * 2, H: r * 2}, r, c)
-
-	if !filled {
-		inner := r / 2
-		ui.FillRounded(s,
-			ui.Rect{X: cx - inner, Y: cy - inner, W: inner * 2, H: inner * 2}, inner, back)
-	}
-}
+func Settled(progress []component.Progress) bool { return startup.Settled(progress) }
+func Skip(w, h int) ui.Rect                      { return bootview.Skip(w, h) }

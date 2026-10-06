@@ -22,18 +22,20 @@ type full struct {
 	entity   *esphome.Switch
 	restored int
 	ran      bool
+	running  chan struct{}
 }
 
 func newFull(name string) *full {
 	return &full{
-		bare:   bare{name: name},
-		entity: &esphome.Switch{Base: esphome.Base{ObjectID: name}},
+		bare:    bare{name: name},
+		running: make(chan struct{}),
+		entity:  &esphome.Switch{Base: esphome.Base{ObjectID: name}},
 	}
 }
 
 func (f *full) Entities() []esphome.Entity { return []esphome.Entity{f.entity} }
 func (f *full) Restore(c config.Config)    { f.restored++ }
-func (f *full) Run(context.Context) error  { f.ran = true; return nil }
+func (f *full) Run(context.Context) error  { f.ran = true; close(f.running); return nil }
 
 func names(cs []Component) []string {
 	out := make([]string, 0, len(cs))
@@ -104,6 +106,11 @@ func TestWhatReachesTheSupervisor(t *testing.T) {
 		t.Fatal("a component with no loop was never started")
 	}
 
+	select {
+	case <-loop.running:
+	case <-time.After(5 * time.Second):
+		t.Fatal("the component loop never started")
+	}
 	stop()
 	if err := <-done; err != nil {
 		t.Fatalf("Run: %v", err)

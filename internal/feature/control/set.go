@@ -30,10 +30,11 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/sendspin"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
+	"github.com/ygelfand/LANovo/internal/feature/volume"
 	knob "github.com/ygelfand/LANovo/internal/setting"
-	"github.com/ygelfand/LANovo/internal/ui/style"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
 )
 
 // Changing a setting from here rather than by tapping it.
@@ -70,6 +71,13 @@ func settings() []setting {
 	clock, display := dashboard.Get(), screen.Get()
 
 	return append([]setting{
+		{"media.duck", "Media.DuckDB", func(c config.Config) string { return strconv.FormatFloat(c.Media.DuckDB, 'f', -1, 64) }, func(s string) error {
+			db, err := strconv.ParseFloat(s, 64)
+			if err != nil {
+				return fmt.Errorf("ducking depth: %w", err)
+			}
+			return volume.Get().SetDuckDB(db)
+		}},
 		{"clock.face", "Clock.Face", func(c config.Config) string { return string(c.Clock.Face) },
 			choose(config.Faces(), clock.SetFace)},
 

@@ -7,7 +7,7 @@ import (
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/lib/tz"
+	"github.com/ygelfand/libcountertop/pkg/timezone"
 )
 
 // Where the device is. Home Assistant sends it with the time and is right almost always, but a

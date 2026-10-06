@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/lib/cast"
+	"github.com/ygelfand/libcountertop/pkg/media/cast"
 )
 
 func testKeys(t *testing.T) *keys {

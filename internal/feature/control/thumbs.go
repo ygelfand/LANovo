@@ -13,9 +13,9 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
-	"github.com/ygelfand/LANovo/internal/lib/analysis"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
+	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
 )
 
 const (

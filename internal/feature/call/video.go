@@ -12,8 +12,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/mtkcamera"
 	"github.com/ygelfand/LANovo/internal/lib/rtc"
-	"github.com/ygelfand/LANovo/internal/lib/safe"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 const (

@@ -3,7 +3,7 @@ package a2dp
 import (
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/lib/bt/avrcp"
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/avrcp"
 )
 
 // The now playing list arrives whole, current track included, and the card shows what is behind it.
