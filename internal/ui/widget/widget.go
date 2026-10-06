@@ -13,6 +13,7 @@ const (
 	Chevron
 	Toggle
 	Slider
+	Field
 )
 
 type Row struct {
@@ -32,6 +33,8 @@ type Row struct {
 	Dim    bool
 
 	Preview func(s ui.Surface, at ui.Rect, palette theme.Theme)
+
+	Save func(string)
 }
 
 type Cell struct {

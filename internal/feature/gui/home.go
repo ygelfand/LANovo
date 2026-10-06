@@ -107,7 +107,7 @@ func pickerBody(p *homecontrol.Picker) gogui.View {
 		Placeholder:   say.T("home.search"),
 		Sizing:        gogui.FillFit,
 		OnTextChanged: func(q string, _ gogui.EventCtx) { p.SetQuery(q) },
-	})
+	}, nil)
 
 	var body []gogui.View
 	switch {

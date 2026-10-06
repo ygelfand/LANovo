@@ -101,6 +101,47 @@ func pageBody(w *gogui.Window, p *shell.Page) gogui.View {
 	return beside(w, livePreview(w, p.Preview), list)
 }
 
+var (
+	drafts = map[string]string{}
+	keyTop float32
+)
+
+func clear(w *gogui.Window, bottom float32) {
+	if keyTop <= 0 || bottom <= keyTop-reach()*0.3 {
+		return
+	}
+	by := bottom - keyTop + reach()*0.5
+	w.QueueCommand(func(w *gogui.Window) {
+		w.ScrollVerticalTo("page", w.ScrollVerticalOffset("page")-by)
+	})
+}
+
+func fieldRow(id string, r widget.Row) gogui.View {
+	fid := id + "-field"
+	text, ok := drafts[fid]
+	if !ok {
+		text = r.Value
+	}
+	save := r.Save
+	return textField(gogui.InputCfg{
+		ID:     fid,
+		Text:   text,
+		Sizing: gogui.FillFit,
+		OnTextChanged: func(s string, ev gogui.EventCtx) {
+			drafts[fid] = s
+			ev.Window.InvalidateLayout()
+		},
+		OnTextCommit: func(_ string, _ gogui.InputCommitReason, ev gogui.EventCtx) {
+			delete(drafts, fid)
+			ev.Window.InvalidateLayout()
+		},
+	}, func() {
+		if s, ok := drafts[fid]; ok && save != nil {
+			save(s)
+		}
+	})
+}
+
 var previewing bool
 
 func livePreview(w *gogui.Window, watch func(ui.Rect) bool) gogui.View {
@@ -232,6 +273,8 @@ func rowView(id, page string, r widget.Row, tap func(int), glyphs bool) gogui.Vi
 			},
 		}
 		content = append(content, grip(slider(level)))
+	case widget.Field:
+		content = append(content, fieldRow(id, r))
 	case widget.Chevron:
 		if r.Value != "" {
 			content = append(content, gogui.Label(r.Value, secondary()))

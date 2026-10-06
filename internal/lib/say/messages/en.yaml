@@ -106,6 +106,7 @@ idle.face: Clock face
 idle.vertical: Clock vertical position
 idle.horizontal: Clock horizontal position
 idle.size: Clock size
+idle.label: Visual label
 idle.none: None
 face.none: None
 align.left: Left
@@ -164,7 +165,8 @@ features.speaker: Bluetooth speaker
 features.speaker.hint: A2DP audio sink
 
 # The device itself: what it runs, where it is, what it leaves open.
-keyboard.done: Done
+keyboard.save: Save
+keyboard.cancel: Cancel
 upgrade.line: Updating to {{.Version}} · {{.Status}}
 upgrade.installing: Installing…
 upgrade.percent: "{{.N}}%"

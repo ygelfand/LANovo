@@ -10,6 +10,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/idle"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
@@ -59,6 +60,7 @@ func idlePage() *shell.Page {
 					{Label: say.T("idle.vertical"), Kind: widget.Chevron, Value: c.Position.Label()},
 					{Label: say.T("idle.horizontal"), Kind: widget.Chevron, Value: c.Align.Label()},
 					{Label: say.T("idle.size"), Kind: widget.Chevron, Value: c.Size.Label()},
+					{Label: say.T("idle.label"), Kind: widget.Field, Value: config.Get().Visual.Label, Save: visuals.Get().SetLabel},
 				}, []func(int){
 					open(choose(say.T("idle.after.title"), config.Delays(),
 						func() config.Delay { return config.Get().Idle.After }, i.SetAfter, nil)),
@@ -84,6 +86,7 @@ func idlePage() *shell.Page {
 						func(s config.Size) func(ui.Surface, ui.Rect, theme.Theme) {
 							return idlePlaced(func(c *config.Idle) { c.Size = s })
 						})),
+					nil,
 				}
 		},
 	}

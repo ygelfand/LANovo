@@ -2,7 +2,6 @@ package gui
 
 import (
 	"strings"
-	"sync"
 	"unicode"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
@@ -14,17 +13,46 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
-var fields sync.Map
+var active struct {
+	leaf string
+	save func()
+}
 
-func textField(cfg gogui.InputCfg) gogui.View {
-	fields.Store(cfg.ID, true)
+func textField(cfg gogui.InputCfg, save func()) gogui.View {
 	controls().Field(&cfg)
-	return gogui.Input(cfg)
+	leaf, blur := cfg.ID, cfg.OnBlur
+	cfg.OnBlur = func(e gogui.EventCtx) {
+		if active.leaf == leaf {
+			active.leaf, active.save = "", nil
+		}
+		if blur != nil {
+			blur(e)
+		}
+	}
+	return gogui.Column(gogui.ContainerCfg{
+		Sizing:  cfg.Sizing,
+		Padding: gogui.NoPadding,
+		AmendLayout: func(e gogui.EventCtx) {
+			if holds(e.Window, leaf) {
+				active.leaf, active.save = leaf, save
+				clear(e.Window, e.Layout.Shape.Y+e.Layout.Shape.Height)
+			}
+		},
+		Content: []gogui.View{gogui.Input(cfg)},
+	})
+}
+
+func holds(w *gogui.Window, leaf string) bool {
+	for _, id := range w.ResolveID(leaf) {
+		if w.IsFocus(id) {
+			return true
+		}
+	}
+	return false
 }
 
 func typing(w *gogui.Window) bool {
-	_, ok := fields.Load(w.FocusID())
-	return ok
+	return active.leaf != "" && holds(w, active.leaf)
 }
 
 type keys struct {
@@ -136,12 +164,19 @@ func (a *App) keyboard(w *gogui.Window) gogui.View {
 	}
 	lines = append(lines, keyRow([]gogui.View{
 		key("mode", mode, unit*2+gap, special, func() { kb.symbols, kb.shift = !kb.symbols, false }),
-		key("space", " ", unit*5+gap*4, plain, func() { r.Type(' ') }),
-		key("done", say.T("keyboard.done"), unit*3+gap*2, special, func() { w.ClearFocus() }),
+		key("space", " ", unit*4+gap*3, plain, func() { r.Type(' ') }),
+		key("cancel", say.T("keyboard.cancel"), unit*2+gap, special, func() { w.ClearFocus() }),
+		key("save", say.T("keyboard.save"), unit*2+gap, special, func() {
+			if active.save != nil {
+				active.save()
+			}
+			w.ClearFocus()
+		}),
 	}, gap))
 
 	tall := int(4*high + 3*gap + pad*2.5)
 	at := ui.Rect{Y: vh - tall, W: vw, H: tall}
+	keyTop = float32(at.Y)
 	var corners gogui.Radius
 	if size == config.KeyboardCompact {
 		at.W = min(int(10*unit+9*gap+2*pad)+1, vw)
