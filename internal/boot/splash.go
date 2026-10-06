@@ -32,7 +32,7 @@ const settle = 500 * time.Millisecond
 const (
 	frame     = time.Second / 60
 	traceBy   = 2000 * time.Millisecond
-	traceFor  = 1400 * time.Millisecond
+	traceFor  = 6 * time.Second
 	stepFor   = 350 * time.Millisecond
 	viewWait  = 10 * time.Second
 	viewEvery = 50 * time.Millisecond
