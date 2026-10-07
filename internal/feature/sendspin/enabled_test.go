@@ -1,6 +1,7 @@
 package sendspin
 
 import (
+	esphome "github.com/ygelfand/go-esphome-device"
 	"path/filepath"
 	"testing"
 
@@ -22,7 +23,7 @@ func TestEnablingTellsBothSides(t *testing.T) {
 		if got := config.Get().Sendspin.Enabled; got != want {
 			t.Errorf("the file says %v, want %v", got, want)
 		}
-		if got := p.enabled.Get(); got != want {
+		if got := p.Entities()[0].(*esphome.Switch).Get(); got != want {
 			t.Errorf("the entity says %v, want %v", got, want)
 		}
 	}
@@ -32,12 +33,12 @@ func TestTheCommandFromHomeAssistantIsSaved(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 	p := Get()
 
-	p.enabled.OnCommand(true)
+	p.Entities()[0].(*esphome.Switch).OnCommand(true)
 	if !config.Get().Sendspin.Enabled {
 		t.Error("turning it on from Home Assistant did not save")
 	}
 
-	p.enabled.OnCommand(false)
+	p.Entities()[0].(*esphome.Switch).OnCommand(false)
 	if config.Get().Sendspin.Enabled {
 		t.Error("turning it off from Home Assistant did not save")
 	}

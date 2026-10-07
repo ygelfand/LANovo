@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	sharedha "github.com/ygelfand/libcountertop/pkg/homeassistant"
 	"log/slog"
 	"sync"
 	"time"
@@ -22,33 +23,21 @@ func init() {
 	component.Register(component.Device, Get, component.Order(5))
 }
 
-var (
-	ErrNotConnected = errors.New("homeassistant: not connected")
-	ErrNotAllowed   = errors.New("homeassistant: actions are not allowed for this device; enable them in the ESPHome integration's options")
-)
+var ErrNotConnected = sharedha.ErrNotConnected
+var ErrNotAllowed = sharedha.ErrNotAllowed
 
 const (
 	probeWait = 5 * time.Second
 	syncWait  = 30 * time.Second
 )
 
-type Access int
+type Access = sharedha.Access
 
 const (
-	Unknown Access = iota
-	Allowed
-	Refused
+	Unknown = sharedha.Unknown
+	Allowed = sharedha.Allowed
+	Refused = sharedha.Refused
 )
-
-func (a Access) String() string {
-	switch a {
-	case Allowed:
-		return "allowed"
-	case Refused:
-		return "refused"
-	}
-	return "unknown"
-}
 
 type sender interface {
 	Send(proto.Message) error

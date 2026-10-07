@@ -178,18 +178,22 @@ func (r *Radio) settle() {
 	r.apply(s["wpa_state"] == "COMPLETED", s["ssid"])
 }
 
-// connected follows the standard completion event even when a vendor omits STATE-CHANGE.
-// STATUS supplies the SSID on the command connection, never the event connection.
+// connected follows completion when a vendor omits STATE-CHANGE.
+// Query only on a new association: vendor STATUS replies can emit CONNECTED again.
 func (r *Radio) connected() {
 	r.mu.Lock()
-	ctl, ssid := r.ctl, r.ssid
+	ctl, ssid, already := r.ctl, r.ssid, r.up
 	r.mu.Unlock()
+	if already {
+		return
+	}
+	// Mark the event handled before querying, so a repeated completion cannot feed back.
+	r.apply(true, ssid)
 	if ctl != nil {
 		if status, err := ctl.Status(); err == nil && status["ssid"] != "" {
-			ssid = status["ssid"]
+			r.apply(true, status["ssid"])
 		}
 	}
-	r.apply(true, ssid)
 }
 
 // apply records what the radio is doing and says so if it changed.

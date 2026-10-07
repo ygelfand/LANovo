@@ -114,6 +114,11 @@ func afterBoot(ctx context.Context) bool {
 }
 
 func (a *App) Run(ctx context.Context) error {
+	defer func() {
+		if playerView != nil {
+			playerView.Close()
+		}
+	}()
 	ctx, stop := context.WithCancel(ctx)
 	defer stop()
 	var c *surface.Client

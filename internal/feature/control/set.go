@@ -302,7 +302,7 @@ func presenceRows() []setting {
 
 func homeRows() []setting {
 	var rows []setting
-	for _, s := range homecontrol.Selections {
+	for _, s := range homecontrol.Selections() {
 		rows = append(rows, setting{
 			name:  "home.control." + s.Key,
 			field: "Home.Control",

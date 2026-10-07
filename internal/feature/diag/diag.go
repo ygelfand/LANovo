@@ -4,6 +4,7 @@ package diag
 
 import (
 	"context"
+	"github.com/ygelfand/libcountertop/pkg/runtime/collector"
 	"log/slog"
 	"strings"
 	"sync"
@@ -247,10 +248,11 @@ func (d *Diag) collector() {
 	}
 
 	d.interval.OnCommand = func(v float32) {
-		d.interval.Set(v)
 		if err := config.Set().Diag().Interval(int(v)); err != nil {
 			slog.Error("saving the metrics interval failed", "err", err)
 		}
+
+		d.interval.Set(float32(config.Get().Diag.Interval))
 
 		// The wait already running was measured against the old interval.
 		d.soon()
@@ -271,19 +273,7 @@ func (d *Diag) soon() {
 // until Home Assistant asks, so a device that waited would report nothing at all until then — and
 // a restart is exactly when somebody is looking.
 func (d *Diag) Run(ctx context.Context) error {
-	for {
-		d.Sample()
-
-		t := time.NewTimer(time.Duration(config.Get().Diag.Interval) * time.Second)
-		select {
-		case <-ctx.Done():
-			t.Stop()
-			return nil
-		case <-d.wake:
-			t.Stop()
-		case <-t.C:
-		}
-	}
+	return collector.Run(ctx, func() time.Duration { return time.Duration(config.Get().Diag.Interval) * time.Second }, d.wake, d.Sample)
 }
 
 // Sample takes every reading once.

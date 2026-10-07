@@ -1,160 +1,75 @@
 package homecontrol
 
 import (
-	"log/slog"
-	"slices"
-	"strconv"
-	"strings"
-	"sync"
-	"time"
-
+	"context"
+	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/ui/widget"
-	"github.com/ygelfand/libcountertop/pkg/say"
+	"github.com/ygelfand/LANovo/internal/feature/states"
+	sharedhome "github.com/ygelfand/libcountertop/pkg/homeassistant/homecontrol"
+	"sync"
 )
 
-type Selection struct {
-	Key    string
-	Filter homeassistant.Filter
-}
+type Selection = sharedhome.Selection
+type Picker = sharedhome.Picker
+type Board = sharedhome.Board
+type Home = sharedhome.Home
+type Tab = sharedhome.Tab
+type Snapshot = sharedhome.Snapshot
+type LabelRow = sharedhome.LabelRow
+type EntityRow = sharedhome.EntityRow
+type AreaRow = sharedhome.AreaRow
+type Tile = sharedhome.Tile
+type AreaTiles = sharedhome.AreaTiles
 
-var Selections = []Selection{
-	{Key: "lights", Filter: homeassistant.Filter{Domains: []string{"light"}}},
-	{Key: "switches", Filter: homeassistant.Filter{Domains: []string{"switch"}}},
-}
-
-func (s Selection) Name() string { return say.T("home.selection." + s.Key) }
-
-func (s Selection) Pick() config.HomePick { return config.Get().Home.Picked(s.Key) }
-
-func Includes(p config.HomePick, e homeassistant.Entity) bool {
-	return p.All ||
-		slices.Contains(p.Entities, e.ID) ||
-		(e.AreaID != "" && slices.Contains(p.Areas, e.AreaID)) ||
-		slices.ContainsFunc(e.Labels, func(l string) bool { return slices.Contains(p.Labels, l) })
-}
-
-func Summary(p config.HomePick) string {
-	switch {
-	case p.All:
-		return say.T("home.all")
-	case p.Empty():
-		return say.T("home.none")
-	}
-	var parts []string
-	for _, part := range []struct {
-		kind string
-		n    int
-	}{
-		{"labels", len(p.Labels)},
-		{"areas", len(p.Areas)},
-		{"entities", len(p.Entities)},
-	} {
-		if part.n > 0 {
-			parts = append(parts, say.F("home.picked."+part.kind, map[string]any{"N": part.n}))
-		}
-	}
-	return strings.Join(parts, ", ")
-}
-
-func (s Selection) Controlled() bool { return Enabled() && config.Get().Home.Control[s.Key] }
-
-func Enabled() bool { return config.Get().Home.Enabled }
-
-func SetEnabled(on bool) {
-	if err := config.Set().Home().Enabled(on); err != nil {
-		slog.Error("the home control setting could not be saved", "err", err)
-	}
-	homeassistant.Get().Enable(on)
-	shared.clear()
-}
-
-func (s Selection) GroupFrom() int { return config.Get().Home.Grouped(s.Key) }
-
-func (s Selection) SetGroupFrom(n int) {
-	if err := config.Set().Home().Group(s.Key, n); err != nil {
-		slog.Error("the grouping setting could not be saved", "selection", s.Key, "err", err)
-	}
-	shell.Get().Redraw()
-}
-
-func (s Selection) SetControlled(on bool) {
-	if err := config.Set().Home().Control(s.Key, on); err != nil {
-		slog.Error("the control setting could not be saved", "selection", s.Key, "err", err)
-	}
-	shell.Get().Redraw()
-}
-
-func Combined() bool {
-	return config.Get().Home.Combine && Selections[0].Controlled()
-}
-
-func SetCombined(on bool) {
-	if err := config.Set().Home().Combine(on); err != nil {
-		slog.Error("the combine setting could not be saved", "err", err)
-	}
-	shell.Get().Redraw()
-}
-
-func SelectionPage(s Selection) *shell.Page {
-	return &shell.Page{
-		Title: s.Name(),
-		Build: func() ([]widget.Row, []func(int)) {
-			on, from := s.Controlled(), s.GroupFrom()
-			rows := []widget.Row{
-				{Label: say.T("home.enable"), Kind: widget.Toggle, On: on},
-				{Label: say.T("home.devices"), Kind: widget.Chevron, Value: Summary(s.Pick())},
-				{Label: say.T("home.group"), Hint: groupHint(from), Kind: widget.Slider, Level: groupLevel(from), Snap: groupSnap, Value: strconv.Itoa(from)},
-			}
-			taps := []func(int){
-				func(int) { s.SetControlled(!on) },
-				func(int) { shell.Get().Push(NewPicker(s)) },
-				func(level int) { s.SetGroupFrom(groupOf(level)) },
-			}
-			if s.Key == Selections[0].Key {
-				combine := config.Get().Home.Combine
-				rows = append(rows, widget.Row{Label: say.T("home.combine"), Kind: widget.Toggle, On: combine})
-				taps = append(taps, func(int) { SetCombined(!combine) })
-			}
-			return rows, taps
-		},
-	}
-}
-
-func groupOf(level int) int {
-	return min(max((level*config.HomeGroupMost+50)/100, 0), config.HomeGroupMost)
-}
-
-func groupLevel(n int) int { return n * 100 / config.HomeGroupMost }
-
-func groupSnap(level int) int { return groupLevel(groupOf(level)) }
-
-func groupHint(n int) string {
-	switch n {
-	case 0:
-		return say.T("home.group.none")
-	case 1:
-		return say.T("home.group.all")
-	}
-	return say.F("home.group.from", map[string]any{"N": n})
-}
-
-type Home struct{}
-
-var (
-	home   = &Home{}
-	listen sync.Once
+const (
+	TabLabels = sharedhome.TabLabels
+	TabManual = sharedhome.TabManual
+	TabKind   = sharedhome.TabKind
 )
 
-func Page() *Home {
-	listen.Do(func() {
-		homeassistant.Get().Changed.Listen(func(homeassistant.Access) { shell.Get().Redraw() })
+var Includes = sharedhome.Includes
+var Summary = sharedhome.Summary
+var once sync.Once
+var shared *sharedhome.Engine
+
+func engine() *sharedhome.Engine {
+	once.Do(func() {
+		shared = sharedhome.New(sharedhome.Options{Read: func() config.Home { return config.Get().Home }, Pick: func(k string, v config.HomePick) error { return config.Set().Home().Pick(k, v) }, Group: func(k string, v int) error { return config.Set().Home().Group(k, v) }, Control: func(k string, v bool) error { return config.Set().Home().Control(k, v) }, Enabled: func(v bool) error { return config.Set().Home().Enabled(v) }, Combine: func(v bool) error { return config.Set().Home().Combine(v) }, Enable: homeassistant.Get().Enable, Probe: homeassistant.Get().Probe, Fetch: func(ctx context.Context, f homeassistant.Filter) ([]homeassistant.Entity, []homeassistant.Label, error) {
+			a := homeassistant.Get()
+			entities, err := a.Entities(ctx, f)
+			if err != nil {
+				return nil, nil, err
+			}
+			labels, err := a.Labels(ctx)
+			return entities, labels, err
+		}, Follow: states.Get().Follow, Call: homeassistant.Get().Call, Shell: shell.Get(), Changed: func(f func(bool)) func() {
+			return homeassistant.Get().Changed.Listen(func(a homeassistant.Access) { f(a == homeassistant.Allowed) })
+		}})
 	})
-	return home
+	return shared
 }
+func init() {
+	component.Register(component.Device, engine, component.Order(6))
+	dashboard.AddTabs(10, func() []dashboard.Tab {
+		out := []dashboard.Tab{}
+		for _, s := range Dash().Tabs() {
+			out = append(out, dashboard.Tab{Kind: TabKind, Key: s.Key, Name: s.Name()})
+		}
+		return out
+	})
+}
+func Selections() []Selection               { return engine().Selections() }
+func NewPicker(s Selection) *Picker         { return engine().NewPicker(s) }
+func SelectionPage(s Selection) *shell.Page { return engine().SelectionPage(s) }
+func Page() *Home                           { return engine().Page() }
+func Dash() *Board                          { return engine().Dash() }
+func Enabled() bool                         { return engine().Enabled() }
+func SetEnabled(v bool)                     { engine().SetEnabled(v) }
+func Combined() bool                        { return engine().Combined() }
+func SetCombined(v bool)                    { engine().SetCombined(v) }
+func Refresh()                              { engine().Refresh() }
 
-func (*Home) Covers() bool { return true }
-
-func (*Home) Timeout() time.Duration { return shell.SettingsTimeout }
+func Engine()*sharedhome.Engine{return engine()}

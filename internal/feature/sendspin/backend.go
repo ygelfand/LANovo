@@ -1,7 +1,6 @@
 package sendspin
 
 import (
-	"github.com/Sendspin/sendspin-go/pkg/protocol"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
@@ -9,6 +8,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
 	core "github.com/ygelfand/libcountertop/pkg/audio/sendspin"
+	sharedplayer "github.com/ygelfand/libcountertop/pkg/media/sendspin"
 )
 
 const Port = core.Port
@@ -32,18 +32,8 @@ func newOutput() *core.Output {
 	})
 }
 
-func newListener(p *Player) *core.Listener {
-	return core.NewListener(p.out, arbitration{speaker.Sound().Backgrounds()}, func() core.Identity {
-		mac := wifi.Get().MAC()
-		model := layout.Model
-		return core.Identity{ID: mac, Model: model, Manufacturer: layout.Manufacturer, Version: layout.Version, ArtworkSize: artworkSize}
-	}, core.Callbacks{
-		State: p.setState, Connection: p.holds, Began: func() { media.Get().Began(p) }, Grouped: p.grouped, Artwork: p.drew,
-		Metadata: func(m *protocol.MetadataState, now func() int64) {
-			p.plays(p.track().merge(m))
-			if m.Progress != nil {
-				p.moved(*m.Progress, m.Timestamp, now)
-			}
-		},
-	})
+func identity() core.Identity {
+	mac := wifi.Get().MAC()
+	model := layout.Model
+	return core.Identity{ID: mac, Model: model, Manufacturer: layout.Manufacturer, Version: layout.Version, ArtworkSize: sharedplayer.ArtworkSize}
 }
