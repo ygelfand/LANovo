@@ -1,16 +1,12 @@
 package control
 
 import (
+	"context"
 	"fmt"
+	capture "github.com/ygelfand/libcountertop/pkg/audio/capture"
 	"math"
-	"os"
-	"path/filepath"
-	"strconv"
-	"sync"
-	"time"
 
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
-	"github.com/ygelfand/LANovo/internal/lib/wave"
 )
 
 type channelStats struct {
@@ -18,35 +14,28 @@ type channelStats struct {
 	energy float64
 }
 
-func recordRaw(args []string) (string, error) {
+func recordRaw(ctx context.Context, args []string) (string, error) {
 	if len(args) == 0 {
 		return "", fmt.Errorf("record raw: how many seconds")
 	}
-	secs, err := strconv.ParseFloat(args[0], 64)
+	d, err := capture.Duration(args[0], shortest, longest)
 	if err != nil {
-		return "", fmt.Errorf("record raw: %s is not a number of seconds", args[0])
+		return "", err
 	}
-	d := time.Duration(secs * float64(time.Second))
-	if d < shortest || d > longest {
-		return "", fmt.Errorf("record raw: %v is outside %v to %v", d, shortest, longest)
-	}
+
 	path := ""
 	if len(args) > 1 {
 		path = args[1]
 	}
 
-	var mu sync.Mutex
+	frames, err := capture.Events(ctx, d, func(receive func(mic.Frame)) func() { return mic.Get().Frames.Listen(receive) }, func(f mic.Frame) mic.Frame { f.Samples = append([]int16(nil), f.Samples...); return f })
+	if err != nil {
+		return "", err
+	}
 	var samples []int16
-	stop := mic.Get().Frames.Listen(func(f mic.Frame) {
-		mu.Lock()
+	for _, f := range frames {
 		samples = append(samples, f.Samples...)
-		mu.Unlock()
-	})
-	time.Sleep(d)
-	stop()
-
-	mu.Lock()
-	defer mu.Unlock()
+	}
 	return rawReport(samples, path)
 }
 
@@ -77,15 +66,8 @@ func rawReport(samples []int16, path string) (string, error) {
 	if path == "" {
 		return say, nil
 	}
-	pcm := make([]byte, 0, len(samples)*2)
-	for _, s := range samples[:frames*mic.Channels] {
-		pcm = append(pcm, byte(s), byte(s>>8))
-	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return "", fmt.Errorf("record raw: %w", err)
-	}
-	if err := os.WriteFile(path, wave.PCM16(pcm, mic.Rate, mic.Channels), 0o644); err != nil {
-		return "", fmt.Errorf("record raw: %w", err)
+	if err := capture.Write(path, samples[:frames*mic.Channels], mic.Rate, mic.Channels); err != nil {
+		return "", err
 	}
 	return path + " " + say, nil
 }

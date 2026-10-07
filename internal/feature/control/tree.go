@@ -1,10 +1,11 @@
 package control
 
 import (
+	"context"
 	"fmt"
-	"strings"
 
 	"github.com/spf13/cobra"
+	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
@@ -24,6 +25,7 @@ import (
 // tree is every command the socket takes.
 func (c *Control) tree() *cobra.Command {
 	root := newRoot()
+	root.AddCommand(harness.DeviceCommands(deviceInfo)...)
 	root.AddCommand(c.touching()...)
 	root.AddCommand(c.showing()...)
 	root.AddCommand(sounding()...)
@@ -32,128 +34,29 @@ func (c *Control) tree() *cobra.Command {
 	root.AddCommand(casting()...)
 	root.AddCommand(homeAssistant()...)
 	root.AddCommand(calling()...)
-	literal(root)
+	harness.Organize(root)
 	return root
 }
 
 func Local(args []string) (string, error) {
-	root := newRoot()
-	root.AddCommand(casting()...)
-	literal(root)
-	var out strings.Builder
-	root.SetArgs(args)
-	root.SetOut(&out)
-	root.SetErr(&out)
-	err := root.Execute()
-	return out.String(), err
+	return harness.Execute(context.Background(), func() *cobra.Command {
+		root := harness.NewRoot()
+		root.AddCommand(casting()...)
+		harness.Organize(root)
+		return root
+	}, args)
 }
 
-func newRoot() *cobra.Command {
-	root := &cobra.Command{
-		Use:   "ctl",
-		Short: "Drive the running device",
-		Long: "Everything here acts on the device as it is, now. Coordinates are in viewed pixels,\n" +
-			"the same ones the drawing uses, so what is on the panel is what is being touched.",
-
-		SilenceUsage:  true,
-		SilenceErrors: true,
-
-		// A bare invocation is not an error, and neither is an empty line on the socket.
-		RunE: func(cmd *cobra.Command, _ []string) error { return cmd.Help() },
-	}
-
-	// Nothing down this socket has a shell to complete for.
-	root.CompletionOptions.DisableDefaultCmd = true
-	return root
-}
-
-// literal hands every argument through as written, so a value like -1 is a value and not a flag.
-func literal(cmd *cobra.Command) {
-	cmd.DisableFlagParsing = true
-	for _, sub := range cmd.Commands() {
-		literal(sub)
-	}
-}
-
-// says wires a handler that answers with text into a command that prints it.
-//
-// Most of these already return their own output and an error, from before there was anywhere to
-// print to, so this keeps them as they are rather than rewriting each one.
-func says(cmd *cobra.Command, do func([]string) (string, error)) *cobra.Command {
-	cmd.RunE = func(c *cobra.Command, args []string) error {
-		out, err := do(args)
-		if out != "" {
-			fmt.Fprint(c.OutOrStdout(), strings.TrimRight(out, "\n")+"\n")
-		}
-		return err
-	}
-	return cmd
-}
-
-// group is a command that only holds others.
-//
-// Cobra's default for one of these is to print help and report success, so a mistyped subcommand
-// looks like it worked. Here a name it does not have is an error, and nothing after it is help.
-func group(use, short, long string) *cobra.Command {
-	return &cobra.Command{
-		Use:   use,
-		Short: short,
-		Long:  long,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) > 0 {
-				return fmt.Errorf("%s: %q is not one of its commands", cmd.Name(), args[0])
-			}
-			return cmd.Help()
-		},
-	}
-}
-
-// does wires a handler that only answers with an error.
-func does(cmd *cobra.Command, do func([]string) error) *cobra.Command {
-	cmd.RunE = func(_ *cobra.Command, args []string) error { return do(args) }
-	return cmd
-}
+var newRoot = harness.NewRoot
+var literal = harness.Literal
+var says = harness.Says
+var group = harness.Group
+var does = harness.Does
 
 // touching is the commands that pretend to be a finger.
 func (c *Control) touching() []*cobra.Command {
-	return []*cobra.Command{
-		{
-			Use:   "tap X Y",
-			Short: "Touch once and let go",
-			Args:  cobra.ExactArgs(2),
-			RunE: func(_ *cobra.Command, args []string) error {
-				x, y, err := point(args)
-				if err != nil {
-					return err
-				}
-				c.tap(x, y)
-				return nil
-			},
-		},
-		does(&cobra.Command{
-			Use:   "hold X Y MILLISECONDS",
-			Short: "Touch and keep touching",
-			Args:  cobra.ExactArgs(3),
-		}, hold),
-		does(&cobra.Command{
-			Use:     "swipe X1 Y1 X2 Y2 [STEPS]",
-			Aliases: []string{"drag"},
-			Short:   "Drag from one point to another",
-			Long: "Steps is how many contacts the drag is made of. More is slower and smoother,\n" +
-				"which matters where something is following the finger rather than waiting for it.",
-			Args: cobra.RangeArgs(4, 5),
-		}, c.swipe),
-		does(&cobra.Command{
-			Use:   "button up|down|left|right|back|home|... [TIMES]",
-			Short: "Press a key",
-			Args:  cobra.RangeArgs(1, 2),
-		}, press),
-		does(&cobra.Command{
-			Use:   "turn mounted|portrait|landscape|left|right|0|90|180|270",
-			Short: "Rotate what is drawn",
-			Args:  cobra.ExactArgs(1),
-		}, turn),
-	}
+	out := c.inputEngine().Commands()
+	return append(out, does(&cobra.Command{Use: "turn mounted|portrait|landscape|left|right|0|90|180|270", Short: "Rotate what is drawn", Args: cobra.ExactArgs(1)}, turn))
 }
 
 // showing is the commands about what is on the panel.
@@ -164,7 +67,7 @@ func (c *Control) showing() []*cobra.Command {
 			Short: "Take a screenshot",
 			Args:  cobra.MaximumNArgs(1),
 		}, shot),
-		says(&cobra.Command{
+		harness.ContextSays(&cobra.Command{
 			Use:   "record [raw|echo] SECONDS [PATH]",
 			Short: "Record the microphones for a while",
 			Args:  cobra.RangeArgs(1, 3),
@@ -270,11 +173,11 @@ func (c *Control) showing() []*cobra.Command {
 			Args:  cobra.ExactArgs(1),
 		}, pause),
 		says(&cobra.Command{
-			Use:   "set [NAME [VALUE]]",
+			Use:   "settings [NAME [VALUE]]",
 			Short: "Read or change a setting",
 			Long: "With nothing after it, every setting and what it is. With a name, that one.\n" +
 				"With a name and a value, that one changed.",
-			Args: cobra.MaximumNArgs(2),
+			Args: cobra.ArbitraryArgs,
 		}, set),
 		says(&cobra.Command{
 			Use:       "log [debug|info|warn|error]",

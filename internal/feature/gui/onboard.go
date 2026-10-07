@@ -6,9 +6,9 @@ import (
 	"rsc.io/qr"
 
 	"github.com/ygelfand/LANovo/internal/feature/web"
-	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 const (

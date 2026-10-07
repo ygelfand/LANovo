@@ -1,7 +1,7 @@
 package boot
 
 import (
-	"github.com/ygelfand/LANovo/internal/lib/say"
+	"github.com/ygelfand/libcountertop/pkg/say"
 	"golang.org/x/exp/shiny/materialdesign/icons"
 
 	"github.com/ygelfand/LANovo/internal/component"

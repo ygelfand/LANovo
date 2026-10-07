@@ -1,53 +1,17 @@
 package widget
 
 import (
-	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/display/model"
 )
 
-type Kind int
+type Kind = model.Kind
+type Row = model.Row
+type Cell = model.Cell
 
 const (
-	Plain Kind = iota
-	Chevron
-	Toggle
-	Slider
-	Field
+	Plain   = model.Plain
+	Chevron = model.Chevron
+	Toggle  = model.Toggle
+	Slider  = model.Slider
+	Field   = model.Field
 )
-
-type Row struct {
-	Glyph string
-	Label string
-	Hint  string
-
-	Snap func(level int) int
-
-	Value string
-
-	Kind  Kind
-	On    bool
-	Level int
-
-	Chosen bool
-	Dim    bool
-
-	Preview func(s ui.Surface, at ui.Rect, palette theme.Theme)
-
-	Save func(string)
-}
-
-type Cell struct {
-	Label  string
-	Chosen bool
-
-	Paint func(s ui.Surface, at ui.Rect, palette theme.Theme)
-
-	Palette *theme.Theme
-
-	Face config.Face
-
-	Style string
-
-	Weather config.WeatherLook
-}

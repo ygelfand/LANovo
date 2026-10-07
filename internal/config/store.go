@@ -2,6 +2,7 @@ package config
 
 import (
 	"github.com/ygelfand/LANovo/internal/layout"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 	"github.com/ygelfand/libcountertop/pkg/settings/storage"
 	"maps"
 	"slices"
@@ -22,7 +23,7 @@ func Use(path string)  { once.Do(func() {}); shared, loadErr = Load(path) }
 type Store struct{ *storage.Store[Config] }
 
 func Load(path string) (*Store, error) {
-	s, err := storage.Load(path, Defaults(), cloneConfig)
+	s, err := storage.Load(path, Defaults(), cloneConfig, func(data []byte, c *Config) error { return schema.MigrateNetwork(data, &c.Network) })
 	return &Store{s}, err
 }
 func (s *Store) Set() Writer      { return Writer{st: s} }
@@ -35,7 +36,7 @@ func cloneConfig(c Config) Config {
 	c.Home.Group = maps.Clone(c.Home.Group)
 	c.Home.Picks = maps.Clone(c.Home.Picks)
 	for key, p := range c.Home.Picks {
-		c.Home.Picks[key] = p.clone()
+		c.Home.Picks[key] = p.Clone()
 	}
 	return c
 }

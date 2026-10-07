@@ -9,7 +9,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/lib/say"
+	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 // Page is what is playing, with the transport for it. One instance, so the shell can recognize it.

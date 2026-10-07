@@ -6,48 +6,15 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 
 	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 )
 
 func calling() []*cobra.Command {
-	c := group("call", "Place, answer and end calls to other devices", "")
-	c.AddCommand(
-		says(&cobra.Command{
-			Use:   "dial NAME|ID [video]",
-			Short: "Call a device found on the network",
-			Args:  cobra.RangeArgs(1, 2),
-		}, dial),
-		does(&cobra.Command{
-			Use:   "answer",
-			Short: "Answer the ringing call",
-			Args:  cobra.NoArgs,
-		}, func([]string) error { call.Get().Answer(); return nil }),
-		does(&cobra.Command{
-			Use:   "hangup",
-			Short: "End or decline the call",
-			Args:  cobra.NoArgs,
-		}, func([]string) error { call.Get().Hangup(); return nil }),
-		does(&cobra.Command{
-			Use:       "mute on|off",
-			Short:     "Stop or resume sending the microphone",
-			Args:      cobra.ExactArgs(1),
-			ValidArgs: []string{"on", "off"},
-		}, func(args []string) error { call.Get().Mute(args[0] == "on"); return nil }),
-		does(&cobra.Command{
-			Use:       "camera on|off",
-			Short:     "Start or stop sending the camera in a video call",
-			Args:      cobra.ExactArgs(1),
-			ValidArgs: []string{"on", "off"},
-		}, func(args []string) error { call.Get().Camera(args[0] == "on"); return nil }),
-		says(&cobra.Command{
-			Use:   "state",
-			Short: "The call in progress, if any",
-			Args:  cobra.NoArgs,
-		}, callState),
-	)
-	return []*cobra.Command{c}
+	c := call.Get()
+	return []*cobra.Command{harness.CallCommand(harness.CallActions{Dial: dial, State: callState, Answer: c.Answer, Hangup: c.Hangup, Mute: c.Mute, Camera: c.Camera})}
 }
 
 func dial(args []string) (string, error) {

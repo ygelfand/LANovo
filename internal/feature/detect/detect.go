@@ -2,11 +2,11 @@ package detect
 
 import (
 	"context"
+	"github.com/ygelfand/LANovo/internal/layout"
+	sharedengine "github.com/ygelfand/libcountertop/pkg/inference/detect"
 	"log/slog"
 	"sync"
 	"time"
-
-	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -30,7 +30,7 @@ func init() {
 // the turn that follows when one of them fires.
 type Detect struct {
 	engine *Engine
-	stop   *esphome.Number
+	stop   *sharedengine.StopWord
 }
 
 var (
@@ -56,7 +56,11 @@ func newDetect() *Detect {
 	}
 
 	d := &Detect{engine: e}
-	d.stop = newStopEntity(d)
+	d.stop = sharedengine.NewStopWord(e, sharedengine.StopOptions{
+		Directory: layout.StateDir, DeviceID: component.DeviceMicrophone,
+		Read: func() float64 { return config.Get().Wake.Stop.Threshold },
+		Save: func(v float64) error { return config.Set().Stop().Threshold(v) },
+	})
 
 	e.OnDetect = d.fired
 
@@ -66,7 +70,7 @@ func newDetect() *Detect {
 	e.Load = func() error {
 		turn := voice.Get()
 		turn.SetSlots(d.load(turn.Slots()))
-		d.loadStop()
+		d.stop.Load()
 		return nil
 	}
 

@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/lib/say"
+	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 type Poster struct {

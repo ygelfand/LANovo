@@ -39,10 +39,7 @@ func (a *App) idle(w *gogui.Window, v *idle.View) gogui.View {
 			layers = append(layers, placed(ui.Rect{W: vw, H: vh}, picture(imageSrc("poster/"+behind, backdrop), vw, vh)))
 		}
 	}
-	if cfg.Screen.Logo {
-		layers = append(layers, logo(vw, vh, pal))
-	}
-	if build, ok := faces[cfg.Idle.Face]; ok {
+	if build, ok := clockView(cfg.Idle.Face); ok {
 		r := idle.Reading(cfg, time.Now())
 		tones := make([]visual.Traits, len(slots))
 		for n, slot := range slots {

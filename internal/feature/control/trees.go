@@ -2,6 +2,7 @@ package control
 
 import (
 	"github.com/spf13/cobra"
+	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 )
 
 // The commands that have commands of their own.
@@ -11,48 +12,7 @@ import (
 
 // radios is bluetooth and ble, which are separate radios and separate stacks.
 func radios() []*cobra.Command {
-	bt := group("bt", "The bluetooth audio sink, and what is connected to it",
-		"Several of these are two steps, because opening a channel to the far end is a round\n"+
-			"trip: the first asks for the channel and the second asks the question. Each one says\n"+
-			"what to run next.")
-	bt.AddCommand(
-		says(&cobra.Command{
-			Use:   "trace [MILLISECONDS]",
-			Short: "Log frames as they arrive",
-			Args:  cobra.MaximumNArgs(1),
-		}, under(sink, "trace")),
-		says(&cobra.Command{
-			Use:   "attrs [ID ...]",
-			Short: "Read attributes off the connected player",
-			Args:  cobra.ArbitraryArgs,
-		}, under(sink, "attrs")),
-		says(&cobra.Command{
-			Use:   "dump [SECONDS]",
-			Short: "Capture the stream to a file",
-			Args:  cobra.MaximumNArgs(1),
-		}, under(sink, "dump")),
-		says(&cobra.Command{
-			Use:   "look [CLASS]",
-			Short: "Ask the far end what it offers",
-			Long:  "Two steps. Without a class it asks for the channel; with one it asks the question.",
-			Args:  cobra.MaximumNArgs(1),
-		}, under(sink, "look")),
-		says(&cobra.Command{
-			Use:   "art PSM|hello|HANDLE",
-			Short: "Fetch cover art",
-			Args:  cobra.ExactArgs(1),
-		}, under(sink, "art")),
-		says(&cobra.Command{
-			Use:   "browse",
-			Short: "Walk the player's library",
-			Args:  cobra.NoArgs,
-		}, under(sink, "browse")),
-		says(&cobra.Command{
-			Use:   "queue [PLAYER [COUNT]]",
-			Short: "Read what is queued up",
-			Args:  cobra.MaximumNArgs(2),
-		}, under(sink, "queue")),
-	)
+	bt := harness.BluetoothCommand(sink)
 
 	ble := group("ble", "The low energy radio", "")
 	ble.AddCommand(says(&cobra.Command{

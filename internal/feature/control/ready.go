@@ -42,25 +42,3 @@ func ready(args []string) (string, error) {
 	}
 	return "dashboard", nil
 }
-
-// hold presses and keeps a finger down, then lifts it.
-//
-// A swipe from a point to itself does this already, by accident, and testing press feedback with
-// one is a trick rather than a statement. Worth being able to say.
-func hold(args []string) error {
-	if len(args) < 3 {
-		return fmt.Errorf("want X Y MILLISECONDS")
-	}
-
-	x, y, err := point(args)
-	if err != nil {
-		return err
-	}
-
-	ms, err := strconv.Atoi(args[2])
-	if err != nil || ms < 0 {
-		return fmt.Errorf("milliseconds must be a number")
-	}
-
-	return Get().press(x, y, time.Duration(ms)*time.Millisecond)
-}

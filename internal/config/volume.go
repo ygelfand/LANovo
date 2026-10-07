@@ -1,6 +1,6 @@
 package config
 
-import "github.com/ygelfand/LANovo/internal/lib/say"
+import "github.com/ygelfand/libcountertop/pkg/say"
 
 // Volume is how loud each kind of sound is, as a percentage.
 //

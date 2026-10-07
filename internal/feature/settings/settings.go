@@ -8,7 +8,7 @@ package settings
 import (
 	"sync"
 
-	"github.com/ygelfand/LANovo/internal/lib/say"
+	"github.com/ygelfand/libcountertop/pkg/say"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
 

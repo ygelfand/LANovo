@@ -47,7 +47,6 @@ var byHand = map[string]string{
 	"Update.Channel":     "Home Assistant's update channel select",
 	"Update.LastVersion": "the version last announced to Home Assistant, written by the firmware feature itself",
 
-	"Access.Control":  "the socket the harness is speaking over: a command that turned it off would cut the branch it is sitting on, and turning it on is meaningless from a connection that only exists when it already is. Home Assistant's switch, or `lanovod tools control`",
 	"Network.Address": "read back from the lease, not chosen",
 
 	// Nothing about these is deliberate. They are settings with no way to reach them from the
@@ -59,7 +58,6 @@ var byHand = map[string]string{
 	"Diag.Interval":       "not wired yet",
 	"Time.Home":           "not wired yet",
 	"Time.Chosen":         "not wired yet",
-	"Network.Verify":      "not wired yet",
 	"Cast.Oracle":         "Home Assistant's text entity",
 	"Cast.YouTube.Device": "made on first use, never chosen",
 	"Cast.YouTube.Music":  "issued by YouTube on first use",
@@ -74,7 +72,7 @@ func leaves(t reflect.Type, at string) []string {
 		f := t.Field(i)
 		name := at + f.Name
 
-		if f.Type.Kind() == reflect.Struct && f.Type.PkgPath() == t.PkgPath() {
+		if f.Type.Kind() == reflect.Struct && (f.Type.PkgPath() == t.PkgPath() || f.Type.PkgPath() == "github.com/ygelfand/libcountertop/pkg/settings/schema") {
 			out = append(out, leaves(f.Type, name+".")...)
 			continue
 		}

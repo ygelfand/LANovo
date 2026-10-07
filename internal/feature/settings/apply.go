@@ -4,7 +4,7 @@ import (
 	"log/slog"
 
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/lib/say"
+	"github.com/ygelfand/libcountertop/pkg/say"
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"

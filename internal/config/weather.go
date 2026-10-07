@@ -1,39 +1,21 @@
 package config
 
-import "github.com/ygelfand/LANovo/internal/lib/say"
+import "github.com/ygelfand/libcountertop/pkg/settings/schema"
 
-type Weather struct {
-	Entity    string      `json:"entity"`
-	Look      WeatherLook `json:"look"`
-	Dashboard bool        `json:"dashboard"`
-	Idle      bool        `json:"idle"`
-	Animate   bool        `json:"animate"`
-	Themed    bool        `json:"themed"`
-	Position  Position    `json:"position"`
-	Align     Align       `json:"align"`
-	Size      Size        `json:"size"`
-}
-
-type WeatherLook string
+type Weather = schema.Weather
+type WeatherLook = schema.WeatherLook
 
 const (
-	WeatherCompact WeatherLook = "compact"
-	WeatherStack   WeatherLook = "stack"
-	WeatherIcon    WeatherLook = "icon"
-	WeatherWords   WeatherLook = "words"
-	WeatherCard    WeatherLook = "card"
-	WeatherDetail  WeatherLook = "detail"
+	WeatherCompact = schema.WeatherCompact
+	WeatherStack   = schema.WeatherStack
+	WeatherIcon    = schema.WeatherIcon
+	WeatherWords   = schema.WeatherWords
+	WeatherCard    = schema.WeatherCard
+	WeatherDetail  = schema.WeatherDetail
 )
 
-func WeatherLooks() []WeatherLook {
-	return []WeatherLook{WeatherCompact, WeatherStack, WeatherIcon, WeatherWords, WeatherCard, WeatherDetail}
-}
-
-func (l WeatherLook) Label() string { return say.T("weather.look." + string(l)) }
-
-func defaultWeather() Weather {
-	return Weather{Look: WeatherCompact, Dashboard: true, Animate: true, Position: PositionTop, Align: AlignRight, Size: SizeSmall}
-}
+var WeatherLooks = schema.WeatherLooks
+var defaultWeather = schema.DefaultWeather
 
 type WeatherWriter struct{ st *Store }
 

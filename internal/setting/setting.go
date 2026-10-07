@@ -2,7 +2,7 @@
 package setting
 
 import (
-	"github.com/ygelfand/LANovo/internal/lib/say"
+	"github.com/ygelfand/libcountertop/pkg/say"
 	shared "github.com/ygelfand/libcountertop/pkg/settings"
 )
 

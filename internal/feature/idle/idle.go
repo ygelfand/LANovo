@@ -20,8 +20,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/touch"
-	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
+	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 const check = 200 * time.Millisecond

@@ -7,11 +7,11 @@ import (
 )
 
 func TestOneCommandIsOneCommand(t *testing.T) {
-	got, err := sequence(strings.NewReader(""), []string{"swipe", "1900", "600", "1400", "600"})
+	got, err := sequence(strings.NewReader(""), []string{"input", "swipe", "1900", "600", "1400", "600"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(got, []string{"swipe 1900 600 1400 600"}) {
+	if !slices.Equal(got, []string{"input swipe 1900 600 1400 600"}) {
 		t.Errorf("got %q", got)
 	}
 }
@@ -19,12 +19,12 @@ func TestOneCommandIsOneCommand(t *testing.T) {
 // A sequence is written the way somebody types it, with whatever spacing falls out of quoting it
 // for a shell.
 func TestSemicolonsSeparateCommands(t *testing.T) {
-	got, err := sequence(strings.NewReader(""), []string{"tap 100 200 ;  wait 400;shot /tmp/a.png"})
+	got, err := sequence(strings.NewReader(""), []string{"input tap 100 200 ;  device wait 400;display shot /tmp/a.png"})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	want := []string{"tap 100 200", "wait 400", "shot /tmp/a.png"}
+	want := []string{"input tap 100 200", "device wait 400", "display shot /tmp/a.png"}
 	if !slices.Equal(got, want) {
 		t.Errorf("got %q, want %q", got, want)
 	}
@@ -33,25 +33,25 @@ func TestSemicolonsSeparateCommands(t *testing.T) {
 // A trailing semicolon is how a list gets typed, and an empty command would be sent as a blank line
 // the daemon answers ok to, making the count of answers disagree with the count of commands.
 func TestEmptyPartsAreDropped(t *testing.T) {
-	got, err := sequence(strings.NewReader(""), []string{"size ; ; "})
+	got, err := sequence(strings.NewReader(""), []string{"display size ; ; "})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(got, []string{"size"}) {
+	if !slices.Equal(got, []string{"display size"}) {
 		t.Errorf("got %q", got)
 	}
 }
 
 // A file of commands keeps its comments and its spacing, because it is read by people as well.
 func TestStdinIsACommandToALine(t *testing.T) {
-	in := strings.NewReader("# open the drawer\nswipe 1900 600 1400 600\n\n  wait 400  \nshot\n")
+	in := strings.NewReader("# open the drawer\ninput swipe 1900 600 1400 600\n\n  device wait 400  \ndisplay shot\n")
 
 	got, err := sequence(in, []string{"-"})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	want := []string{"swipe 1900 600 1400 600", "wait 400", "shot"}
+	want := []string{"input swipe 1900 600 1400 600", "device wait 400", "display shot"}
 	if !slices.Equal(got, want) {
 		t.Errorf("got %q, want %q", got, want)
 	}
@@ -60,11 +60,11 @@ func TestStdinIsACommandToALine(t *testing.T) {
 // Semicolons in a file are already separated by the lines they are on, and a command that contains
 // one — a message body, say — must not be cut in half by it.
 func TestStdinDoesNotSplitOnSemicolons(t *testing.T) {
-	got, err := sequence(strings.NewReader("message info 5 Hi : there; and again\n"), []string{"-"})
+	got, err := sequence(strings.NewReader("display message info 5 Hi : there; and again\n"), []string{"-"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(got, []string{"message info 5 Hi : there; and again"}) {
+	if !slices.Equal(got, []string{"display message info 5 Hi : there; and again"}) {
 		t.Errorf("got %q", got)
 	}
 }

@@ -9,9 +9,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
 	"github.com/ygelfand/LANovo/internal/feature/rtspd"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/setting"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
+	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 // shown is the groups this panel offers: the ones with something in them.

@@ -26,7 +26,7 @@ func TestEveryCommandTakesItsArgumentsAsWritten(t *testing.T) {
 func TestANegativeValueReachesTheCommand(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 
-	_, err := build().run([]string{"wait", "-1"})
+	_, err := build().run([]string{"device", "wait", "-1"})
 	if err != nil && strings.Contains(err.Error(), "flag") {
 		t.Errorf("-1 was read as a flag: %v", err)
 	}

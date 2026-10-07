@@ -1,7 +1,7 @@
 package a2dp
 
 import (
-	"os"
+fixtures "github.com/ygelfand/libcountertop/pkg/bluetooth/sbc/testdata"
 	"testing"
 
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -15,12 +15,11 @@ import (
 // The frames are the ones internal/lib/bt/sbc checks its filterbank against, so this measures the
 // join rather than a reconstruction of it: real coded bytes in, what the card is handed out. sweep
 // is already at the card's rate and so covers the other branch, where nothing should be filtered.
-const vectors = "../../lib/bt/sbc/testdata/vectors/"
 
 func TestThePlayPathFeedsTheCardAtItsOwnRate(t *testing.T) {
 	for _, name := range []string{"tone", "mono", "sweep"} {
 		t.Run(name, func(t *testing.T) {
-			coded, err := os.ReadFile(vectors + name + ".sbc")
+			coded, err := fixtures.Read(name+".sbc")
 			if err != nil {
 				t.Fatal(err)
 			}

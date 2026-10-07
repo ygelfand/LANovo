@@ -1,49 +1,40 @@
 package control
 
 import (
+	"context"
 	"fmt"
-	"math"
-	"os"
-	"path/filepath"
-	"strconv"
-	"sync"
-	"time"
+	capture "github.com/ygelfand/libcountertop/pkg/audio/capture"
 
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
-	"github.com/ygelfand/LANovo/internal/lib/wave"
 )
 
 const echoChannels = 5
 
-func recordEcho(args []string) (string, error) {
+func recordEcho(ctx context.Context, args []string) (string, error) {
 	if len(args) == 0 {
 		return "", fmt.Errorf("record echo: how many seconds")
 	}
-	secs, err := strconv.ParseFloat(args[0], 64)
+	d, err := capture.Duration(args[0], shortest, longest)
 	if err != nil {
-		return "", fmt.Errorf("record echo: %s is not a number of seconds", args[0])
+		return "", err
 	}
-	d := time.Duration(secs * float64(time.Second))
-	if d < shortest || d > longest {
-		return "", fmt.Errorf("record echo: %v is outside %v to %v", d, shortest, longest)
-	}
+
 	path := ""
 	if len(args) > 1 {
 		path = args[1]
 	}
 
-	var mu sync.Mutex
-	var frames []mic.EchoFrame
-	stop := mic.Get().Echo.Listen(func(f mic.EchoFrame) {
-		mu.Lock()
-		frames = append(frames, f)
-		mu.Unlock()
+	frames, err := capture.Events(ctx, d, func(receive func(mic.EchoFrame)) func() { return mic.Get().Echo.Listen(receive) }, func(f mic.EchoFrame) mic.EchoFrame {
+		for i := range f.Mic {
+			f.Mic[i] = append([]int16(nil), f.Mic[i]...)
+			f.Out[i] = append([]int16(nil), f.Out[i]...)
+		}
+		f.Reference = append([]int16(nil), f.Reference...)
+		return f
 	})
-	time.Sleep(d)
-	stop()
-
-	mu.Lock()
-	defer mu.Unlock()
+	if err != nil {
+		return "", err
+	}
 	return echoReport(frames, path)
 }
 
@@ -89,29 +80,16 @@ func echoReport(frames []mic.EchoFrame, path string) (string, error) {
 	if path == "" {
 		return say, nil
 	}
-	pcm := make([]byte, 0, n*echoChannels*2)
+	samples := make([]int16, 0, n*echoChannels)
 	for i := range n {
 		for c := range echoChannels {
-			s := t.chans[c][i]
-			pcm = append(pcm, byte(s), byte(s>>8))
+			samples = append(samples, t.chans[c][i])
 		}
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return "", fmt.Errorf("record echo: %w", err)
-	}
-	if err := os.WriteFile(path, wave.PCM16(pcm, mic.Voice, echoChannels), 0o644); err != nil {
-		return "", fmt.Errorf("record echo: %w", err)
+	if err := capture.Write(path, samples, mic.Voice, echoChannels); err != nil {
+		return "", err
 	}
 	return path + " " + say, nil
 }
 
-func levelDBFS(s []int16) float64 {
-	if len(s) == 0 {
-		return dbfs(0)
-	}
-	var e float64
-	for _, v := range s {
-		e += float64(v) * float64(v)
-	}
-	return dbfs(math.Sqrt(e / float64(len(s))))
-}
+func levelDBFS(samples []int16) float64 { return capture.DBFS(capture.Measure(samples).RMS()) }

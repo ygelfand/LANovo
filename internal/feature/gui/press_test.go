@@ -8,6 +8,7 @@ import (
 	gogui "github.com/go-gui-org/go-gui/gui"
 
 	backend "github.com/ygelfand/libcountertop/pkg/display/gogui"
+	interaction "github.com/ygelfand/libcountertop/pkg/display/interaction"
 )
 
 type frames chan struct{}
@@ -24,7 +25,7 @@ func (f frames) Frame(int, [4]float32, []float32, []uint32) (uint32, uint32, err
 
 func pressRig(t *testing.T, fired chan string) (*backend.Renderer, frames) {
 	t.Helper()
-	armed, wave, moving = "", ripple{}, false
+	interactions = interaction.New()
 	f := make(frames, 64)
 	w := gogui.SimpleWindow("press", 400, 400, &struct{}{}, func(w *gogui.Window) {
 		w.SetView(func(*gogui.Window) gogui.View {
@@ -39,8 +40,9 @@ func pressRig(t *testing.T, fired chan string) (*backend.Renderer, frames) {
 		t.Fatal(err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
-	go r.Run(ctx, w)
+	done := make(chan struct{})
+	t.Cleanup(func() { cancel(); <-done })
+	go func() { defer close(done); r.Run(ctx, w) }()
 	<-f
 	return r, f
 }

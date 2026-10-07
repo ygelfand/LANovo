@@ -42,7 +42,6 @@ func TestItIsDueOnlyAfterTheWait(t *testing.T) {
 
 func idled(change func(*config.Idle)) config.Config {
 	cfg := config.Defaults()
-	cfg.Screen.Logo = false
 	cfg.Clock.Date = false
 	change(&cfg.Idle)
 	return cfg

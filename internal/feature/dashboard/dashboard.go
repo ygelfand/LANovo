@@ -5,7 +5,6 @@
 package dashboard
 
 import (
-	"log/slog"
 	"sync"
 
 	esphome "github.com/ygelfand/go-esphome-device"
@@ -20,6 +19,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	sharedlib "github.com/ygelfand/libcountertop/pkg/display/dashboard"
 )
 
 func init() {
@@ -27,13 +27,13 @@ func init() {
 }
 
 type Dashboard struct {
-	format *esphome.Select
-	face   *esphome.Select
-	place  *esphome.Select
-	size   *esphome.Select
-	ink    *esphome.Select
-	date   *esphome.Switch
-	logo   *esphome.Switch
+	controls *sharedlib.Controls
+	format   *esphome.Select
+	face     *esphome.Select
+	place    *esphome.Select
+	size     *esphome.Select
+	ink      *esphome.Select
+	date     *esphome.Switch
 }
 
 var (
@@ -61,22 +61,11 @@ func Get() *Dashboard {
 
 func (d *Dashboard) Name() string { return "dashboard" }
 
-func (d *Dashboard) Entities() []esphome.Entity {
-	return []esphome.Entity{
-		d.format, d.face,
-		d.place, d.size, d.ink, d.date, d.logo,
-	}
+func (d *Dashboard) Entities() []esphome.Entity { return d.controls.Entities() }
+func state(cfg config.Config) sharedlib.State {
+	return sharedlib.State{Hours: cfg.Screen.Hours.Label(), Face: cfg.Clock.Face.Label(), Position: cfg.Clock.Position.Label(), Size: cfg.Clock.Size.Label(), Ink: cfg.Clock.Ink.Label(), Date: cfg.Clock.Date}
 }
-
-func (d *Dashboard) Restore(cfg config.Config) {
-	d.format.Set(cfg.Screen.Hours.Label())
-	d.face.Set(cfg.Clock.Face.Label())
-	d.place.Set(cfg.Clock.Position.Label())
-	d.size.Set(cfg.Clock.Size.Label())
-	d.ink.Set(cfg.Clock.Ink.Label())
-	d.date.Set(cfg.Clock.Date)
-	d.logo.Set(cfg.Screen.Logo)
-}
+func (d *Dashboard) Restore(cfg config.Config) { d.controls.Restore(state(cfg)) }
 
 // Ready reports whether the clock has anything worth showing, which is the time being right. The
 // boot screen holds until it does: this device starts in 1970, and a confident wrong time is
@@ -93,190 +82,33 @@ func (d *Dashboard) Ready() bool {
 func (d *Dashboard) Redraw() { shell.Get().Redraw() }
 
 func (d *Dashboard) build() {
-	d.format = &esphome.Select{
-		Base: esphome.Base{
-			ObjectID: "clock_format",
-			Name:     "Clock format",
-			Icon:     "mdi:clock-outline",
-			Category: esphome.CategoryConfig,
-			DeviceID: component.DeviceScreen,
-		},
-		Options: config.Labels(config.HourFormats()),
-	}
-
-	d.format.OnCommand = func(label string) {
-		if hours, ok := config.ByLabel(config.HourFormats(), label); ok {
-			d.SetHours(hours)
-		}
-	}
-
-	d.face = &esphome.Select{
-		Base: esphome.Base{
-			ObjectID: "clock_face",
-			Name:     "Clock face",
-			Icon:     "mdi:clock-digital",
-			Category: esphome.CategoryConfig,
-			DeviceID: component.DeviceScreen,
-		},
-		Options: config.Labels(config.Faces()),
-	}
-
-	d.face.OnCommand = func(label string) {
-		if kind, ok := config.ByLabel(config.Faces(), label); ok {
-			d.SetFace(kind)
-		}
-	}
-
-	d.place = &esphome.Select{
-		Base: esphome.Base{
-			ObjectID: "clock_position",
-			Name:     "Clock position",
-			Icon:     "mdi:align-vertical-center",
-			Category: esphome.CategoryConfig,
-			DeviceID: component.DeviceScreen,
-		},
-		Options: config.Labels(config.Positions()),
-	}
-
-	d.place.OnCommand = func(label string) {
-		if at, ok := config.ByLabel(config.Positions(), label); ok {
-			d.SetPosition(at)
-		}
-	}
-
-	d.size = &esphome.Select{
-		Base: esphome.Base{
-			ObjectID: "clock_size",
-			Name:     "Clock size",
-			Icon:     "mdi:format-size",
-			Category: esphome.CategoryConfig,
-			DeviceID: component.DeviceScreen,
-		},
-		Options: config.Labels(config.Sizes()),
-	}
-
-	d.size.OnCommand = func(label string) {
-		if size, ok := config.ByLabel(config.Sizes(), label); ok {
-			d.SetSize(size)
-		}
-	}
-
-	d.ink = &esphome.Select{
-		Base: esphome.Base{
-			ObjectID: "clock_color",
-			Name:     "Clock color",
-			Icon:     "mdi:palette-outline",
-			Category: esphome.CategoryConfig,
-			DeviceID: component.DeviceScreen,
-		},
-		Options: config.Labels(config.Inks()),
-	}
-
-	d.ink.OnCommand = func(label string) {
-		if ink, ok := config.ByLabel(config.Inks(), label); ok {
-			d.SetInk(ink)
-		}
-	}
-
-	d.date = &esphome.Switch{
-		Base: esphome.Base{
-			ObjectID: "clock_date",
-			Name:     "Clock date",
-			Icon:     "mdi:calendar-blank-outline",
-			Category: esphome.CategoryConfig,
-			DeviceID: component.DeviceScreen,
-		},
-	}
-
-	d.date.OnCommand = d.SetDate
-
-	d.logo = &esphome.Switch{
-		Base: esphome.Base{
-			ObjectID: "dashboard_logo",
-			Name:     "Dashboard logo",
-			Icon:     "mdi:home-assistant",
-			Category: esphome.CategoryConfig,
-			DeviceID: component.DeviceScreen,
-		},
-	}
-
-	d.logo.OnCommand = d.SetLogo
+	d.controls = sharedlib.NewControls(sharedlib.ControlOptions{
+		DeviceID: component.DeviceScreen, Read: func() sharedlib.State { return state(config.Get()) }, Redraw: d.Redraw,
+		Hours:    sharedlib.Choices(config.HourFormats(), func(v config.HourFormat) error { return config.Set().Screen().Hours(v) }),
+		Face:     sharedlib.Choices(config.Faces(), func(v config.Face) error { return config.Set().Clock().Face(v) }),
+		Position: sharedlib.Choices(config.Positions(), func(v config.Position) error { return config.Set().Clock().Position(v) }),
+		Size:     sharedlib.Choices(config.Sizes(), func(v config.Size) error { return config.Set().Clock().Size(v) }),
+		Ink:      sharedlib.Choices(config.Inks(), func(v config.Ink) error { return config.Set().Clock().Ink(v) }),
+		Date:     func(v bool) error { return config.Set().Clock().Date(v) },
+	})
+	d.format, d.face, d.place, d.size, d.ink = d.controls.Format, d.controls.Face, d.controls.Position, d.controls.Size, d.controls.Ink
+	d.date = d.controls.Date
 }
-
-// SetLogo shows or hides the mark and remembers it.
-func (d *Dashboard) SetLogo(on bool) {
-	d.logo.Set(on)
-
-	if err := config.Set().Screen().Logo(on); err != nil {
-		slog.Error("saving a setting failed", "setting", d.logo.ObjectID, "err", err)
-		return
-	}
-	d.Redraw()
+func (d *Dashboard) SetHours(v config.HourFormat) {
+	d.controls.Commit("clock_format", func() error { return config.Set().Screen().Hours(v) })
 }
-
-// SetPosition moves the clock up or down the glass and remembers it.
-func (d *Dashboard) SetPosition(at config.Position) {
-	d.place.Set(at.Label())
-
-	if err := config.Set().Clock().Position(at); err != nil {
-		slog.Error("saving a setting failed", "setting", d.place.ObjectID, "err", err)
-		return
-	}
-	d.Redraw()
+func (d *Dashboard) SetFace(v config.Face) {
+	d.controls.Commit("clock_face", func() error { return config.Set().Clock().Face(v) })
 }
-
-// SetSize changes how much of its room the clock fills and remembers it.
-func (d *Dashboard) SetSize(size config.Size) {
-	d.size.Set(size.Label())
-
-	if err := config.Set().Clock().Size(size); err != nil {
-		slog.Error("saving a setting failed", "setting", d.size.ObjectID, "err", err)
-		return
-	}
-	d.Redraw()
+func (d *Dashboard) SetPosition(v config.Position) {
+	d.controls.Commit("clock_position", func() error { return config.Set().Clock().Position(v) })
 }
-
-// SetInk changes the color the clock is drawn in and remembers it.
-func (d *Dashboard) SetInk(ink config.Ink) {
-	d.ink.Set(ink.Label())
-
-	if err := config.Set().Clock().Ink(ink); err != nil {
-		slog.Error("saving a setting failed", "setting", d.ink.ObjectID, "err", err)
-		return
-	}
-	d.Redraw()
+func (d *Dashboard) SetSize(v config.Size) {
+	d.controls.Commit("clock_size", func() error { return config.Set().Clock().Size(v) })
 }
-
-// SetDate shows or hides the day under the time and remembers it.
-func (d *Dashboard) SetDate(on bool) {
-	d.date.Set(on)
-
-	if err := config.Set().Clock().Date(on); err != nil {
-		slog.Error("saving a setting failed", "setting", d.date.ObjectID, "err", err)
-		return
-	}
-	d.Redraw()
+func (d *Dashboard) SetInk(v config.Ink) {
+	d.controls.Commit("clock_color", func() error { return config.Set().Clock().Ink(v) })
 }
-
-// SetFace changes how the clock is drawn and remembers it.
-func (d *Dashboard) SetFace(kind config.Face) {
-	d.face.Set(kind.Label())
-
-	if err := config.Set().Clock().Face(kind); err != nil {
-		slog.Error("saving a setting failed", "setting", d.face.ObjectID, "err", err)
-		return
-	}
-	d.Redraw()
-}
-
-// SetHours changes the clock format and remembers it. Everything that changes the format comes
-// through here, so Home Assistant is told whatever asked for it.
-func (d *Dashboard) SetHours(hours config.HourFormat) {
-	d.format.Set(hours.Label())
-
-	if err := config.Set().Screen().Hours(hours); err != nil {
-		slog.Error("saving a setting failed", "setting", d.format.ObjectID, "err", err)
-		return
-	}
-	d.Redraw()
+func (d *Dashboard) SetDate(v bool) {
+	d.controls.Commit("clock_date", func() error { return config.Set().Clock().Date(v) })
 }

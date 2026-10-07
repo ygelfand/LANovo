@@ -7,6 +7,7 @@ import (
 	"github.com/insomniacslk/dhcp/dhcpv4"
 
 	"github.com/ygelfand/LANovo/internal/config"
+	shared "github.com/ygelfand/libcountertop/pkg/network/dhcp"
 )
 
 // previous is the address to ask for, or nil for a device that has not had one.
@@ -38,17 +39,7 @@ func previous() net.IP {
 //
 // Split out so what the device asks for can be checked without a network. The exchange itself needs
 // a packet socket and a server; which options go into it does not.
-func asking(want net.IP) []dhcpv4.Modifier {
-	mods := []dhcpv4.Modifier{
-		dhcpv4.WithOption(dhcpv4.OptHostName(hostname())),
-		dhcpv4.WithRequestedOptions(dhcpv4.OptionNTPServers),
-	}
-
-	if want.To4() != nil {
-		mods = append(mods, dhcpv4.WithOption(dhcpv4.OptRequestedIPAddress(want)))
-	}
-	return mods
-}
+func asking(want net.IP) []dhcpv4.Modifier { return shared.RequestOptions(hostname(), want) }
 
 // remember writes down the address that was granted, so the next start can ask for it.
 //

@@ -5,9 +5,9 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
+	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 func lookPage(slot int) *shell.Page {

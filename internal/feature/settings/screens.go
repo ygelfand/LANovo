@@ -10,7 +10,7 @@ import (
 
 	gogui "github.com/go-gui-org/go-gui/gui"
 
-	"github.com/ygelfand/LANovo/internal/lib/say"
+	"github.com/ygelfand/libcountertop/pkg/say"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -176,7 +176,6 @@ func displayPage() *shell.Page {
 					{Glyph: gogui.IconPicture, Label: say.T("display.poster"), Kind: widget.Chevron, Value: posterSays(cfg.Poster)},
 					{Label: say.T("controls.dock"), Kind: widget.Chevron, Value: cfg.Screen.Drawer.Label()},
 					{Label: say.T("controls.volume"), Kind: widget.Chevron, Value: cfg.Screen.Volume.Label()},
-					{Label: say.T("controls.logo"), Kind: widget.Toggle, On: cfg.Screen.Logo},
 					{Glyph: gogui.IconEye, Label: say.T("display.presence"), Kind: widget.Chevron},
 				}, []func(int){
 					setBrightness,
@@ -189,7 +188,6 @@ func displayPage() *shell.Page {
 					open(posterPage()),
 					open(edgePage()),
 					open(volumeEdgePage()),
-					func(int) { dashboard.Get().SetLogo(!cfg.Screen.Logo) },
 					open(sensorsPage()),
 				}
 		},
@@ -763,7 +761,7 @@ func castAppsPage() *shell.Page {
 		Title: say.T("cast.apps"),
 		Build: func() ([]widget.Row, []func(int)) {
 			return []widget.Row{
-					{Label: say.T("cast.youtube"), Kind: widget.Chevron},
+					{Label: say.T("youtube.title"), Kind: widget.Chevron},
 					{Label: say.T("cast.prime"), Kind: widget.Chevron},
 				}, []func(int){
 					open(youtubePage()),
@@ -775,10 +773,10 @@ func castAppsPage() *shell.Page {
 
 func youtubePage() *shell.Page {
 	return &shell.Page{
-		Title: say.T("cast.youtube"),
+		Title: say.T("youtube.title"),
 		Build: func() ([]widget.Row, []func(int)) {
 			return []widget.Row{
-					{Label: say.T("cast.youtube.sponsorblock"), Kind: widget.Chevron, Value: strconv.Itoa(len(config.Get().Cast.YouTube.Skip))},
+					{Label: say.T("youtube.skip"), Kind: widget.Chevron, Value: strconv.Itoa(len(config.Get().Cast.YouTube.Skip))},
 				}, []func(int){
 					open(sponsorPage()),
 				}
@@ -788,14 +786,14 @@ func youtubePage() *shell.Page {
 
 func sponsorPage() *shell.Page {
 	return &shell.Page{
-		Title: say.T("cast.youtube.sponsorblock"),
+		Title: say.T("youtube.skip"),
 		Build: func() ([]widget.Row, []func(int)) {
 			chosen := config.Get().Cast.YouTube.Skip
 			rows := make([]widget.Row, 0, len(youtube.Categories))
 			acts := make([]func(int), 0, len(youtube.Categories))
 			for _, c := range youtube.Categories {
 				on := slices.Contains(chosen, c)
-				rows = append(rows, widget.Row{Label: say.T("sponsorblock." + c), Kind: widget.Toggle, On: on})
+				rows = append(rows, widget.Row{Label: say.T("youtube.category." + c), Kind: widget.Toggle, On: on})
 				acts = append(acts, func(int) {
 					next := slices.DeleteFunc(slices.Clone(chosen), func(x string) bool { return x == c })
 					if !on {

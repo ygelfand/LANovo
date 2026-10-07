@@ -59,7 +59,7 @@ func spoken(t *testing.T, line string) string {
 
 func TestAFailingCommandStillSaysWhatItGotThrough(t *testing.T) {
 	// mixer with no name fails outright and has nothing to report, which is the plain case.
-	said := spoken(t, "mixer")
+	said := spoken(t, "audio mixer")
 	if !strings.Contains(said, "error: ") {
 		t.Errorf("a command that failed did not say so: %q", said)
 	}
@@ -81,7 +81,7 @@ func TestASucceedingCommandEndsWithOk(t *testing.T) {
 	said := spoken(t, "help")
 
 	// Every command, named once, from the commands themselves rather than a list beside them.
-	for _, want := range []string{"tap", "camera", "bt", "shot", "mixer", "player"} {
+	for _, want := range []string{"tap", "camera", "bluetooth", "shot", "mixer", "player"} {
 		if !strings.Contains(said, want) {
 			t.Errorf("help did not mention %q: %q", want, said)
 		}
@@ -99,7 +99,7 @@ func TestASucceedingCommandEndsWithOk(t *testing.T) {
 // A command that only holds others answers a name it does not have with an error, rather than
 // printing its help and calling that success. A typo should not look like it worked.
 func TestAMistypedSubcommandFails(t *testing.T) {
-	for _, line := range []string{"bt nonesuch", "camera nonesuch", "ble nonesuch"} {
+	for _, line := range []string{"bluetooth nonesuch", "camera nonesuch", "ble nonesuch"} {
 		said := spoken(t, line)
 
 		if !strings.Contains(said, "error: ") {

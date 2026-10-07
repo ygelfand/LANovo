@@ -3,14 +3,14 @@ package config
 import (
 	"fmt"
 	"github.com/ygelfand/libcountertop/pkg/audio/ducking"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
-// Media is the saved attenuation applied to music under a voice turn.
-type Media struct {
-	DuckDB float64 `json:"duck_db"`
-}
+type Media = schema.Media
 
-func defaultMedia() Media { return Media{DuckDB: ducking.LegacyDB} }
+const DefaultDuckDB = ducking.DefaultDB
+
+var defaultMedia = schema.DefaultMedia
 
 type MediaWriter struct{ st *Store }
 

@@ -2,6 +2,7 @@ package control
 
 import (
 	"fmt"
+	"github.com/ygelfand/LANovo/internal/feature/network"
 	"github.com/ygelfand/LANovo/internal/feature/weather"
 	"slices"
 	"strconv"
@@ -11,7 +12,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
 	panel "github.com/ygelfand/LANovo/internal/feature/settings"
-	text "github.com/ygelfand/LANovo/internal/lib/say"
+	text "github.com/ygelfand/libcountertop/pkg/say"
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
@@ -35,6 +36,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
 	"github.com/ygelfand/libcountertop/pkg/display/style"
+	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 )
 
 // Changing a setting from here rather than by tapping it.
@@ -71,6 +73,7 @@ func settings() []setting {
 	clock, display := dashboard.Get(), screen.Get()
 
 	return append([]setting{
+		{"network.verify", "Network.Verify", func(c config.Config) string { return knob.OnOff(c.Network.Verify) }, toggle(network.Get().SetVerify)},
 		{"media.duck", "Media.DuckDB", func(c config.Config) string { return strconv.FormatFloat(c.Media.DuckDB, 'f', -1, 64) }, func(s string) error {
 			db, err := strconv.ParseFloat(s, 64)
 			if err != nil {
@@ -199,9 +202,6 @@ func settings() []setting {
 
 		{"screen.marks", "Screen.Marks", func(c config.Config) string { return knob.OnOff(c.Screen.Marks) },
 			toggle(privacy.Get().SetMarks)},
-
-		{"screen.logo", "Screen.Logo", func(c config.Config) string { return knob.OnOff(c.Screen.Logo) },
-			toggle(clock.SetLogo)},
 
 		{"screen.backlight", "Screen.Backlight", func(c config.Config) string { return strconv.Itoa(c.Screen.Backlight) },
 			number(0, 100, display.SetBacklight)},
@@ -358,46 +358,13 @@ func cameraRows() []setting {
 // the source, and is also the quickest way to see everything the device is set to at once.
 func set(args []string) (string, error) {
 	all := settings()
-
-	if len(args) == 0 {
-		cfg := config.Get()
-
-		var out []string
-		for _, s := range all {
-			out = append(out, fmt.Sprintf("%-18s %s", s.name, s.says(cfg)))
-		}
-		return strings.Join(out, "\n"), nil
+	rows := make([]harness.Setting[config.Config], 0, len(all))
+	for _, s := range all {
+		rows = append(rows, harness.Setting[config.Config]{Name: s.name, Read: s.says, Write: s.use})
 	}
-
-	at := -1
-	for i, s := range all {
-		if strings.EqualFold(s.name, args[0]) {
-			at = i
-			break
-		}
-	}
-	if at < 0 {
-		return "", fmt.Errorf("no such setting %q, try set with no arguments", args[0])
-	}
-
-	if len(args) == 1 {
-		return all[at].says(config.Get()), nil
-	}
-
-	// The rest joined, so a value with a space in it — a theme called Deep Ocean — arrives whole
-	// rather than as the first word and a complaint.
-	if err := all[at].use(strings.Join(args[1:], " ")); err != nil {
-		return "", fmt.Errorf("%s: %w", all[at].name, err)
-	}
-	return all[at].says(config.Get()), nil
+	return harness.Settings(config.Get, rows, args)
 }
 
-// choose matches one of a labeled setting's values.
-//
-// By label or by the name in the file, either way and ignoring case. Both because they are not the
-// same string and each is what somebody would reasonably type: the screen says "Analog seconds" and
-// the file says "analog-seconds".
-// language picks the text the panel shows, by tag or by the name a language calls itself.
 func language(s string) error {
 	for _, tag := range text.Languages() {
 		if strings.EqualFold(tag, s) || strings.EqualFold(text.Name(tag), s) {

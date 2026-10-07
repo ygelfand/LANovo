@@ -2,9 +2,9 @@
 package visual
 
 import (
-	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/libcountertop/pkg/display/ui"
 	shared "github.com/ygelfand/libcountertop/pkg/display/visual"
+	"github.com/ygelfand/libcountertop/pkg/say"
 	"slices"
 	"strings"
 )

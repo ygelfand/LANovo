@@ -12,11 +12,11 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/feature/weather"
-	"github.com/ygelfand/LANovo/internal/lib/say"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
+	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 type labeled interface {

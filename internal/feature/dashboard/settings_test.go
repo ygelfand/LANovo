@@ -114,14 +114,6 @@ func TestEverySwitchReachesBothSides(t *testing.T) {
 			t.Errorf("the date entity is %v, want %v", got, want)
 		}
 
-		d.SetLogo(want)
-
-		if got := config.Get().Screen.Logo; got != want {
-			t.Errorf("the logo in the file is %v, want %v", got, want)
-		}
-		if got := d.logo.Get(); got != want {
-			t.Errorf("the logo entity is %v, want %v", got, want)
-		}
 	}
 }
 
@@ -179,7 +171,6 @@ func TestRestorePutsEveryEntityBack(t *testing.T) {
 	cfg.Clock.Ink = config.InkAmber
 	cfg.Clock.Date = false
 	cfg.Screen.Hours = config.TwelveHour
-	cfg.Screen.Logo = false
 
 	d.Restore(cfg)
 
@@ -201,9 +192,6 @@ func TestRestorePutsEveryEntityBack(t *testing.T) {
 
 	if d.date.Get() != cfg.Clock.Date {
 		t.Errorf("after restoring, the date is %v, want %v", d.date.Get(), cfg.Clock.Date)
-	}
-	if d.logo.Get() != cfg.Screen.Logo {
-		t.Errorf("after restoring, the logo is %v, want %v", d.logo.Get(), cfg.Screen.Logo)
 	}
 }
 

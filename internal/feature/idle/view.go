@@ -93,7 +93,7 @@ func Reading(cfg config.Config, at time.Time) face.Reading {
 
 func key(cfg config.Config, at time.Time) string {
 	r := Reading(cfg, at)
-	k := fmt.Sprintf("%v %+v logo=%v ink=%s", r, cfg.Idle, cfg.Screen.Logo, cfg.Clock.Ink)
+	k := fmt.Sprintf("%v %+v ink=%s", r, cfg.Idle, cfg.Clock.Ink)
 	if face.Ticks(cfg.Idle.Face) {
 		k = fmt.Sprintf("%s second=%d", k, r.Second)
 	}

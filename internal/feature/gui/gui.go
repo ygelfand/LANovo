@@ -27,11 +27,12 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/surface"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	backend "github.com/ygelfand/libcountertop/pkg/display/gogui"
+	interaction "github.com/ygelfand/libcountertop/pkg/display/interaction"
+	navigation "github.com/ygelfand/libcountertop/pkg/display/navigation"
+	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 )
 
 const (
-	backEdge   = 24
-	sweep      = 120
 	layerID    = 60
 	layerZ     = 5
 	helperWait = 200 * time.Millisecond
@@ -89,13 +90,7 @@ func (a *App) Restyle() {
 
 var phases = map[touch.Phase]backend.Phase{touch.Down: backend.Began, touch.Move: backend.Moved, touch.Up: backend.Ended}
 
-func backSweep(from [2]int, x, y, width int) bool {
-	dx, dy := from[0]-x, from[1]-y
-	if dy < 0 {
-		dy = -dy
-	}
-	return from[0] >= width-backEdge && dx >= sweep && dx > dy
-}
+var backSweep = navigation.BackSweep
 
 func afterBoot(ctx context.Context) bool {
 	done := make(chan struct{}, 1)
@@ -119,6 +114,8 @@ func afterBoot(ctx context.Context) bool {
 }
 
 func (a *App) Run(ctx context.Context) error {
+	ctx, stop := context.WithCancel(ctx)
+	defer stop()
 	var c *surface.Client
 	for c = display.Get().Helper(); c == nil || c.Err() != nil; c = display.Get().Helper() {
 		select {
@@ -134,10 +131,15 @@ func (a *App) Run(ctx context.Context) error {
 	if err := c.UIOpen(layerID, nw, nh, layerZ); err != nil {
 		return fmt.Errorf("gui: opening the UI layer: %w", err)
 	}
+	defer func() { stop(); _ = c.VideoClose(layerID) }()
 
 	rot := display.Get().Orientation()
 	vw, vh := rot.Size(nw, nh)
 	gogui.SetTheme(current())
+	interactions = interaction.New()
+	editor = widgets.NewEditor()
+	cameraPreview = &widgets.LivePreview{}
+	gestures = &widgets.Gestures{Release: release}
 	w := gogui.SimpleWindow("lanovo", vw, vh, a, func(w *gogui.Window) { w.SetView(a.root) })
 	r, err := backend.New(surface.UILayer{C: c, ID: layerID}, w)
 	if err != nil {
@@ -227,7 +229,7 @@ func (a *App) Run(ctx context.Context) error {
 	defer stopShell()
 	stopMoved := shell.Get().Changed.Listen(func(shell.Change) {
 		w.QueueCommand(func(w *gogui.Window) {
-			kb = keys{}
+			editor.Shift, editor.Symbols = false, false
 			w.ClearFocus()
 		})
 	})
@@ -248,7 +250,11 @@ func (a *App) Run(ctx context.Context) error {
 			defer spinning.Store(false)
 			for firmware.Get().Upgrade().Active() {
 				redraw()
-				time.Sleep(upgradeFrame)
+				select {
+				case <-ctx.Done():
+					return
+				case <-time.After(upgradeFrame):
+				}
 			}
 			redraw()
 		}()
@@ -271,7 +277,7 @@ func (a *App) Run(ctx context.Context) error {
 			case <-ctx.Done():
 				return
 			case <-tick.C:
-				w.InvalidateLayout()
+				redraw()
 			}
 		}
 	}()

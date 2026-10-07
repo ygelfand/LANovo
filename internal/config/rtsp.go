@@ -1,13 +1,11 @@
 package config
 
-// RTSP is whether the camera is served over RTSP.
-type RTSP struct {
-	Enabled bool `json:"enabled"`
-}
+import "github.com/ygelfand/libcountertop/pkg/settings/schema"
 
-func defaultRTSP() RTSP { return RTSP{} }
+type RTSP = schema.RTSP
 
-// RTSPWriter changes it.
+var defaultRTSP = schema.DefaultRTSP
+
 type RTSPWriter struct{ st *Store }
 
 func (w RTSPWriter) Enabled(v bool) error {

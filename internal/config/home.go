@@ -1,51 +1,17 @@
 package config
 
-import (
-	"maps"
-	"slices"
-)
+import "github.com/ygelfand/libcountertop/pkg/settings/schema"
+import "maps"
 
-type Home struct {
-	Enabled bool                `json:"enabled"`
-	Picks   map[string]HomePick `json:"picks"`
-	Control map[string]bool     `json:"control"`
-	Combine bool                `json:"combine"`
-	Group   map[string]int      `json:"group"`
-}
+type Home = schema.Home
+type HomePick = schema.HomePick
 
 const (
-	HomeGroupDefault = 2
-	HomeGroupMost    = 5
+	HomeGroupDefault = schema.HomeGroupDefault
+	HomeGroupMost    = schema.HomeGroupMost
 )
 
-type HomePick struct {
-	All      bool     `json:"all"`
-	Labels   []string `json:"labels"`
-	Areas    []string `json:"areas"`
-	Entities []string `json:"entities"`
-}
-
-func (p HomePick) Empty() bool {
-	return !p.All && len(p.Labels) == 0 && len(p.Areas) == 0 && len(p.Entities) == 0
-}
-
-func (p HomePick) clone() HomePick {
-	p.Labels = slices.Clone(p.Labels)
-	p.Areas = slices.Clone(p.Areas)
-	p.Entities = slices.Clone(p.Entities)
-	return p
-}
-
-func defaultHome() Home { return Home{Enabled: true} }
-
-func (h Home) Picked(key string) HomePick { return h.Picks[key] }
-
-func (h Home) Grouped(key string) int {
-	if n, ok := h.Group[key]; ok {
-		return n
-	}
-	return HomeGroupDefault
-}
+var defaultHome = schema.DefaultHome
 
 type HomeWriter struct{ st *Store }
 
@@ -92,7 +58,7 @@ func (w HomeWriter) Pick(key string, p HomePick) error {
 		if p.Empty() {
 			delete(picks, key)
 		} else {
-			picks[key] = p.clone()
+			picks[key] = p.Clone()
 		}
 		c.Home.Picks = picks
 	})
