@@ -29,7 +29,12 @@ func TestASwipeFromEventsToAGesture(t *testing.T) {
 
 	// In from the left of the picture. The panel reports its native portrait, where that is a high
 	// Y counting down.
-	drag(ev(evAbs, absMTTrackingID, 4), ev(evAbs, absMTPositionX, 600), ev(evAbs, absMTPositionY, 1900), syn())
+	drag(
+		ev(evAbs, absMTTrackingID, 4),
+		ev(evAbs, absMTPositionX, 600),
+		ev(evAbs, absMTPositionY, 1900),
+		syn(),
+	)
 	drag(ev(evAbs, absMTPositionY, 1500), syn())
 	drag(ev(evAbs, absMTPositionY, 1100), syn())
 	drag(ev(evAbs, absMTTrackingID, released), syn())

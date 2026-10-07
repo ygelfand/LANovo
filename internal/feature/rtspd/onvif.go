@@ -41,8 +41,15 @@ func describe() *describer {
 		serial = dev.Name
 	}
 	svc := &onvif.Service{Device: onvif.Device{
-		Manufacturer: "Lenovo", Model: dev.Model, Firmware: "LANovo", Serial: serial, Hardware: dev.Model,
-		Name: dev.Name, RTSPPort: Port, Profiles: profiles, SnapshotPath: snapshotPath,
+		Manufacturer: "Lenovo",
+		Model:        dev.Model,
+		Firmware:     "LANovo",
+		Serial:       serial,
+		Hardware:     dev.Model,
+		Name:         dev.Name,
+		RTSPPort:     Port,
+		Profiles:     profiles,
+		SnapshotPath: snapshotPath,
 	}}
 	mux := http.NewServeMux()
 	mux.Handle(onvif.DevicePath, svc)
@@ -57,9 +64,17 @@ func describe() *describer {
 	}
 	go d.http.Serve(ln)
 
-	d.found = &onvif.Responder{Hardware: "LANovo", UUID: onvif.NewUUID(), Name: dev.Name, XAddr: func(ip net.IP) string {
-		return "http://" + net.JoinHostPort(ip.String(), strconv.Itoa(ONVIFPort)) + onvif.DevicePath
-	}}
+	d.found = &onvif.Responder{
+		Hardware: "LANovo",
+		UUID:     onvif.NewUUID(),
+		Name:     dev.Name,
+		XAddr: func(ip net.IP) string {
+			return "http://" + net.JoinHostPort(
+				ip.String(),
+				strconv.Itoa(ONVIFPort),
+			) + onvif.DevicePath
+		},
+	}
 	if err := d.found.Listen(); err != nil {
 		slog.Warn("onvif discovery is not answering", "err", err)
 		d.found = nil

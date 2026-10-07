@@ -68,12 +68,25 @@ func (d *DRM) bring(ctx context.Context) component.Progress {
 	}
 	began := time.Now()
 	level, ready, err := provisioned(c)
-	slog.Info("widevine check", "level", level, "provisioned", ready, "took", time.Since(began), "err", err)
+	slog.Info(
+		"widevine check",
+		"level",
+		level,
+		"provisioned",
+		ready,
+		"took",
+		time.Since(began),
+		"err",
+		err,
+	)
 	if err != nil {
 		return component.Progress{Failed: true, Doing: err.Error()}
 	}
 	if level != "L1" {
-		return component.Progress{Failed: true, Doing: "Widevine " + level + ", no hardware decryption"}
+		return component.Progress{
+			Failed: true,
+			Doing:  "Widevine " + level + ", no hardware decryption",
+		}
 	}
 	if ready {
 		return component.Progress{Done: true, Doing: "provisioned"}
@@ -115,7 +128,12 @@ func provision(ctx context.Context, c *surface.Client) error {
 	}
 	ctx, cancel := context.WithTimeout(ctx, provisionFor)
 	defer cancel()
-	hr, err := http.NewRequestWithContext(ctx, http.MethodPost, url+"&signedRequest="+string(req), http.NoBody)
+	hr, err := http.NewRequestWithContext(
+		ctx,
+		http.MethodPost,
+		url+"&signedRequest="+string(req),
+		http.NoBody,
+	)
 	if err != nil {
 		return err
 	}

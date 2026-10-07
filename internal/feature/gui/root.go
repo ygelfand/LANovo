@@ -21,13 +21,17 @@ func (a *App) root(w *gogui.Window) gogui.View {
 	covering, above := a.nav.Showing(shell.Get().Views())
 	if fullLook() || assistant.StagedFull() {
 		a.seeThrough(true)
-		layers := []gogui.View{gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding})}
+		layers := []gogui.View{
+			gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding}),
+		}
 		for _, o := range a.nav.Overlays() {
 			if v := o.Build(w); v != nil {
 				layers = append(layers, floating(o.Priority+1, v))
 			}
 		}
-		return gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding, Content: layers})
+		return gogui.Column(
+			gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding, Content: layers},
+		)
 	}
 	a.seeThrough(covering != nil && covering.Clear)
 	base := a.dashboard(w)
@@ -52,10 +56,23 @@ func (a *App) root(w *gogui.Window) gogui.View {
 	}
 	if typing(w) {
 		if v := a.keyboard(w); v != nil {
-			layers = append(layers, gogui.Column(gogui.ContainerCfg{Float: true, FloatZIndex: 1001, Sizing: gogui.FillFill, Padding: gogui.NoPadding, Content: []gogui.View{v}}))
+			layers = append(
+				layers,
+				gogui.Column(
+					gogui.ContainerCfg{
+						Float:       true,
+						FloatZIndex: 1001,
+						Sizing:      gogui.FillFill,
+						Padding:     gogui.NoPadding,
+						Content:     []gogui.View{v},
+					},
+				),
+			)
 		}
 	}
-	return gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding, Content: layers})
+	return gogui.Column(
+		gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding, Content: layers},
+	)
 }
 
 var floating = widgets.Floating
@@ -82,14 +99,25 @@ func (a *App) dashboard(w *gogui.Window) gogui.View {
 	}
 
 	var layers []gogui.View
-	if backdrop, behind := poster.Get().Backdrop(vw, vh, image.Rect(box.X, box.Y, box.X+box.W, box.Y+box.H), pal.Background); backdrop != nil {
-		layers = append(layers, placed(ui.Rect{W: vw, H: vh}, picture(imageSrc("poster/"+behind, backdrop), vw, vh)))
+	if backdrop, behind := poster.Get().
+		Backdrop(vw, vh, image.Rect(box.X, box.Y, box.X+box.W, box.Y+box.H), pal.Background); backdrop != nil {
+		layers = append(
+			layers,
+			placed(ui.Rect{W: vw, H: vh}, picture(imageSrc("poster/"+behind, backdrop), vw, vh)),
+		)
 	}
 
 	switch build, ok := clockView(cfg.Clock.Face); {
 	case tabbed && drawn:
 		below := strip.Y + strip.H + margin
-		layers = append(layers, kind.board(ui.Rect{X: margin, Y: below, W: vw - 2*margin, H: vh - below - margin}, showing, pal))
+		layers = append(
+			layers,
+			kind.board(
+				ui.Rect{X: margin, Y: below, W: vw - 2*margin, H: vh - below - margin},
+				showing,
+				pal,
+			),
+		)
 	case ok:
 		layers = append(layers, placed(box, build(w, box, r, ink)))
 	}
@@ -113,13 +141,30 @@ func (a *App) dashboard(w *gogui.Window) gogui.View {
 		Content: layers,
 	}
 	dash := gogui.Column(frame)
-	return gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding, Color: color(pal.Background), Content: []gogui.View{dash}})
+	return gogui.Column(
+		gogui.ContainerCfg{
+			Sizing:  gogui.FillFill,
+			Padding: gogui.NoPadding,
+			Color:   color(pal.Background),
+			Content: []gogui.View{dash},
+		},
+	)
 }
 
 var placed = widgets.Placed
 
 func (a *App) page(w *gogui.Window, p *Screen) gogui.View {
-	return toolkit.PageFrame(w, widgets.FrameOptions{Title: p.Title, Fixed: p.Fixed, Build: p.Build, Back: func() { shell.Get().Pop() }, Gesture: holdStill, Room: editor.Room(w)})
+	return toolkit.PageFrame(
+		w,
+		widgets.FrameOptions{
+			Title:   p.Title,
+			Fixed:   p.Fixed,
+			Build:   p.Build,
+			Back:    func() { shell.Get().Pop() },
+			Gesture: holdStill,
+			Room:    editor.Room(w),
+		},
+	)
 }
 
 func room(w *gogui.Window) []gogui.View { return editor.Room(w) }

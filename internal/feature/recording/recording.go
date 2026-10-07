@@ -110,7 +110,13 @@ func Get() *Store {
 			number.OnCommand = func(v float32) {
 				number.Set(v)
 				if err := config.Set().Wake(slot).Recordings(int(v)); err != nil {
-					slog.Error("saving how many recordings to keep failed", "slot", slot+1, "err", err)
+					slog.Error(
+						"saving how many recordings to keep failed",
+						"slot",
+						slot+1,
+						"err",
+						err,
+					)
 				}
 				shared.Prune()
 			}
@@ -153,8 +159,11 @@ func (s *Store) Actions() []*esphome.Action {
 			},
 		},
 		{
-			Name:    "turn_audio",
-			Args:    []esphome.Arg{{Name: "id", Type: esphome.ArgString}, {Name: "page", Type: esphome.ArgInt}},
+			Name: "turn_audio",
+			Args: []esphome.Arg{
+				{Name: "id", Type: esphome.ArgString},
+				{Name: "page", Type: esphome.ArgInt},
+			},
 			Answers: true,
 			Run: func(c esphome.Call) (any, error) {
 				return s.page(c.String("id"), c.Int("page"))

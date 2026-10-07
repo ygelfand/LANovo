@@ -10,9 +10,20 @@ import (
 
 func calling() []*cobra.Command {
 	c := call.Get()
-	return []*cobra.Command{harness.CallCommand(harness.CallActions{Dial: dial, State: callState, Answer: c.Answer, Hangup: c.Hangup, Mute: c.Mute, Camera: c.Camera})}
+	return []*cobra.Command{
+		harness.CallCommand(
+			harness.CallActions{
+				Dial:   dial,
+				State:  callState,
+				Answer: c.Answer,
+				Hangup: c.Hangup,
+				Mute:   c.Mute,
+				Camera: c.Camera,
+			},
+		),
+	}
 }
 func dial(a []string) (string, error) {
-	return sharedcmd.Dial(call.Get().Calls, discovery.Get().Peers(), a)
+	return sharedcmd.Dial(call.Get(), discovery.Get().Peers(), a)
 }
-func callState(a []string) (string, error) { return sharedcmd.State(call.Get().Calls, a) }
+func callState(a []string) (string, error) { return sharedcmd.State(call.Get(), a) }

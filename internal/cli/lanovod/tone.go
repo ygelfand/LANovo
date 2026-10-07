@@ -71,8 +71,10 @@ func newToneCmd() *cobra.Command {
 	c.Flags().Float64Var(&seconds, "seconds", 3, "how long to play")
 	c.Flags().Float64Var(&level, "level", 0.3, "amplitude, nought to one")
 	c.Flags().BoolVar(&route, "route", false, "apply our speaker path before playing")
-	c.Flags().StringVar(&channel, "channel", "both", "both, left, right, or inverted (right is left negated)")
-	c.Flags().IntVar(&device, "device", speaker.PlaybackDevice, "pcm device: 0 is MultiMedia1, 1 is MultiMedia2")
+	c.Flags().
+		StringVar(&channel, "channel", "both", "both, left, right, or inverted (right is left negated)")
+	c.Flags().
+		IntVar(&device, "device", speaker.PlaybackDevice, "pcm device: 0 is MultiMedia1, 1 is MultiMedia2")
 	return c
 }
 
@@ -94,7 +96,10 @@ func channelGains(which string) ([speaker.Channels]float64, error) {
 	case "inverted":
 		return [speaker.Channels]float64{1, -1}, nil
 	}
-	return [speaker.Channels]float64{}, fmt.Errorf("channel %q: want both, left, right or inverted", which)
+	return [speaker.Channels]float64{}, fmt.Errorf(
+		"channel %q: want both, left, right or inverted",
+		which,
+	)
 }
 
 func playOn(out *alsa.Playback, hz, seconds, level float64, which string) error {

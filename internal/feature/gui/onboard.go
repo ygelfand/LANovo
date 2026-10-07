@@ -66,8 +66,21 @@ func onboard(w *gogui.Window, addr string) gogui.View {
 		Padding: gogui.NoPadding,
 		Clip:    true,
 		Content: []gogui.View{
-			gogui.Column(gogui.ContainerCfg{Width: band, Sizing: gogui.FixedFill, Padding: gogui.NoPadding, Color: color(brand.Accent)}),
-			gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NewPadding(pad, pad, pad, pad), Content: []gogui.View{body}}),
+			gogui.Column(
+				gogui.ContainerCfg{
+					Width:   band,
+					Sizing:  gogui.FixedFill,
+					Padding: gogui.NoPadding,
+					Color:   color(brand.Accent),
+				},
+			),
+			gogui.Column(
+				gogui.ContainerCfg{
+					Sizing:  gogui.FillFill,
+					Padding: gogui.NewPadding(pad, pad, pad, pad),
+					Content: []gogui.View{body},
+				},
+			),
 		},
 	})
 	return gogui.Column(gogui.ContainerCfg{
@@ -105,7 +118,13 @@ func qrCode(url string, w, h float32, brand theme.Theme) gogui.View {
 				for y := range code.Size {
 					for x := range code.Size {
 						if code.Black(x, y) {
-							dc.FilledRect(quiet+float32(x)*scale, quiet+float32(y)*scale, scale, scale, ink)
+							dc.FilledRect(
+								quiet+float32(x)*scale,
+								quiet+float32(y)*scale,
+								scale,
+								scale,
+								ink,
+							)
 						}
 					}
 				}
@@ -132,7 +151,13 @@ func onboardWords(w *gogui.Window, addr string, wide, short float32, brand theme
 		Padding: gogui.NoPadding,
 		Spacing: gogui.SpacingPx(head.Size / 3),
 		Content: []gogui.View{
-			gogui.Image(gogui.ImageCfg{Src: imageSrc("logo/light", mark), Width: markH * float32(mw) / float32(max(mh, 1)), Height: markH}),
+			gogui.Image(
+				gogui.ImageCfg{
+					Src:    imageSrc("logo/light", mark),
+					Width:  markH * float32(mw) / float32(max(mh, 1)),
+					Height: markH,
+				},
+			),
 			gogui.Text(gogui.TextCfg{Text: title, TextStyle: head, Mode: gogui.TextModeWrap}),
 			gogui.Row(gogui.ContainerCfg{
 				Color:   color(plate),
@@ -140,7 +165,13 @@ func onboardWords(w *gogui.Window, addr string, wide, short float32, brand theme
 				Padding: gogui.NewPadding(at.Size*0.3, at.Size/2, at.Size*0.3, at.Size/2),
 				Content: []gogui.View{gogui.Label(addr, at)},
 			}),
-			gogui.Text(gogui.TextCfg{Text: say.T("onboard.hint"), TextStyle: lettering(glyph.TypefaceRegular, short*onboardHint, brand.Muted), Mode: gogui.TextModeWrap}),
+			gogui.Text(
+				gogui.TextCfg{
+					Text:      say.T("onboard.hint"),
+					TextStyle: lettering(glyph.TypefaceRegular, short*onboardHint, brand.Muted),
+					Mode:      gogui.TextModeWrap,
+				},
+			),
 		},
 	})
 }

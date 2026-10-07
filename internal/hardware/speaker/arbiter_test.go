@@ -274,7 +274,9 @@ func TestARetakeIsHeardRatherThanLeftStandingDown(t *testing.T) {
 	a.Took(stream)
 
 	if stream.held() {
-		t.Error("the producer that took the speaker back is still standing down, so nothing is audible")
+		t.Error(
+			"the producer that took the speaker back is still standing down, so nothing is audible",
+		)
 	}
 	if !spin.held() {
 		t.Error("the producer it took over from is still playing")

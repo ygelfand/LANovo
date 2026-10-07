@@ -78,7 +78,11 @@ func TestWritingOneSettingLeavesTheRest(t *testing.T) {
 
 	again, _ := Load(path)
 	if got := again.Get(); got.Screen.Backlight != DefaultBacklight {
-		t.Errorf("backlight came back %d, want the default %d", got.Screen.Backlight, DefaultBacklight)
+		t.Errorf(
+			"backlight came back %d, want the default %d",
+			got.Screen.Backlight,
+			DefaultBacklight,
+		)
 	}
 }
 

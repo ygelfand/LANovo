@@ -43,7 +43,9 @@ func answering(data string) func(*api.HomeassistantActionRequest) *api.Homeassis
 	}
 }
 
-func connected(answer func(*api.HomeassistantActionRequest) *api.HomeassistantActionResponse) (*HomeAssistant, *fake) {
+func connected(
+	answer func(*api.HomeassistantActionRequest) *api.HomeassistantActionResponse,
+) (*HomeAssistant, *fake) {
 	h := &HomeAssistant{waiting: map[uint32]chan reply{}}
 	f := &fake{h: h, answer: answer}
 	h.to = f
@@ -114,11 +116,19 @@ func TestEntitiesSendsTheFilter(t *testing.T) {
 	var sent string
 	h, _ := connected(func(req *api.HomeassistantActionRequest) *api.HomeassistantActionResponse {
 		sent = req.GetResponseTemplate()
-		return &api.HomeassistantActionResponse{Success: true, ResponseData: []byte(`{"response":"[{\"id\":\"light.a\",\"name\":\"A\",\"state\":\"on\",\"area\":\"\"}]"}`)}
+		return &api.HomeassistantActionResponse{
+			Success: true,
+			ResponseData: []byte(
+				`{"response":"[{\"id\":\"light.a\",\"name\":\"A\",\"state\":\"on\",\"area\":\"\"}]"}`,
+			),
+		}
 	})
 	h.access = Allowed
 
-	got, err := h.Entities(context.Background(), Filter{Domains: []string{"light"}, Labels: []string{"lanovo"}})
+	got, err := h.Entities(
+		context.Background(),
+		Filter{Domains: []string{"light"}, Labels: []string{"lanovo"}},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -150,7 +160,14 @@ func TestStartup(t *testing.T) {
 		{name: "allowed", adopted: true, to: true, access: Allowed, at: early, done: true},
 		{name: "refused", adopted: true, to: true, access: Refused, at: early, failed: true},
 		{name: "gave up", adopted: true, at: late, failed: true},
-		{name: "allowed after the wait", adopted: true, to: true, access: Allowed, at: late, done: true},
+		{
+			name:    "allowed after the wait",
+			adopted: true,
+			to:      true,
+			access:  Allowed,
+			at:      late,
+			done:    true,
+		},
 	}
 	for _, c := range cases {
 		h := &HomeAssistant{waiting: map[uint32]chan reply{}, born: born, access: c.access}
@@ -159,7 +176,14 @@ func TestStartup(t *testing.T) {
 		}
 		p := h.startup(c.adopted, c.at)
 		if p.Done != c.done || p.Failed != c.failed {
-			t.Errorf("%s: done %v failed %v, want %v %v", c.name, p.Done, p.Failed, c.done, c.failed)
+			t.Errorf(
+				"%s: done %v failed %v, want %v %v",
+				c.name,
+				p.Done,
+				p.Failed,
+				c.done,
+				c.failed,
+			)
 		}
 	}
 }

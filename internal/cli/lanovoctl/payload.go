@@ -16,7 +16,9 @@ func lanovod(path string) ([]byte, string, error) {
 		return data, path, err
 	}
 	if !assets.Embedded() {
-		return nil, "", fmt.Errorf("this build ships no lanovod: build with `make dist`, or pass --binary")
+		return nil, "", fmt.Errorf(
+			"this build ships no lanovod: build with `make dist`, or pass --binary",
+		)
 	}
 	return assets.Lanovod(), "shipped with lanovoctl", nil
 }

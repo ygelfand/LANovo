@@ -105,7 +105,12 @@ func TestAnUnknownInkChangesNothing(t *testing.T) {
 func TestTheDefaultInkIsTheThemeText(t *testing.T) {
 	for _, palette := range theme.All {
 		if got := DefaultInk.Color(palette); got != palette.Text {
-			t.Errorf("%s: the default ink is %v, want the theme text %v", palette.Name, got, palette.Text)
+			t.Errorf(
+				"%s: the default ink is %v, want the theme text %v",
+				palette.Name,
+				got,
+				palette.Text,
+			)
 		}
 	}
 }

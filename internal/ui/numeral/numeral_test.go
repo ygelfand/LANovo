@@ -89,7 +89,13 @@ func TestWideAndTallAgree(t *testing.T) {
 
 			// Two integer divisions, so a pixel either way is the floor of what is achievable.
 			if diff := back - tall; diff > 2 || diff < -2 {
-				t.Errorf("%s: %d tall gives %d wide gives %d tall", set.Name, tall, set.Wide(tall), back)
+				t.Errorf(
+					"%s: %d tall gives %d wide gives %d tall",
+					set.Name,
+					tall,
+					set.Wide(tall),
+					back,
+				)
 			}
 		}
 	}

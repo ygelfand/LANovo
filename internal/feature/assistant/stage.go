@@ -75,7 +75,8 @@ func (sl *slot) close() {
 }
 
 func (sl *slot) fits(w wanted) bool {
-	return sl.layer != nil && sl.layer.W == w.at.W && sl.layer.H == w.at.H && sl.base == w.z && sl.layer.Alive()
+	return sl.layer != nil && sl.layer.W == w.at.W && sl.layer.H == w.at.H && sl.base == w.z &&
+		sl.layer.Alive()
 }
 
 type stager struct {
@@ -247,7 +248,14 @@ func (s *stager) open(w wanted, z int, at ui.Rect) *slot {
 		s.broken = w.kind
 		return nil
 	}
-	sl := &slot{layer: l, vis: visual.New(visual.Kind(w.kind)), kind: w.kind, base: w.z, z: z, fresh: true}
+	sl := &slot{
+		layer: l,
+		vis:   visual.New(visual.Kind(w.kind)),
+		kind:  w.kind,
+		base:  w.z,
+		z:     z,
+		fresh: true,
+	}
 	if !s.place(sl, at) {
 		sl.close()
 		return nil
@@ -278,7 +286,17 @@ func (s *stager) shade(sl *slot, placed, area ui.Rect, in visual.Input) bool {
 	}
 	sl.last = now
 	if err := sl.vis.Shade(sl.layer, sl.fresh, area, in); err != nil {
-		slog.Error("assistant: GPU visual failed", "kind", sl.kind, "alive", sl.layer.Alive(), "fresh", sl.fresh, "err", err)
+		slog.Error(
+			"assistant: GPU visual failed",
+			"kind",
+			sl.kind,
+			"alive",
+			sl.layer.Alive(),
+			"fresh",
+			sl.fresh,
+			"err",
+			err,
+		)
 		if sl.layer.Alive() {
 			s.broken = sl.kind
 		}

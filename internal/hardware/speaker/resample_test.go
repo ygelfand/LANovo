@@ -46,7 +46,11 @@ func TestTheFilterRejectsTheImageThatHoldingLeaves(t *testing.T) {
 	sincRatio := at(filtered, float64(image)) / at(filtered, hz)
 
 	if sincRatio >= heldRatio {
-		t.Fatalf("the filter left as much image as holding: %.4f against %.4f", sincRatio, heldRatio)
+		t.Fatalf(
+			"the filter left as much image as holding: %.4f against %.4f",
+			sincRatio,
+			heldRatio,
+		)
 	}
 	if sincRatio > 0.01 {
 		t.Errorf("the image is %.4f of the tone, want under 0.01", sincRatio)
@@ -94,7 +98,12 @@ func TestChunksComeOutTheSameAsOnePiece(t *testing.T) {
 	}
 	for i := range whole {
 		if piecewise[i] != whole[i] {
-			t.Fatalf("chunked and whole differ at sample %d: %d against %d", i, piecewise[i], whole[i])
+			t.Fatalf(
+				"chunked and whole differ at sample %d: %d against %d",
+				i,
+				piecewise[i],
+				whole[i],
+			)
 		}
 	}
 }

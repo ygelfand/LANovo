@@ -41,7 +41,10 @@ func fit(fw, fh, w, h int) display.Rect {
 	return display.Rect{X: (fw - dw) / 2, Y: (fh - dh) / 2, W: dw, H: dh}
 }
 
-func placement(o display.Orientation, fw, fh, w, h int) (x, y float32, m surface.Matrix, at display.Rect) {
+func placement(
+	o display.Orientation,
+	fw, fh, w, h int,
+) (x, y float32, m surface.Matrix, at display.Rect) {
 	vw, vh := o.Size(fw, fh)
 	return o.Place(fw, fh, fit(vw, vh, w, h), w, h)
 }
@@ -79,7 +82,13 @@ type stallWatch struct {
 
 func (w *stallWatch) show(t time.Time) { w.shown = t }
 
-func (w *stallWatch) stalled(t time.Time, now time.Duration, running bool, shown, pending int, drained bool) bool {
+func (w *stallWatch) stalled(
+	t time.Time,
+	now time.Duration,
+	running bool,
+	shown, pending int,
+	drained bool,
+) bool {
 	if now != w.at {
 		w.at, w.moved = now, t
 	}
@@ -99,7 +108,14 @@ type Screen interface {
 }
 
 func Play(ctx context.Context, s Stream) (Report, error) {
-	return On(ctx, &Beneath{Rotation: func() display.Orientation { return display.Get().Orientation() }, Size: func() (int, int) { return display.Get().Native() }}, s)
+	return On(
+		ctx,
+		&Beneath{
+			Rotation: func() display.Orientation { return display.Get().Orientation() },
+			Size:     func() (int, int) { return display.Get().Native() },
+		},
+		s,
+	)
 }
 
 func On(ctx context.Context, p Screen, s Stream) (Report, error) {
@@ -360,7 +376,8 @@ func (k *controls) update(o display.Orientation) {
 	dirty := k.shown
 	clearRect(k.layer, k.shown)
 	k.shown = display.Rect{}
-	if ok && b.At.W > 0 && b.At.H > 0 && b.At.X >= 0 && b.At.Y >= 0 && b.At.X+b.At.W <= k.fw && b.At.Y+b.At.H <= k.fh {
+	if ok && b.At.W > 0 && b.At.H > 0 && b.At.X >= 0 && b.At.Y >= 0 && b.At.X+b.At.W <= k.fw &&
+		b.At.Y+b.At.H <= k.fh {
 		for y := 0; y < b.At.H; y++ {
 			dst := k.layer.Pixels[(b.At.Y+y)*k.layer.Stride+b.At.X*4:]
 			copy(dst[:b.At.W*4], b.Pix[y*b.Stride:y*b.Stride+b.At.W*4])

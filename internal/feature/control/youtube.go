@@ -40,7 +40,8 @@ func ytLive(args []string) (string, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), hold+30*time.Second)
 	defer cancel()
-	return youtube.NewResolver(fetch.Client(30*time.Second), video.Target).Probe(ctx, args[0], hold, back)
+	return youtube.NewResolver(fetch.Client(30*time.Second), video.Target).
+		Probe(ctx, args[0], hold, back)
 }
 
 func ytFormats(args []string) (string, error) {

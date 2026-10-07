@@ -52,7 +52,9 @@ func oracleAnswer(t *testing.T, k *keys, from, until, now time.Time) []byte {
 
 func serve(t *testing.T, body []byte) string {
 	t.Helper()
-	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.Write(body) }))
+	s := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.Write(body) }),
+	)
 	t.Cleanup(s.Close)
 	return s.URL
 }
@@ -131,7 +133,10 @@ func TestTheRevocationListIsFetchedAndHeld(t *testing.T) {
 func TestClearingTheOracleGoesBackToOurOwn(t *testing.T) {
 	k := testKeys(t)
 	now := time.Now()
-	k.step(t.Context(), serve(t, oracleAnswer(t, k, now.Add(-time.Hour), now.Add(47*time.Hour), now)))
+	k.step(
+		t.Context(),
+		serve(t, oracleAnswer(t, k, now.Add(-time.Hour), now.Add(47*time.Hour), now)),
+	)
 
 	k.step(t.Context(), "")
 	if k.Current().Remote {
@@ -169,7 +174,11 @@ func TestTheDeviceChainIsMadeOnceAndKept(t *testing.T) {
 
 func TestAKeptChainThatDoesNotReadIsMadeAgain(t *testing.T) {
 	dir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(dir, "cast-authority.json"), []byte("{"), 0o600); err != nil {
+	if err := os.WriteFile(
+		filepath.Join(dir, "cast-authority.json"),
+		[]byte("{"),
+		0o600,
+	); err != nil {
 		t.Fatal(err)
 	}
 	k, err := newKeys("Kitchen", filepath.Join(dir, "cast-credentials.json"))

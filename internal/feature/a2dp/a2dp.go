@@ -29,17 +29,38 @@ var shared *Sink
 
 func build() *Sink {
 	a := speaker.Sound().Backgrounds()
-	return sharedspeaker.New(sharedspeaker.Options{Queue: speaker.Get(), Radio: ble.Get, Bonds: layout.StateDir + "/bonds", CaptureDirectory: "/data/local/tmp", Name: func() string { return config.Get().Device.Name }, Enabled: func() bool { return config.Get().Bluetooth.Speaker }, SaveEnabled: func(v bool) error { return config.Set().Bluetooth().Speaker(v) }, VolumeSet: func(v int) { volume.Get().Set(config.StreamMedia, v) }, VolumeChanged: func(f func(int)) func() {
-		return volume.Get().Changed.Listen(func(c volume.Change) {
-			if c.Stream == config.StreamMedia {
-				f(c.Level)
-			}
-		})
-	}, Media: func() sharedspeaker.Media { return media.Get() }, Took: func(p pcm.Producer) { a.Took(p) }, Gave: func(p pcm.Producer) { a.Gave(p) }, DuckDB: func() float64 { return config.Get().Media.DuckDB }})
+	return sharedspeaker.New(
+		sharedspeaker.Options{
+			Queue:            speaker.Get(),
+			Radio:            ble.Get,
+			Bonds:            layout.StateDir + "/bonds",
+			CaptureDirectory: "/data/local/tmp",
+			Name:             func() string { return config.Get().Device.Name },
+			Enabled:          func() bool { return config.Get().Bluetooth.Speaker },
+			SaveEnabled:      func(v bool) error { return config.Set().Bluetooth().Speaker(v) },
+			VolumeSet:        func(v int) { volume.Get().Set(config.StreamMedia, v) },
+			VolumeChanged: func(f func(int)) func() {
+				return volume.Get().Changed.Listen(func(c volume.Change) {
+					if c.Stream == config.StreamMedia {
+						f(c.Level)
+					}
+				})
+			},
+			Media:  func() sharedspeaker.Media { return media.Get() },
+			Took:   func(p pcm.Producer) { a.Took(p) },
+			Gave:   func(p pcm.Producer) { a.Gave(p) },
+			DuckDB: func() float64 { return config.Get().Media.DuckDB },
+		},
+	)
 }
 func Get() *Sink { once.Do(func() { shared = build() }); return shared }
 func init() {
-	component.Register(component.Device, Get, component.Order(70), component.Supervise(service.Restart(5*time.Second, time.Minute)))
+	component.Register(
+		component.Device,
+		Get,
+		component.Order(70),
+		component.Supervise(service.Restart(5*time.Second, time.Minute)),
+	)
 }
 
 var Trace = sharedspeaker.Trace

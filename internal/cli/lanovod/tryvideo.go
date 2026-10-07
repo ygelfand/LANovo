@@ -56,7 +56,22 @@ func tryVideo(path string) error {
 		Clock:  wallClock(),
 	})
 	took := time.Since(began)
-	slog.Info("video trial over", "file", path, "units", len(units), "shown", rep.Shown, "dropped", rep.Dropped,
-		"took", took.Round(time.Millisecond), "at", rep.At, "orientation", rep.Orientation)
+	slog.Info(
+		"video trial over",
+		"file",
+		path,
+		"units",
+		len(units),
+		"shown",
+		rep.Shown,
+		"dropped",
+		rep.Dropped,
+		"took",
+		took.Round(time.Millisecond),
+		"at",
+		rep.At,
+		"orientation",
+		rep.Orientation,
+	)
 	return err
 }

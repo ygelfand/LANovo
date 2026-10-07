@@ -102,8 +102,11 @@ func (a *Access) apply(on bool) {
 	a.adb.Set(on)
 
 	if on {
-		slog.Warn("adb is listening on the network: anything that can reach this device has a root shell",
-			"port", config.ADBPort)
+		slog.Warn(
+			"adb is listening on the network: anything that can reach this device has a root shell",
+			"port",
+			config.ADBPort,
+		)
 	} else {
 		slog.Info("adb is back to the cable only")
 	}

@@ -27,9 +27,13 @@ func MarkBooted() error {
 		return fmt.Errorf("slot: %s: %w", bin, err)
 	}
 
-	pid, err := syscall.ForkExec(bin, []string{"bootctl", "mark-boot-successful"}, &syscall.ProcAttr{
-		Files: []uintptr{0, 1, 2},
-	})
+	pid, err := syscall.ForkExec(
+		bin,
+		[]string{"bootctl", "mark-boot-successful"},
+		&syscall.ProcAttr{
+			Files: []uintptr{0, 1, 2},
+		},
+	)
 	if err != nil {
 		return fmt.Errorf("slot: %s: %w", bin, err)
 	}

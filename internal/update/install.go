@@ -72,7 +72,10 @@ func download(ctx context.Context, b Binary, to string, progress func(float32)) 
 	defer f.Close()
 
 	sum := sha256.New()
-	written, err := io.Copy(io.MultiWriter(f, sum), &counter{from: io.LimitReader(resp.Body, b.Size+1), size: b.Size, report: progress})
+	written, err := io.Copy(
+		io.MultiWriter(f, sum),
+		&counter{from: io.LimitReader(resp.Body, b.Size+1), size: b.Size, report: progress},
+	)
 	if err != nil {
 		return fmt.Errorf("update: downloading %s: %d of %d bytes: %w", b.URL, written, b.Size, err)
 	}

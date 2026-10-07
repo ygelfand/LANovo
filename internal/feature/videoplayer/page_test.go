@@ -24,7 +24,14 @@ func (f *fake) Seek(time.Duration) {}
 func (f *fake) CanSeek() bool      { return true }
 
 func playing() *fake {
-	return &fake{now: media.Now{Playing: true, Title: "a video", Elapsed: 95 * time.Second, Length: 14 * time.Minute}}
+	return &fake{
+		now: media.Now{
+			Playing: true,
+			Title:   "a video",
+			Elapsed: 95 * time.Second,
+			Length:  14 * time.Minute,
+		},
+	}
 }
 
 func TestFollowPointsTheControlsAtTheNextTrack(t *testing.T) {

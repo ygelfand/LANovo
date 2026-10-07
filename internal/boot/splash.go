@@ -35,7 +35,13 @@ func startSplash(ctx context.Context) {
 		rv := reveal.New(chosen())
 		layer, err := gpu.Open(w, h)
 		if err != nil {
-			slog.Error("the boot animation could not start", "err", err, "size", fmt.Sprintf("%dx%d", w, h))
+			slog.Error(
+				"the boot animation could not start",
+				"err",
+				err,
+				"size",
+				fmt.Sprintf("%dx%d", w, h),
+			)
 		} else {
 			defer layer.Close()
 			if err := layer.Place(ui.Rect{W: w, H: h}); err != nil {
@@ -86,7 +92,13 @@ func startSplash(ctx context.Context) {
 				if layer == nil {
 					return false
 				}
-				if err := rv.Shade(layer, fresh, w, h, reveal.Moment{At: m.At, Trace: m.Trace, Header: m.Header, Ready: m.Ready}); err != nil {
+				if err := rv.Shade(
+					layer,
+					fresh,
+					w,
+					h,
+					reveal.Moment{At: m.At, Trace: m.Trace, Header: m.Header, Ready: m.Ready},
+				); err != nil {
 					slog.Error("the boot animation stopped", "err", err)
 					layer.Close()
 					layer = nil

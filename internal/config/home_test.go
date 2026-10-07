@@ -8,7 +8,11 @@ import (
 func TestHomePicksSurviveARestart(t *testing.T) {
 	path := fresh(t)
 
-	want := HomePick{Labels: []string{"lanovo"}, Areas: []string{"kitchen"}, Entities: []string{"light.a"}}
+	want := HomePick{
+		Labels:   []string{"lanovo"},
+		Areas:    []string{"kitchen"},
+		Entities: []string{"light.a"},
+	}
 	if err := Set().Home().Pick("lights", want); err != nil {
 		t.Fatal(err)
 	}
@@ -19,7 +23,8 @@ func TestHomePicksSurviveARestart(t *testing.T) {
 	Use(path)
 	home := Get().Home
 	got := home.Picked("lights")
-	if got.All || !slices.Equal(got.Labels, want.Labels) || !slices.Equal(got.Areas, want.Areas) || !slices.Equal(got.Entities, want.Entities) {
+	if got.All || !slices.Equal(got.Labels, want.Labels) || !slices.Equal(got.Areas, want.Areas) ||
+		!slices.Equal(got.Entities, want.Entities) {
 		t.Errorf("lights came back as %+v", got)
 	}
 	if !home.Picked("switches").All {
@@ -59,7 +64,8 @@ func TestAllKeepsTheManualPicks(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := Get().Home.Picked("lights")
-	if got.All || !slices.Equal(got.Areas, []string{"kitchen"}) || !slices.Equal(got.Entities, []string{"light.a"}) {
+	if got.All || !slices.Equal(got.Areas, []string{"kitchen"}) ||
+		!slices.Equal(got.Entities, []string{"light.a"}) {
 		t.Errorf("after All on and off: %+v", got)
 	}
 }

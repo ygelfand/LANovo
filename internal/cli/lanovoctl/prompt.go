@@ -24,7 +24,14 @@ func ask(ctx context.Context, out io.Writer, field huh.Field) error {
 
 // choose offers a list and reports what was picked. label renders one item; the zero value of T comes
 // back for an extra row named by other, when one is given.
-func choose[T any](ctx context.Context, out io.Writer, title string, items []T, label func(T) string, other string) (T, error) {
+func choose[T any](
+	ctx context.Context,
+	out io.Writer,
+	title string,
+	items []T,
+	label func(T) string,
+	other string,
+) (T, error) {
 	var chosen T
 
 	options := make([]huh.Option[int], 0, len(items)+1)

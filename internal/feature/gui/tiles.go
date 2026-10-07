@@ -34,10 +34,31 @@ func tileBoard(at ui.Rect, s homecontrol.Selection, pal theme.Theme) gogui.View 
 	}
 	var columns []gogui.View
 	for _, stack := range stacks {
-		columns = append(columns, gogui.Column(gogui.ContainerCfg{Width: side, Sizing: gogui.FixedFit, Padding: gogui.NoPadding, Spacing: gogui.SpacingPx(gap), Content: stack}))
+		columns = append(
+			columns,
+			gogui.Column(
+				gogui.ContainerCfg{
+					Width:   side,
+					Sizing:  gogui.FixedFit,
+					Padding: gogui.NoPadding,
+					Spacing: gogui.SpacingPx(gap),
+					Content: stack,
+				},
+			),
+		)
 	}
 	if len(areas) > 0 {
-		views = append(views, gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Spacing: gogui.SpacingPx(gap), Content: columns}))
+		views = append(
+			views,
+			gogui.Row(
+				gogui.ContainerCfg{
+					Sizing:  gogui.FillFit,
+					Padding: gogui.NoPadding,
+					Spacing: gogui.SpacingPx(gap),
+					Content: columns,
+				},
+			),
+		)
 	}
 
 	return placed(at, gogui.Column(gogui.ContainerCfg{
@@ -58,17 +79,45 @@ func areaName(a homecontrol.AreaTiles) string {
 	return a.Name
 }
 
-func card(id string, s homecontrol.Selection, a homecontrol.AreaTiles, side float32, pal theme.Theme) gogui.View {
+func card(
+	id string,
+	s homecontrol.Selection,
+	a homecontrol.AreaTiles,
+	side float32,
+	pal theme.Theme,
+) gogui.View {
 	if a.Solo {
 		t := a.Tiles[0]
-		return tile(id, side, domainGlyph(t.Domain()), t.Name, deviceStatus(t), t.On, t.Available, pal, nil, nil,
-			func(gogui.EventCtx) { homecontrol.Dash().ToggleEntity(t) })
+		return tile(
+			id,
+			side,
+			domainGlyph(t.Domain()),
+			t.Name,
+			deviceStatus(t),
+			t.On,
+			t.Available,
+			pal,
+			nil,
+			nil,
+			func(gogui.EventCtx) { homecontrol.Dash().ToggleEntity(t) },
+		)
 	}
 	var chips []gogui.View
 	if a.Open {
 		for j, t := range a.Tiles {
-			chips = append(chips, chip(fmt.Sprintf("%s-%d", id, j), domainGlyph(t.Domain()), t.Name, deviceStatus(t), t.On, t.Available, pal,
-				func(gogui.EventCtx) { homecontrol.Dash().ToggleEntity(t) }))
+			chips = append(
+				chips,
+				chip(
+					fmt.Sprintf("%s-%d", id, j),
+					domainGlyph(t.Domain()),
+					t.Name,
+					deviceStatus(t),
+					t.On,
+					t.Available,
+					pal,
+					func(gogui.EventCtx) { homecontrol.Dash().ToggleEntity(t) },
+				),
+			)
 		}
 	}
 	return tile(id, side, glyphFor(s), areaName(a), areaStatus(a), a.On > 0, true, pal,
@@ -109,7 +158,13 @@ func deviceStatus(t homecontrol.Tile) string {
 	return say.T("home.tile.off")
 }
 
-func chip(id string, glyph, name, status string, on, available bool, pal theme.Theme, tap func(gogui.EventCtx)) gogui.View {
+func chip(
+	id string,
+	glyph, name, status string,
+	on, available bool,
+	pal theme.Theme,
+	tap func(gogui.EventCtx),
+) gogui.View {
 	t := gogui.CurrentTheme().Cfg
 	badgeFill, badgeInk, fill := tint(on, pal)
 	if !on {
@@ -143,10 +198,17 @@ func chip(id string, glyph, name, status string, on, available bool, pal theme.T
 		Disabled: !available,
 		Content: []gogui.View{
 			badge,
-			gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Clip: true, Content: []gogui.View{
-				gogui.Label(name, small),
-				gogui.Label(status, note),
-			}}),
+			gogui.Column(
+				gogui.ContainerCfg{
+					Sizing:  gogui.FillFit,
+					Padding: gogui.NoPadding,
+					Clip:    true,
+					Content: []gogui.View{
+						gogui.Label(name, small),
+						gogui.Label(status, note),
+					},
+				},
+			),
 		},
 	}
 	controls().Tile(&cfg, chosen(on))
@@ -167,7 +229,12 @@ func domainGlyph(domain string) string {
 	return gogui.IconPlug
 }
 
-func chevron(id string, s homecontrol.Selection, a homecontrol.AreaTiles, pal theme.Theme) gogui.View {
+func chevron(
+	id string,
+	s homecontrol.Selection,
+	a homecontrol.AreaTiles,
+	pal theme.Theme,
+) gogui.View {
 	glyph := gogui.IconArrowDown
 	if a.Open {
 		glyph = gogui.IconArrowUp
@@ -185,7 +252,16 @@ func chevron(id string, s homecontrol.Selection, a homecontrol.AreaTiles, pal th
 	}, glyph, iconStyle(color(pal.Text)), style.Partial, func(gogui.EventCtx) { homecontrol.Dash().Expand(s, a.ID) })
 }
 
-func tile(id string, side float32, glyph, name, status string, on, available bool, pal theme.Theme, corner gogui.View, more []gogui.View, tap func(gogui.EventCtx)) gogui.View {
+func tile(
+	id string,
+	side float32,
+	glyph, name, status string,
+	on, available bool,
+	pal theme.Theme,
+	corner gogui.View,
+	more []gogui.View,
+	tap func(gogui.EventCtx),
+) gogui.View {
 	t := gogui.CurrentTheme().Cfg
 	badgeFill, badgeInk, fill := tint(on, pal)
 	badge := gogui.Row(gogui.ContainerCfg{
@@ -199,7 +275,10 @@ func tile(id string, side float32, glyph, name, status string, on, available boo
 		Padding: gogui.NoPadding,
 		Content: []gogui.View{icon(glyph, badgeInk)},
 	})
-	top := []gogui.View{badge, gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding})}
+	top := []gogui.View{
+		badge,
+		gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding}),
+	}
 	if corner != nil {
 		top = append(top, corner)
 	}
@@ -214,7 +293,14 @@ func tile(id string, side float32, glyph, name, status string, on, available boo
 		Color:    fill,
 		Disabled: !available,
 		Content: append([]gogui.View{
-			gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, VAlign: gogui.VAlignMiddle, Content: top}),
+			gogui.Row(
+				gogui.ContainerCfg{
+					Sizing:  gogui.FillFit,
+					Padding: gogui.NoPadding,
+					VAlign:  gogui.VAlignMiddle,
+					Content: top,
+				},
+			),
 			gogui.Label(name, title),
 			gogui.Label(status, secondary()),
 		}, more...),

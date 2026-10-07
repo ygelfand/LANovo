@@ -102,7 +102,11 @@ func (o *commitOverlay) commit(flags uint32) error {
 		}
 	}
 	if err != nil {
-		return fmt.Errorf("display: overlay commit: %w (layer error %d)", err, int32(binary.LittleEndian.Uint32(in[152:])))
+		return fmt.Errorf(
+			"display: overlay commit: %w (layer error %d)",
+			err,
+			int32(binary.LittleEndian.Uint32(in[152:])),
+		)
 	}
 	return nil
 }

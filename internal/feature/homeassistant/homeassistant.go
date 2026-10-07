@@ -5,18 +5,17 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	sharedha "github.com/ygelfand/libcountertop/pkg/homeassistant"
 	"log/slog"
 	"sync"
 	"time"
 
-	esphome "github.com/ygelfand/go-esphome-device"
-	"github.com/ygelfand/go-esphome-device/api"
-	"google.golang.org/protobuf/proto"
-
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	esphome "github.com/ygelfand/go-esphome-device"
+	"github.com/ygelfand/go-esphome-device/api"
+	sharedha "github.com/ygelfand/libcountertop/pkg/homeassistant"
 	"github.com/ygelfand/libcountertop/pkg/hook"
+	"google.golang.org/protobuf/proto"
 )
 
 func init() {
@@ -167,7 +166,9 @@ func (h *HomeAssistant) probe(conn sender) {
 	case err == nil:
 		h.settle(conn, Allowed)
 	case errors.Is(err, context.DeadlineExceeded):
-		slog.Warn("Home Assistant does not answer actions from this device; enable them in the ESPHome integration's options")
+		slog.Warn(
+			"Home Assistant does not answer actions from this device; enable them in the ESPHome integration's options",
+		)
 		h.settle(conn, Refused)
 	}
 }
@@ -241,7 +242,12 @@ func carrierData() map[string]string {
 	}
 }
 
-func (h *HomeAssistant) call(ctx context.Context, action string, data map[string]string, tmpl string) ([]byte, error) {
+func (h *HomeAssistant) call(
+	ctx context.Context,
+	action string,
+	data map[string]string,
+	tmpl string,
+) ([]byte, error) {
 	ch := make(chan reply, 1)
 	h.mu.Lock()
 	to, access := h.to, h.access

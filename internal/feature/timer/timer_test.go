@@ -9,7 +9,12 @@ import (
 )
 
 func TestARunningTimerCountsDownWithoutBeingTold(t *testing.T) {
-	c := &timer{total: time.Minute, left: time.Minute, at: time.Now().Add(-20 * time.Second), active: true}
+	c := &timer{
+		total:  time.Minute,
+		left:   time.Minute,
+		at:     time.Now().Add(-20 * time.Second),
+		active: true,
+	}
 
 	if got := c.remaining(time.Now()); got < 39*time.Second || got > 40*time.Second {
 		t.Errorf("%s left, want about 40s", got)
@@ -25,7 +30,12 @@ func TestAPausedTimerHoldsWhereItWasStopped(t *testing.T) {
 }
 
 func TestARunningTimerNeverGoesPastZero(t *testing.T) {
-	c := &timer{total: time.Minute, left: time.Minute, at: time.Now().Add(-2 * time.Minute), active: true}
+	c := &timer{
+		total:  time.Minute,
+		left:   time.Minute,
+		at:     time.Now().Add(-2 * time.Minute),
+		active: true,
+	}
 
 	if got := c.remaining(time.Now()); got != 0 {
 		t.Errorf("%s left, want 0", got)
@@ -96,7 +106,10 @@ func TestAFinishedTimerRingsUntilItIsStopped(t *testing.T) {
 		t.Fatal("not ringing")
 	}
 	if len(ts.held) != 0 {
-		t.Errorf("holding %d timers, want none: a finished timer is gone at both ends", len(ts.held))
+		t.Errorf(
+			"holding %d timers, want none: a finished timer is gone at both ends",
+			len(ts.held),
+		)
 	}
 	if !ts.Stop() {
 		t.Error("Stop reported nothing to stop")

@@ -28,9 +28,12 @@ func Table() *setting.Table[config.Presence] {
 	built.Do(func() {
 		table = setting.NewTable("presence", []setting.Group{PresenceGroup}, []Setting{
 			{
-				Name: "wake", Group: PresenceGroup, ID: "presence_wake", Icon: "mdi:account-arrow-right",
-				Kind: setting.Toggle,
-				Read: func(p *config.Presence) string { return setting.OnOff(p.Wake) },
+				Name:  "wake",
+				Group: PresenceGroup,
+				ID:    "presence_wake",
+				Icon:  "mdi:account-arrow-right",
+				Kind:  setting.Toggle,
+				Read:  func(p *config.Presence) string { return setting.OnOff(p.Wake) },
 				Write: func(p *config.Presence, v string) error {
 					on, ok := setting.Boolean(v)
 					if !ok {
@@ -41,9 +44,15 @@ func Table() *setting.Table[config.Presence] {
 				},
 			},
 			{
-				Name: "range", Group: PresenceGroup, ID: "presence_range", Icon: "mdi:signal-distance-variant",
-				Kind: setting.Number, Slider: true, Min: config.PresenceRangeMin, Max: config.PresenceRangeMax,
-				Read: func(p *config.Presence) string { return strconv.Itoa(p.Range) },
+				Name:   "range",
+				Group:  PresenceGroup,
+				ID:     "presence_range",
+				Icon:   "mdi:signal-distance-variant",
+				Kind:   setting.Number,
+				Slider: true,
+				Min:    config.PresenceRangeMin,
+				Max:    config.PresenceRangeMax,
+				Read:   func(p *config.Presence) string { return strconv.Itoa(p.Range) },
 				Write: func(p *config.Presence, v string) error {
 					n, err := Table().Row("range").Number(v)
 					if err != nil {

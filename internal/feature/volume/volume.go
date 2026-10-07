@@ -197,7 +197,20 @@ func (v *Volume) SetDuckDB(db float64) error {
 }
 
 func (v *Volume) build() {
-	v.duck = &esphome.Number{Base: esphome.Base{ObjectID: "media_duck_level", Name: "Music ducking", Icon: "mdi:volume-medium", Category: esphome.CategoryConfig, DeviceID: component.DevicePlayback}, Min: ducking.MinimumDB, Max: ducking.MaximumDB, Step: 1, Unit: "dB", Mode: esphome.NumberBox}
+	v.duck = &esphome.Number{
+		Base: esphome.Base{
+			ObjectID: "media_duck_level",
+			Name:     "Music ducking",
+			Icon:     "mdi:volume-medium",
+			Category: esphome.CategoryConfig,
+			DeviceID: component.DevicePlayback,
+		},
+		Min:  ducking.MinimumDB,
+		Max:  ducking.MaximumDB,
+		Step: 1,
+		Unit: "dB",
+		Mode: esphome.NumberBox,
+	}
 	v.duck.OnCommand = func(db float32) {
 		if err := v.SetDuckDB(float64(db)); err != nil {
 			slog.Error("saving the ducking level failed", "err", err)

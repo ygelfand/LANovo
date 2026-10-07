@@ -139,8 +139,19 @@ func (t *Timers) counting() bool {
 
 // Event is a timer event from Home Assistant.
 func (t *Timers) Event(e esphome.TimerEvent) {
-	slog.Debug("timer",
-		"event", e.Type, "name", e.Name, "left", e.SecondsLeft, "total", e.TotalSeconds, "active", e.IsActive)
+	slog.Debug(
+		"timer",
+		"event",
+		e.Type,
+		"name",
+		e.Name,
+		"left",
+		e.SecondsLeft,
+		"total",
+		e.TotalSeconds,
+		"active",
+		e.IsActive,
+	)
 
 	switch e.Type {
 	case api.VoiceAssistantTimerEvent_VOICE_ASSISTANT_TIMER_STARTED,
@@ -168,7 +179,10 @@ func (t *Timers) publish() {
 	}
 	t.mu.Unlock()
 
-	slices.SortFunc(running, func(a, b *timer) int { return cmp.Compare(a.remaining(now), b.remaining(now)) })
+	slices.SortFunc(
+		running,
+		func(a, b *timer) int { return cmp.Compare(a.remaining(now), b.remaining(now)) },
+	)
 
 	names := make([]string, 0, len(running))
 	for _, c := range running {

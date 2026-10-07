@@ -23,7 +23,12 @@ func Use(path string)  { once.Do(func() {}); shared, loadErr = Load(path) }
 type Store struct{ *storage.Store[Config] }
 
 func Load(path string) (*Store, error) {
-	s, err := storage.Load(path, Defaults(), cloneConfig, func(data []byte, c *Config) error { return schema.MigrateNetwork(data, &c.Network) })
+	s, err := storage.Load(
+		path,
+		Defaults(),
+		cloneConfig,
+		func(data []byte, c *Config) error { return schema.MigrateNetwork(data, &c.Network) },
+	)
 	return &Store{s}, err
 }
 func (s *Store) Set() Writer      { return Writer{st: s} }

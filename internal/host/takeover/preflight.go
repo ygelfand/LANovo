@@ -20,7 +20,12 @@ func decodeBase64(s string) ([]byte, error) {
 	var clean strings.Builder
 	for _, r := range s {
 		switch {
-		case r >= 'A' && r <= 'Z', r >= 'a' && r <= 'z', r >= '0' && r <= '9', r == '+', r == '/', r == '=':
+		case r >= 'A' && r <= 'Z',
+			r >= 'a' && r <= 'z',
+			r >= '0' && r <= '9',
+			r == '+',
+			r == '/',
+			r == '=':
 			clean.WriteRune(r)
 		}
 	}

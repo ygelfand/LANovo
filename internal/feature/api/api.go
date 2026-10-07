@@ -103,7 +103,7 @@ func (a *API) Start(context.Context) error {
 			Devices: subDevices(device.Name),
 
 			VoiceFeatures:     voice.Features,
-		BluetoothFeatures: bluetooth.Get().Features(),
+			BluetoothFeatures: bluetooth.Get().Features(),
 		},
 		PSK:    psk,
 		Logger: slog.Default(),
@@ -116,7 +116,8 @@ func (a *API) Start(context.Context) error {
 			component.Subscribed.Emit(struct{}{})
 		},
 
-		Handler: esphome.Chain(append([]esphome.Handler{ents}, component.Default().Handlers()...)...),
+		Handler: esphome.Chain(
+			append([]esphome.Handler{ents}, component.Default().Handlers()...)...),
 	}
 	return nil
 }

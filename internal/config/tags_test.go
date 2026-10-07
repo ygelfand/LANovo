@@ -57,7 +57,10 @@ func TestEverySettingIsPersisted(t *testing.T) {
 			case skip[where]:
 				continue
 			case !ok:
-				t.Errorf("%s has no json tag, so it is written under its Go name by accident", where)
+				t.Errorf(
+					"%s has no json tag, so it is written under its Go name by accident",
+					where,
+				)
 				continue
 			}
 
@@ -90,7 +93,9 @@ func TestEverySettingIsPersisted(t *testing.T) {
 		t.Errorf("only %d fields were checked, so the walk is not reaching the sections", visited)
 	}
 	if !seenWakeWord {
-		t.Error("the walk did not reach inside Wake.Words, so a list's fields are not being checked")
+		t.Error(
+			"the walk did not reach inside Wake.Words, so a list's fields are not being checked",
+		)
 	}
 }
 
@@ -121,7 +126,10 @@ func TestDefaultsSurviveBeingWrittenAndReadBack(t *testing.T) {
 	want.Device, got.Device = Device{}, Device{}
 
 	if !reflect.DeepEqual(want, got) {
-		t.Errorf("a fresh device came back different after a write and a reload:\n got %+v\nwant %+v",
-			got, want)
+		t.Errorf(
+			"a fresh device came back different after a write and a reload:\n got %+v\nwant %+v",
+			got,
+			want,
+		)
 	}
 }

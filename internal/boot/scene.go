@@ -15,7 +15,18 @@ func openBootScene(w, h int) *bootview.Scene {
 		return nil
 	}
 	nw, nh := display.Get().Native()
-	scene, err := bootview.NewScene(c, 61, nw, nh, w, h, int(display.Get().Orientation()), chosen(), layout.Version, say.T("boot.skip"))
+	scene, err := bootview.NewScene(
+		c,
+		61,
+		nw,
+		nh,
+		w,
+		h,
+		int(display.Get().Orientation()),
+		chosen(),
+		layout.Version,
+		say.T("boot.skip"),
+	)
 	if err != nil {
 		slog.Error("starting boot GUI", "err", err)
 		return nil

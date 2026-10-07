@@ -26,7 +26,11 @@ func radios() []*cobra.Command {
 
 // watching is the camera and the player, which are both about what the device can see or is doing.
 func watching() []*cobra.Command {
-	camera := group("camera", "The imaging hardware", "The vendor camera stack, through lanovo-camera.")
+	camera := group(
+		"camera",
+		"The imaging hardware",
+		"The vendor camera stack, through lanovo-camera.",
+	)
 	camera.AddCommand(
 		says(&cobra.Command{
 			Use:   "still [PATH]",

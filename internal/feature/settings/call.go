@@ -8,5 +8,15 @@ import (
 )
 
 func callPages() *sharedsettings.CallPages {
-	return sharedsettings.NewCallPages(sharedsettings.CallOptions{Read: func() config.Call { return config.Get().Call }, Push: shell.Get().Push, SetStream: call.SetStream, SetIncoming: call.SetIncoming, SetAutoAnswer: call.SetAutoAnswer, SetAutoVideo: call.SetAutoVideo, SetPauseWake: call.SetPauseWake})
+	return sharedsettings.NewCallPages(
+		sharedsettings.CallOptions{
+			Read:          func() config.Call { return config.Get().Call },
+			Push:          shell.Get().Push,
+			SetStream:     call.Get().SetStream,
+			SetIncoming:   call.Get().SetIncoming,
+			SetAutoAnswer: call.Get().SetAutoAnswer,
+			SetAutoVideo:  call.Get().SetAutoVideo,
+			SetPauseWake:  call.Get().SetPauseWake,
+		},
+	)
 }

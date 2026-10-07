@@ -72,7 +72,8 @@ func leaves(t reflect.Type, at string) []string {
 		f := t.Field(i)
 		name := at + f.Name
 
-		if f.Type.Kind() == reflect.Struct && (f.Type.PkgPath() == t.PkgPath() || f.Type.PkgPath() == "github.com/ygelfand/libcountertop/pkg/settings/schema") {
+		if f.Type.Kind() == reflect.Struct &&
+			(f.Type.PkgPath() == t.PkgPath() || f.Type.PkgPath() == "github.com/ygelfand/libcountertop/pkg/settings/schema") {
 			out = append(out, leaves(f.Type, name+".")...)
 			continue
 		}

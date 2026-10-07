@@ -25,7 +25,15 @@ func gltime(args []string) (string, error) {
 			return "", fmt.Errorf("%q: %w", a, err)
 		}
 	}
-	flags, amount, radius, passes, seconds := visual.Passes(nums[0]), float32(nums[1]), float32(nums[2]), int(nums[3]), nums[4]
+	flags, amount, radius, passes, seconds := visual.Passes(
+		nums[0],
+	), float32(
+		nums[1],
+	), float32(
+		nums[2],
+	), int(
+		nums[3],
+	), nums[4]
 	if seconds <= 0 {
 		seconds = 5
 	}

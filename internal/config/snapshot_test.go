@@ -13,7 +13,9 @@ func TestSnapshotOwnsEveryMutableSettingsCollection(t *testing.T) {
 		c.Camera.Settings = map[string]string{"scene": "auto"}
 		c.Home.Control = map[string]bool{"x": true}
 		c.Home.Group = map[string]int{"x": 2}
-		c.Home.Picks = map[string]HomePick{"x": {Labels: []string{"label"}, Areas: []string{"area"}, Entities: []string{"entity"}}}
+		c.Home.Picks = map[string]HomePick{
+			"x": {Labels: []string{"label"}, Areas: []string{"area"}, Entities: []string{"entity"}},
+		}
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +31,10 @@ func TestSnapshotOwnsEveryMutableSettingsCollection(t *testing.T) {
 	pick.Entities[0] = "changed"
 	got.Home.Picks["x"] = pick
 	actual := s.Get()
-	if actual.Wake.Words[0].ID != "word" || actual.Cast.YouTube.Skip[0] != "sponsor" || actual.Camera.Settings["scene"] != "auto" || !actual.Home.Control["x"] || actual.Home.Group["x"] != 2 {
+	if actual.Wake.Words[0].ID != "word" || actual.Cast.YouTube.Skip[0] != "sponsor" ||
+		actual.Camera.Settings["scene"] != "auto" ||
+		!actual.Home.Control["x"] ||
+		actual.Home.Group["x"] != 2 {
 		t.Fatal("snapshot mutated store", actual)
 	}
 	pick = actual.Home.Picks["x"]

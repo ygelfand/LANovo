@@ -223,5 +223,7 @@ func (s *Screen) recognize(c Contact) (Gesture, bool) {
 // orientation the panel projects with. Asked for each time: a device that has been turned reports
 // touches at the rotation it is now showing.
 func rotate(px, py int) (x, y int) {
-	return display.Get().Orientation().Unproject(board.Current().PanelWidth, board.Current().PanelHeight, px, py)
+	return display.Get().
+		Orientation().
+		Unproject(board.Current().PanelWidth, board.Current().PanelHeight, px, py)
 }

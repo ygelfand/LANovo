@@ -19,7 +19,8 @@ func newRoot() *cobra.Command {
 		SilenceUsage: true,
 	}
 
-	root.PersistentFlags().StringVar(&serial, "serial", "", "device to act on, when more than one is attached")
+	root.PersistentFlags().
+		StringVar(&serial, "serial", "", "device to act on, when more than one is attached")
 
 	root.AddCommand(newCheckCmd())
 	root.AddCommand(newInstallCmd())

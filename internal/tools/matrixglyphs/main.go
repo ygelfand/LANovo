@@ -37,7 +37,10 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	face, err := opentype.NewFace(f, &opentype.FaceOptions{Size: cell * 0.78, DPI: 72, Hinting: font.HintingNone})
+	face, err := opentype.NewFace(
+		f,
+		&opentype.FaceOptions{Size: cell * 0.78, DPI: 72, Hinting: font.HintingNone},
+	)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,7 +61,12 @@ func main() {
 			x = (cell - adv.Ceil()) / 2
 		}
 		y := (cell+(m.Ascent-m.Descent).Ceil())/2 - 2
-		d := font.Drawer{Dst: one, Src: image.NewUniform(color.Gray{Y: 255}), Face: face, Dot: fixed.P(x, y)}
+		d := font.Drawer{
+			Dst:  one,
+			Src:  image.NewUniform(color.Gray{Y: 255}),
+			Face: face,
+			Dot:  fixed.P(x, y),
+		}
 		d.DrawString(string(r))
 		ox, oy := (i%across)*cell, (i/across)*cell
 		for py := range cell {

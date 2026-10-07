@@ -29,10 +29,21 @@ func pressRig(t *testing.T, fired chan string) (*backend.Renderer, frames) {
 	f := make(frames, 64)
 	w := gogui.SimpleWindow("press", 400, 400, &struct{}{}, func(w *gogui.Window) {
 		w.SetView(func(*gogui.Window) gogui.View {
-			return gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Scrollable: true, OnGesture: holdStill, Content: []gogui.View{
-				pressable(gogui.Row, gogui.ContainerCfg{ID: "row", Sizing: gogui.FillFit, Height: 100}, func(gogui.EventCtx) { fired <- "row" }),
-				gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Height: 900}),
-			}})
+			return gogui.Column(
+				gogui.ContainerCfg{
+					Sizing:     gogui.FillFill,
+					Scrollable: true,
+					OnGesture:  holdStill,
+					Content: []gogui.View{
+						pressable(
+							gogui.Row,
+							gogui.ContainerCfg{ID: "row", Sizing: gogui.FillFit, Height: 100},
+							func(gogui.EventCtx) { fired <- "row" },
+						),
+						gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Height: 900}),
+					},
+				},
+			)
 		})
 	})
 	r, err := backend.New(f, w)

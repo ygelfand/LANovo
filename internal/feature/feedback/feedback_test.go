@@ -84,7 +84,12 @@ func TestTheAcknowledgementFollowsTheSetting(t *testing.T) {
 			continue
 		}
 		if want := speaker.ChimeTone(chime); len((*played)[0]) != len(want) {
-			t.Errorf("%v played %d notes, want the %d its tone has", chime, len((*played)[0]), len(want))
+			t.Errorf(
+				"%v played %d notes, want the %d its tone has",
+				chime,
+				len((*played)[0]),
+				len(want),
+			)
 		}
 	}
 }

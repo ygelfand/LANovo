@@ -17,7 +17,13 @@ import (
 func preview(icons []icon, path string, size int) error {
 	pad := size / 4
 	sheet := image.NewRGBA(image.Rect(0, 0, len(icons)*(size+pad)+pad, size+pad*2))
-	draw.Draw(sheet, sheet.Bounds(), &image.Uniform{color.RGBA{0xf5, 0xf5, 0xf5, 0xff}}, image.Point{}, draw.Src)
+	draw.Draw(
+		sheet,
+		sheet.Bounds(),
+		&image.Uniform{color.RGBA{0xf5, 0xf5, 0xf5, 0xff}},
+		image.Point{},
+		draw.Src,
+	)
 
 	for i, ic := range icons {
 		one := image.NewRGBA(image.Rect(0, 0, size, size))

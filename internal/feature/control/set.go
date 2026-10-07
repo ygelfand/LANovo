@@ -2,41 +2,40 @@ package control
 
 import (
 	"fmt"
-	"github.com/ygelfand/LANovo/internal/feature/network"
-	"github.com/ygelfand/LANovo/internal/feature/weather"
 	"slices"
 	"strconv"
 	"strings"
 
-	"github.com/ygelfand/LANovo/internal/feature/api"
-	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
-	"github.com/ygelfand/LANovo/internal/feature/livecam"
-	panel "github.com/ygelfand/LANovo/internal/feature/settings"
-	text "github.com/ygelfand/libcountertop/pkg/say"
-
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	"github.com/ygelfand/LANovo/internal/feature/access"
+	"github.com/ygelfand/LANovo/internal/feature/api"
 	"github.com/ygelfand/LANovo/internal/feature/bluetooth"
 	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
+	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/idle"
+	"github.com/ygelfand/LANovo/internal/feature/livecam"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/microphone"
+	"github.com/ygelfand/LANovo/internal/feature/network"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/rtspd"
 	"github.com/ygelfand/LANovo/internal/feature/screen"
 	"github.com/ygelfand/LANovo/internal/feature/sendspin"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
+	panel "github.com/ygelfand/LANovo/internal/feature/settings"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
+	"github.com/ygelfand/LANovo/internal/feature/weather"
 	knob "github.com/ygelfand/LANovo/internal/setting"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
 	"github.com/ygelfand/libcountertop/pkg/display/style"
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
+	text "github.com/ygelfand/libcountertop/pkg/say"
 )
 
 // Changing a setting from here rather than by tapping it.
@@ -73,14 +72,24 @@ func settings() []setting {
 	clock, display := dashboard.Get(), screen.Get()
 
 	return append([]setting{
-		{"network.verify", "Network.Verify", func(c config.Config) string { return knob.OnOff(c.Network.Verify) }, toggle(network.Get().SetVerify)},
-		{"media.duck", "Media.DuckDB", func(c config.Config) string { return strconv.FormatFloat(c.Media.DuckDB, 'f', -1, 64) }, func(s string) error {
-			db, err := strconv.ParseFloat(s, 64)
-			if err != nil {
-				return fmt.Errorf("ducking depth: %w", err)
-			}
-			return volume.Get().SetDuckDB(db)
-		}},
+		{
+			"network.verify",
+			"Network.Verify",
+			func(c config.Config) string { return knob.OnOff(c.Network.Verify) },
+			toggle(network.Get().SetVerify),
+		},
+		{
+			"media.duck",
+			"Media.DuckDB",
+			func(c config.Config) string { return strconv.FormatFloat(c.Media.DuckDB, 'f', -1, 64) },
+			func(s string) error {
+				db, err := strconv.ParseFloat(s, 64)
+				if err != nil {
+					return fmt.Errorf("ducking depth: %w", err)
+				}
+				return volume.Get().SetDuckDB(db)
+			},
+		},
 		{"clock.face", "Clock.Face", func(c config.Config) string { return string(c.Clock.Face) },
 			choose(config.Faces(), clock.SetFace)},
 
@@ -93,8 +102,12 @@ func settings() []setting {
 		{"idle.face", "Idle.Face", func(c config.Config) string { return string(c.Idle.Face) },
 			choose(config.IdleFaces(), idle.Get().SetFace)},
 
-		{"idle.position", "Idle.Position", func(c config.Config) string { return string(c.Idle.Position) },
-			choose(config.Positions(), idle.Get().SetPosition)},
+		{
+			"idle.position",
+			"Idle.Position",
+			func(c config.Config) string { return string(c.Idle.Position) },
+			choose(config.Positions(), idle.Get().SetPosition),
+		},
 
 		{"idle.align", "Idle.Align", func(c config.Config) string { return string(c.Idle.Align) },
 			choose(config.Aligns(), idle.Get().SetAlign)},
@@ -102,20 +115,40 @@ func settings() []setting {
 		{"idle.size", "Idle.Size", func(c config.Config) string { return string(c.Idle.Size) },
 			choose(config.Sizes(), idle.Get().SetSize)},
 
-		{"idle.visual1", "Idle.First.Kind", func(c config.Config) string { return orNone(c.Idle.First.Kind) },
-			idleKind(0)},
+		{
+			"idle.visual1",
+			"Idle.First.Kind",
+			func(c config.Config) string { return orNone(c.Idle.First.Kind) },
+			idleKind(0),
+		},
 
-		{"idle.visual1.source", "Idle.First.Source", func(c config.Config) string { return string(c.Idle.First.Source) },
-			choose(config.Sources(), func(s config.Source) { idle.Get().SetSource(0, s) })},
+		{
+			"idle.visual1.source",
+			"Idle.First.Source",
+			func(c config.Config) string { return string(c.Idle.First.Source) },
+			choose(config.Sources(), func(s config.Source) { idle.Get().SetSource(0, s) }),
+		},
 
-		{"idle.visual2", "Idle.Second.Kind", func(c config.Config) string { return orNone(c.Idle.Second.Kind) },
-			idleKind(1)},
+		{
+			"idle.visual2",
+			"Idle.Second.Kind",
+			func(c config.Config) string { return orNone(c.Idle.Second.Kind) },
+			idleKind(1),
+		},
 
-		{"idle.visual2.source", "Idle.Second.Source", func(c config.Config) string { return string(c.Idle.Second.Source) },
-			choose(config.Sources(), func(s config.Source) { idle.Get().SetSource(1, s) })},
+		{
+			"idle.visual2.source",
+			"Idle.Second.Source",
+			func(c config.Config) string { return string(c.Idle.Second.Source) },
+			choose(config.Sources(), func(s config.Source) { idle.Get().SetSource(1, s) }),
+		},
 
-		{"clock.position", "Clock.Position", func(c config.Config) string { return string(c.Clock.Position) },
-			choose(config.Positions(), clock.SetPosition)},
+		{
+			"clock.position",
+			"Clock.Position",
+			func(c config.Config) string { return string(c.Clock.Position) },
+			choose(config.Positions(), clock.SetPosition),
+		},
 
 		{"clock.size", "Clock.Size", func(c config.Config) string { return string(c.Clock.Size) },
 			choose(config.Sizes(), clock.SetSize)},
@@ -123,103 +156,224 @@ func settings() []setting {
 		{"clock.color", "Clock.Ink", func(c config.Config) string { return string(c.Clock.Ink) },
 			choose(config.Inks(), clock.SetInk)},
 
-		{"clock.date", "Clock.Date", func(c config.Config) string { return knob.OnOff(c.Clock.Date) },
-			toggle(clock.SetDate)},
+		{
+			"clock.date",
+			"Clock.Date",
+			func(c config.Config) string { return knob.OnOff(c.Clock.Date) },
+			toggle(clock.SetDate),
+		},
 
-		{"clock.hours", "Screen.Hours", func(c config.Config) string { return string(c.Screen.Hours) },
-			choose(config.HourFormats(), clock.SetHours)},
+		{
+			"clock.hours",
+			"Screen.Hours",
+			func(c config.Config) string { return string(c.Screen.Hours) },
+			choose(config.HourFormats(), clock.SetHours),
+		},
 
-		{"screen.keyboard", "Screen.Keyboard", func(c config.Config) string { return string(c.Screen.Keyboard) },
-			choose(config.KeyboardSizes(), panel.SetKeyboard)},
+		{
+			"screen.keyboard",
+			"Screen.Keyboard",
+			func(c config.Config) string { return string(c.Screen.Keyboard) },
+			choose(config.KeyboardSizes(), panel.SetKeyboard),
+		},
 
-		{"screen.theme", "Screen.Theme", func(c config.Config) string { return c.Screen.Theme }, paint},
+		{
+			"screen.theme",
+			"Screen.Theme",
+			func(c config.Config) string { return c.Screen.Theme },
+			paint,
+		},
 
-		{"screen.style", "Screen.Style", func(c config.Config) string { return screen.Table().Row("style").Read(&c.Screen) },
-			func(v string) error { return screen.Get().Set("style", v) }},
+		{
+			"screen.style",
+			"Screen.Style",
+			func(c config.Config) string { return screen.Table().Row("style").Read(&c.Screen) },
+			func(v string) error { return screen.Get().Set("style", v) },
+		},
 
-		{"screen.size", "Screen.Size", func(c config.Config) string { return screen.Table().Row("size").Read(&c.Screen) },
-			func(v string) error { return screen.Get().Set("size", v) }},
+		{
+			"screen.size",
+			"Screen.Size",
+			func(c config.Config) string { return screen.Table().Row("size").Read(&c.Screen) },
+			func(v string) error { return screen.Get().Set("size", v) },
+		},
 
 		{"screen.visual", "Visual.Kind", func(c config.Config) string { return c.Visual.Kind },
 			choose(visual.Built(), visuals.Get().SetKind)},
 
-		{"screen.visual.fps", "Visual.MaxFPS", func(c config.Config) string { return strconv.Itoa(c.Visual.MaxFPS) },
-			fpsStep},
+		{
+			"screen.visual.fps",
+			"Visual.MaxFPS",
+			func(c config.Config) string { return strconv.Itoa(c.Visual.MaxFPS) },
+			fpsStep,
+		},
 
-		{"screen.visual.seed", "Visual.Seed", func(c config.Config) string { return strconv.Itoa(c.Visual.Seed) },
-			number(0, visual.SeedMost, visuals.Get().SetSeed)},
+		{
+			"screen.visual.seed",
+			"Visual.Seed",
+			func(c config.Config) string { return strconv.Itoa(c.Visual.Seed) },
+			number(0, visual.SeedMost, visuals.Get().SetSeed),
+		},
 
-		{"screen.visual.label", "Visual.Label", func(c config.Config) string { return orNone(c.Visual.Label) },
-			words(visuals.Get().SetLabel)},
+		{
+			"screen.visual.label",
+			"Visual.Label",
+			func(c config.Config) string { return orNone(c.Visual.Label) },
+			words(visuals.Get().SetLabel),
+		},
 
-		{"weather.entity", "Weather.Entity", func(c config.Config) string { return orNone(c.Weather.Entity) },
-			words(weather.SetEntity)},
+		{
+			"weather.entity",
+			"Weather.Entity",
+			func(c config.Config) string { return orNone(c.Weather.Entity) },
+			words(weather.SetEntity),
+		},
 
-		{"weather.look", "Weather.Look", func(c config.Config) string { return string(c.Weather.Look) },
-			choose(config.WeatherLooks(), weather.SetLook)},
+		{
+			"weather.look",
+			"Weather.Look",
+			func(c config.Config) string { return string(c.Weather.Look) },
+			choose(config.WeatherLooks(), weather.SetLook),
+		},
 
-		{"weather.dashboard", "Weather.Dashboard", func(c config.Config) string { return knob.OnOff(c.Weather.Dashboard) },
-			toggle(weather.SetDashboard)},
+		{
+			"weather.dashboard",
+			"Weather.Dashboard",
+			func(c config.Config) string { return knob.OnOff(c.Weather.Dashboard) },
+			toggle(weather.SetDashboard),
+		},
 
-		{"weather.idle", "Weather.Idle", func(c config.Config) string { return knob.OnOff(c.Weather.Idle) },
-			toggle(weather.SetIdle)},
+		{
+			"weather.idle",
+			"Weather.Idle",
+			func(c config.Config) string { return knob.OnOff(c.Weather.Idle) },
+			toggle(weather.SetIdle),
+		},
 
-		{"weather.animate", "Weather.Animate", func(c config.Config) string { return knob.OnOff(c.Weather.Animate) },
-			toggle(weather.SetAnimate)},
+		{
+			"weather.animate",
+			"Weather.Animate",
+			func(c config.Config) string { return knob.OnOff(c.Weather.Animate) },
+			toggle(weather.SetAnimate),
+		},
 
-		{"weather.themed", "Weather.Themed", func(c config.Config) string { return knob.OnOff(c.Weather.Themed) },
-			toggle(weather.SetThemed)},
+		{
+			"weather.themed",
+			"Weather.Themed",
+			func(c config.Config) string { return knob.OnOff(c.Weather.Themed) },
+			toggle(weather.SetThemed),
+		},
 
-		{"weather.position", "Weather.Position", func(c config.Config) string { return string(c.Weather.Position) },
-			choose(config.Positions(), weather.SetPosition)},
+		{
+			"weather.position",
+			"Weather.Position",
+			func(c config.Config) string { return string(c.Weather.Position) },
+			choose(config.Positions(), weather.SetPosition),
+		},
 
-		{"weather.align", "Weather.Align", func(c config.Config) string { return string(c.Weather.Align) },
-			choose(config.Aligns(), weather.SetAlign)},
+		{
+			"weather.align",
+			"Weather.Align",
+			func(c config.Config) string { return string(c.Weather.Align) },
+			choose(config.Aligns(), weather.SetAlign),
+		},
 
-		{"weather.size", "Weather.Size", func(c config.Config) string { return string(c.Weather.Size) },
-			choose(config.Sizes(), weather.SetSize)},
+		{
+			"weather.size",
+			"Weather.Size",
+			func(c config.Config) string { return string(c.Weather.Size) },
+			choose(config.Sizes(), weather.SetSize),
+		},
 
 		{"screen.language", "Screen.Language", func(config.Config) string { return text.Chosen() },
 			language},
 
-		{"poster.on", "Poster.Enabled", func(c config.Config) string { return knob.OnOff(c.Poster.Enabled) },
-			toggle(poster.Get().SetEnabled)},
+		{
+			"poster.on",
+			"Poster.Enabled",
+			func(c config.Config) string { return knob.OnOff(c.Poster.Enabled) },
+			toggle(poster.Get().SetEnabled),
+		},
 
-		{"poster.every", "Poster.Every", func(c config.Config) string { return string(c.Poster.Every) },
-			choose(config.PosterEveries(), poster.Get().SetEvery)},
+		{
+			"poster.every",
+			"Poster.Every",
+			func(c config.Config) string { return string(c.Poster.Every) },
+			choose(config.PosterEveries(), poster.Get().SetEvery),
+		},
 
-		{"poster.server", "Poster.Server", func(c config.Config) string { return orNone(c.Poster.Server) },
-			words(poster.Get().SetServer)},
+		{
+			"poster.server",
+			"Poster.Server",
+			func(c config.Config) string { return orNone(c.Poster.Server) },
+			words(poster.Get().SetServer),
+		},
 
 		{"poster.key", "Poster.Key", func(c config.Config) string { return secret(c.Poster.Key) },
 			words(poster.Get().SetKey)},
 
-		{"poster.albums", "Poster.Albums", func(c config.Config) string { return orNone(c.Poster.Albums) },
-			words(poster.Get().SetAlbums)},
+		{
+			"poster.albums",
+			"Poster.Albums",
+			func(c config.Config) string { return orNone(c.Poster.Albums) },
+			words(poster.Get().SetAlbums),
+		},
 
-		{"poster.tags", "Poster.Tags", func(c config.Config) string { return orNone(c.Poster.Tags) },
-			words(poster.Get().SetTags)},
+		{
+			"poster.tags",
+			"Poster.Tags",
+			func(c config.Config) string { return orNone(c.Poster.Tags) },
+			words(poster.Get().SetTags),
+		},
 
-		{"screen.marks", "Screen.Marks", func(c config.Config) string { return knob.OnOff(c.Screen.Marks) },
-			toggle(privacy.Get().SetMarks)},
+		{
+			"screen.marks",
+			"Screen.Marks",
+			func(c config.Config) string { return knob.OnOff(c.Screen.Marks) },
+			toggle(privacy.Get().SetMarks),
+		},
 
-		{"screen.backlight", "Screen.Backlight", func(c config.Config) string { return strconv.Itoa(c.Screen.Backlight) },
-			number(0, 100, display.SetBacklight)},
+		{
+			"screen.backlight",
+			"Screen.Backlight",
+			func(c config.Config) string { return strconv.Itoa(c.Screen.Backlight) },
+			number(0, 100, display.SetBacklight),
+		},
 
-		{"screen.mode", "Screen.Mode", func(c config.Config) string { return string(c.Screen.Mode) },
-			choose(config.ScreenModes(), display.SetMode)},
+		{
+			"screen.mode",
+			"Screen.Mode",
+			func(c config.Config) string { return string(c.Screen.Mode) },
+			choose(config.ScreenModes(), display.SetMode),
+		},
 
-		{"cast.youtube.skip", "Cast.YouTube.Skip", func(c config.Config) string { return orNone(strings.Join(c.Cast.YouTube.Skip, ",")) },
-			words(chromecast.Get().SetSkip)},
+		{
+			"cast.youtube.skip",
+			"Cast.YouTube.Skip",
+			func(c config.Config) string { return orNone(strings.Join(c.Cast.YouTube.Skip, ",")) },
+			words(chromecast.Get().SetSkip),
+		},
 
-		{"cast.prime.persist", "Cast.Prime.Persist", func(c config.Config) string { return knob.OnOff(c.Cast.Prime.Persist) },
-			toggle(chromecast.Get().SetPrimePersist)},
+		{
+			"cast.prime.persist",
+			"Cast.Prime.Persist",
+			func(c config.Config) string { return knob.OnOff(c.Cast.Prime.Persist) },
+			toggle(chromecast.Get().SetPrimePersist),
+		},
 
-		{"cast.prime.skipintro", "Cast.Prime.SkipIntro", func(c config.Config) string { return knob.OnOff(c.Cast.Prime.SkipIntro) },
-			toggle(chromecast.Get().SetPrimeSkipIntro)},
+		{
+			"cast.prime.skipintro",
+			"Cast.Prime.SkipIntro",
+			func(c config.Config) string { return knob.OnOff(c.Cast.Prime.SkipIntro) },
+			toggle(chromecast.Get().SetPrimeSkipIntro),
+		},
 
-		{"cast.youtube.livedelay", "Cast.YouTube.LiveDelay", func(c config.Config) string { return strconv.Itoa(c.Cast.YouTube.LiveDelay) + " s" },
-			number(config.LiveDelayLeast, config.LiveDelayMost, chromecast.Get().SetLiveDelay)},
+		{
+			"cast.youtube.livedelay",
+			"Cast.YouTube.LiveDelay",
+			func(c config.Config) string { return strconv.Itoa(c.Cast.YouTube.LiveDelay) + " s" },
+			number(config.LiveDelayLeast, config.LiveDelayMost, chromecast.Get().SetLiveDelay),
+		},
 
 		{"cast.youtube.lounge", "Cast.YouTube.OnDemand", func(c config.Config) string {
 			if c.Cast.YouTube.OnDemand {
@@ -240,46 +394,102 @@ func settings() []setting {
 		{"microphone.gain", "Microphone.Gain", func(c config.Config) string {
 			return strconv.Itoa(c.Microphone.Gain-config.DefaultMicGain) + " dB"
 		}, number(0, microphone.GainMost, microphone.Get().SetGain)},
-		{"microphone.leveling", "Microphone.Leveling", func(c config.Config) string { return knob.OnOff(c.Microphone.Leveling) },
-			toggle(microphone.Get().SetLeveling)},
-		{"microphone.denoise", "Microphone.Denoise", func(c config.Config) string { return knob.OnOff(c.Microphone.Denoise) },
-			toggle(microphone.Get().SetDenoising)},
+		{
+			"microphone.leveling",
+			"Microphone.Leveling",
+			func(c config.Config) string { return knob.OnOff(c.Microphone.Leveling) },
+			toggle(microphone.Get().SetLeveling),
+		},
+		{
+			"microphone.denoise",
+			"Microphone.Denoise",
+			func(c config.Config) string { return knob.OnOff(c.Microphone.Denoise) },
+			toggle(microphone.Get().SetDenoising),
+		},
 		{"microphone.visualizer_lift", "Microphone.VisualizerLift", func(c config.Config) string {
 			return strconv.Itoa(c.Microphone.VisualizerLift) + " dB"
 		}, number(0, visuals.LiftMax, microphone.Get().SetLift)},
 		{"microphone.sensitivity", "Microphone.Sensitivity", func(c config.Config) string {
 			return strconv.Itoa(c.Microphone.Sensitivity) + " dB"
 		}, number(4, 20, microphone.Get().SetSensitivity)},
-		{"features.sendspin", "Sendspin.Enabled", func(c config.Config) string { return knob.OnOff(c.Sendspin.Enabled) },
-			toggle(sendspin.Get().SetEnabled)},
-		{"call.incoming", "Call.Incoming", func(c config.Config) string { return knob.OnOff(c.Call.Incoming) },
-			toggle(call.SetIncoming)},
-		{"call.auto_answer", "Call.AutoAnswer", func(c config.Config) string { return knob.OnOff(c.Call.AutoAnswer) },
-			toggle(call.SetAutoAnswer)},
-		{"call.pause_wake", "Call.PauseWake", func(c config.Config) string { return knob.OnOff(c.Call.PauseWake) },
-			toggle(call.SetPauseWake)},
-		{"call.auto_video", "Call.AutoVideo", func(c config.Config) string { return knob.OnOff(c.Call.AutoVideo) },
-			toggle(call.SetAutoVideo)},
-		{"call.stream", "Call.Stream", func(c config.Config) string { return string(c.Call.Stream) },
-			choose(config.CallStreams(), call.SetStream)},
+		{
+			"features.sendspin",
+			"Sendspin.Enabled",
+			func(c config.Config) string { return knob.OnOff(c.Sendspin.Enabled) },
+			toggle(sendspin.Get().SetEnabled),
+		},
+		{
+			"call.incoming",
+			"Call.Incoming",
+			func(c config.Config) string { return knob.OnOff(c.Call.Incoming) },
+			toggle(call.Get().SetIncoming),
+		},
+		{
+			"call.auto_answer",
+			"Call.AutoAnswer",
+			func(c config.Config) string { return knob.OnOff(c.Call.AutoAnswer) },
+			toggle(call.Get().SetAutoAnswer),
+		},
+		{
+			"call.pause_wake",
+			"Call.PauseWake",
+			func(c config.Config) string { return knob.OnOff(c.Call.PauseWake) },
+			toggle(call.Get().SetPauseWake),
+		},
+		{
+			"call.auto_video",
+			"Call.AutoVideo",
+			func(c config.Config) string { return knob.OnOff(c.Call.AutoVideo) },
+			toggle(call.Get().SetAutoVideo),
+		},
+		{
+			"call.stream",
+			"Call.Stream",
+			func(c config.Config) string { return string(c.Call.Stream) },
+			choose(config.CallStreams(), call.Get().SetStream),
+		},
 
-		{"features.bluetooth", "Bluetooth.Proxy", func(c config.Config) string { return knob.OnOff(c.Bluetooth.Proxy) },
-			toggle(bluetooth.Get().SetProxy)},
-		{"features.speaker", "Bluetooth.Speaker", func(c config.Config) string { return knob.OnOff(c.Bluetooth.Speaker) },
-			toggle(a2dp.Get().SetEnabled)},
+		{
+			"features.bluetooth",
+			"Bluetooth.Proxy",
+			func(c config.Config) string { return knob.OnOff(c.Bluetooth.Proxy) },
+			toggle(bluetooth.Get().SetProxy),
+		},
+		{
+			"features.speaker",
+			"Bluetooth.Speaker",
+			func(c config.Config) string { return knob.OnOff(c.Bluetooth.Speaker) },
+			toggle(a2dp.Get().SetEnabled),
+		},
 
-		{"features.cast", "Cast.Receiver", func(c config.Config) string { return knob.OnOff(c.Cast.Receiver) },
-			toggle(chromecast.Get().SetReceiver)},
+		{
+			"features.cast",
+			"Cast.Receiver",
+			func(c config.Config) string { return knob.OnOff(c.Cast.Receiver) },
+			toggle(chromecast.Get().SetReceiver),
+		},
 
-		{"api.adopted", "API.Adopted", func(c config.Config) string { return knob.OnOff(c.API.Adopted) },
-			toggle(api.Get().SetAdopted)},
+		{
+			"api.adopted",
+			"API.Adopted",
+			func(c config.Config) string { return knob.OnOff(c.API.Adopted) },
+			toggle(api.Get().SetAdopted),
+		},
 
-		{"features.rtsp", "RTSP.Enabled", func(c config.Config) string { return knob.OnOff(c.RTSP.Enabled) },
-			toggle(rtspd.Get().SetEnabled)},
+		{
+			"features.rtsp",
+			"RTSP.Enabled",
+			func(c config.Config) string { return knob.OnOff(c.RTSP.Enabled) },
+			toggle(rtspd.Get().SetEnabled),
+		},
 
 		// Over the cable is where this one is worth having: plug in, turn it on, unplug.
-		{"access.adb", "Access.ADB", func(c config.Config) string { return knob.OnOff(c.Access.ADB) },
-			toggle(access.Get().SetADB)},
+		{
+			"access.adb",
+			"Access.ADB",
+			func(c config.Config) string { return knob.OnOff(c.Access.ADB) },
+			toggle(access.Get().SetADB),
+		},
 	}, append(append(cameraRows(), presenceRows()...), homeRows()...)...)
 }
 
@@ -360,7 +570,10 @@ func set(args []string) (string, error) {
 	all := settings()
 	rows := make([]harness.Setting[config.Config], 0, len(all))
 	for _, s := range all {
-		rows = append(rows, harness.Setting[config.Config]{Name: s.name, Read: s.says, Write: s.use})
+		rows = append(
+			rows,
+			harness.Setting[config.Config]{Name: s.name, Read: s.says, Write: s.use},
+		)
 	}
 	return harness.Settings(config.Get, rows, args)
 }
@@ -392,7 +605,10 @@ func idleKind(slot int) func(string) error {
 				return nil
 			}
 		}
-		return fmt.Errorf("want none or one of %s", strings.Join(config.Labels(visual.Built()), ", "))
+		return fmt.Errorf(
+			"want none or one of %s",
+			strings.Join(config.Labels(visual.Built()), ", "),
+		)
 	}
 }
 

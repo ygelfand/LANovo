@@ -88,7 +88,9 @@ func TestASilentWaveformIsALineNotAGap(t *testing.T) {
 	box := ui.Rect{X: 0, Y: 0, W: 120, H: 40}
 
 	img := ui.NewImage(120, 40, blank)
-	Of(Wave).Draw(img, box, Read(make([]int16, 960), box.W), theme.Color{R: 0xff, G: 0xff, B: 0xff}, theme.All[0])
+	Of(
+		Wave,
+	).Draw(img, box, Read(make([]int16, 960), box.W), theme.Color{R: 0xff, G: 0xff, B: 0xff}, theme.All[0])
 
 	if got := painted(img, box); got < box.W {
 		t.Errorf("a silent waveform painted %d pixels across %d columns, want at least one each",

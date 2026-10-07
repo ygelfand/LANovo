@@ -12,7 +12,11 @@ import (
 const retry = 3 * time.Second
 
 // Advertise keeps something published on the device's addresses, publishing again whenever they change, until ctx ends.
-func Advertise(ctx context.Context, what string, publish func(ips []net.IP) (stop func(), err error)) {
+func Advertise(
+	ctx context.Context,
+	what string,
+	publish func(ips []net.IP) (stop func(), err error),
+) {
 	for attempt := 1; ; attempt++ {
 		ips := metrics.Settled(ctx, retry)
 		if len(ips) == 0 {

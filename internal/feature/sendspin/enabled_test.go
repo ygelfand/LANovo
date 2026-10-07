@@ -1,11 +1,11 @@
 package sendspin
 
 import (
-	esphome "github.com/ygelfand/go-esphome-device"
 	"path/filepath"
 	"testing"
 
 	"github.com/ygelfand/LANovo/internal/config"
+	esphome "github.com/ygelfand/go-esphome-device"
 )
 
 // The same property every other setting is held to: the setter reaches the file and the entity

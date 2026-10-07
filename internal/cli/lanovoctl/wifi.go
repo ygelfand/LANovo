@@ -49,7 +49,13 @@ func newWifiCmd() *cobra.Command {
 
 // ensureWifi verifies the connection and configures one when there is none. Both the wifi command and
 // the end of an install come through here, so a device gets the same treatment either way.
-func ensureWifi(ctx context.Context, out io.Writer, d *device.Device, ssid, password string, wps bool) error {
+func ensureWifi(
+	ctx context.Context,
+	out io.Writer,
+	d *device.Device,
+	ssid, password string,
+	wps bool,
+) error {
 	given := ssid != ""
 
 	// Nothing else loads the driver or runs a supplicant.
@@ -125,7 +131,14 @@ func askNetwork(ctx context.Context, out io.Writer, d *device.Device) (string, s
 		return "", "", errors.New("no networks found; pass --ssid to join a hidden one")
 	}
 
-	chosen, err := choose(ctx, out, "Which network?", networks, wifi.Network.String, "Other network…")
+	chosen, err := choose(
+		ctx,
+		out,
+		"Which network?",
+		networks,
+		wifi.Network.String,
+		"Other network…",
+	)
 	if err != nil {
 		return "", "", err
 	}
@@ -142,7 +155,11 @@ func askNetwork(ctx context.Context, out io.Writer, d *device.Device) (string, s
 	}
 
 	if !chosen.Security.Supported() {
-		return "", "", fmt.Errorf("%s is %s, which this device's supplicant cannot join", chosen.SSID, chosen.Security)
+		return "", "", fmt.Errorf(
+			"%s is %s, which this device's supplicant cannot join",
+			chosen.SSID,
+			chosen.Security,
+		)
 	}
 	if chosen.Security == wifi.Open {
 		return chosen.SSID, "", nil

@@ -24,7 +24,7 @@ var ErrRestarted = errors.New("livecam: the panel turned or the streams changed"
 
 type Picture = camerasession.Picture
 type Session = camerasession.Session
-type Size struct{ Width, Height int }
+type Size = camerasession.Size
 
 // Sizes is each stream as it is encoded, turned to stand upright.
 func Sizes() []Size { return sizesFor(Turn()) }
@@ -65,16 +65,29 @@ const Keyframe = 2
 func Bitrate(w, h int) int { return bitrateFor(Saved(), w, h) }
 
 var hub = camerasession.New(camerasession.Options{
-	Snapshot: cameraSnapshot,
-	Open:     func(c mtkcamera.Config) (camerasession.Transport, error) { return mtkcamera.Open(c) },
-	Muted:    muted, Recover: revive, RestartError: ErrRestarted, Wait: Wait, Settle: Settle,
+	Snapshot:     cameraSnapshot,
+	Open:         func(c mtkcamera.Config) (camerasession.Transport, error) { return mtkcamera.Open(c) },
+	Muted:        muted,
+	Recover:      revive,
+	RestartError: ErrRestarted,
+	Wait:         Wait,
+	Settle:       Settle,
 })
 
 func cameraSnapshot() camerasession.Snapshot {
 	q := Turn()
 	k := Saved()
 	sizes := sizesFor(q)
-	cfg := mtkcamera.Config{Width: sizes[0].Width, Height: sizes[0].Height, FPS: FPS, Bitrate: bitrateFor(k, sizes[0].Width, sizes[0].Height), Keyframe: k.Keyframe, Params: Params(k), Turn: q, Mirror: board.Current().CameraMirror}
+	cfg := mtkcamera.Config{
+		Width:    sizes[0].Width,
+		Height:   sizes[0].Height,
+		FPS:      FPS,
+		Bitrate:  bitrateFor(k, sizes[0].Width, sizes[0].Height),
+		Keyframe: k.Keyframe,
+		Params:   Params(k),
+		Turn:     q,
+		Mirror:   board.Current().CameraMirror,
+	}
 	if len(sizes) > 1 {
 		cfg.SubWidth = sizes[1].Width
 		cfg.SubHeight = sizes[1].Height
@@ -84,9 +97,14 @@ func cameraSnapshot() camerasession.Snapshot {
 }
 func Join(at int) (*Session, <-chan mtkcamera.Frame, error) { return hub.Join(at) }
 func Leave(s *Session, frames <-chan mtkcamera.Frame)       { hub.Leave(s, frames) }
-func RequestKey() error                                     { return hub.RequestKey() }
-func Still(within time.Duration) (Picture, error)           { return hub.Still(within) }
-func muted() bool                                           { return board.Current().MicMutesCamera && privacy.Get().MicMuted() }
+
+// Sessions returns the camera owner used by streaming consumers.
+func Sessions() *camerasession.Hub { return hub }
+
+func RequestKey() error                           { return hub.RequestKey() }
+func Still(within time.Duration) (Picture, error) { return hub.Still(within) }
+
+func muted() bool { return board.Current().MicMutesCamera && privacy.Get().MicMuted() }
 
 const reviveEvery = 30 * time.Second
 

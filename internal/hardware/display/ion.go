@@ -60,7 +60,12 @@ func (b *ionBuffer) close() {
 }
 
 func rawIoctl(fd uintptr, req uintptr, arg []byte) error {
-	if _, _, e := syscall.Syscall(syscall.SYS_IOCTL, fd, req, uintptr(unsafe.Pointer(&arg[0]))); e != 0 {
+	if _, _, e := syscall.Syscall(
+		syscall.SYS_IOCTL,
+		fd,
+		req,
+		uintptr(unsafe.Pointer(&arg[0])),
+	); e != 0 {
 		return e
 	}
 	return nil

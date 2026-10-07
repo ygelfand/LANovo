@@ -24,7 +24,12 @@ func TestProbeMixer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("elem_value is %d bytes, elem_info %d; %d controls", elemValueSize, elemInfoSize, len(controls))
+	t.Logf(
+		"elem_value is %d bytes, elem_info %d; %d controls",
+		elemValueSize,
+		elemInfoSize,
+		len(controls),
+	)
 
 	var integers, enums, multi int
 	for _, c := range controls {

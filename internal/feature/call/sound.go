@@ -2,55 +2,15 @@ package call
 
 import (
 	"context"
-	"time"
-
+	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/rtc"
+	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
+	"github.com/ygelfand/libcountertop/pkg/media/rtc"
 )
 
-const (
-	ringFor       = 45 * time.Second
-	ringEvery     = 3 * time.Second
-	ringLevel     = 0.5
-	ringbackEvery = 4 * time.Second
-	ringbackLevel = 0.15
-	maxQueued     = rtc.PlayRate / 5
-)
-
-var (
-	ringTone     = []speaker.Note{{Freq: 1047, Ms: 110}, {Freq: 1319, Ms: 110}, {Freq: 1047, Ms: 110}, {Freq: 1319, Ms: 110}}
-	ringbackTone = []speaker.Note{{Freq: 440, Ms: 400}, {Ms: 200}, {Freq: 440, Ms: 400}}
-)
-
-func ring(ctx context.Context) bool {
-	sound := speaker.Sound()
-	sound.Backgrounds().Duck(true)
-	defer sound.Backgrounds().Duck(false)
-	over := time.After(ringFor)
-	for {
-		sound.Interject(func(p *speaker.Speaker) { p.Chime(ringLevel, ringTone...) })
-		select {
-		case <-ctx.Done():
-			return false
-		case <-over:
-			return true
-		case <-time.After(ringEvery):
-		}
-	}
-}
-
-func ringback(ctx context.Context) {
-	sound := speaker.Sound()
-	for {
-		sound.Interject(func(p *speaker.Speaker) { p.Chime(ringbackLevel, ringbackTone...) })
-		select {
-		case <-ctx.Done():
-			return
-		case <-time.After(ringbackEvery):
-		}
-	}
-}
+const maxQueued = rtc.PlayRate / 5
 
 type device struct{}
 
@@ -62,4 +22,17 @@ func (device) Play(pcm []int16) {
 		return
 	}
 	s.Play(pcm)
+}
+
+func (device) Claim(name string, run func(context.Context) error) {
+	speaker.Sound().Claim(name, func(ctx context.Context, _ *speaker.Speaker) error { return run(ctx) })
+}
+func (device) Sounding()    { volume.Get().Sounding(config.StreamVoice) }
+func (device) Duck(on bool) { speaker.Sound().Backgrounds().Duck(on) }
+func (device) Chime(level float64, notes ...sharedcall.Note) {
+	tones := make([]speaker.Note, len(notes))
+	for i, note := range notes {
+		tones[i] = speaker.Note{Freq: note.Freq, Ms: note.Ms}
+	}
+	speaker.Sound().Interject(func(p *speaker.Speaker) { p.Chime(level, tones...) })
 }

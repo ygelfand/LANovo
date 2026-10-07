@@ -65,7 +65,10 @@ func TestRubbishIsNotAnInode(t *testing.T) {
 // means by convention.
 func TestTheExitCodeIsItsOwn(t *testing.T) {
 	if ExitTaken == 0 || ExitTaken == 1 || ExitTaken == 2 {
-		t.Errorf("ExitTaken is %d, which is not distinguishable from an ordinary failure", ExitTaken)
+		t.Errorf(
+			"ExitTaken is %d, which is not distinguishable from an ordinary failure",
+			ExitTaken,
+		)
 	}
 }
 

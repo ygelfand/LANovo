@@ -220,15 +220,16 @@ func (p *Player) play(url string, announcement bool) {
 }
 func (p *Player) announce(url string) {
 	p.Sounding(true)
-	claim := speaker.Sound().Claim("announce", func(ctx context.Context, spk *speaker.Speaker) error {
-		samples, err := Fetch(ctx, url)
-		if err != nil {
-			return err
-		}
-		spk.PlayVoice(samples)
-		spk.PlayVoice(make([]int16, speaker.VoiceRate*Tail/1000))
-		return nil
-	})
+	claim := speaker.Sound().
+		Claim("announce", func(ctx context.Context, spk *speaker.Speaker) error {
+			samples, err := Fetch(ctx, url)
+			if err != nil {
+				return err
+			}
+			spk.PlayVoice(samples)
+			spk.PlayVoice(make([]int16, speaker.VoiceRate*Tail/1000))
+			return nil
+		})
 	safe.Go("announce", func() {
 		<-claim.Done()
 		p.Sounding(false)

@@ -10,15 +10,24 @@ import (
 
 func heard() visual.Input {
 	return visual.Input{
-		Mic: analysis.Analysis{Level: 0.1}, MicLeft: analysis.Analysis{Level: 0.11}, MicRight: analysis.Analysis{Level: 0.12},
-		Speaker: analysis.Analysis{Level: 0.5}, SpeakerLeft: analysis.Analysis{Level: 0.51}, SpeakerRight: analysis.Analysis{Level: 0.52},
-		Replying: true,
+		Mic: analysis.Analysis{
+			Level: 0.1,
+		},
+		MicLeft:  analysis.Analysis{Level: 0.11},
+		MicRight: analysis.Analysis{Level: 0.12},
+		Speaker: analysis.Analysis{
+			Level: 0.5,
+		},
+		SpeakerLeft:  analysis.Analysis{Level: 0.51},
+		SpeakerRight: analysis.Analysis{Level: 0.52},
+		Replying:     true,
 	}
 }
 
 func TestMicOnlyHearsOnlyTheMic(t *testing.T) {
 	x := From(heard(), config.SourceMic)
-	if x.Speaker.Level != 0.1 || x.SpeakerLeft.Level != 0.11 || x.SpeakerRight.Level != 0.12 || x.Replying {
+	if x.Speaker.Level != 0.1 || x.SpeakerLeft.Level != 0.11 || x.SpeakerRight.Level != 0.12 ||
+		x.Replying {
 		t.Errorf("mic only: %+v", x)
 	}
 	if x.Voice().Level != 0.1 {

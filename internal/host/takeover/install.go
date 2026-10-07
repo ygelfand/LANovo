@@ -73,7 +73,10 @@ func Install(d *device.Device, binary []byte) (Result, error) {
 		}
 		res.Steps = append(res.Steps, Step{What: parts.InitRC.Name, Note: layout.InitRC})
 	} else {
-		res.Steps = append(res.Steps, Step{What: parts.InitRC.Name, Note: layout.InitRC + " unchanged"})
+		res.Steps = append(
+			res.Steps,
+			Step{What: parts.InitRC.Name, Note: layout.InitRC + " unchanged"},
+		)
 	}
 
 	secured, err := MakeInsecure(d)

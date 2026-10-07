@@ -9,7 +9,6 @@ import (
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
-
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -88,7 +87,11 @@ func (a *App) Restyle() {
 	}
 }
 
-var phases = map[touch.Phase]backend.Phase{touch.Down: backend.Began, touch.Move: backend.Moved, touch.Up: backend.Ended}
+var phases = map[touch.Phase]backend.Phase{
+	touch.Down: backend.Began,
+	touch.Move: backend.Moved,
+	touch.Up:   backend.Ended,
+}
 
 var backSweep = navigation.BackSweep
 

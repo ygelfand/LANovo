@@ -17,7 +17,12 @@ import (
 // the old one stays behind with all its entities, which is worth saying rather than doing quietly.
 // Failing that, a name already on the device is kept, and only a device with neither is asked
 // about. Off a terminal there is nobody to ask.
-func resolveName(ctx context.Context, out io.Writer, d *device.Device, flag string) (string, error) {
+func resolveName(
+	ctx context.Context,
+	out io.Writer,
+	d *device.Device,
+	flag string,
+) (string, error) {
 	existing, err := takeover.ReadName(d)
 	if err != nil {
 		return "", err

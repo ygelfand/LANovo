@@ -15,7 +15,8 @@ var renderer = sharedgpu.New(sharedgpu.Options{
 	Place: func(at ui.Rect, w, h int) (float32, float32, surface.Matrix) {
 		d := display.Get()
 		fw, fh := d.Native()
-		x, y, m, _ := d.Orientation().Place(fw, fh, display.Rect{X: at.X, Y: at.Y, W: at.W, H: at.H}, w, h)
+		x, y, m, _ := d.Orientation().
+			Place(fw, fh, display.Rect{X: at.X, Y: at.Y, W: at.W, H: at.H}, w, h)
 		return x, y, m
 	},
 })

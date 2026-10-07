@@ -8,7 +8,8 @@ import (
 func TestAFreshDeviceIdlesIntoTheClockItAlreadyShows(t *testing.T) {
 	c, idle := Defaults().Clock, Defaults().Idle
 
-	if idle.Face != c.Face || idle.Position != c.Position || idle.Size != c.Size || idle.Align != AlignCenter {
+	if idle.Face != c.Face || idle.Position != c.Position || idle.Size != c.Size ||
+		idle.Align != AlignCenter {
 		t.Errorf("idle %+v differs from the clock %+v", idle, c)
 	}
 	if idle.First.On() || idle.Second.On() {

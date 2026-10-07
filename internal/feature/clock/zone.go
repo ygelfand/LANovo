@@ -14,7 +14,13 @@ func (c *Clock) Restore(config.Config)      { c.zonePolicy.Restore() }
 var label = zonepolicy.Label
 
 func (c *Clock) buildZone() {
-	c.zonePolicy = zonepolicy.NewPolicy(zonepolicy.PolicyOptions{Read: func() config.Time { return config.Get().Time }, Home: func(s string) error { return config.Set().Time().Home(s) }, Chosen: func(s string) error { return config.Set().Time().Chosen(s) }})
+	c.zonePolicy = zonepolicy.NewPolicy(
+		zonepolicy.PolicyOptions{
+			Read:   func() config.Time { return config.Get().Time },
+			Home:   func(s string) error { return config.Set().Time().Home(s) },
+			Chosen: func(s string) error { return config.Set().Time().Chosen(s) },
+		},
+	)
 	c.zone = c.zonePolicy.Select
 }
 

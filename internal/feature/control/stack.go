@@ -23,7 +23,16 @@ func stack([]string) (string, error) {
 		if p, ok := v.View.(*shell.Page); ok {
 			title = fmt.Sprintf(" %q", p.Title)
 		}
-		fmt.Fprintf(&b, "%d %T%s held=%v covers=%v%s\n", i, v.View, title, v.Held, v.View.Covers(), where)
+		fmt.Fprintf(
+			&b,
+			"%d %T%s held=%v covers=%v%s\n",
+			i,
+			v.View,
+			title,
+			v.Held,
+			v.View.Covers(),
+			where,
+		)
 	}
 	return b.String(), nil
 }

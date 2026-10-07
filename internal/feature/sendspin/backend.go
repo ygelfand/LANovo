@@ -35,5 +35,11 @@ func newOutput() *core.Output {
 func identity() core.Identity {
 	mac := wifi.Get().MAC()
 	model := layout.Model
-	return core.Identity{ID: mac, Model: model, Manufacturer: layout.Manufacturer, Version: layout.Version, ArtworkSize: sharedplayer.ArtworkSize}
+	return core.Identity{
+		ID:           mac,
+		Model:        model,
+		Manufacturer: layout.Manufacturer,
+		Version:      layout.Version,
+		ArtworkSize:  sharedplayer.ArtworkSize,
+	}
 }

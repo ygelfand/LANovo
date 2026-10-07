@@ -33,8 +33,11 @@ func newKeyCmd() *cobra.Command {
 
 			if rotate {
 				if isTerminal() {
-					ok, err := confirm(ctx, out,
-						"Replace the key? Home Assistant will stop connecting until it is given the new one.")
+					ok, err := confirm(
+						ctx,
+						out,
+						"Replace the key? Home Assistant will stop connecting until it is given the new one.",
+					)
 					if err != nil {
 						return err
 					}
@@ -72,7 +75,11 @@ func newKeyCmd() *cobra.Command {
 func showKey(out io.Writer, key string) {
 	fmt.Fprintf(out, "\n%s\n", styleTitle.Render("Encryption key"))
 	fmt.Fprintf(out, "  %s\n", key)
-	fmt.Fprintf(out, "  %s\n", styleDetail.Render("Home Assistant asks for this when it adds the device."))
+	fmt.Fprintf(
+		out,
+		"  %s\n",
+		styleDetail.Render("Home Assistant asks for this when it adds the device."),
+	)
 }
 
 // reportKey ends an install by saying how the device will be added.

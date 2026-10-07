@@ -122,16 +122,29 @@ func alignOf() gogui.HorizontalAlign {
 }
 
 func stacked(content []gogui.View) gogui.View {
-	return gogui.Column(gogui.ContainerCfg{Padding: gogui.NoPadding, HAlign: alignOf(), Content: content})
+	return gogui.Column(
+		gogui.ContainerCfg{Padding: gogui.NoPadding, HAlign: alignOf(), Content: content},
+	)
 }
 
 func line(gap float32, content ...gogui.View) gogui.View {
-	return gogui.Row(gogui.ContainerCfg{Padding: gogui.NoPadding, VAlign: gogui.VAlignMiddle, Spacing: gogui.SpacingPx(gap), Content: content})
+	return gogui.Row(
+		gogui.ContainerCfg{
+			Padding: gogui.NoPadding,
+			VAlign:  gogui.VAlignMiddle,
+			Spacing: gogui.SpacingPx(gap),
+			Content: content,
+		},
+	)
 }
 
 func compactWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.Theme) gogui.View {
 	big := lettering(glyph.TypefaceBold, size, ink.Text)
-	return line(size*0.2, weatherIcon(r.Condition, r.Phase, size*1.1, ink), gogui.Label(degrees(r), big))
+	return line(
+		size*0.2,
+		weatherIcon(r.Condition, r.Phase, size*1.1, ink),
+		gogui.Label(degrees(r), big),
+	)
 }
 
 func stackWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.Theme) gogui.View {
@@ -139,17 +152,26 @@ func stackWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.Th
 	small := lettering(glyph.TypefaceRegular, size*0.4, ink.Muted)
 	return stacked([]gogui.View{
 		gogui.Label(degrees(r), big),
-		line(small.Size*0.4, weatherIcon(r.Condition, r.Phase, small.Size*1.4, ink), gogui.Label(condition(r), small)),
+		line(
+			small.Size*0.4,
+			weatherIcon(r.Condition, r.Phase, small.Size*1.4, ink),
+			gogui.Label(condition(r), small),
+		),
 	})
 }
 
 func iconWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.Theme) gogui.View {
 	st := lettering(glyph.TypefaceBold, size*0.7, ink.Text)
-	return stacked([]gogui.View{weatherIcon(r.Condition, r.Phase, size*1.8, ink), gogui.Label(degrees(r), st)})
+	return stacked(
+		[]gogui.View{weatherIcon(r.Condition, r.Phase, size*1.8, ink), gogui.Label(degrees(r), st)},
+	)
 }
 
 func wordsWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.Theme) gogui.View {
-	return gogui.Label(condition(r)+", "+degrees(r), lettering(glyph.TypefaceRegular, size*0.6, ink.Text))
+	return gogui.Label(
+		condition(r)+", "+degrees(r),
+		lettering(glyph.TypefaceRegular, size*0.6, ink.Text),
+	)
 }
 
 func cardWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.Theme) gogui.View {
@@ -157,7 +179,13 @@ func cardWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.The
 	small := lettering(glyph.TypefaceRegular, size*0.35, ink.Muted)
 	words := []gogui.View{gogui.Label(degrees(r), big), gogui.Label(condition(r), small)}
 	if r.Humidity != nil {
-		words = append(words, gogui.Label(say.F("weather.humidity", map[string]any{"N": fmt.Sprintf("%.0f", *r.Humidity)}), small))
+		words = append(
+			words,
+			gogui.Label(
+				say.F("weather.humidity", map[string]any{"N": fmt.Sprintf("%.0f", *r.Humidity)}),
+				small,
+			),
+		)
 	}
 	return gogui.Row(panel(gogui.ContainerCfg{
 		Padding: gogui.PaddingLarge,
@@ -173,18 +201,48 @@ func cardWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.The
 func detailWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.Theme) gogui.View {
 	big := lettering(glyph.TypefaceBold, size, ink.Text)
 	small := lettering(glyph.TypefaceRegular, size*0.33, ink.Muted)
-	lines := []gogui.View{line(size*0.2, weatherIcon(r.Condition, r.Phase, size, ink), gogui.Label(degrees(r), big)), gogui.Label(condition(r), small)}
+	lines := []gogui.View{
+		line(size*0.2, weatherIcon(r.Condition, r.Phase, size, ink), gogui.Label(degrees(r), big)),
+		gogui.Label(condition(r), small),
+	}
 	if r.Feels != nil {
-		lines = append(lines, gogui.Label(say.F("weather.feels", map[string]any{"T": fmt.Sprintf("%.0f°", *r.Feels)}), small))
+		lines = append(
+			lines,
+			gogui.Label(
+				say.F("weather.feels", map[string]any{"T": fmt.Sprintf("%.0f°", *r.Feels)}),
+				small,
+			),
+		)
 	}
 	if r.Humidity != nil {
-		lines = append(lines, gogui.Label(say.F("weather.humidity", map[string]any{"N": fmt.Sprintf("%.0f", *r.Humidity)}), small))
+		lines = append(
+			lines,
+			gogui.Label(
+				say.F("weather.humidity", map[string]any{"N": fmt.Sprintf("%.0f", *r.Humidity)}),
+				small,
+			),
+		)
 	}
 	if r.Wind != nil {
-		lines = append(lines, gogui.Label(say.F("weather.wind", map[string]any{"N": fmt.Sprintf("%.0f", *r.Wind), "Unit": r.WindUnit}), small))
+		lines = append(
+			lines,
+			gogui.Label(
+				say.F(
+					"weather.wind",
+					map[string]any{"N": fmt.Sprintf("%.0f", *r.Wind), "Unit": r.WindUnit},
+				),
+				small,
+			),
+		)
 	}
 	if r.UV != nil {
-		lines = append(lines, gogui.Label(say.F("weather.uv", map[string]any{"N": fmt.Sprintf("%.0f", *r.UV)}), small))
+		lines = append(
+			lines,
+			gogui.Label(
+				say.F("weather.uv", map[string]any{"N": fmt.Sprintf("%.0f", *r.UV)}),
+				small,
+			),
+		)
 	}
 	return stacked(lines)
 }
@@ -212,7 +270,17 @@ func iconColors(ink theme.Theme) tints {
 		return natural
 	}
 	accent, text, second := color(ink.Accent), color(ink.Text), color(ink.Accent2)
-	return tints{sun: accent, moon: accent, cloud: text, drop: second, flake: text, bolt: accent, fog: text, wind: text, alarm: accent}
+	return tints{
+		sun:   accent,
+		moon:  accent,
+		cloud: text,
+		drop:  second,
+		flake: text,
+		bolt:  accent,
+		fog:   text,
+		wind:  text,
+		alarm: accent,
+	}
 }
 
 func weatherIcon(cond string, p float64, side float32, ink theme.Theme) gogui.View {
@@ -278,8 +346,14 @@ func weatherIcon(cond string, p float64, side float32, ink theme.Theme) gogui.Vi
 				if p != 0 && frac(0.45) > 0.12 {
 					bolt = bolt.WithOpacity(0.35)
 				}
-				dc.FilledPolygon([]float32{s * 0.6, s * 0.52, s * 0.38, s * 0.78, s * 0.56, s * 0.74}, bolt)
-				dc.FilledPolygon([]float32{s * 0.48, s * 0.7, s * 0.66, s * 0.68, s * 0.44, s * 0.98}, bolt)
+				dc.FilledPolygon(
+					[]float32{s * 0.6, s * 0.52, s * 0.38, s * 0.78, s * 0.56, s * 0.74},
+					bolt,
+				)
+				dc.FilledPolygon(
+					[]float32{s * 0.48, s * 0.7, s * 0.66, s * 0.68, s * 0.44, s * 0.98},
+					bolt,
+				)
 				if cond == "lightning-rainy" {
 					drawDrops(dc, s, 2, drop, frac(1.4))
 				}
@@ -288,10 +362,22 @@ func weatherIcon(cond string, p float64, side float32, ink theme.Theme) gogui.Vi
 					l *= 1 + 0.12*sway(1.1+float64(i)*0.4)
 					y := s * (0.32 + 0.18*float32(i))
 					dc.Line(s*0.12, y, s*(0.12+l*0.7), y, wind, s*0.06)
-					dc.Arc(s*(0.12+l*0.7), y-s*0.07, s*0.07, s*0.07, math.Pi/2, -math.Pi*1.4, wind, s*0.06)
+					dc.Arc(
+						s*(0.12+l*0.7),
+						y-s*0.07,
+						s*0.07,
+						s*0.07,
+						math.Pi/2,
+						-math.Pi*1.4,
+						wind,
+						s*0.06,
+					)
 				}
 			case "exceptional":
-				dc.FilledPolygon([]float32{s / 2, s * 0.1, s * 0.92, s * 0.88, s * 0.08, s * 0.88}, alarm)
+				dc.FilledPolygon(
+					[]float32{s / 2, s * 0.1, s * 0.92, s * 0.88, s * 0.08, s * 0.88},
+					alarm,
+				)
 			default:
 				cloud(s/2, s*0.55, s*0.8)
 			}
@@ -299,7 +385,13 @@ func weatherIcon(cond string, p float64, side float32, ink theme.Theme) gogui.Vi
 	})
 }
 
-func drawSun(dc *gogui.DrawContext, cx, cy, r, ray float32, c gogui.Color, width float32, turn float64) {
+func drawSun(
+	dc *gogui.DrawContext,
+	cx, cy, r, ray float32,
+	c gogui.Color,
+	width float32,
+	turn float64,
+) {
 	dc.FilledCircle(cx, cy, r, c)
 	for i := range 8 {
 		a := float64(i)*math.Pi/4 + turn

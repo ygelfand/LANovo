@@ -31,7 +31,13 @@ func newHelper(t *testing.T) *helper {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { os.RemoveAll(dir) })
-	h := &helper{t: t, path: filepath.Join(dir, "s"), frames: make(chan []uint32, 16), files: make(chan *os.File, 4), conns: make(chan *net.UnixConn, 4)}
+	h := &helper{
+		t:      t,
+		path:   filepath.Join(dir, "s"),
+		frames: make(chan []uint32, 16),
+		files:  make(chan *os.File, 4),
+		conns:  make(chan *net.UnixConn, 4),
+	}
 	h.listen()
 	return h
 }
@@ -133,7 +139,8 @@ func TestAFlipPostsTheClipInNativeCoordinates(t *testing.T) {
 	}
 	f := <-h.frames
 	x0, y0, x1, y1 := p.fbRect(Rect{X: 2, Y: 3, W: 4, H: 5})
-	if f[2] != 1 || f[3] != uint32(x0) || f[4] != uint32(y0) || f[5] != uint32(x1-x0) || f[6] != uint32(y1-y0) {
+	if f[2] != 1 || f[3] != uint32(x0) || f[4] != uint32(y0) || f[5] != uint32(x1-x0) ||
+		f[6] != uint32(y1-y0) {
 		t.Errorf("frame %v, want rect %d,%d %dx%d", f, x0, y0, x1-x0, y1-y0)
 	}
 }

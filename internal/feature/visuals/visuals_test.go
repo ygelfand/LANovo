@@ -148,7 +148,11 @@ func TestRestoreFallsBackFromAnUnbuiltVisual(t *testing.T) {
 			t.Errorf("restoring %q chose %q, want %q", saved, v.Kind(), config.DefaultVisual)
 		}
 		if v.Entities()[0].(*esphome.Select).Get() != v.Kind().Label() {
-			t.Errorf("restoring %q left the select on %q", saved, v.Entities()[0].(*esphome.Select).Get())
+			t.Errorf(
+				"restoring %q left the select on %q",
+				saved,
+				v.Entities()[0].(*esphome.Select).Get(),
+			)
 		}
 	}
 
@@ -163,7 +167,11 @@ func TestRestoreFallsBackFromAnUnbuiltVisual(t *testing.T) {
 func TestTheSelectOffersEveryBuiltVisual(t *testing.T) {
 	_, v := newRig()
 	if len(v.Entities()[0].(*esphome.Select).Options) != len(visual.Built()) {
-		t.Fatalf("%d options for %d visuals", len(v.Entities()[0].(*esphome.Select).Options), len(visual.Built()))
+		t.Fatalf(
+			"%d options for %d visuals",
+			len(v.Entities()[0].(*esphome.Select).Options),
+			len(visual.Built()),
+		)
 	}
 	seen := map[string]bool{}
 	for _, o := range v.Entities()[0].(*esphome.Select).Options {

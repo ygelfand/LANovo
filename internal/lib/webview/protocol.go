@@ -104,7 +104,12 @@ func ParseFrame(b []byte) (Frame, error) {
 		return Frame{}, errShort
 	}
 	if b[0] != msgFrame || b[1] != version {
-		return Frame{}, fmt.Errorf("webview: message type %d version %d, want a version %d frame", b[0], b[1], version)
+		return Frame{}, fmt.Errorf(
+			"webview: message type %d version %d, want a version %d frame",
+			b[0],
+			b[1],
+			version,
+		)
 	}
 	f := Frame{
 		ID:       binary.LittleEndian.Uint32(b[2:]),

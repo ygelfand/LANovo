@@ -45,7 +45,13 @@ func TestBrightnessRisesWithTheRoom(t *testing.T) {
 		for lux := 0.0; lux < 1200; lux += 0.5 {
 			got := Brightness(lux, bias)
 			if got < last {
-				t.Fatalf("bias %d: Brightness(%v) = %d, below the %d before it", bias, lux, got, last)
+				t.Fatalf(
+					"bias %d: Brightness(%v) = %d, below the %d before it",
+					bias,
+					lux,
+					got,
+					last,
+				)
 			}
 			last = got
 		}
@@ -61,10 +67,20 @@ func TestTurningTheSliderDownDimsEveryRoom(t *testing.T) {
 		bright := Brightness(lux, 100)
 
 		if dim >= same {
-			t.Errorf("%v lux: the slider down gave %d, no dimmer than the middle's %d", lux, dim, same)
+			t.Errorf(
+				"%v lux: the slider down gave %d, no dimmer than the middle's %d",
+				lux,
+				dim,
+				same,
+			)
 		}
 		if bright <= same {
-			t.Errorf("%v lux: the slider up gave %d, no brighter than the middle's %d", lux, bright, same)
+			t.Errorf(
+				"%v lux: the slider up gave %d, no brighter than the middle's %d",
+				lux,
+				bright,
+				same,
+			)
 		}
 	}
 }
@@ -142,7 +158,12 @@ func TestAfterABrightSpikeTheLevelComesBackToTheRoom(t *testing.T) {
 		held = hold(held, following, lux)
 	}
 	if got, want := Brightness(held, NeutralBias), Brightness(5, NeutralBias); got != want {
-		t.Errorf("after a flashlight the panel settled at %d, the room calls for %d (held %.1f lux)", got, want, held)
+		t.Errorf(
+			"after a flashlight the panel settled at %d, the room calls for %d (held %.1f lux)",
+			got,
+			want,
+			held,
+		)
 	}
 }
 

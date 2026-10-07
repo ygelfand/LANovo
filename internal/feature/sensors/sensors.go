@@ -134,7 +134,9 @@ func Get() *Sensors {
 func (s *Sensors) Name() string { return "sensors" }
 
 func (s *Sensors) Entities() []esphome.Entity {
-	return append([]esphome.Entity{s.lux, s.present, s.proximity, s.facing}, controls().Entities()...)
+	return append(
+		[]esphome.Entity{s.lux, s.present, s.proximity, s.facing},
+		controls().Entities()...)
 }
 
 func (s *Sensors) Restore(config.Config) { controls().Publish() }

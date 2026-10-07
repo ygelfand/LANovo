@@ -34,3 +34,11 @@ func (w CallWriter) AutoAnswer(v bool) error {
 func (w CallWriter) PauseWake(v bool) error {
 	return w.st.Update(func(c *Config) { c.Call.PauseWake = v })
 }
+
+// CallSettings provides atomic access to saved call preferences.
+type CallSettings struct{}
+
+func (CallSettings) Read() Call { return Get().Call }
+func (CallSettings) Update(change func(*Call)) error {
+	return store().Update(func(c *Config) { change(&c.Call) })
+}

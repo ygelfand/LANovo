@@ -68,7 +68,12 @@ func setReadOnly(part string, ro bool) error {
 	if ro {
 		v = 1
 	}
-	if _, _, errno := syscall.Syscall(syscall.SYS_IOCTL, f.Fd(), blkroset, uintptr(unsafe.Pointer(&v))); errno != 0 {
+	if _, _, errno := syscall.Syscall(
+		syscall.SYS_IOCTL,
+		f.Fd(),
+		blkroset,
+		uintptr(unsafe.Pointer(&v)),
+	); errno != 0 {
 		return fmt.Errorf("parts: setting the read-only flag on %s: %w", part, errno)
 	}
 	return nil

@@ -68,7 +68,12 @@ func (b *bus) Transfer(msgs ...Msg) error {
 	}
 
 	data := rdwr{msgs: &out[0], nmsgs: uint32(len(out))}
-	_, _, errno := syscall.Syscall(syscall.SYS_IOCTL, b.f.Fd(), iocRDWR, uintptr(unsafe.Pointer(&data)))
+	_, _, errno := syscall.Syscall(
+		syscall.SYS_IOCTL,
+		b.f.Fd(),
+		iocRDWR,
+		uintptr(unsafe.Pointer(&data)),
+	)
 
 	// The kernel wrote through the pointers in out, which Go's collector does not know about.
 	runtime.KeepAlive(msgs)

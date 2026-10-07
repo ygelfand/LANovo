@@ -30,7 +30,16 @@ func newOrientCmd() *cobra.Command {
 			tracker := motion.NewTracker()
 			out := cmd.OutOrStdout()
 
-			fmt.Fprintf(out, "%-4s %8s %8s %8s %8s  %s\n", "at", "x", "y", "z", "|g|", "orientation")
+			fmt.Fprintf(
+				out,
+				"%-4s %8s %8s %8s %8s  %s\n",
+				"at",
+				"x",
+				"y",
+				"z",
+				"|g|",
+				"orientation",
+			)
 			for i := range seconds {
 				r, err := s.Read()
 				if err != nil {

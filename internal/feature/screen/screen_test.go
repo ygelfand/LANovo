@@ -89,7 +89,10 @@ func TestEntities(t *testing.T) {
 	s := fresh(t)
 
 	if got := len(s.Entities()); got != 7 {
-		t.Errorf("%d entities, want backlight, mode, theme, style, size, the drawer edge and the level", got)
+		t.Errorf(
+			"%d entities, want backlight, mode, theme, style, size, the drawer edge and the level",
+			got,
+		)
 	}
 	for i, e := range s.Entities() {
 		if e == nil {

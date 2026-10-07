@@ -19,5 +19,7 @@ func mark(id, name string, ink, back gogui.Color, side float32) gogui.View {
 		return gogui.Column(gogui.ContainerCfg{Width: side, Height: side, Sizing: gogui.FixedFixed})
 	}
 	svg := strings.NewReplacer("INK", hex(ink), "BACK", hex(back)).Replace(string(b))
-	return gogui.Svg(gogui.SvgCfg{ID: id + "-" + hex(ink) + hex(back), SvgData: svg, Width: side, Height: side})
+	return gogui.Svg(
+		gogui.SvgCfg{ID: id + "-" + hex(ink) + hex(back), SvgData: svg, Width: side, Height: side},
+	)
 }

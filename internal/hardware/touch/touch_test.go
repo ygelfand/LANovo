@@ -70,8 +70,20 @@ func TestRotate(t *testing.T) {
 		px, py       int
 		wantX, wantY int
 	}{
-		{"panel origin is the bottom left of the picture", 0, 0, board.Current().PanelHeight - 1, 0},
-		{"the far corner of the panel is the top right", board.Current().PanelWidth - 1, board.Current().PanelHeight - 1, 0, board.Current().PanelWidth - 1},
+		{
+			"panel origin is the bottom left of the picture",
+			0,
+			0,
+			board.Current().PanelHeight - 1,
+			0,
+		},
+		{
+			"the far corner of the panel is the top right",
+			board.Current().PanelWidth - 1,
+			board.Current().PanelHeight - 1,
+			0,
+			board.Current().PanelWidth - 1,
+		},
 		{"the middle stays in the middle", 600, 960, 959, 600},
 	}
 
@@ -79,7 +91,15 @@ func TestRotate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			x, y := rotate(tt.px, tt.py)
 			if x != tt.wantX || y != tt.wantY {
-				t.Errorf("rotate(%d, %d) = %d,%d, want %d,%d", tt.px, tt.py, x, y, tt.wantX, tt.wantY)
+				t.Errorf(
+					"rotate(%d, %d) = %d,%d, want %d,%d",
+					tt.px,
+					tt.py,
+					x,
+					y,
+					tt.wantX,
+					tt.wantY,
+				)
 			}
 		})
 	}
@@ -97,10 +117,22 @@ func TestRotateStaysOnScreen(t *testing.T) {
 	for _, c := range corners {
 		x, y := rotate(c[0], c[1])
 		if x < 0 || x >= board.Current().PanelHeight {
-			t.Errorf("rotate(%d, %d) x = %d, outside 0..%d", c[0], c[1], x, board.Current().PanelHeight-1)
+			t.Errorf(
+				"rotate(%d, %d) x = %d, outside 0..%d",
+				c[0],
+				c[1],
+				x,
+				board.Current().PanelHeight-1,
+			)
 		}
 		if y < 0 || y >= board.Current().PanelWidth {
-			t.Errorf("rotate(%d, %d) y = %d, outside 0..%d", c[0], c[1], y, board.Current().PanelWidth-1)
+			t.Errorf(
+				"rotate(%d, %d) y = %d, outside 0..%d",
+				c[0],
+				c[1],
+				y,
+				board.Current().PanelWidth-1,
+			)
 		}
 	}
 }
@@ -178,7 +210,13 @@ func TestTapIsDownThenUp(t *testing.T) {
 func TestDragReportsMoves(t *testing.T) {
 	var d decoder
 
-	feed(&d, ev(evAbs, absMTTrackingID, 3), ev(evAbs, absMTPositionX, 100), ev(evAbs, absMTPositionY, 200), syn())
+	feed(
+		&d,
+		ev(evAbs, absMTTrackingID, 3),
+		ev(evAbs, absMTPositionX, 100),
+		ev(evAbs, absMTPositionY, 200),
+		syn(),
+	)
 
 	// Only the axis that changed, which is all the kernel sends.
 	got := feed(&d, ev(evAbs, absMTPositionY, 300), syn())
@@ -229,10 +267,22 @@ func TestSlotsAreIndependent(t *testing.T) {
 func TestReusedSlotIsANewDown(t *testing.T) {
 	var d decoder
 
-	feed(&d, ev(evAbs, absMTTrackingID, 1), ev(evAbs, absMTPositionX, 10), ev(evAbs, absMTPositionY, 10), syn())
+	feed(
+		&d,
+		ev(evAbs, absMTTrackingID, 1),
+		ev(evAbs, absMTPositionX, 10),
+		ev(evAbs, absMTPositionY, 10),
+		syn(),
+	)
 	feed(&d, ev(evAbs, absMTTrackingID, released), syn())
 
-	got := feed(&d, ev(evAbs, absMTTrackingID, 2), ev(evAbs, absMTPositionX, 20), ev(evAbs, absMTPositionY, 20), syn())
+	got := feed(
+		&d,
+		ev(evAbs, absMTTrackingID, 2),
+		ev(evAbs, absMTPositionX, 20),
+		ev(evAbs, absMTPositionY, 20),
+		syn(),
+	)
 	if len(got) != 1 || got[0].Phase != Down || got[0].ID != 2 {
 		t.Fatalf("got %v, want a down with id 2", got)
 	}

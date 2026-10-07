@@ -22,11 +22,25 @@ var (
 )
 
 func init() {
-	component.Register(component.Network, Get, component.Order(10), component.Supervise(service.Restart(2*time.Second, time.Minute)))
+	component.Register(
+		component.Network,
+		Get,
+		component.Order(10),
+		component.Supervise(service.Restart(2*time.Second, time.Minute)),
+	)
 }
 func Get() *Client {
 	once.Do(func() {
-		sharedClient = &Client{Client: shared.New(shared.Options{Interface: Interface, Hostname: hostname, Previous: previous, Remember: remember})}
+		sharedClient = &Client{
+			Client: shared.New(
+				shared.Options{
+					Interface: Interface,
+					Hostname:  hostname,
+					Previous:  previous,
+					Remember:  remember,
+				},
+			),
+		}
 	})
 	return sharedClient
 }

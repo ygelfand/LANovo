@@ -112,7 +112,14 @@ func newMTKAudioCmd() *cobra.Command {
 				return err
 			}
 
-			fmt.Printf("%.0f Hz at %.2f for %.1fs on device %d, %s\n", hz, level, seconds, device, channel)
+			fmt.Printf(
+				"%.0f Hz at %.2f for %.1fs on device %d, %s\n",
+				hz,
+				level,
+				seconds,
+				device,
+				channel,
+			)
 			if err := playOn(out, hz, seconds, level, channel); err != nil {
 				return err
 			}
@@ -133,11 +140,20 @@ func newMTKAudioCmd() *cobra.Command {
 	c.Flags().Float64Var(&hz, "hz", 440, "frequency")
 	c.Flags().Float64Var(&seconds, "seconds", 2, "how long to play")
 	c.Flags().Float64Var(&level, "level", 0.1, "amplitude, nought to one")
-	c.Flags().StringVar(&channel, "channel", "both", "both, left, right, or inverted (right is left negated)")
+	c.Flags().
+		StringVar(&channel, "channel", "both", "both, left, right, or inverted (right is left negated)")
 	return c
 }
 
-func micOn(b board.Board, t mtkaudio.Tables, mic bool, capture int, listen float64, save string, bits int) error {
+func micOn(
+	b board.Board,
+	t mtkaudio.Tables,
+	mic bool,
+	capture int,
+	listen float64,
+	save string,
+	bits int,
+) error {
 	if mic && b.MicADC != nil {
 		if err := mtkaudio.MicOn(*b.MicADC, t); err != nil {
 			return err
@@ -176,7 +192,14 @@ func listenOn(device int, seconds float64, save string, bits int) error {
 			continue
 		}
 		defer in.Close()
-		fmt.Printf("capture %d: %d channels of %d bits at %d Hz, %.1fs\n", device, ch, bits, speaker.Rate, seconds)
+		fmt.Printf(
+			"capture %d: %d channels of %d bits at %d Hz, %.1fs\n",
+			device,
+			ch,
+			bits,
+			speaker.Rate,
+			seconds,
+		)
 
 		sum, peak := make([]float64, ch), make([]int, ch)
 		same := true
@@ -205,7 +228,12 @@ func listenOn(device int, seconds float64, save string, bits int) error {
 		frames := seconds * speaker.Rate
 		for c := range ch {
 			rms := math.Sqrt(sum[c] / frames)
-			fmt.Printf("  ch%d rms %.1f dBFS peak %.1f dBFS\n", c, dbfs(rms), dbfs(float64(peak[c])))
+			fmt.Printf(
+				"  ch%d rms %.1f dBFS peak %.1f dBFS\n",
+				c,
+				dbfs(rms),
+				dbfs(float64(peak[c])),
+			)
 		}
 		fmt.Printf("  channels identical: %v\n", same)
 		return nil

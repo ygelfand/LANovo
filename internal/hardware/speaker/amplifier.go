@@ -3,7 +3,11 @@ package speaker
 import "github.com/ygelfand/LANovo/internal/component"
 
 func init() {
-	component.Register(component.Hardware, func() Amplifier { return Amplifier{} }, component.Order(56))
+	component.Register(
+		component.Hardware,
+		func() Amplifier { return Amplifier{} },
+		component.Order(56),
+	)
 }
 
 type Amplifier struct{}

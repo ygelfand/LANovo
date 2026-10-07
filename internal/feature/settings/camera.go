@@ -17,7 +17,20 @@ var cameraSettings *sharedsettings.CameraPages[livecam.Knobs]
 
 func cameraPages() *sharedsettings.CameraPages[livecam.Knobs] {
 	cameraOnce.Do(func() {
-		cameraSettings = sharedsettings.NewCameraPages(sharedsettings.CameraOptions[livecam.Knobs]{Table: livecam.Table, Read: livecam.Saved, Save: livecam.Set, Reset: livecam.Reset, Stream: func() bool { return config.Get().RTSP.Enabled }, SetStream: rtspd.Get().SetEnabled, Push: shell.Get().Push, Redraw: shell.Get().Redraw, Preview: camWant, Wrap: camPage})
+		cameraSettings = sharedsettings.NewCameraPages(
+			sharedsettings.CameraOptions[livecam.Knobs]{
+				Table:     livecam.Table,
+				Read:      livecam.Saved,
+				Save:      livecam.Set,
+				Reset:     livecam.Reset,
+				Stream:    func() bool { return config.Get().RTSP.Enabled },
+				SetStream: rtspd.Get().SetEnabled,
+				Push:      shell.Get().Push,
+				Redraw:    shell.Get().Redraw,
+				Preview:   camWant,
+				Wrap:      camPage,
+			},
+		)
 	})
 	return cameraSettings
 }

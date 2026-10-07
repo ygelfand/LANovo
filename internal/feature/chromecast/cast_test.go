@@ -94,7 +94,15 @@ func TestTheSwitchIsPublished(t *testing.T) {
 	for _, e := range r.Entities() {
 		ids = append(ids, e.Object())
 	}
-	want := []string{"cast_receiver", "cast_oracle", "cast_credentials", "cast_credentials_expire", "youtube_lounge_on_demand", "youtube_sponsorblock", "youtube_live_delay"}
+	want := []string{
+		"cast_receiver",
+		"cast_oracle",
+		"cast_credentials",
+		"cast_credentials_expire",
+		"youtube_lounge_on_demand",
+		"youtube_sponsorblock",
+		"youtube_live_delay",
+	}
 	if !slices.Equal(ids, want) {
 		t.Errorf("the entities are %v, want %v", ids, want)
 	}

@@ -67,16 +67,26 @@ func TestDrawRGBAMatchesAPixelAtATime(t *testing.T) {
 							if sx < 0 || sy < 0 || sx >= w*scale || sy >= h*scale {
 								continue
 							}
-							if clip.W > 0 && (vx < clip.X || vx >= clip.X+clip.W || vy < clip.Y || vy >= clip.Y+clip.H) {
+							if clip.W > 0 &&
+								(vx < clip.X || vx >= clip.X+clip.W || vy < clip.Y || vy >= clip.Y+clip.H) {
 								continue
 							}
 							s := (sy/scale)*w*4 + (sx/scale)*4
 							fx, fy := rot.Project(want.fbW, want.fbH, vx, vy)
-							copy(want.mem[fy*want.stride+fx*4:], []byte{src[s], src[s+1], src[s+2], 0xff})
+							copy(
+								want.mem[fy*want.stride+fx*4:],
+								[]byte{src[s], src[s+1], src[s+2], 0xff},
+							)
 						}
 					}
 					if string(got.mem) != string(want.mem) {
-						t.Fatalf("%v scale %d at %v clip %v: differs from a pixel at a time", rot, scale, at, clip)
+						t.Fatalf(
+							"%v scale %d at %v clip %v: differs from a pixel at a time",
+							rot,
+							scale,
+							at,
+							clip,
+						)
 					}
 				}
 			}

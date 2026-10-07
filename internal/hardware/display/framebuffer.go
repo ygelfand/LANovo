@@ -140,7 +140,13 @@ func Open(path string) (*Panel, error) {
 	if size == 0 {
 		size = p.stride * int(p.var_.YresVirtual)
 	}
-	mem, err := syscall.Mmap(int(f.Fd()), 0, size, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_SHARED)
+	mem, err := syscall.Mmap(
+		int(f.Fd()),
+		0,
+		size,
+		syscall.PROT_READ|syscall.PROT_WRITE,
+		syscall.MAP_SHARED,
+	)
 	if err != nil {
 		f.Close()
 		return nil, fmt.Errorf("mmap %d bytes: %w", size, err)
@@ -185,7 +191,15 @@ func (p *Panel) Doubled() bool { return p.doubled }
 // Info describes the panel, for logs.
 func (p *Panel) Info() string {
 	if p.surf != nil {
-		return fmt.Sprintf("%dx%d %s (native %dx%d, SurfaceFlinger through %s)", p.Width, p.Height, p.rot, p.fbW, p.fbH, p.sock)
+		return fmt.Sprintf(
+			"%dx%d %s (native %dx%d, SurfaceFlinger through %s)",
+			p.Width,
+			p.Height,
+			p.rot,
+			p.fbW,
+			p.fbH,
+			p.sock,
+		)
 	}
 	s := fmt.Sprintf("%dx%d %s (fb %dx%d, stride %d, %d bpp, double-buffered=%v, panned)",
 		p.Width, p.Height, p.rot, p.fbW, p.fbH, p.stride, p.var_.BitsPerPixel, p.doubled)

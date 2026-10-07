@@ -41,7 +41,9 @@ func ReadBoot(d *device.Device, slot string) (*Boot, error) {
 	part := dir + "/boot" + slot
 
 	// base64 through the shell: adb's text mode mangles raw bytes.
-	out, err := d.Shell(fmt.Sprintf("dd if=%s bs=%d count=1 2>/dev/null | base64", part, headerRead))
+	out, err := d.Shell(
+		fmt.Sprintf("dd if=%s bs=%d count=1 2>/dev/null | base64", part, headerRead),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("reading %s: %w", part, err)
 	}
@@ -70,7 +72,11 @@ func ReadBoot(d *device.Device, slot string) (*Boot, error) {
 // header reads what matters out of the first page: the page size and the command line.
 func header(head []byte) (pageSize uint32, cmdline string, err error) {
 	if len(head) < cmdlineOffset+cmdlineSize {
-		return 0, "", fmt.Errorf("read %d bytes, wanted at least %d", len(head), cmdlineOffset+cmdlineSize)
+		return 0, "", fmt.Errorf(
+			"read %d bytes, wanted at least %d",
+			len(head),
+			cmdlineOffset+cmdlineSize,
+		)
 	}
 	if !bytes.HasPrefix(head, []byte(bootMagic)) {
 		return 0, "", fmt.Errorf("does not start with %q", bootMagic)
@@ -81,7 +87,9 @@ func header(head []byte) (pageSize uint32, cmdline string, err error) {
 		return 0, "", fmt.Errorf("implausible page size %d", pageSize)
 	}
 
-	return pageSize, string(bytes.TrimRight(head[cmdlineOffset:cmdlineOffset+cmdlineSize], "\x00")), nil
+	return pageSize, string(
+		bytes.TrimRight(head[cmdlineOffset:cmdlineOffset+cmdlineSize], "\x00"),
+	), nil
 }
 
 // permissive is the command line with the argument appended, and an error when it will not fit.
@@ -90,7 +98,11 @@ func permissive(cmdline string) (string, error) {
 
 	// The field is NUL terminated, so the string has to be shorter than it.
 	if len(want) >= cmdlineSize {
-		return "", fmt.Errorf("cmdline needs %d bytes, the field holds %d", len(want)+1, cmdlineSize)
+		return "", fmt.Errorf(
+			"cmdline needs %d bytes, the field holds %d",
+			len(want)+1,
+			cmdlineSize,
+		)
 	}
 	return want, nil
 }
@@ -99,7 +111,11 @@ func permissive(cmdline string) (string, error) {
 // id is a hash over the kernel and ramdisk rather than the cmdline, so it stays valid.
 func writeCmdline(page []byte, want string) error {
 	if len(page) < cmdlineOffset+cmdlineSize {
-		return fmt.Errorf("page is %d bytes, wanted at least %d", len(page), cmdlineOffset+cmdlineSize)
+		return fmt.Errorf(
+			"page is %d bytes, wanted at least %d",
+			len(page),
+			cmdlineOffset+cmdlineSize,
+		)
 	}
 
 	// The page is read again just before it is written, and this is the one write on the device
@@ -139,7 +155,9 @@ func MakePermissive(d *device.Device, slot string) (changed bool, err error) {
 		return false, fmt.Errorf("boot%s: %w", slot, err)
 	}
 
-	out, err := d.Shell(fmt.Sprintf("dd if=%s bs=%d count=1 2>/dev/null | base64", b.Partition, b.PageSize))
+	out, err := d.Shell(
+		fmt.Sprintf("dd if=%s bs=%d count=1 2>/dev/null | base64", b.Partition, b.PageSize),
+	)
 	if err != nil {
 		return false, err
 	}
@@ -148,7 +166,12 @@ func MakePermissive(d *device.Device, slot string) (changed bool, err error) {
 		return false, err
 	}
 	if uint32(len(page)) != b.PageSize {
-		return false, fmt.Errorf("boot%s: read %d bytes of page, wanted %d", slot, len(page), b.PageSize)
+		return false, fmt.Errorf(
+			"boot%s: read %d bytes of page, wanted %d",
+			slot,
+			len(page),
+			b.PageSize,
+		)
 	}
 
 	if err := writeCmdline(page, want); err != nil {
@@ -165,7 +188,9 @@ func MakePermissive(d *device.Device, slot string) (changed bool, err error) {
 	}
 	defer d.Shell("rm -f " + tmp)
 
-	if _, err := d.Shell(fmt.Sprintf("dd if=%s of=%s bs=%d count=1 2>/dev/null; sync", tmp, b.Partition, b.PageSize)); err != nil {
+	if _, err := d.Shell(
+		fmt.Sprintf("dd if=%s of=%s bs=%d count=1 2>/dev/null; sync", tmp, b.Partition, b.PageSize),
+	); err != nil {
 		return false, fmt.Errorf("writing %s: %w", b.Partition, err)
 	}
 

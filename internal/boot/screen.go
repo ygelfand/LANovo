@@ -122,7 +122,15 @@ func drawStranded(s ui.Surface) error {
 	ui.DrawIcon(s, icons.AlertWarning,
 		ui.Rect{X: (w - sign) / 2, Y: top + mark + gap, W: sign, H: sign},
 		palette.Danger, palette.Background)
-	ui.DrawText(s, font, (w-wordWidth)/2, top+mark+gap+sign+gap, palette.Text, palette.Background, Stranded())
+	ui.DrawText(
+		s,
+		font,
+		(w-wordWidth)/2,
+		top+mark+gap+sign+gap,
+		palette.Text,
+		palette.Background,
+		Stranded(),
+	)
 
 	drawVersion(s, palette)
 	return nil

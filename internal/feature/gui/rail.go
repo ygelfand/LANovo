@@ -20,5 +20,12 @@ func (a *App) rail(w *gogui.Window, v shell.View) gogui.View {
 		}
 		entries = append(entries, widgets.RailEntry{Label: e.Label(), Glyph: glyph, Open: e.Open})
 	}
-	return toolkit.Rail(w, widgets.RailOptions{Entries: entries, Edge: config.Get().Screen.Drawer, Close: func() { shell.Get().Remove(v) }})
+	return toolkit.Rail(
+		w,
+		widgets.RailOptions{
+			Entries: entries,
+			Edge:    config.Get().Screen.Drawer,
+			Close:   func() { shell.Get().Remove(v) },
+		},
+	)
 }

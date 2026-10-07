@@ -207,21 +207,33 @@ func system(r metrics.Reader) Group {
 	// previous reading to subtract. It answers "what has this device been doing", where the
 	// sensor in Home Assistant answers "what is it doing now".
 	if busy, total := r.CPU(); busy.Known && total.Known && total.Value > 0 {
-		rows = append(rows, Row{"CPU since boot", fmt.Sprintf("%.1f%% busy", busy.Value/total.Value*100)})
+		rows = append(
+			rows,
+			Row{"CPU since boot", fmt.Sprintf("%.1f%% busy", busy.Value/total.Value*100)},
+		)
 	}
 
 	// The floor is said out loud. Three kernel threads sit permanently in uninterruptible sleep on
 	// this board and Linux counts those, so the load never reads below three and a number that
 	// does not say so reads as a device in trouble.
 	if one, five := r.Load(); one.Known {
-		rows = append(rows, Row{"Load", fmt.Sprintf("%.2f, %.2f (floor ~3)", one.Value, five.Value)})
+		rows = append(
+			rows,
+			Row{"Load", fmt.Sprintf("%.2f, %.2f (floor ~3)", one.Value, five.Value)},
+		)
 	}
 	if _, online := r.Cores(); online.Known {
 		rows = append(rows, Row{"Cores online", strconv.Itoa(int(online.Value))})
 	}
 	// meminfo is in kB, which is the one reading on this page that is not already a byte count.
 	if free, total := r.Memory(); free.Known && total.Known {
-		rows = append(rows, Row{"Memory free", fmt.Sprintf("%s of %s", bytes(free.Value*1024), bytes(total.Value*1024))})
+		rows = append(
+			rows,
+			Row{
+				"Memory free",
+				fmt.Sprintf("%s of %s", bytes(free.Value*1024), bytes(total.Value*1024)),
+			},
+		)
 	}
 	if free, err := metrics.Free(layout.StateDir); err == nil {
 		rows = append(rows, Row{"Disk free", bytes(float64(free))})

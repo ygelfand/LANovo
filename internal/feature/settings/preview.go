@@ -24,7 +24,9 @@ var cameraPreview = sharedpreview.New(sharedpreview.Options{
 	Orientation: func() int { return int(display.Get().Orientation()) },
 	Place: func(box ui.Rect, w, h int) (float32, float32, surface.Matrix) {
 		fw, fh := display.Get().Native()
-		x, y, m, _ := display.Get().Orientation().Place(fw, fh, display.Rect{X: box.X, Y: box.Y, W: box.W, H: box.H}, w, h)
+		x, y, m, _ := display.Get().
+			Orientation().
+			Place(fw, fh, display.Rect{X: box.X, Y: box.Y, W: box.W, H: box.H}, w, h)
 		return x, y, m
 	},
 })

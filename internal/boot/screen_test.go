@@ -92,12 +92,18 @@ func TestDrawBootWritesTheList(t *testing.T) {
 // A component that is up and one that is not have to look different, or the screen says nothing.
 func TestDoneAndWaitingLookDifferent(t *testing.T) {
 	waiting := ui.NewImage(1920, 1200, theme.Brand().Surface)
-	if err := drawBoot(waiting, []component.Progress{{Name: "wifi", Doing: "looking"}}); err != nil {
+	if err := drawBoot(
+		waiting,
+		[]component.Progress{{Name: "wifi", Doing: "looking"}},
+	); err != nil {
 		t.Fatalf("drawBoot: %v", err)
 	}
 
 	done := ui.NewImage(1920, 1200, theme.Brand().Surface)
-	if err := drawBoot(done, []component.Progress{{Name: "wifi", Doing: "looking", Done: true}}); err != nil {
+	if err := drawBoot(
+		done,
+		[]component.Progress{{Name: "wifi", Doing: "looking", Done: true}},
+	); err != nil {
 		t.Fatalf("drawBoot: %v", err)
 	}
 

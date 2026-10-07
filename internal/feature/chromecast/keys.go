@@ -57,11 +57,20 @@ type cached struct {
 }
 
 func newKeys(name, path string) (*keys, error) {
-	a, err := authority(name, filepath.Join(filepath.Dir(path), filepath.Base(layout.CastAuthorityPath)))
+	a, err := authority(
+		name,
+		filepath.Join(filepath.Dir(path), filepath.Base(layout.CastAuthorityPath)),
+	)
 	if err != nil {
 		return nil, err
 	}
-	k := &keys{name: name, path: path, authority: a, crlURL: CRLURL, retarget: make(chan struct{}, 1)}
+	k := &keys{
+		name:      name,
+		path:      path,
+		authority: a,
+		crlURL:    CRLURL,
+		retarget:  make(chan struct{}, 1),
+	}
 	if err := k.issue(time.Now()); err != nil {
 		return nil, err
 	}
@@ -154,7 +163,15 @@ func (k *keys) Retarget() {
 
 func (k *keys) set(c *cast.Credentials, from string) {
 	k.held.Store(&held{creds: c, from: from})
-	slog.Info("cast credentials", "remote", c.Remote, "notBefore", c.NotBefore, "notAfter", c.NotAfter)
+	slog.Info(
+		"cast credentials",
+		"remote",
+		c.Remote,
+		"notBefore",
+		c.NotBefore,
+		"notAfter",
+		c.NotAfter,
+	)
 	if k.changed != nil {
 		k.changed(c)
 	}

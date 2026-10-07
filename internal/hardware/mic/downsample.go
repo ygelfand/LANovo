@@ -25,7 +25,11 @@ func design() [taps]float32 {
 		if x != 0 {
 			s = math.Sin(2*math.Pi*cutoff/Rate*x) / (math.Pi * x)
 		}
-		w := 0.42 - 0.5*math.Cos(2*math.Pi*float64(i)/(taps-1)) + 0.08*math.Cos(4*math.Pi*float64(i)/(taps-1))
+		w := 0.42 - 0.5*math.Cos(
+			2*math.Pi*float64(i)/(taps-1),
+		) + 0.08*math.Cos(
+			4*math.Pi*float64(i)/(taps-1),
+		)
 		k[i] = float32(s * w)
 		sum += s * w
 	}

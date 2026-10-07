@@ -48,12 +48,19 @@ func TestEveryControlGoesThroughTheStyle(t *testing.T) {
 			what := sel.Sel.Name
 			if pkg, ok := sel.X.(*ast.Ident); ok && pkg.Name == "gogui" && styleable[what] {
 				if _, ok := unstyled[name+":"+what]; !ok {
-					t.Errorf("%s: gogui.%s built directly; add the element to style.Kit, implement it in every style, and build it in styled.go", fs.Position(sel.Pos()), what)
+					t.Errorf(
+						"%s: gogui.%s built directly; add the element to style.Kit, implement it in every style, and build it in styled.go",
+						fs.Position(sel.Pos()),
+						what,
+					)
 				}
 			}
 			if what == "ColorPanel" {
 				if _, ok := unstyled[name+":ColorPanel"]; !ok {
-					t.Errorf("%s: a hand-picked panel colour; use panel() or another style.Kit element", fs.Position(sel.Pos()))
+					t.Errorf(
+						"%s: a hand-picked panel colour; use panel() or another style.Kit element",
+						fs.Position(sel.Pos()),
+					)
 				}
 			}
 			return true

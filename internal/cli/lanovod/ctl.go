@@ -9,5 +9,7 @@ import (
 var sequence = harness.Sequence
 
 func newCtlCmd() *cobra.Command {
-	return harness.ClientCommand(harness.ClientOptions{Name: "lanovod", Socket: control.Socket, Local: control.Local})
+	return harness.ClientCommand(
+		harness.ClientOptions{Name: "lanovod", Socket: control.Socket, Local: control.Local},
+	)
 }

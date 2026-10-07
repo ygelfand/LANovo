@@ -57,7 +57,10 @@ func TestComponentsReportWhatTheySayTheyAre(t *testing.T) {
 	reg := component.New()
 	reg.Add(component.Hardware, registered(part{"panel", component.Progress{Done: true}}))
 	reg.Add(component.Hardware, registered(part{"wifi", component.Progress{Doing: "associating"}}))
-	reg.Add(component.Network, registered(part{"api", component.Progress{Failed: true, Doing: "no key"}}))
+	reg.Add(
+		component.Network,
+		registered(part{"api", component.Progress{Failed: true, Doing: "no key"}}),
+	)
 
 	got := parts(reg)
 	if len(got) != 3 {
@@ -117,8 +120,20 @@ func TestTheZoneSaysWhereItCameFrom(t *testing.T) {
 		chosen, home   string
 		wantZone, want string
 	}{
-		{"chosen wins", "Europe/Berlin", "EST5EDT,M3.2.0,M11.1.0", "Europe/Berlin", "Set on the device"},
-		{"home otherwise", "", "EST5EDT,M3.2.0,M11.1.0", "EST5EDT,M3.2.0,M11.1.0", "From Home Assistant"},
+		{
+			"chosen wins",
+			"Europe/Berlin",
+			"EST5EDT,M3.2.0,M11.1.0",
+			"Europe/Berlin",
+			"Set on the device",
+		},
+		{
+			"home otherwise",
+			"",
+			"EST5EDT,M3.2.0,M11.1.0",
+			"EST5EDT,M3.2.0,M11.1.0",
+			"From Home Assistant",
+		},
 		{"neither", "", "", unknown, "Nothing has said"},
 	}
 

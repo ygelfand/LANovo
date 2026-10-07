@@ -1,6 +1,8 @@
 package gui
 
 import (
+	"sync"
+
 	gogui "github.com/go-gui-org/go-gui/gui"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/media"
@@ -8,7 +10,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	sharedview "github.com/ygelfand/libcountertop/pkg/display/playerview"
 	"github.com/ygelfand/libcountertop/pkg/say"
-	"sync"
 )
 
 var playerViewOnce sync.Once
@@ -16,7 +17,23 @@ var playerView *sharedview.Renderer
 
 func playerViews() *sharedview.Renderer {
 	playerViewOnce.Do(func() {
-		playerView = sharedview.New(sharedview.Options{HoldStill: holdStill, Now: media.Get().Now, Named: media.Get().Named, Transport: func() media.Controller { return media.Transport() }, Open: media.Get().Open, Heading: media.Heading, Volume: func() int { return volume.Get().Level(config.StreamMedia) }, SetVolume: func(v int) { volume.Get().Set(config.StreamMedia, v) }, Shell: shell.Get(), Toolkit: toolkit, Presses: interactions, Grip: grip, Palette: palette})
+		playerView = sharedview.New(
+			sharedview.Options{
+				HoldStill: holdStill,
+				Now:       media.Get().Now,
+				Named:     media.Get().Named,
+				Transport: func() media.Controller { return media.Transport() },
+				Open:      media.Get().Open,
+				Heading:   media.Heading,
+				Volume:    func() int { return volume.Get().Level(config.StreamMedia) },
+				SetVolume: func(v int) { volume.Get().Set(config.StreamMedia, v) },
+				Shell:     shell.Get(),
+				Toolkit:   toolkit,
+				Presses:   interactions,
+				Grip:      grip,
+				Palette:   palette,
+			},
+		)
 	})
 	return playerView
 }

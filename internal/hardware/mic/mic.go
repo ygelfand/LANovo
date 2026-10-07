@@ -100,7 +100,11 @@ var (
 func Get() *Mics {
 	once.Do(func() {
 		cfg := config.Get().Microphone
-		shared = &Mics{gain: min(max(cfg.Gain, MinGain), MaxGain), leveler: newLeveler(), cancel: newCanceller()}
+		shared = &Mics{
+			gain:    min(max(cfg.Gain, MinGain), MaxGain),
+			leveler: newLeveler(),
+			cancel:  newCanceller(),
+		}
 		shared.leveling.Store(cfg.Leveling)
 		shared.pre = newPreprocessors(shared.cancel)
 		shared.denoising.Store(cfg.Denoise)
@@ -166,8 +170,21 @@ func (m *Mics) open(context.Context) error {
 	m.capture, m.mixer = capture, mixer
 	m.mu.Unlock()
 
-	slog.Info("microphones",
-		"device", hw.device(), "bits", hw.bits(), "rate", Rate, "channels", Channels, "period", period, "gain", gain)
+	slog.Info(
+		"microphones",
+		"device",
+		hw.device(),
+		"bits",
+		hw.bits(),
+		"rate",
+		Rate,
+		"channels",
+		Channels,
+		"period",
+		period,
+		"gain",
+		gain,
+	)
 	return nil
 }
 

@@ -44,7 +44,9 @@ func Stash(d *device.Device) ([]Step, error) {
 
 	var steps []Step
 	for _, m := range todo {
-		if _, err := d.Shell("mkdir -p " + path.Dir(m.to) + " && rm -rf " + m.to + " && mv " + m.from + " " + m.to); err != nil {
+		if _, err := d.Shell(
+			"mkdir -p " + path.Dir(m.to) + " && rm -rf " + m.to + " && mv " + m.from + " " + m.to,
+		); err != nil {
 			return steps, err
 		}
 		steps = append(steps, Step{What: "moved", Note: m.from + " → " + m.to})

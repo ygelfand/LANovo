@@ -127,3 +127,8 @@ func (p *Privacy) build() {
 		},
 	}
 }
+
+// Watch calls changed when a physical privacy control changes.
+func (p *Privacy) Watch(changed func()) func() {
+	return p.Changed.Listen(func(Marks) { changed() })
+}

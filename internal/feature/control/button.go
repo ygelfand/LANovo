@@ -29,7 +29,8 @@ func newInput() *harness.Input {
 		return nil
 	}
 	options.Deliver = func(c harness.Contact) {
-		touch.Get().Deliver(touch.Contact{ID: c.ID, X: c.X, Y: c.Y, Phase: touch.Phase(c.Phase), At: c.At})
+		touch.Get().
+			Deliver(touch.Contact{ID: c.ID, X: c.X, Y: c.Y, Phase: touch.Phase(c.Phase), At: c.At})
 	}
 	return harness.NewInput(options)
 }

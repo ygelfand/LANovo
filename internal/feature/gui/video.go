@@ -6,7 +6,11 @@ import (
 )
 
 func (a *App) videoScreen(p *videoplayer.Page) *Screen {
-	return &Screen{View: p, Fixed: true, Build: func(w *gogui.Window) gogui.View { return playerViews().Video(w, p) }}
+	return &Screen{
+		View:  p,
+		Fixed: true,
+		Build: func(w *gogui.Window) gogui.View { return playerViews().Video(w, p) },
+	}
 }
 func (a *App) video(w *gogui.Window, p *videoplayer.Page) gogui.View {
 	return playerViews().Video(w, p)

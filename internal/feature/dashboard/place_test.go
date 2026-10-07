@@ -21,7 +21,18 @@ func TestTheClockSitsWhereItIsPut(t *testing.T) {
 	if d, e := w-(center.X*2+center.W), h-(center.Y*2+center.H); d < 0 || d > 1 || e < 0 || e > 1 {
 		t.Errorf("center at %v", center)
 	}
-	if Place(config.PositionCenter, config.AlignCenter, config.SizeLarge, w, h) != Box(config.PositionCenter, config.SizeLarge, w, h) {
+	if Place(
+		config.PositionCenter,
+		config.AlignCenter,
+		config.SizeLarge,
+		w,
+		h,
+	) != Box(
+		config.PositionCenter,
+		config.SizeLarge,
+		w,
+		h,
+	) {
 		t.Error("centered placement differs from the dashboard's box")
 	}
 }

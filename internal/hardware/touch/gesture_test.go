@@ -143,7 +143,10 @@ func TestJourneysAreTrackedByID(t *testing.T) {
 		t.Fatal("the second finger reported no gesture")
 	}
 	if g.Kind != Tap {
-		t.Errorf("the second finger came out as a %v, want a tap from where it actually started", g.Kind)
+		t.Errorf(
+			"the second finger came out as a %v, want a tap from where it actually started",
+			g.Kind,
+		)
 	}
 	if g.StartX != 1800 {
 		t.Errorf("it started at %d, want 1800", g.StartX)

@@ -32,7 +32,11 @@ func (vu) Draw(s ui.Surface, in ui.Rect, f Frame, ink theme.Color, palette theme
 		track := ui.Rect{X: in.X, Y: in.Y + (in.H-high)/2, W: in.W, H: high}
 
 		ui.FillRect(s, track, palette.Surface)
-		ui.FillRect(s, ui.Rect{X: track.X, Y: track.Y, W: int(f.RMS * float64(track.W)), H: track.H}, ink)
+		ui.FillRect(
+			s,
+			ui.Rect{X: track.X, Y: track.Y, W: int(f.RMS * float64(track.W)), H: track.H},
+			ink,
+		)
 
 		wide := max(int(float64(in.W)*markWide), 1)
 		at := track.X + min(int(f.Hold*float64(track.W)), track.W-wide)

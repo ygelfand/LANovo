@@ -51,14 +51,30 @@ func Power(on bool) (bool, error) {
 }
 func BringUp() (*Port, Version, error) {
 	if board.Current().SoC != board.MediaTek {
-		return sharedhci.BringUp(sharedhci.BringUpOptions{UART: TTY, FirmwareDirectory: "/bt_firmware/image", PatchFile: "btfwnpla.tlv", NVMFile: "btnvnpla.bin", Power: Power, ListenAfterReset: Listen})
+		return sharedhci.BringUp(
+			sharedhci.BringUpOptions{
+				UART:              TTY,
+				FirmwareDirectory: "/bt_firmware/image",
+				PatchFile:         "btfwnpla.tlv",
+				NVMFile:           "btnvnpla.bin",
+				Power:             Power,
+				ListenAfterReset:  Listen,
+			},
+		)
 	}
 	return sharedhci.BringUp(sharedhci.BringUpOptions{Node: Node})
 }
 
-var get = sync.OnceValue(func() *Radio { return sharedhci.NewRadio(sharedhci.RadioOptions{BringUp: BringUp, Power: Power}) })
+var get = sync.OnceValue(
+	func() *Radio { return sharedhci.NewRadio(sharedhci.RadioOptions{BringUp: BringUp, Power: Power}) },
+)
 
 func Get() *Radio { return get() }
 func init() {
-	component.Register(component.Hardware, Get, component.Order(30), component.Supervise(service.Restart(2*time.Second, time.Minute)))
+	component.Register(
+		component.Hardware,
+		Get,
+		component.Order(30),
+		component.Supervise(service.Restart(2*time.Second, time.Minute)),
+	)
 }

@@ -17,7 +17,10 @@ type tabKind struct {
 
 var tabKinds = map[string]tabKind{
 	homecontrol.TabKind: {glyph: homeGlyph, board: homeBoard},
-	discovery.TabKind:   {glyph: func(dashboard.Tab) string { return gogui.IconPhone }, board: callsBoard},
+	discovery.TabKind: {
+		glyph: func(dashboard.Tab) string { return gogui.IconPhone },
+		board: callsBoard,
+	},
 }
 
 func homeGlyph(t dashboard.Tab) string {
@@ -53,7 +56,10 @@ func tabStrip(at ui.Rect, tabs []dashboard.Tab, open string, pal theme.Theme) go
 			content = append([]gogui.View{gogui.Label(kind.glyph(t), mark)}, content...)
 		}
 		cfg.Content = content
-		pills = append(pills, pressable(gogui.Row, cfg, func(gogui.EventCtx) { dashboard.Show(t.Key) }))
+		pills = append(
+			pills,
+			pressable(gogui.Row, cfg, func(gogui.EventCtx) { dashboard.Show(t.Key) }),
+		)
 	}
 	return placed(at, gogui.Row(gogui.ContainerCfg{
 		Sizing:  gogui.FillFill,

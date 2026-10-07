@@ -28,7 +28,12 @@ func recordRaw(ctx context.Context, args []string) (string, error) {
 		path = args[1]
 	}
 
-	frames, err := capture.Events(ctx, d, func(receive func(mic.Frame)) func() { return mic.Get().Frames.Listen(receive) }, func(f mic.Frame) mic.Frame { f.Samples = append([]int16(nil), f.Samples...); return f })
+	frames, err := capture.Events(
+		ctx,
+		d,
+		func(receive func(mic.Frame)) func() { return mic.Get().Frames.Listen(receive) },
+		func(f mic.Frame) mic.Frame { f.Samples = append([]int16(nil), f.Samples...); return f },
+	)
 	if err != nil {
 		return "", err
 	}
@@ -57,7 +62,12 @@ func rawReport(samples []int16, path string) (string, error) {
 	say := fmt.Sprintf("frames %d seconds %.2f rate %d", frames, float64(frames)/mic.Rate, mic.Rate)
 	for c := range mic.Channels {
 		rms := math.Sqrt(ch[c].energy / float64(frames))
-		say += fmt.Sprintf(" | mic%d peakdbfs %.1f rmsdbfs %.1f", c+1, dbfs(float64(ch[c].peak)), dbfs(rms))
+		say += fmt.Sprintf(
+			" | mic%d peakdbfs %.1f rmsdbfs %.1f",
+			c+1,
+			dbfs(float64(ch[c].peak)),
+			dbfs(rms),
+		)
 	}
 	if ch[0].energy > 0 && ch[1].energy > 0 {
 		say += fmt.Sprintf(" | correlation %.2f", cross/math.Sqrt(ch[0].energy*ch[1].energy))
@@ -66,7 +76,12 @@ func rawReport(samples []int16, path string) (string, error) {
 	if path == "" {
 		return say, nil
 	}
-	if err := capture.Write(path, samples[:frames*mic.Channels], mic.Rate, mic.Channels); err != nil {
+	if err := capture.Write(
+		path,
+		samples[:frames*mic.Channels],
+		mic.Rate,
+		mic.Channels,
+	); err != nil {
 		return "", err
 	}
 	return path + " " + say, nil

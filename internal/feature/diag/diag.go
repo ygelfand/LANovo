@@ -4,19 +4,18 @@ package diag
 
 import (
 	"context"
-	"github.com/ygelfand/libcountertop/pkg/runtime/collector"
 	"log/slog"
 	"strings"
 	"sync"
 	"time"
-
-	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/metrics"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
+	esphome "github.com/ygelfand/go-esphome-device"
+	"github.com/ygelfand/libcountertop/pkg/runtime/collector"
 )
 
 func init() {
@@ -95,9 +94,21 @@ func (d *Diag) Name() string { return "diagnostics" }
 
 func (d *Diag) Entities() []esphome.Entity {
 	return []esphome.Entity{
-		d.temperature, d.gpuTemp, d.cores, d.coresOnline, d.usage, d.load, d.memory, d.free, d.uptime,
-		d.signal, d.rxRate, d.txRate,
-		d.address, d.network, d.version,
+		d.temperature,
+		d.gpuTemp,
+		d.cores,
+		d.coresOnline,
+		d.usage,
+		d.load,
+		d.memory,
+		d.free,
+		d.uptime,
+		d.signal,
+		d.rxRate,
+		d.txRate,
+		d.address,
+		d.network,
+		d.version,
 		d.interval,
 	}
 }
@@ -273,7 +284,12 @@ func (d *Diag) soon() {
 // until Home Assistant asks, so a device that waited would report nothing at all until then — and
 // a restart is exactly when somebody is looking.
 func (d *Diag) Run(ctx context.Context) error {
-	return collector.Run(ctx, func() time.Duration { return time.Duration(config.Get().Diag.Interval) * time.Second }, d.wake, d.Sample)
+	return collector.Run(
+		ctx,
+		func() time.Duration { return time.Duration(config.Get().Diag.Interval) * time.Second },
+		d.wake,
+		d.Sample,
+	)
 }
 
 // Sample takes every reading once.

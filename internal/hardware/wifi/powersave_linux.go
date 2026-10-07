@@ -52,8 +52,11 @@ func SetPowerSave(iface string, on bool) error {
 
 	_, err = conn.Execute(
 		genetlink.Message{
-			Header: genetlink.Header{Command: unix.NL80211_CMD_SET_POWER_SAVE, Version: family.Version},
-			Data:   data,
+			Header: genetlink.Header{
+				Command: unix.NL80211_CMD_SET_POWER_SAVE,
+				Version: family.Version,
+			},
+			Data: data,
 		},
 		family.ID,
 		netlink.Request|netlink.Acknowledge,

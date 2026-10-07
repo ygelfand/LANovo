@@ -34,12 +34,26 @@ func (p Part) Data() []byte { return p.data }
 func (p Part) For(soc board.SoC) bool { return p.SoC == "" || p.SoC == soc }
 
 var (
-	Lanovod = Part{Name: "lanovod", Path: layout.Binary, Mode: 0o755, Services: []string{layout.Service}}
+	Lanovod = Part{
+		Name:     "lanovod",
+		Path:     layout.Binary,
+		Mode:     0o755,
+		Services: []string{layout.Service},
+	}
 	InitRC  = Part{Name: "service", Path: layout.InitRC, Mode: 0o644, Boot: true, data: initRC}
 	Surface = Part{Name: "helper", Path: layout.Surface, Mode: 0o755,
 		Services: []string{layout.SurfaceService}, data: surface}
-	CamShim = Part{Name: "camera preload", Path: layout.CamShim, Mode: 0o644,
-		Services: []string{layout.CameraHALService, layout.CameraServerService, layout.CameraService}, data: camshim}
+	CamShim = Part{
+		Name: "camera preload",
+		Path: layout.CamShim,
+		Mode: 0o644,
+		Services: []string{
+			layout.CameraHALService,
+			layout.CameraServerService,
+			layout.CameraService,
+		},
+		data: camshim,
+	}
 	Camera = Part{Name: "camera helper", Path: layout.Camera, Mode: 0o755,
 		Services: []string{layout.CameraService}, data: camera}
 )

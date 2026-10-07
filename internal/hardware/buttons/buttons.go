@@ -224,7 +224,11 @@ type pollFd struct {
 func export(gpio int) error {
 	dir := fmt.Sprintf("/sys/class/gpio/gpio%d", gpio)
 	if _, err := os.Stat(dir); err != nil {
-		if err := os.WriteFile("/sys/class/gpio/export", []byte(strconv.Itoa(gpio)), 0o200); err != nil {
+		if err := os.WriteFile(
+			"/sys/class/gpio/export",
+			[]byte(strconv.Itoa(gpio)),
+			0o200,
+		); err != nil {
 			// EBUSY means someone else already has it, which is fine.
 			if !errors.Is(err, syscall.EBUSY) {
 				return fmt.Errorf("export gpio%d: %w", gpio, err)

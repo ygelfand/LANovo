@@ -54,13 +54,21 @@ func newInstallCmd() *cobra.Command {
 			}
 
 			if ok, err := d.IsRoot(); err == nil && !ok {
-				fmt.Fprintf(out, "  %-18s %s\n", "adb root", styleDetail.Render("restarting adbd as root"))
+				fmt.Fprintf(
+					out,
+					"  %-18s %s\n",
+					"adb root",
+					styleDetail.Render("restarting adbd as root"),
+				)
 			}
 			if err := d.Root(ctx); err != nil {
 				return err
 			}
 
-			if mode, err := d.Shell("getenforce"); err == nil && strings.TrimSpace(mode) == "Enforcing" {
+			if mode, err := d.Shell(
+				"getenforce",
+			); err == nil &&
+				strings.TrimSpace(mode) == "Enforcing" {
 				if _, err := d.Shell("setenforce 0"); err != nil {
 					return fmt.Errorf("selinux: %w", err)
 				}
@@ -81,8 +89,14 @@ func newInstallCmd() *cobra.Command {
 			}
 
 			if takeover.Failed(checks, takeover.Verity) {
-				fmt.Fprintf(out, "  %-18s %s\n", "dm-verity",
-					styleDetail.Render("enforcing — disabling, the device will reboot and come back"))
+				fmt.Fprintf(
+					out,
+					"  %-18s %s\n",
+					"dm-verity",
+					styleDetail.Render(
+						"enforcing — disabling, the device will reboot and come back",
+					),
+				)
 
 				rebooted, err := takeover.DisableVerity(ctx, d)
 				if err != nil {
@@ -130,7 +144,12 @@ func newInstallCmd() *cobra.Command {
 			}
 
 			if patched {
-				fmt.Fprintf(out, "  %-18s %s\n", "rebooting", styleDetail.Render("for the permissive boot command line"))
+				fmt.Fprintf(
+					out,
+					"  %-18s %s\n",
+					"rebooting",
+					styleDetail.Render("for the permissive boot command line"),
+				)
 				if err := d.Reboot(""); err != nil {
 					return err
 				}
@@ -144,7 +163,12 @@ func newInstallCmd() *cobra.Command {
 				if mode = strings.TrimSpace(mode); mode != "Permissive" {
 					return fmt.Errorf("selinux is %s after the boot patch, want Permissive", mode)
 				}
-				fmt.Fprintf(out, "  %-18s %s\n", "selinux", styleDone.Render("permissive from the boot command line"))
+				fmt.Fprintf(
+					out,
+					"  %-18s %s\n",
+					"selinux",
+					styleDone.Render("permissive from the boot command line"),
+				)
 			}
 
 			payload, from, err := lanovod(binary)
@@ -201,7 +225,12 @@ func newInstallCmd() *cobra.Command {
 				if err := d.Root(ctx); err != nil {
 					return err
 				}
-				fmt.Fprintf(out, "  %-18s %s\n", "up", styleDone.Render("lanovod running, root restored"))
+				fmt.Fprintf(
+					out,
+					"  %-18s %s\n",
+					"up",
+					styleDone.Render("lanovod running, root restored"),
+				)
 				settles = false
 			}
 
@@ -250,7 +279,14 @@ func rebootChoiceOf(yes, no bool) rebootChoice {
 //
 // settles means something changed that only init re-reads at boot: the service definition or the
 // boot command line. A binary swap settles nothing.
-func finish(ctx context.Context, out io.Writer, d *device.Device, settles bool, choice rebootChoice, genKey bool) error {
+func finish(
+	ctx context.Context,
+	out io.Writer,
+	d *device.Device,
+	settles bool,
+	choice rebootChoice,
+	genKey bool,
+) error {
 	if err := takeover.Start(d); err != nil {
 		return err
 	}
@@ -267,7 +303,11 @@ func finish(ctx context.Context, out io.Writer, d *device.Device, settles bool, 
 				"some of this only takes effect on the next boot; pass --reboot to do it here"))
 			return nil
 		}
-		yes, err := confirm(ctx, out, "Reboot now? Some of this only takes effect on the next boot.")
+		yes, err := confirm(
+			ctx,
+			out,
+			"Reboot now? Some of this only takes effect on the next boot.",
+		)
 		if err != nil && !errors.Is(err, ErrCanceled) {
 			return err
 		}

@@ -2,15 +2,13 @@ package discovery
 
 import (
 	"context"
-	sharedpeer "github.com/ygelfand/libcountertop/pkg/network/peer"
+	"github.com/libp2p/zeroconf/v2"
 	"log/slog"
 	"net"
 	"slices"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/libp2p/zeroconf/v2"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
@@ -21,6 +19,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
+	sharedpeer "github.com/ygelfand/libcountertop/pkg/network/peer"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 	"github.com/ygelfand/libcountertop/pkg/say"
 )
@@ -70,7 +69,10 @@ func (d *Discovery) Peers() []Peer {
 		out = append(out, p)
 	}
 	d.mu.Unlock()
-	slices.SortFunc(out, func(a, b Peer) int { return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)) })
+	slices.SortFunc(
+		out,
+		func(a, b Peer) int { return strings.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)) },
+	)
 	return out
 }
 
@@ -85,7 +87,13 @@ func (d *Discovery) Touch(id string) {
 
 func Self() Peer {
 	b := board.Current()
-	return Peer{ID: ID(), Name: config.Get().Device.Name, Model: b.Model, Board: b.Name, Caps: caps()}
+	return Peer{
+		ID:    ID(),
+		Name:  config.Get().Device.Name,
+		Model: b.Model,
+		Board: b.Name,
+		Caps:  caps(),
+	}
 }
 
 func (d *Discovery) Find(id string) (Peer, bool) {

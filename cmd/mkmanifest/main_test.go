@@ -17,7 +17,12 @@ func TestTheManifestNamesTheArmBuildAndADeviceAcceptsIt(t *testing.T) {
 	}
 	out := filepath.Join(dir, "manifest.json")
 
-	if err := run(update.Manifest{Version: "0.0.7"}, "https://example/download/0.0.7", map[string]string{"arm": bin}, out); err != nil {
+	if err := run(
+		update.Manifest{Version: "0.0.7"},
+		"https://example/download/0.0.7",
+		map[string]string{"arm": bin},
+		out,
+	); err != nil {
 		t.Fatal(err)
 	}
 
@@ -42,7 +47,12 @@ func TestTheManifestNamesTheArmBuildAndADeviceAcceptsIt(t *testing.T) {
 }
 
 func TestAManifestWithoutTheArmBuildIsRefused(t *testing.T) {
-	if err := run(update.Manifest{Version: "0.0.7"}, "https://example", map[string]string{}, ""); err == nil {
+	if err := run(
+		update.Manifest{Version: "0.0.7"},
+		"https://example",
+		map[string]string{},
+		"",
+	); err == nil {
 		t.Error("wrote a manifest no device can install from")
 	}
 }

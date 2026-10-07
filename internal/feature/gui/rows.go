@@ -6,7 +6,6 @@ import (
 	gogui "github.com/go-gui-org/go-gui/gui"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard/face"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
@@ -20,6 +19,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/widget"
 	"github.com/ygelfand/libcountertop/pkg/display/style"
 	widgets "github.com/ygelfand/libcountertop/pkg/display/widgets"
+	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
 	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
@@ -37,9 +37,9 @@ func (a *App) screenFor(v shell.View) *Screen {
 		return homeScreen(t)
 	case *homecontrol.Picker:
 		return pickerScreen(t)
-	case *call.View:
+	case *sharedcall.View:
 		return callScreen(t)
-	case *call.Profile:
+	case *sharedcall.Profile:
 		return profileScreen(t)
 	}
 	switch v {
@@ -54,7 +54,11 @@ func (a *App) screenFor(v shell.View) *Screen {
 }
 
 func pageScreen(p *shell.Page) *Screen {
-	return &Screen{Title: p.Title, View: p, Build: func(w *gogui.Window) gogui.View { return pageBody(w, p) }}
+	return &Screen{
+		Title: p.Title,
+		View:  p,
+		Build: func(w *gogui.Window) gogui.View { return pageBody(w, p) },
+	}
 }
 
 func iconStyle(c gogui.Color) gogui.TextStyle {
@@ -106,7 +110,20 @@ func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) go
 	case native:
 		content = append(content, faceTile(w, build, tw, th))
 	case c.Paint != nil:
-		content = append(content, picture(painted("tile/"+page+"/"+c.Label+"/"+time.Now().Format("15:04"), tw, th, palette().Surface, c.Paint), tw, th))
+		content = append(
+			content,
+			picture(
+				painted(
+					"tile/"+page+"/"+c.Label+"/"+time.Now().Format("15:04"),
+					tw,
+					th,
+					palette().Surface,
+					c.Paint,
+				),
+				tw,
+				th,
+			),
+		)
 	}
 	return toolkit.Tile(id, c.Label, c.Chosen, content, tap)
 }
@@ -114,7 +131,14 @@ func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) go
 func preview(page string, r widget.Row) gogui.View { return widgets.RowPreview(page, r, palette()) }
 
 func rowView(id, page string, r widget.Row, tap func(int), glyphs bool) gogui.View {
-	return toolkit.Row(id, page, r, tap, glyphs, widgets.RowRenderer{Field: fieldRow, Preview: preview, Grip: grip})
+	return toolkit.Row(
+		id,
+		page,
+		r,
+		tap,
+		glyphs,
+		widgets.RowRenderer{Field: fieldRow, Preview: preview, Grip: grip},
+	)
 }
 
 var outline = widgets.Outline

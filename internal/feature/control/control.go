@@ -70,7 +70,10 @@ func (c *Control) server() *harness.Server {
 	c.gate.Lock()
 	defer c.gate.Unlock()
 	if c.runtime == nil {
-		c.runtime = harness.NewServer(c.addr, func(ctx context.Context, args []string) (string, error) { return harness.Execute(ctx, c.tree, args) })
+		c.runtime = harness.NewServer(
+			c.addr,
+			func(ctx context.Context, args []string) (string, error) { return harness.Execute(ctx, c.tree, args) },
+		)
 	}
 	return c.runtime
 }
@@ -84,7 +87,11 @@ func (c *Control) down() {
 	}
 }
 func (c *Control) serve(conn net.Conn) {
-	harness.Serve(context.Background(), conn, func(ctx context.Context, args []string) (string, error) { return harness.Execute(ctx, c.tree, args) })
+	harness.Serve(
+		context.Background(),
+		conn,
+		func(ctx context.Context, args []string) (string, error) { return harness.Execute(ctx, c.tree, args) },
+	)
 }
 func (c *Control) run(args []string) (string, error) {
 	if len(args) == 0 {

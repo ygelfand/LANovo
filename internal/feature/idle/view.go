@@ -22,14 +22,25 @@ func newView() *View {
 	return sharedview.New(sharedview.Options{
 		Read: func() sharedview.Settings {
 			c := config.Get()
-			return sharedview.Settings{Screen: c.Screen, Clock: c.Clock, Idle: c.Idle, Visual: c.Visual}
+			return sharedview.Settings{
+				Screen: c.Screen,
+				Clock:  c.Clock,
+				Idle:   c.Idle,
+				Visual: c.Visual,
+			}
 		},
-		Hold:  func() func() { return visuals.Get().Hold() },
-		Input: func() visual.Input { return visuals.Get().Input() }, From: visuals.From, Open: gpu.Open,
+		Hold:        func() func() { return visuals.Get().Hold() },
+		Input:       func() visual.Input { return visuals.Get().Input() },
+		From:        visuals.From,
+		Open:        gpu.Open,
 		Orientation: func() int { return int(display.Get().Orientation()) },
-		Visible:     shell.Get().Visible, Redraw: shell.Get().Redraw,
+		Visible:     shell.Get().Visible,
+		Redraw:      shell.Get().Redraw,
 	})
 }
 func Reading(c config.Config, at time.Time) face.Reading {
-	return sharedview.Reading(sharedview.Settings{Screen: c.Screen, Clock: c.Clock, Idle: c.Idle, Visual: c.Visual}, at)
+	return sharedview.Reading(
+		sharedview.Settings{Screen: c.Screen, Clock: c.Clock, Idle: c.Idle, Visual: c.Visual},
+		at,
+	)
 }

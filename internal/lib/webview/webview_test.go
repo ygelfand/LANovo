@@ -45,15 +45,22 @@ func solid(w, h int, c color.RGBA) []byte {
 }
 
 func TestParseFrameReadsTheWireLayout(t *testing.T) {
-	msg := frameMsg(7, FlagLastOfFrame|FlagFullFrame, Tile{X: 3, Y: 4, W: 5, H: 6, Data: []byte{1, 2, 3}}, Tile{X: 300, Y: 400, W: 32, H: 32, Data: []byte{9}})
+	msg := frameMsg(
+		7,
+		FlagLastOfFrame|FlagFullFrame,
+		Tile{X: 3, Y: 4, W: 5, H: 6, Data: []byte{1, 2, 3}},
+		Tile{X: 300, Y: 400, W: 32, H: 32, Data: []byte{9}},
+	)
 	f, err := ParseFrame(msg)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if f.ID != 7 || f.Encoding != JPEG || f.Flags != FlagLastOfFrame|FlagFullFrame || len(f.Tiles) != 2 {
+	if f.ID != 7 || f.Encoding != JPEG || f.Flags != FlagLastOfFrame|FlagFullFrame ||
+		len(f.Tiles) != 2 {
 		t.Fatalf("frame %+v", f)
 	}
-	if a := f.Tiles[0]; a.X != 3 || a.Y != 4 || a.W != 5 || a.H != 6 || !bytes.Equal(a.Data, []byte{1, 2, 3}) {
+	if a := f.Tiles[0]; a.X != 3 || a.Y != 4 || a.W != 5 || a.H != 6 ||
+		!bytes.Equal(a.Data, []byte{1, 2, 3}) {
 		t.Errorf("first tile %+v", a)
 	}
 	if b := f.Tiles[1]; b.X != 300 || b.Y != 400 || !bytes.Equal(b.Data, []byte{9}) {
@@ -92,13 +99,22 @@ func TestOutgoingPacketsMatchTheReference(t *testing.T) {
 
 func TestURICarriesTheOptions(t *testing.T) {
 	for _, server := range []string{"10.0.0.2:8081", "ws://10.0.0.2:8081", "ws://10.0.0.2:8081/"} {
-		got, err := URI(server, Options{ID: "lanovo-1", Width: 960, Height: 600, JPEGQuality: 80, FullFrameArea: 0.5})
+		got, err := URI(
+			server,
+			Options{ID: "lanovo-1", Width: 960, Height: 600, JPEGQuality: 80, FullFrameArea: 0.5},
+		)
 		if err != nil {
 			t.Fatal(err)
 		}
 		u, _ := url.Parse(got)
 		q := u.Query()
-		if u.Scheme != "ws" || u.Host != "10.0.0.2:8081" || u.Path != "/" || q.Get("id") != "lanovo-1" || q.Get("w") != "960" || q.Get("h") != "600" || q.Get("q") != "80" || q.Get("ffat") != "0.5" || q.Has("ts") {
+		if u.Scheme != "ws" || u.Host != "10.0.0.2:8081" || u.Path != "/" ||
+			q.Get("id") != "lanovo-1" ||
+			q.Get("w") != "960" ||
+			q.Get("h") != "600" ||
+			q.Get("q") != "80" ||
+			q.Get("ffat") != "0.5" ||
+			q.Has("ts") {
 			t.Errorf("%s gave %s", server, got)
 		}
 	}
@@ -117,7 +133,11 @@ func TestYUVPasteMatchesTheStandardConversion(t *testing.T) {
 		for i := range src.Cb {
 			src.Cb[i], src.Cr[i] = uint8(r.IntN(256)), uint8(r.IntN(256))
 		}
-		want, got := image.NewRGBA(image.Rect(0, 0, 100, 80)), image.NewRGBA(image.Rect(0, 0, 100, 80))
+		want, got := image.NewRGBA(
+			image.Rect(0, 0, 100, 80),
+		), image.NewRGBA(
+			image.Rect(0, 0, 100, 80),
+		)
 		at := image.Rect(5, 7, 5+sz[0], 7+sz[1])
 		draw.Draw(want, at, src, image.Point{}, draw.Src)
 		paste(got, at, src)
@@ -139,10 +159,30 @@ func TestASessionPaintsTilesAndSendsTouches(t *testing.T) {
 			return
 		}
 		defer c.Close()
-		c.WriteMessage(websocket.BinaryMessage, frameMsg(1, 0, Tile{X: 0, Y: 0, W: 32, H: 32, Data: solid(32, 32, color.RGBA{250, 0, 0, 255})}))
-		c.WriteMessage(websocket.BinaryMessage, frameMsg(1, FlagLastOfFrame, Tile{X: 32, Y: 16, W: 32, H: 16, Data: solid(32, 16, color.RGBA{0, 0, 250, 255})}))
-		c.WriteMessage(websocket.BinaryMessage, []byte{msgCurrentURL, version, 4, 0, 0, 0, 'h', 'o', 'm', 'e'})
-		c.WriteMessage(websocket.BinaryMessage, []byte{msgFrameStats, version, 0, 0, 0, 0, 0, 0, 0, 0})
+		c.WriteMessage(
+			websocket.BinaryMessage,
+			frameMsg(
+				1,
+				0,
+				Tile{X: 0, Y: 0, W: 32, H: 32, Data: solid(32, 32, color.RGBA{250, 0, 0, 255})},
+			),
+		)
+		c.WriteMessage(
+			websocket.BinaryMessage,
+			frameMsg(
+				1,
+				FlagLastOfFrame,
+				Tile{X: 32, Y: 16, W: 32, H: 16, Data: solid(32, 16, color.RGBA{0, 0, 250, 255})},
+			),
+		)
+		c.WriteMessage(
+			websocket.BinaryMessage,
+			[]byte{msgCurrentURL, version, 4, 0, 0, 0, 'h', 'o', 'm', 'e'},
+		)
+		c.WriteMessage(
+			websocket.BinaryMessage,
+			[]byte{msgFrameStats, version, 0, 0, 0, 0, 0, 0, 0, 0},
+		)
 		for {
 			_, m, err := c.ReadMessage()
 			if err != nil {
@@ -155,7 +195,12 @@ func TestASessionPaintsTilesAndSendsTouches(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	c, err := Dial(ctx, strings.TrimPrefix(srv.URL, "http://"), "http://ha/lovelace/0", Options{ID: "t", Width: 64, Height: 32})
+	c, err := Dial(
+		ctx,
+		strings.TrimPrefix(srv.URL, "http://"),
+		"http://ha/lovelace/0",
+		Options{ID: "t", Width: 64, Height: 32},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -211,9 +256,23 @@ func BenchmarkDecodeFullTile(b *testing.B) {
 		img := image.NewRGBA(image.Rect(0, 0, sz[0], sz[1]))
 		r := rand.New(rand.NewPCG(3, 3))
 		for y := 0; y < sz[1]; y += 40 {
-			draw.Draw(img, image.Rect(0, y, sz[0], y+40), &image.Uniform{color.RGBA{uint8(r.IntN(256)), uint8(r.IntN(256)), uint8(r.IntN(256)), 255}}, image.Point{}, draw.Src)
+			draw.Draw(
+				img,
+				image.Rect(0, y, sz[0], y+40),
+				&image.Uniform{
+					color.RGBA{uint8(r.IntN(256)), uint8(r.IntN(256)), uint8(r.IntN(256)), 255},
+				},
+				image.Point{},
+				draw.Src,
+			)
 			for x := 0; x < sz[0]; x += 90 {
-				draw.Draw(img, image.Rect(x+10, y+10, x+60, y+22), &image.Uniform{color.White}, image.Point{}, draw.Src)
+				draw.Draw(
+					img,
+					image.Rect(x+10, y+10, x+60, y+22),
+					&image.Uniform{color.White},
+					image.Point{},
+					draw.Src,
+				)
 			}
 		}
 		var buf bytes.Buffer

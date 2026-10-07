@@ -90,8 +90,14 @@ func sizeLabels(values []string) []setting.Option {
 }
 
 func streamRows() []Knob {
-	mainSize := Knob{Name: "main_size", Kind: setting.Choice, Group: StreamGroup, Icon: "mdi:aspect-ratio",
-		Options: sizeLabels(mainSizes()), Read: func(k *Knobs) string { return k.MainSize }}
+	mainSize := Knob{
+		Name:    "main_size",
+		Kind:    setting.Choice,
+		Group:   StreamGroup,
+		Icon:    "mdi:aspect-ratio",
+		Options: sizeLabels(mainSizes()),
+		Read:    func(k *Knobs) string { return k.MainSize },
+	}
 	mainSize.Write = func(k *Knobs, v string) error {
 		if !slices.Contains(mainSizes(), v) {
 			return mainSize.Bad(v, "")
@@ -104,9 +110,15 @@ func streamRows() []Knob {
 	for i, w := range subWidths {
 		subOpts[i] = setting.Option{Value: strconv.Itoa(w), Label: fmt.Sprintf("%d px wide", w)}
 	}
-	subSize := Knob{Name: "sub_size", Kind: setting.Choice, Group: StreamGroup, Icon: "mdi:aspect-ratio",
-		Options: subOpts, Idle: func(k *Knobs) bool { return !k.SubOn },
-		Read: func(k *Knobs) string { return strconv.Itoa(k.SubWidth) }}
+	subSize := Knob{
+		Name:    "sub_size",
+		Kind:    setting.Choice,
+		Group:   StreamGroup,
+		Icon:    "mdi:aspect-ratio",
+		Options: subOpts,
+		Idle:    func(k *Knobs) bool { return !k.SubOn },
+		Read:    func(k *Knobs) string { return strconv.Itoa(k.SubWidth) },
+	}
 	subSize.Write = func(k *Knobs, v string) error {
 		n, err := strconv.Atoi(v)
 		if err != nil || !slices.Contains(subWidths, n) {
@@ -116,9 +128,17 @@ func streamRows() []Knob {
 		return nil
 	}
 
-	keyframe := Knob{Name: "keyframe", Kind: setting.Number, Group: StreamGroup, Icon: "mdi:key-variant",
-		Slider: true, Min: keyframeMin, Max: keyframeMax, Unit: "s",
-		Read: func(k *Knobs) string { return strconv.Itoa(k.Keyframe) }}
+	keyframe := Knob{
+		Name:   "keyframe",
+		Kind:   setting.Number,
+		Group:  StreamGroup,
+		Icon:   "mdi:key-variant",
+		Slider: true,
+		Min:    keyframeMin,
+		Max:    keyframeMax,
+		Unit:   "s",
+		Read:   func(k *Knobs) string { return strconv.Itoa(k.Keyframe) },
+	}
 	keyframe.Write = func(k *Knobs, s string) error {
 		n, err := strconv.Atoi(s)
 		if err != nil || n < keyframeMin || n > keyframeMax {
@@ -134,7 +154,13 @@ func streamRows() []Knob {
 		toggle("sub_on", "mdi:video-outline", func(k *Knobs) *bool { return &k.SubOn }),
 		subSize,
 		keyframe,
-		choice("quality", StreamGroup, "mdi:high-definition", words(qualities), func(k *Knobs) *string { return &k.Quality }),
+		choice(
+			"quality",
+			StreamGroup,
+			"mdi:high-definition",
+			words(qualities),
+			func(k *Knobs) *string { return &k.Quality },
+		),
 	}
 }
 

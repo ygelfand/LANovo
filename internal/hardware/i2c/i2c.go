@@ -157,5 +157,9 @@ func Find(buses []int, addr uint16, identify func(*Device) bool) (*Device, Bus, 
 		}
 		bus.Close()
 	}
-	return nil, nil, fmt.Errorf("i2c: nothing at %#x on any of %v answered as expected", addr, buses)
+	return nil, nil, fmt.Errorf(
+		"i2c: nothing at %#x on any of %v answered as expected",
+		addr,
+		buses,
+	)
 }

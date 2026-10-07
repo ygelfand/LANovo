@@ -14,7 +14,10 @@ import (
 func TestSecondaryPhraseUsesItsSlotRatherThanTheCompactAdvertisement(t *testing.T) {
 	var selected wakeslots.Selection
 	selected.Set([]string{"", "B"})
-	c := turn.NewConversation(&esphome.VoiceSatellite{ActiveWakeWords: []string{"B"}}, turn.Options{Word: selected.ID})
+	c := turn.NewConversation(
+		&esphome.VoiceSatellite{ActiveWakeWords: []string{"B"}},
+		turn.Options{Word: selected.ID},
+	)
 	if phrase, ok := c.PhraseFor(1); !ok || phrase != "B" {
 		t.Fatal(phrase, ok)
 	}

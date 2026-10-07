@@ -30,7 +30,14 @@ func spans(marks []videoplayer.Mark, length time.Duration) []style.Span {
 	}
 	out := make([]style.Span, 0, len(marks))
 	for _, m := range marks {
-		out = append(out, style.Span{From: float32(m.From) / float32(length), To: float32(m.To) / float32(length), Color: color(m.Color)})
+		out = append(
+			out,
+			style.Span{
+				From:  float32(m.From) / float32(length),
+				To:    float32(m.To) / float32(length),
+				Color: color(m.Color),
+			},
+		)
 	}
 	return out
 }

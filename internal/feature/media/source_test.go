@@ -138,7 +138,13 @@ func (s *stopping) Stop() { s.stopped++ }
 
 func TestAReplacedSourceIsStoppedForGood(t *testing.T) {
 	p := Get()
-	group, cast, next := &stopping{peer: peer{kind: FromGroup}}, &peer{kind: FromCast}, &peer{kind: FromCast}
+	group, cast, next := &stopping{
+		peer: peer{kind: FromGroup},
+	}, &peer{
+		kind: FromCast,
+	}, &peer{
+		kind: FromCast,
+	}
 	t.Cleanup(func() { p.Ended(group); p.Ended(cast); p.External(nil) })
 
 	p.Began(group)

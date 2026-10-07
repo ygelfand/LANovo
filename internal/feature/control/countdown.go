@@ -17,10 +17,12 @@ const harnessTimer = "ctl"
 func countdown(_ *cobra.Command, args []string) error {
 	switch args[0] {
 	case "ring":
-		timer.Get().Event(esphome.TimerEvent{Type: api.VoiceAssistantTimerEvent_VOICE_ASSISTANT_TIMER_FINISHED, TimerID: harnessTimer})
+		timer.Get().
+			Event(esphome.TimerEvent{Type: api.VoiceAssistantTimerEvent_VOICE_ASSISTANT_TIMER_FINISHED, TimerID: harnessTimer})
 		return nil
 	case "cancel":
-		timer.Get().Event(esphome.TimerEvent{Type: api.VoiceAssistantTimerEvent_VOICE_ASSISTANT_TIMER_CANCELLED, TimerID: harnessTimer})
+		timer.Get().
+			Event(esphome.TimerEvent{Type: api.VoiceAssistantTimerEvent_VOICE_ASSISTANT_TIMER_CANCELLED, TimerID: harnessTimer})
 		return nil
 	}
 	seconds, err := strconv.Atoi(args[0])

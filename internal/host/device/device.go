@@ -305,7 +305,14 @@ func (d *Device) run(ctx context.Context, args ...string) (string, error) {
 func run(ctx context.Context, args ...string) (string, error) {
 	out, err := exec.CommandContext(ctx, Binary, args...).CombinedOutput()
 	if err != nil {
-		return string(out), fmt.Errorf("adb %s: %w: %s", strings.Join(args, " "), err, strings.TrimSpace(string(out)))
+		return string(
+				out,
+			), fmt.Errorf(
+				"adb %s: %w: %s",
+				strings.Join(args, " "),
+				err,
+				strings.TrimSpace(string(out)),
+			)
 	}
 	return string(out), nil
 }

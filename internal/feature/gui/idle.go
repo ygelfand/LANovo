@@ -34,9 +34,28 @@ func (a *App) idle(w *gogui.Window, v *idle.View) gogui.View {
 
 	var layers []gogui.View
 	if len(slots) == 0 {
-		layers = append(layers, placed(ui.Rect{W: vw, H: vh}, gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFill, Padding: gogui.NoPadding, Color: color(pal.Background)})))
-		if backdrop, behind := poster.Get().Backdrop(vw, vh, image.Rect(box.X, box.Y, box.X+box.W, box.Y+box.H), pal.Background); backdrop != nil {
-			layers = append(layers, placed(ui.Rect{W: vw, H: vh}, picture(imageSrc("poster/"+behind, backdrop), vw, vh)))
+		layers = append(
+			layers,
+			placed(
+				ui.Rect{W: vw, H: vh},
+				gogui.Column(
+					gogui.ContainerCfg{
+						Sizing:  gogui.FillFill,
+						Padding: gogui.NoPadding,
+						Color:   color(pal.Background),
+					},
+				),
+			),
+		)
+		if backdrop, behind := poster.Get().
+			Backdrop(vw, vh, image.Rect(box.X, box.Y, box.X+box.W, box.Y+box.H), pal.Background); backdrop != nil {
+			layers = append(
+				layers,
+				placed(
+					ui.Rect{W: vw, H: vh},
+					picture(imageSrc("poster/"+behind, backdrop), vw, vh),
+				),
+			)
 		}
 	}
 	if build, ok := clockView(cfg.Idle.Face); ok {

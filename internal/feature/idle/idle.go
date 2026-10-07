@@ -145,7 +145,8 @@ func quiet() time.Duration {
 
 func free() bool {
 	d := display.Get()
-	return !shell.Get().Open() && d.Uncovered(display.PriorityDashboard) && web.Get().Offering() == ""
+	return !shell.Get().Open() && d.Uncovered(display.PriorityDashboard) &&
+		web.Get().Offering() == ""
 }
 
 func (i *Idle) wake() {
@@ -273,25 +274,45 @@ func (i *Idle) build() {
 		}
 	}
 
-	i.after = sel("idle_after", "Idle screen after", "mdi:timer-outline", config.Labels(config.Delays()))
+	i.after = sel(
+		"idle_after",
+		"Idle screen after",
+		"mdi:timer-outline",
+		config.Labels(config.Delays()),
+	)
 	i.after.OnCommand = func(l string) {
 		if v, ok := config.ByLabel(config.Delays(), l); ok {
 			i.SetAfter(v)
 		}
 	}
-	i.face = sel("idle_face", "Idle clock face", "mdi:clock-digital", config.Labels(config.IdleFaces()))
+	i.face = sel(
+		"idle_face",
+		"Idle clock face",
+		"mdi:clock-digital",
+		config.Labels(config.IdleFaces()),
+	)
 	i.face.OnCommand = func(l string) {
 		if v, ok := config.ByLabel(config.IdleFaces(), l); ok {
 			i.SetFace(v)
 		}
 	}
-	i.place = sel("idle_position", "Idle clock vertical position", "mdi:align-vertical-center", config.Labels(config.Positions()))
+	i.place = sel(
+		"idle_position",
+		"Idle clock vertical position",
+		"mdi:align-vertical-center",
+		config.Labels(config.Positions()),
+	)
 	i.place.OnCommand = func(l string) {
 		if v, ok := config.ByLabel(config.Positions(), l); ok {
 			i.SetPosition(v)
 		}
 	}
-	i.align = sel("idle_align", "Idle clock horizontal position", "mdi:align-horizontal-center", config.Labels(config.Aligns()))
+	i.align = sel(
+		"idle_align",
+		"Idle clock horizontal position",
+		"mdi:align-horizontal-center",
+		config.Labels(config.Aligns()),
+	)
 	i.align.OnCommand = func(l string) {
 		if v, ok := config.ByLabel(config.Aligns(), l); ok {
 			i.SetAlign(v)
@@ -311,7 +332,12 @@ func (i *Idle) build() {
 				i.SetKind(n, k)
 			}
 		}
-		i.sources[n] = sel("idle_visual_"+id+"_source", "Idle visual "+id+" listens to", "mdi:microphone-settings", config.Labels(config.Sources()))
+		i.sources[n] = sel(
+			"idle_visual_"+id+"_source",
+			"Idle visual "+id+" listens to",
+			"mdi:microphone-settings",
+			config.Labels(config.Sources()),
+		)
 		i.sources[n].OnCommand = func(l string) {
 			if s, ok := config.ByLabel(config.Sources(), l); ok {
 				i.SetSource(n, s)

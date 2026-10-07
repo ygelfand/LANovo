@@ -13,7 +13,11 @@ func TestTheCameraPageIsTheSections(t *testing.T) {
 	rows, acts := cameraPage().Build()
 
 	if len(rows) != len(shown())+2 || len(acts) != len(rows) {
-		t.Fatalf("%d rows against %d sections, the stream switch and a reset", len(rows), len(shown()))
+		t.Fatalf(
+			"%d rows against %d sections, the stream switch and a reset",
+			len(rows),
+			len(shown()),
+		)
 	}
 	if stream := rows[len(rows)-2]; stream.Kind != widget.Toggle {
 		t.Errorf("the row before reset is %+v, want the camera stream switch", stream)
@@ -54,7 +58,11 @@ func TestASectionIsTheKnobTable(t *testing.T) {
 		}
 	}
 	if seen != len(livecam.Table().Rows()) {
-		t.Errorf("the sections show %d knobs and the table has %d", seen, len(livecam.Table().Rows()))
+		t.Errorf(
+			"the sections show %d knobs and the table has %d",
+			seen,
+			len(livecam.Table().Rows()),
+		)
 	}
 }
 

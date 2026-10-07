@@ -7,7 +7,11 @@ import (
 
 var interactions = sharedlib.New()
 
-func pressable(layout func(gogui.ContainerCfg) gogui.View, cfg gogui.ContainerCfg, do func(gogui.EventCtx)) gogui.View {
+func pressable(
+	layout func(gogui.ContainerCfg) gogui.View,
+	cfg gogui.ContainerCfg,
+	do func(gogui.EventCtx),
+) gogui.View {
 	return interactions.Pressable(layout, cfg, do)
 }
 func release(e gogui.EventCtx) { interactions.Release(e) }
@@ -16,6 +20,11 @@ func lift(w *gogui.Window)     { interactions.Lift(w) }
 var tapped = sharedlib.Tapped
 var disc = sharedlib.Disc
 
-func button(id, glyph string, st gogui.TextStyle, fill gogui.Color, do func(gogui.EventCtx)) gogui.View {
+func button(
+	id, glyph string,
+	st gogui.TextStyle,
+	fill gogui.Color,
+	do func(gogui.EventCtx),
+) gogui.View {
 	return interactions.Button(id, glyph, st, fill, do)
 }

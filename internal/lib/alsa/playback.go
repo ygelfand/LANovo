@@ -154,7 +154,12 @@ func clearNonBlock(f *os.File) error {
 	if errno != 0 {
 		return fmt.Errorf("alsa: reading descriptor flags: %w", errno)
 	}
-	if _, _, errno := syscall.Syscall(syscall.SYS_FCNTL, f.Fd(), syscall.F_SETFL, flags&^syscall.O_NONBLOCK); errno != 0 {
+	if _, _, errno := syscall.Syscall(
+		syscall.SYS_FCNTL,
+		f.Fd(),
+		syscall.F_SETFL,
+		flags&^syscall.O_NONBLOCK,
+	); errno != 0 {
 		return fmt.Errorf("alsa: clearing O_NONBLOCK: %w", errno)
 	}
 	return nil

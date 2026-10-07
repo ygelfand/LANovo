@@ -110,7 +110,13 @@ func shrink(src *image.RGBA, tw, th int) *image.RGBA {
 				}
 			}
 			o := out.PixOffset(x, y)
-			out.Pix[o], out.Pix[o+1], out.Pix[o+2], out.Pix[o+3] = uint8(r/n), uint8(g/n), uint8(b/n), 255
+			out.Pix[o], out.Pix[o+1], out.Pix[o+2], out.Pix[o+3] = uint8(
+				r/n,
+			), uint8(
+				g/n,
+			), uint8(
+				b/n,
+			), 255
 		}
 	}
 	return out

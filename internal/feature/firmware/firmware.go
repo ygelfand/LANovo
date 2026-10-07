@@ -194,7 +194,15 @@ func (u *Firmware) Check(ctx context.Context) {
 	u.found = found
 	u.mu.Unlock()
 
-	slog.Info("update check", "channel", channel.Label(), "running", layout.Version, "offered", found.Version)
+	slog.Info(
+		"update check",
+		"channel",
+		channel.Label(),
+		"running",
+		layout.Version,
+		"offered",
+		found.Version,
+	)
 	u.publish(found)
 }
 

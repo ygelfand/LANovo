@@ -22,8 +22,17 @@ func (a *App) keyboard(w *gogui.Window) gogui.View {
 		return nil
 	}
 	at, view := editor.Keyboard(w, widgets.KeyboardOptions{
-		Size: widgets.KeyboardSize(config.Get().Screen.Keyboard), Palette: palette(), Kit: controls(),
-		Cancel: say.T("keyboard.cancel"), Save: say.T("keyboard.save"), Type: r.Type, Press: r.Press,
+		Size: widgets.KeyboardSize(
+			config.Get().Screen.Keyboard,
+		),
+		Palette: palette(),
+		Kit:     controls(),
+		Cancel: say.T(
+			"keyboard.cancel",
+		),
+		Save:  say.T("keyboard.save"),
+		Type:  r.Type,
+		Press: r.Press,
 	})
 	return placed(at, view)
 }

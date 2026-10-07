@@ -18,10 +18,24 @@ func TestTwoVisualsSplitTheScreenTheLongWay(t *testing.T) {
 	if got := Areas(1920, 1200, 1); !slices.Equal(got, []ui.Rect{{W: 1920, H: 1200}}) {
 		t.Errorf("one: %v", got)
 	}
-	if got := Areas(1920, 1200, 2); !slices.Equal(got, []ui.Rect{{W: 960, H: 1200}, {X: 960, W: 960, H: 1200}}) {
+	if got := Areas(
+		1920,
+		1200,
+		2,
+	); !slices.Equal(
+		got,
+		[]ui.Rect{{W: 960, H: 1200}, {X: 960, W: 960, H: 1200}},
+	) {
 		t.Errorf("landscape: %v", got)
 	}
-	if got := Areas(1200, 1920, 2); !slices.Equal(got, []ui.Rect{{W: 1200, H: 960}, {Y: 960, W: 1200, H: 960}}) {
+	if got := Areas(
+		1200,
+		1920,
+		2,
+	); !slices.Equal(
+		got,
+		[]ui.Rect{{W: 1200, H: 960}, {Y: 960, W: 1200, H: 960}},
+	) {
 		t.Errorf("portrait: %v", got)
 	}
 	if Areas(1200, 1920, 0) != nil {
@@ -60,13 +74,26 @@ func TestTheClockTakesItsColoursFromTheVisualUnderIt(t *testing.T) {
 	areas := Areas(1920, 1200, 2)
 
 	one := Pieces(light, dark, areas, ui.Rect{X: 100, Y: 100, W: 400, H: 200})
-	if len(one) != 1 || !one[0].Palette.Dark || theme.Contrast(one[0].Palette.Text, one[0].Palette.Background) < 4.5 {
+	if len(one) != 1 || !one[0].Palette.Dark ||
+		theme.Contrast(one[0].Palette.Text, one[0].Palette.Background) < 4.5 {
 		t.Errorf("a light theme over a dark visual gave %+v", one)
 	}
-	if got := Pieces(light, dark, areas, ui.Rect{X: 700, Y: 100, W: 600, H: 200}); len(got) != 1 || got[0].Clip.W != 0 {
+	if got := Pieces(
+		light,
+		dark,
+		areas,
+		ui.Rect{X: 700, Y: 100, W: 600, H: 200},
+	); len(got) != 1 ||
+		got[0].Clip.W != 0 {
 		t.Errorf("a clock across two dark visuals was split: %+v", got)
 	}
-	if got := Pieces(light, nil, nil, ui.Rect{W: 400, H: 200}); len(got) != 1 || got[0].Palette != light {
+	if got := Pieces(
+		light,
+		nil,
+		nil,
+		ui.Rect{W: 400, H: 200},
+	); len(got) != 1 ||
+		got[0].Palette != light {
 		t.Error("with no visual the clock left the theme")
 	}
 }
@@ -80,7 +107,8 @@ func TestAClockAcrossDifferentVisualsIsSplitAtTheSeam(t *testing.T) {
 	if len(got) != 2 {
 		t.Fatalf("%d pieces", len(got))
 	}
-	if got[0].Clip != (ui.Rect{X: 700, Y: 400, W: 260, H: 300}) || got[1].Clip != (ui.Rect{X: 960, Y: 400, W: 340, H: 300}) {
+	if got[0].Clip != (ui.Rect{X: 700, Y: 400, W: 260, H: 300}) ||
+		got[1].Clip != (ui.Rect{X: 960, Y: 400, W: 340, H: 300}) {
 		t.Errorf("clips %v %v", got[0].Clip, got[1].Clip)
 	}
 	if !got[0].Palette.Dark || got[1].Palette.Dark {

@@ -72,7 +72,8 @@ func newWifiCmd() *cobra.Command {
 
 	cmd.Flags().BoolVar(&scan, "scan", false, "list what the radio can see")
 	cmd.Flags().StringVar(&join, "join", "", "move to this network")
-	cmd.Flags().StringVar(&passphrase, "passphrase", "", "its passphrase, empty for an open network")
+	cmd.Flags().
+		StringVar(&passphrase, "passphrase", "", "its passphrase, empty for an open network")
 	cmd.Flags().StringVar(&forget, "forget", "", "remove this network, unless it is the one in use")
 	return cmd
 }

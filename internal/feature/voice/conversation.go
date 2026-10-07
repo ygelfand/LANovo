@@ -39,23 +39,39 @@ func (s voiceSpeaker) Underruns() uint64 { _, _, n, _ := s.Stats(); return n }
 type voiceSound struct{ *speaker.Driver }
 
 func (s voiceSound) Claim(name string, fn func(context.Context, turn.Speaker) error) turn.Claim {
-	return s.Driver.Claim(name, func(ctx context.Context, p *speaker.Speaker) error { return fn(ctx, voiceSpeaker{p}) })
+	return s.Driver.Claim(
+		name,
+		func(ctx context.Context, p *speaker.Speaker) error { return fn(ctx, voiceSpeaker{p}) },
+	)
 }
 func newConversation(vs *esphome.VoiceSatellite) *conversation {
 	return turn.NewConversation(vs, turn.Options{
 		Source:  voiceMic{mic.Get()},
 		Speaker: voiceSpeaker{speaker.Get()},
-		Sound:   voiceSound{speaker.Sound()}, Player: media.Get(), Log: activity.Get(), Recorder: recording.Get(),
-		Models:   func() []wake.Model { return wake.Lib().Ours() },
-		Adapting: mic.Get().SetAdapting, Duck: speaker.Sound().Backgrounds().Duck,
-		HardwareTail: speaker.HardwareTail, Shown: Shown.Emit,
-		Failure: feedback.Failure,
-		Words: turn.Words{
-			MaxListen: wakeword.MaxListen, MaxThink: wakeword.MaxThink, FollowUp: wakeword.FollowUp,
-			Buffer: wakeword.Buffer, ChimeLength: wakeword.ChimeLength, Tones: wakeword.Tones, Chime: wakeword.Chime,
-			Delivery: func(slot int) string { return string(wakeword.Delivery(slot)) },
+		Sound: voiceSound{
+			speaker.Sound(),
 		},
-		Muted: func() (bool, error) { return privacy.Get().MicMuted(), nil }, Cancelled: feedback.Canceled,
+		Player:       media.Get(),
+		Log:          activity.Get(),
+		Recorder:     recording.Get(),
+		Models:       func() []wake.Model { return wake.Lib().Ours() },
+		Adapting:     mic.Get().SetAdapting,
+		Duck:         speaker.Sound().Backgrounds().Duck,
+		HardwareTail: speaker.HardwareTail,
+		Shown:        Shown.Emit,
+		Failure:      feedback.Failure,
+		Words: turn.Words{
+			MaxListen:   wakeword.MaxListen,
+			MaxThink:    wakeword.MaxThink,
+			FollowUp:    wakeword.FollowUp,
+			Buffer:      wakeword.Buffer,
+			ChimeLength: wakeword.ChimeLength,
+			Tones:       wakeword.Tones,
+			Chime:       wakeword.Chime,
+			Delivery:    func(slot int) string { return string(wakeword.Delivery(slot)) },
+		},
+		Muted:     func() (bool, error) { return privacy.Get().MicMuted(), nil },
+		Cancelled: feedback.Canceled,
 	})
 }
 

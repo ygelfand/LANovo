@@ -44,7 +44,11 @@ func TestCPUReadsTheWholeMachineNotTheFirstCore(t *testing.T) {
 
 	busy, total := r.CPU()
 	if busy.Value != 100 || total.Value != 200 {
-		t.Errorf("read %v of %v, want 100 of 200 — it took a per core line", busy.Value, total.Value)
+		t.Errorf(
+			"read %v of %v, want 100 of 200 — it took a per core line",
+			busy.Value,
+			total.Value,
+		)
 	}
 }
 

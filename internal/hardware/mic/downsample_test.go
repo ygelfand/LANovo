@@ -62,7 +62,11 @@ func TestWhatWouldFoldBackIsRemoved(t *testing.T) {
 	want := 10000 / math.Sqrt2
 	for _, hz := range []float64{9000, 12000, 15000, 20000} {
 		if got := settled(hz, true, true); 20*math.Log10(got/want+1e-9) > -50 {
-			t.Errorf("%v Hz, which would fold into the voice band, came through at %.1f dB", hz, 20*math.Log10(got/want))
+			t.Errorf(
+				"%v Hz, which would fold into the voice band, came through at %.1f dB",
+				hz,
+				20*math.Log10(got/want),
+			)
 		}
 	}
 }

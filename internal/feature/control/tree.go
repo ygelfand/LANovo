@@ -56,7 +56,17 @@ var does = harness.Does
 // touching is the commands that pretend to be a finger.
 func (c *Control) touching() []*cobra.Command {
 	out := c.inputEngine().Commands()
-	return append(out, does(&cobra.Command{Use: "turn mounted|portrait|landscape|left|right|0|90|180|270", Short: "Rotate what is drawn", Args: cobra.ExactArgs(1)}, turn))
+	return append(
+		out,
+		does(
+			&cobra.Command{
+				Use:   "turn mounted|portrait|landscape|left|right|0|90|180|270",
+				Short: "Rotate what is drawn",
+				Args:  cobra.ExactArgs(1),
+			},
+			turn,
+		),
+	)
 }
 
 // showing is the commands about what is on the panel.

@@ -10,5 +10,9 @@ import (
 func previous() net.IP                     { return shared.Previous(config.Get().Network.Address) }
 func asking(want net.IP) []dhcpv4.Modifier { return shared.RequestOptions(hostname(), want) }
 func remember(addr net.IP) {
-	shared.Remember(addr, func() string { return config.Get().Network.Address }, func(s string) error { return config.Set().Network().Address(s) })
+	shared.Remember(
+		addr,
+		func() string { return config.Get().Network.Address },
+		func(s string) error { return config.Set().Network().Address(s) },
+	)
 }

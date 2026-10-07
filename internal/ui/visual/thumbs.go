@@ -66,7 +66,9 @@ func ThumbnailFit(k Kind, w, h int) *image.RGBA {
 			} else {
 				sh = sw * h / w
 			}
-			crop := image.Rect(0, 0, sw, sh).Add(sb.Min).Add(image.Pt((sb.Dx()-sw)/2, (sb.Dy()-sh)/2))
+			crop := image.Rect(0, 0, sw, sh).
+				Add(sb.Min).
+				Add(image.Pt((sb.Dx()-sw)/2, (sb.Dy()-sh)/2))
 			out = image.NewRGBA(image.Rect(0, 0, w, h))
 			xdraw.ApproxBiLinear.Scale(out, out.Bounds(), src, crop, xdraw.Src, nil)
 		}

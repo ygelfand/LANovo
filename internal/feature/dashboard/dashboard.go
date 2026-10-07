@@ -63,7 +63,14 @@ func (d *Dashboard) Name() string { return "dashboard" }
 
 func (d *Dashboard) Entities() []esphome.Entity { return d.controls.Entities() }
 func state(cfg config.Config) sharedlib.State {
-	return sharedlib.State{Hours: cfg.Screen.Hours.Label(), Face: cfg.Clock.Face.Label(), Position: cfg.Clock.Position.Label(), Size: cfg.Clock.Size.Label(), Ink: cfg.Clock.Ink.Label(), Date: cfg.Clock.Date}
+	return sharedlib.State{
+		Hours:    cfg.Screen.Hours.Label(),
+		Face:     cfg.Clock.Face.Label(),
+		Position: cfg.Clock.Position.Label(),
+		Size:     cfg.Clock.Size.Label(),
+		Ink:      cfg.Clock.Ink.Label(),
+		Date:     cfg.Clock.Date,
+	}
 }
 func (d *Dashboard) Restore(cfg config.Config) { d.controls.Restore(state(cfg)) }
 
@@ -83,13 +90,30 @@ func (d *Dashboard) Redraw() { shell.Get().Redraw() }
 
 func (d *Dashboard) build() {
 	d.controls = sharedlib.NewControls(sharedlib.ControlOptions{
-		DeviceID: component.DeviceScreen, Read: func() sharedlib.State { return state(config.Get()) }, Redraw: d.Redraw,
-		Hours:    sharedlib.Choices(config.HourFormats(), func(v config.HourFormat) error { return config.Set().Screen().Hours(v) }),
-		Face:     sharedlib.Choices(config.Faces(), func(v config.Face) error { return config.Set().Clock().Face(v) }),
-		Position: sharedlib.Choices(config.Positions(), func(v config.Position) error { return config.Set().Clock().Position(v) }),
-		Size:     sharedlib.Choices(config.Sizes(), func(v config.Size) error { return config.Set().Clock().Size(v) }),
-		Ink:      sharedlib.Choices(config.Inks(), func(v config.Ink) error { return config.Set().Clock().Ink(v) }),
-		Date:     func(v bool) error { return config.Set().Clock().Date(v) },
+		DeviceID: component.DeviceScreen,
+		Read:     func() sharedlib.State { return state(config.Get()) },
+		Redraw:   d.Redraw,
+		Hours: sharedlib.Choices(
+			config.HourFormats(),
+			func(v config.HourFormat) error { return config.Set().Screen().Hours(v) },
+		),
+		Face: sharedlib.Choices(
+			config.Faces(),
+			func(v config.Face) error { return config.Set().Clock().Face(v) },
+		),
+		Position: sharedlib.Choices(
+			config.Positions(),
+			func(v config.Position) error { return config.Set().Clock().Position(v) },
+		),
+		Size: sharedlib.Choices(
+			config.Sizes(),
+			func(v config.Size) error { return config.Set().Clock().Size(v) },
+		),
+		Ink: sharedlib.Choices(
+			config.Inks(),
+			func(v config.Ink) error { return config.Set().Clock().Ink(v) },
+		),
+		Date: func(v bool) error { return config.Set().Clock().Date(v) },
 	})
 	d.format, d.face, d.place, d.size, d.ink = d.controls.Format, d.controls.Face, d.controls.Position, d.controls.Size, d.controls.Ink
 	d.date = d.controls.Date

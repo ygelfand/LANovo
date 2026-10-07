@@ -54,7 +54,12 @@ func newBleCmd() *cobra.Command {
 					if err != nil {
 						return err
 					}
-					fmt.Printf("%s\nafter the download, %d bytes:\n%s", v, len(said), hex.Dump(said))
+					fmt.Printf(
+						"%s\nafter the download, %d bytes:\n%s",
+						v,
+						len(said),
+						hex.Dump(said),
+					)
 					return nil
 				}
 
@@ -107,11 +112,15 @@ func newBleCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVar(&load, "load", false, "download the patch and NVM after reading the version")
+	cmd.Flags().
+		BoolVar(&load, "load", false, "download the patch and NVM after reading the version")
 	cmd.Flags().BoolVar(&off, "off", false, "block the radio again")
-	cmd.Flags().BoolVar(&dump, "dump", false, "download, then print what the chip says instead of resetting it")
-	cmd.Flags().DurationVar(&scan, "scan", 0, "after the bring-up, scan for advertisements for this long")
-	cmd.Flags().BoolVar(&active, "active", false, "ask for scan responses rather than only listening")
+	cmd.Flags().
+		BoolVar(&dump, "dump", false, "download, then print what the chip says instead of resetting it")
+	cmd.Flags().
+		DurationVar(&scan, "scan", 0, "after the bring-up, scan for advertisements for this long")
+	cmd.Flags().
+		BoolVar(&active, "active", false, "ask for scan responses rather than only listening")
 	return cmd
 }
 

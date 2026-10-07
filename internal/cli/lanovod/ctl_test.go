@@ -7,7 +7,10 @@ import (
 )
 
 func TestOneCommandIsOneCommand(t *testing.T) {
-	got, err := sequence(strings.NewReader(""), []string{"input", "swipe", "1900", "600", "1400", "600"})
+	got, err := sequence(
+		strings.NewReader(""),
+		[]string{"input", "swipe", "1900", "600", "1400", "600"},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -19,7 +22,10 @@ func TestOneCommandIsOneCommand(t *testing.T) {
 // A sequence is written the way somebody types it, with whatever spacing falls out of quoting it
 // for a shell.
 func TestSemicolonsSeparateCommands(t *testing.T) {
-	got, err := sequence(strings.NewReader(""), []string{"input tap 100 200 ;  device wait 400;display shot /tmp/a.png"})
+	got, err := sequence(
+		strings.NewReader(""),
+		[]string{"input tap 100 200 ;  device wait 400;display shot /tmp/a.png"},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +50,9 @@ func TestEmptyPartsAreDropped(t *testing.T) {
 
 // A file of commands keeps its comments and its spacing, because it is read by people as well.
 func TestStdinIsACommandToALine(t *testing.T) {
-	in := strings.NewReader("# open the drawer\ninput swipe 1900 600 1400 600\n\n  device wait 400  \ndisplay shot\n")
+	in := strings.NewReader(
+		"# open the drawer\ninput swipe 1900 600 1400 600\n\n  device wait 400  \ndisplay shot\n",
+	)
 
 	got, err := sequence(in, []string{"-"})
 	if err != nil {
@@ -60,7 +68,10 @@ func TestStdinIsACommandToALine(t *testing.T) {
 // Semicolons in a file are already separated by the lines they are on, and a command that contains
 // one — a message body, say — must not be cut in half by it.
 func TestStdinDoesNotSplitOnSemicolons(t *testing.T) {
-	got, err := sequence(strings.NewReader("display message info 5 Hi : there; and again\n"), []string{"-"})
+	got, err := sequence(
+		strings.NewReader("display message info 5 Hi : there; and again\n"),
+		[]string{"-"},
+	)
 	if err != nil {
 		t.Fatal(err)
 	}

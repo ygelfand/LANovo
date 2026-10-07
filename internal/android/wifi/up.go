@@ -32,7 +32,11 @@ func Up(d *device.Device) error {
 // loadDriver kickstarts qcacld, which registers wlan0. Writing fwpath calls the driver's own
 // kickstart_driver(), which runs its init and downloads firmware to the chip over SDIO.
 func loadDriver(d *device.Device) error {
-	if out, _ := d.Shell("ls /sys/class/net/" + iface + " 2>/dev/null"); strings.TrimSpace(out) != "" {
+	if out, _ := d.Shell(
+		"ls /sys/class/net/" + iface + " 2>/dev/null",
+	); strings.TrimSpace(
+		out,
+	) != "" {
 		return nil
 	}
 
@@ -41,7 +45,11 @@ func loadDriver(d *device.Device) error {
 	}
 
 	for range 30 {
-		if out, _ := d.Shell("ls /sys/class/net/" + iface + " 2>/dev/null"); strings.TrimSpace(out) != "" {
+		if out, _ := d.Shell(
+			"ls /sys/class/net/" + iface + " 2>/dev/null",
+		); strings.TrimSpace(
+			out,
+		) != "" {
 			return nil
 		}
 		time.Sleep(500 * time.Millisecond)
@@ -95,7 +103,11 @@ func startSupplicant(d *device.Device) error {
 // start asks init for the supplicant. init learns the service by reading InitRC at boot, so the
 // install that first writes it has to run one directly; the reboot hands it over.
 func start(d *device.Device) error {
-	if known, _ := d.Shell("getprop init.svc." + layout.SupplicantService); strings.TrimSpace(known) != "" {
+	if known, _ := d.Shell(
+		"getprop init.svc." + layout.SupplicantService,
+	); strings.TrimSpace(
+		known,
+	) != "" {
 		_, err := d.Shell("setprop ctl.start " + layout.SupplicantService)
 		return err
 	}

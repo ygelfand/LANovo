@@ -80,7 +80,13 @@ func TestLevelerHoldsItsFloorUnderMusic(t *testing.T) {
 			}
 
 			if now := 20 * math.Log10(float64(l.floor)/fullScale); now-was > 1 {
-				t.Errorf("music %+.0f dBFS for %.0fs: floor %.1f -> %.1f dBFS", music, seconds, was, now)
+				t.Errorf(
+					"music %+.0f dBFS for %.0fs: floor %.1f -> %.1f dBFS",
+					music,
+					seconds,
+					was,
+					now,
+				)
 			}
 		}
 	}
@@ -194,7 +200,11 @@ func TestOneLoudFrameDoesNotTakeTheGainAway(t *testing.T) {
 		l.apply(speech(-65))
 	}
 	if l.gain < settled*0.9 {
-		t.Errorf("one loud frame took the gain from %.1f dB to %.1f dB", 20*math.Log10(float64(settled)), 20*math.Log10(float64(l.gain)))
+		t.Errorf(
+			"one loud frame took the gain from %.1f dB to %.1f dB",
+			20*math.Log10(float64(settled)),
+			20*math.Log10(float64(l.gain)),
+		)
 	}
 	if got := levelOf(talk(l, -65, -45, 1)); math.Abs(got-targetDBFS) > 2 {
 		t.Errorf("speech after the loud frame came out at %.1f dBFS, want %.1f", got, targetDBFS)
@@ -298,14 +308,21 @@ func TestLevelIsRelativeToTheRoom(t *testing.T) {
 	loudVoice := level(loud, -17, 40)
 
 	if math.Abs(quietVoice-loudVoice) > 0.1 {
-		t.Errorf("the same voice reads %.2f over a quiet room and %.2f over a loud one", quietVoice, loudVoice)
+		t.Errorf(
+			"the same voice reads %.2f over a quiet room and %.2f over a loud one",
+			quietVoice,
+			loudVoice,
+		)
 	}
 
 	// 18 dB over the room is a quiet voice, not a loud one: captures of someone talking in a room put
 	// speech at 23 dB over the floor at the 90th percentile of frames and 30 dB at its loudest, in the
 	// band the level measures. So this has to show, without being anywhere near the top.
 	if quietVoice < 0.2 || quietVoice > 0.6 {
-		t.Errorf("a voice 18 dB over the room reads %.2f, want it visible and short of the top", quietVoice)
+		t.Errorf(
+			"a voice 18 dB over the room reads %.2f, want it visible and short of the top",
+			quietVoice,
+		)
 	}
 
 	// And ordinary speech reaches most of the way up, or nothing ever fills the ring.
@@ -422,7 +439,11 @@ func TestLevelIgnoresSteadyRoomNoise(t *testing.T) {
 			loudest = math.Max(loudest, float64(math.Float32frombits(l.level.Load())))
 		}
 		if loudest > 0.1 {
-			t.Errorf("%.0f Hz hum rising 5 dB drove the level to %.2f, want it ignored", hz, loudest)
+			t.Errorf(
+				"%.0f Hz hum rising 5 dB drove the level to %.2f, want it ignored",
+				hz,
+				loudest,
+			)
 		}
 	}
 }

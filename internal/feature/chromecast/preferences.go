@@ -11,8 +11,14 @@ func init() {
 		Read: func() preferences.Settings {
 			c := config.Get().Cast
 			return preferences.Settings{
-				YouTube: preferences.YouTube{Device: c.YouTube.Device, Music: c.YouTube.Music, Video: c.YouTube.Video,
-					Skip: c.YouTube.Skip, OnDemand: c.YouTube.OnDemand, LiveDelay: c.YouTube.LiveDelay},
+				YouTube: preferences.YouTube{
+					Device:    c.YouTube.Device,
+					Music:     c.YouTube.Music,
+					Video:     c.YouTube.Video,
+					Skip:      c.YouTube.Skip,
+					OnDemand:  c.YouTube.OnDemand,
+					LiveDelay: c.YouTube.LiveDelay,
+				},
 				Prime: preferences.Prime{Persist: c.Prime.Persist, SkipIntro: c.Prime.SkipIntro},
 			}
 		},

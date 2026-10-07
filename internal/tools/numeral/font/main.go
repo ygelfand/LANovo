@@ -48,7 +48,11 @@ func main() {
 	var (
 		set  = flag.String("set", "", "the set's name, which is its directory under svg/")
 		in   = flag.String("in", "", "the font to read")
-		bear = flag.Float64("bearing", 0.08, "empty margin down each side, as a fraction of the box")
+		bear = flag.Float64(
+			"bearing",
+			0.08,
+			"empty margin down each side, as a fraction of the box",
+		)
 	)
 	flag.Parse()
 

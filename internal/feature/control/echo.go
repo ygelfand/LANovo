@@ -24,14 +24,19 @@ func recordEcho(ctx context.Context, args []string) (string, error) {
 		path = args[1]
 	}
 
-	frames, err := capture.Events(ctx, d, func(receive func(mic.EchoFrame)) func() { return mic.Get().Echo.Listen(receive) }, func(f mic.EchoFrame) mic.EchoFrame {
-		for i := range f.Mic {
-			f.Mic[i] = append([]int16(nil), f.Mic[i]...)
-			f.Out[i] = append([]int16(nil), f.Out[i]...)
-		}
-		f.Reference = append([]int16(nil), f.Reference...)
-		return f
-	})
+	frames, err := capture.Events(
+		ctx,
+		d,
+		func(receive func(mic.EchoFrame)) func() { return mic.Get().Echo.Listen(receive) },
+		func(f mic.EchoFrame) mic.EchoFrame {
+			for i := range f.Mic {
+				f.Mic[i] = append([]int16(nil), f.Mic[i]...)
+				f.Out[i] = append([]int16(nil), f.Out[i]...)
+			}
+			f.Reference = append([]int16(nil), f.Reference...)
+			return f
+		},
+	)
 	if err != nil {
 		return "", err
 	}

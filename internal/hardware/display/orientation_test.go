@@ -43,7 +43,16 @@ func TestProjectStaysInTheFramebuffer(t *testing.T) {
 		for _, v := range [][2]int{{0, 0}, {w - 1, 0}, {0, h - 1}, {w - 1, h - 1}} {
 			x, y := rot.Project(fbW, fbH, v[0], v[1])
 			if x < 0 || x >= fbW || y < 0 || y >= fbH {
-				t.Errorf("%v: Project(%d, %d) = %d,%d, outside %dx%d", rot, v[0], v[1], x, y, fbW, fbH)
+				t.Errorf(
+					"%v: Project(%d, %d) = %d,%d, outside %dx%d",
+					rot,
+					v[0],
+					v[1],
+					x,
+					y,
+					fbW,
+					fbH,
+				)
 			}
 		}
 	}

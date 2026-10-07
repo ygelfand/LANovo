@@ -15,8 +15,11 @@ func helperProfiles() []onvif.Profile {
 	var out []onvif.Profile
 	for _, i := range served() {
 		sz := sizes[i]
-		out = append(out, onvif.Profile{Token: paths[i], Name: streamName(i), Width: sz.Width, Height: sz.Height,
-			FPS: livecam.FPS, Bitrate: livecam.Bitrate(sz.Width, sz.Height), Path: paths[i]})
+		out = append(
+			out,
+			onvif.Profile{Token: paths[i], Name: streamName(i), Width: sz.Width, Height: sz.Height,
+				FPS: livecam.FPS, Bitrate: livecam.Bitrate(sz.Width, sz.Height), Path: paths[i]},
+		)
 	}
 	return out
 }
@@ -28,8 +31,17 @@ func (p *pump) helper(stop chan struct{}) error {
 	}
 	defer livecam.Leave(s, frames)
 	sz := livecam.Sizes()[p.at]
-	slog.Info("rtsp stream up", "stream", streamName(p.at), "size", fmt.Sprintf("%dx%d", sz.Width, sz.Height),
-		"fps", livecam.FPS, "source", "lanovo-camera")
+	slog.Info(
+		"rtsp stream up",
+		"stream",
+		streamName(p.at),
+		"size",
+		fmt.Sprintf("%dx%d", sz.Width, sz.Height),
+		"fps",
+		livecam.FPS,
+		"source",
+		"lanovo-camera",
+	)
 
 	for {
 		select {

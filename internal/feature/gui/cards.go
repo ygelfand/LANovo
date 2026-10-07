@@ -29,9 +29,17 @@ func messageCard(w *gogui.Window) gogui.View {
 	if m.Title != "" {
 		st := t.TextStyleDisplay
 		st.Color = tint
-		words = append(words, gogui.Text(gogui.TextCfg{Text: m.Title, TextStyle: st, Mode: gogui.TextModeWrap}))
+		words = append(
+			words,
+			gogui.Text(gogui.TextCfg{Text: m.Title, TextStyle: st, Mode: gogui.TextModeWrap}),
+		)
 	}
-	words = append(words, gogui.Text(gogui.TextCfg{Text: m.Body, TextStyle: t.TextStyleTitle, Mode: gogui.TextModeWrap}))
+	words = append(
+		words,
+		gogui.Text(
+			gogui.TextCfg{Text: m.Body, TextStyle: t.TextStyleTitle, Mode: gogui.TextModeWrap},
+		),
+	)
 
 	card := gogui.Row(panel(gogui.ContainerCfg{
 		ID:        "message",
@@ -43,8 +51,23 @@ func messageCard(w *gogui.Window) gogui.View {
 		Spacing:   gogui.SpacingLarge,
 		Clip:      true,
 		Content: []gogui.View{
-			gogui.Column(gogui.ContainerCfg{Width: t.Cfg.RadiusMedium, Sizing: gogui.FixedFill, Color: tint, Radius: gogui.RadiusSmall, Padding: gogui.NoPadding}),
-			gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Spacing: gogui.SpacingMedium, Content: words}),
+			gogui.Column(
+				gogui.ContainerCfg{
+					Width:   t.Cfg.RadiusMedium,
+					Sizing:  gogui.FixedFill,
+					Color:   tint,
+					Radius:  gogui.RadiusSmall,
+					Padding: gogui.NoPadding,
+				},
+			),
+			gogui.Column(
+				gogui.ContainerCfg{
+					Sizing:  gogui.FillFit,
+					Padding: gogui.NoPadding,
+					Spacing: gogui.SpacingMedium,
+					Content: words,
+				},
+			),
 		},
 	}))
 	return gogui.Column(gogui.ContainerCfg{
@@ -83,9 +106,27 @@ func timerCard(w *gogui.Window) gogui.View {
 	if c.Name != "" {
 		line = append(line, gogui.Label(c.Name, secondary()))
 	}
-	content := []gogui.View{gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, VAlign: gogui.VAlignMiddle, Padding: gogui.NoPadding, Spacing: gogui.SpacingMedium, Content: line})}
+	content := []gogui.View{
+		gogui.Row(
+			gogui.ContainerCfg{
+				Sizing:  gogui.FillFit,
+				VAlign:  gogui.VAlignMiddle,
+				Padding: gogui.NoPadding,
+				Spacing: gogui.SpacingMedium,
+				Content: line,
+			},
+		),
+	}
 	if !c.Ringing && c.Of > 0 {
-		content = append(content, progressBar(gogui.ProgressBarCfg{Percent: float32(min(max(c.Left.Seconds()/c.Of.Seconds(), 0), 1)), Sizing: gogui.FillFit}))
+		content = append(
+			content,
+			progressBar(
+				gogui.ProgressBarCfg{
+					Percent: float32(min(max(c.Left.Seconds()/c.Of.Seconds(), 0), 1)),
+					Sizing:  gogui.FillFit,
+				},
+			),
+		)
 	}
 
 	var stop func(gogui.EventCtx)
@@ -147,7 +188,12 @@ func assistantPanel(w *gogui.Window) gogui.View {
 				gap := size * 2
 				left := (bandW - (size*float32(len(dots)) + gap*float32(len(dots)-1))) / 2
 				for i, lift := range dots {
-					dc.FilledCircle(left+float32(i)*(size+gap)+size/2, bandH/2-size*float32(lift), size/2, ink)
+					dc.FilledCircle(
+						left+float32(i)*(size+gap)+size/2,
+						bandH/2-size*float32(lift),
+						size/2,
+						ink,
+					)
 				}
 				return
 			}
@@ -158,7 +204,14 @@ func assistantPanel(w *gogui.Window) gogui.View {
 			left := (bandW - (wide*n + gap*(n-1))) / 2
 			for i, part := range bars {
 				high := max(bandH*float32(part), 1)
-				dc.FilledRoundedRect(left+float32(i)*(wide+gap), (bandH-high)/2, wide, high, wide/2, ink)
+				dc.FilledRoundedRect(
+					left+float32(i)*(wide+gap),
+					(bandH-high)/2,
+					wide,
+					high,
+					wide/2,
+					ink,
+				)
 			}
 		},
 	})
@@ -170,20 +223,44 @@ func assistantPanel(w *gogui.Window) gogui.View {
 		}
 		stageH := min(bandW/1.6, float32(vh)*share)
 		stage := gogui.Row(gogui.ContainerCfg{
-			ID: "assistant-stage", Width: stageH * 1.6, Height: stageH, Sizing: gogui.FixedFixed, Padding: gogui.NoPadding,
+			ID:      "assistant-stage",
+			Width:   stageH * 1.6,
+			Height:  stageH,
+			Sizing:  gogui.FixedFixed,
+			Padding: gogui.NoPadding,
 			AmendLayout: func(e gogui.EventCtx) {
 				s := e.Layout.Shape
-				assistant.Stage(ui.Rect{X: int(s.X), Y: int(s.Y), W: int(s.Width), H: int(s.Height)}, assistant.AboveUI, look)
+				assistant.Stage(
+					ui.Rect{X: int(s.X), Y: int(s.Y), W: int(s.Width), H: int(s.Height)},
+					assistant.AboveUI,
+					look,
+				)
 			},
 		})
-		band = gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, HAlign: gogui.HAlignCenter, Content: []gogui.View{stage}})
+		band = gogui.Row(
+			gogui.ContainerCfg{
+				Sizing:  gogui.FillFit,
+				Padding: gogui.NoPadding,
+				HAlign:  gogui.HAlignCenter,
+				Content: []gogui.View{stage},
+			},
+		)
 	}
 	content := []gogui.View{band}
 	if show.Said != "" {
 		content = append(content, gogui.Label(show.Said, secondary()))
 	}
 	if show.Reply != "" {
-		content = append(content, gogui.Text(gogui.TextCfg{Text: assistant.Revealed(show.Reply, show.Reveal), TextStyle: t.TextStyleTitle, Mode: gogui.TextModeWrap}))
+		content = append(
+			content,
+			gogui.Text(
+				gogui.TextCfg{
+					Text:      assistant.Revealed(show.Reply, show.Reveal),
+					TextStyle: t.TextStyleTitle,
+					Mode:      gogui.TextModeWrap,
+				},
+			),
+		)
 	}
 	return gogui.Column(panel(gogui.ContainerCfg{
 		ID:           "assistant",
@@ -203,10 +280,24 @@ func captions(w *gogui.Window, show assistant.Showing) gogui.View {
 	t := gogui.CurrentTheme()
 	var lines []gogui.View
 	if show.Said != "" {
-		lines = append(lines, gogui.Text(gogui.TextCfg{Text: show.Said, TextStyle: secondary(), Mode: gogui.TextModeWrap}))
+		lines = append(
+			lines,
+			gogui.Text(
+				gogui.TextCfg{Text: show.Said, TextStyle: secondary(), Mode: gogui.TextModeWrap},
+			),
+		)
 	}
 	if show.Reply != "" {
-		lines = append(lines, gogui.Text(gogui.TextCfg{Text: assistant.Revealed(show.Reply, show.Reveal), TextStyle: t.TextStyleTitle, Mode: gogui.TextModeWrap}))
+		lines = append(
+			lines,
+			gogui.Text(
+				gogui.TextCfg{
+					Text:      assistant.Revealed(show.Reply, show.Reveal),
+					TextStyle: t.TextStyleTitle,
+					Mode:      gogui.TextModeWrap,
+				},
+			),
+		)
 	}
 	var content []gogui.View
 	if len(lines) > 0 {
@@ -271,14 +362,27 @@ func privacyMarks(w *gogui.Window) gogui.View {
 					return []float32{0, drop, reach, drop, 0, reach + drop}
 				}
 				for k := 4; k >= 1; k-- {
-					dc.FilledPolygon(shape(size+float32(k)*size*0.05, 2), gogui.Black.WithOpacity(0.12))
+					dc.FilledPolygon(
+						shape(size+float32(k)*size*0.05, 2),
+						gogui.Black.WithOpacity(0.12),
+					)
 				}
 				dc.FilledPolygon(shape(size, 0), red)
 			},
 		})
-		mark := picture(painted("privacy/"+key, glyph, glyph, markRed, func(s ui.Surface, r ui.Rect, _ theme.Theme) {
-			ui.DrawIcon(s, icon, r, theme.Color{R: 0xff, G: 0xff, B: 0xff}, markRed)
-		}), glyph, glyph)
+		mark := picture(
+			painted(
+				"privacy/"+key,
+				glyph,
+				glyph,
+				markRed,
+				func(s ui.Surface, r ui.Rect, _ theme.Theme) {
+					ui.DrawIcon(s, icon, r, theme.Color{R: 0xff, G: 0xff, B: 0xff}, markRed)
+				},
+			),
+			glyph,
+			glyph,
+		)
 		return []gogui.View{
 			placed(ui.Rect{X: int(x), Y: 0, W: int(size * 1.3), H: int(size * 1.3)}, tri),
 			placed(ui.Rect{X: gx, Y: at, W: glyph, H: glyph}, mark),

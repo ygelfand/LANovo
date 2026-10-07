@@ -21,5 +21,10 @@ func upgradeCard(w *gogui.Window) gogui.View {
 	if theme.Dark(pal.Background) {
 		img, key = ui.Night(), "logo/night"
 	}
-	return widgets.UpgradeCard(w, widgets.Upgrade{Active: up.Active(), At: up.At, Version: up.Version}, pal, imageSrc(key, img))
+	return widgets.UpgradeCard(
+		w,
+		widgets.Upgrade{Active: up.Active(), At: up.At, Version: up.Version},
+		pal,
+		imageSrc(key, img),
+	)
 }

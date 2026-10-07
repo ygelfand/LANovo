@@ -14,12 +14,25 @@ func volumeCard(w *gogui.Window) gogui.View {
 	stream, open := vol.Picked()
 	var choices []widgets.VolumeChoice
 	for _, s := range config.Streams() {
-		choices = append(choices, widgets.VolumeChoice{Key: string(s), Label: s.Label(), Level: vol.Level(s)})
+		choices = append(
+			choices,
+			widgets.VolumeChoice{Key: string(s), Label: s.Label(), Level: vol.Level(s)},
+		)
 	}
 	return toolkit.VolumeCard(w, widgets.VolumeOptions{
-		Current: widgets.VolumeChoice{Key: string(stream), Label: stream.Label(), Level: vol.Level(stream)},
-		Choices: choices, Open: open, Left: config.Get().Screen.Volume == config.EdgeLeft,
-		Set: func(v int) { vol.Set(stream, v) }, Pick: func(s string) { vol.Pick(config.Stream(s)) },
-		Linger: vol.Linger, Expand: vol.Expand, Dismiss: vol.Dismiss, Grip: grip,
+		Current: widgets.VolumeChoice{
+			Key:   string(stream),
+			Label: stream.Label(),
+			Level: vol.Level(stream),
+		},
+		Choices: choices,
+		Open:    open,
+		Left:    config.Get().Screen.Volume == config.EdgeLeft,
+		Set:     func(v int) { vol.Set(stream, v) },
+		Pick:    func(s string) { vol.Pick(config.Stream(s)) },
+		Linger:  vol.Linger,
+		Expand:  vol.Expand,
+		Dismiss: vol.Dismiss,
+		Grip:    grip,
 	})
 }

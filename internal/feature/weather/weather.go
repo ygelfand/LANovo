@@ -24,7 +24,16 @@ const (
 	attrUV          = "uv_index"
 )
 
-var attributes = []string{"", attrTemperature, attrUnit, attrHumidity, attrFeels, attrWind, attrWindUnit, attrUV}
+var attributes = []string{
+	"",
+	attrTemperature,
+	attrUnit,
+	attrHumidity,
+	attrFeels,
+	attrWind,
+	attrWindUnit,
+	attrUV,
+}
 
 type Reading struct {
 	Condition   string
@@ -70,7 +79,8 @@ func (w *Weather) Fetch() {
 	go func() {
 		ctx, cancel := context.WithTimeout(context.Background(), fetchWait)
 		defer cancel()
-		list, err := homeassistant.Get().Entities(ctx, homeassistant.Filter{Domains: []string{"weather"}})
+		list, err := homeassistant.Get().
+			Entities(ctx, homeassistant.Filter{Domains: []string{"weather"}})
 		w.mu.Lock()
 		w.offered, w.failed, w.fetching, w.fetched = list, err, false, true
 		w.mu.Unlock()
@@ -115,7 +125,8 @@ func (w *Weather) Now() (Reading, bool) {
 		return Reading{}, false
 	}
 	if entity == "" {
-		if _, _, fetched := w.Offered(); !fetched && homeassistant.Get().Access() == homeassistant.Allowed {
+		if _, _, fetched := w.Offered(); !fetched &&
+			homeassistant.Get().Access() == homeassistant.Allowed {
 			w.Fetch()
 		}
 		return Reading{}, false
