@@ -25,7 +25,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
-	"github.com/ygelfand/LANovo/internal/feature/network"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -38,6 +37,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/media/cast"
 	_ "github.com/ygelfand/libcountertop/pkg/media/cast/protocols/all"
 	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube"
+	mdns "github.com/ygelfand/libcountertop/pkg/network/advertise"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
@@ -573,8 +573,8 @@ func (r *Receiver) up() error {
 
 	host := layout.Slug(name)
 	safe.Go("cast advertise", func() {
-		network.Advertise(ctx, "cast", func(ips []net.IP) (func(), error) {
-			if err := advert.On(host, network.Strings(ips)); err != nil {
+		mdns.Advertise(ctx, "cast", func(ips []net.IP) (func(), error) {
+			if err := advert.On(host, mdns.Strings(ips)); err != nil {
 				return nil, err
 			}
 			return advert.Close, nil

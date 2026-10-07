@@ -26,8 +26,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/surface"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	backend "github.com/ygelfand/libcountertop/pkg/display/gogui"
-	interaction "github.com/ygelfand/libcountertop/pkg/display/interaction"
 	navigation "github.com/ygelfand/libcountertop/pkg/display/navigation"
+	sharedplayer "github.com/ygelfand/libcountertop/pkg/display/playerview"
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 )
 
@@ -144,10 +144,8 @@ func (a *App) Run(ctx context.Context) error {
 	rot := display.Get().Orientation()
 	vw, vh := rot.Size(nw, nh)
 	gogui.SetTheme(current())
-	interactions = interaction.New()
-	editor = widgets.NewEditor()
+	presentation.Reset()
 	cameraPreview = &widgets.LivePreview{}
-	gestures = &widgets.Gestures{Release: release}
 	w := gogui.SimpleWindow("lanovo", vw, vh, a, func(w *gogui.Window) { w.SetView(a.root) })
 	r, err := backend.New(surface.UILayer{C: c, ID: layerID}, w)
 	if err != nil {
@@ -199,8 +197,8 @@ func (a *App) Run(ctx context.Context) error {
 		r.Touch(p, uint64(t.ID), float32(t.X), float32(t.Y))
 		if t.Phase == touch.Up {
 			w.QueueCommand(func(w *gogui.Window) {
-				lift(w)
-				if !typing(w) {
+				presentation.Presses.Lift(w)
+				if !presentation.Editor.Typing(w) {
 					w.ClearFocus()
 				}
 			})
@@ -237,12 +235,12 @@ func (a *App) Run(ctx context.Context) error {
 	defer stopShell()
 	stopMoved := shell.Get().Changed.Listen(func(shell.Change) {
 		w.QueueCommand(func(w *gogui.Window) {
-			editor.Shift, editor.Symbols = false, false
+			presentation.Editor.Shift, presentation.Editor.Symbols = false, false
 			w.ClearFocus()
 		})
 	})
 	defer stopMoved()
-	for _, o := range []*Overlay{{Priority: priorityAlert, Build: messageCard}, {Priority: priorityNotice, Build: timerCard}, {Priority: priorityNotice + 1, Build: assistantPanel}, {Priority: priorityMini, Build: a.mini}, {Priority: priorityMarks, Build: privacyMarks}, {Priority: priorityUpgrade, Build: upgradeCard}} {
+	for _, o := range []*Overlay{{Priority: priorityAlert, Build: messageCard}, {Priority: priorityNotice, Build: timerCard}, {Priority: priorityNotice + 1, Build: assistantPanel}, {Priority: sharedplayer.PriorityMini, Build: a.mini}, {Priority: priorityMarks, Build: privacyMarks}, {Priority: priorityUpgrade, Build: upgradeCard}} {
 		a.nav.Show(o)
 		defer a.nav.Hide(o)
 	}

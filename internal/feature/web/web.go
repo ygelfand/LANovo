@@ -18,9 +18,9 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/hardware/metrics"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/libcountertop/pkg/hook"
+	netaddress "github.com/ygelfand/libcountertop/pkg/network/address"
 )
 
 func init() {
@@ -173,7 +173,7 @@ func Adopted() bool { return config.Get().API.Adopted }
 // address would need bracketing there and is not something anyone copies off a panel by hand.
 // The lease this device runs on is v4, so holding out for one costs nothing.
 func address() string {
-	for _, ip := range metrics.Addresses() {
+	for _, ip := range netaddress.Addresses() {
 		if ip.To4() != nil {
 			return ip.String()
 		}

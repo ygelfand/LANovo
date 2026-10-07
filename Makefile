@@ -57,16 +57,17 @@ SETRW = blockdev --setrw $$(ls -d /dev/block/bootdevice/by-name /dev/block/platf
 
 NDK ?= $(firstword $(ANDROID_NDK_HOME) $(ANDROID_NDK_LATEST_HOME) $(wildcard /opt/homebrew/Caskroom/android-ndk/*/AndroidNDK*.app/Contents/NDK))
 NDK_HOST := $(if $(filter Darwin,$(shell uname -s)),darwin-x86_64,linux-x86_64)
-NDK_CC = $(NDK)/toolchains/llvm/prebuilt/$(NDK_HOST)/bin/armv7a-linux-androideabi27-clang
+BOARD ?=
+NATIVE_API = $(shell go run ./cmd/native-target $(BOARD))
 LIBCOUNTERTOP_MODULE := github.com/ygelfand/libcountertop
 # Resolve both Go and native sources from the same selected module (or local go.work).
 LIBCOUNTERTOP_DIR = $(shell go list -m -f '{{.Dir}}' $(LIBCOUNTERTOP_MODULE))
 SURFACE_SRC = $(LIBCOUNTERTOP_DIR)/native/surface
-SURFACE_BIN := $(BUILD_DIR)/lanovo-surface
+SURFACE_BIN = $(BUILD_DIR)/lanovo-surface-api$(NATIVE_API)
 SURFACE := /system/bin/lanovo-surface
-CAMSHIM_BIN := $(BUILD_DIR)/liblanovo-camshim.so
-CAMERA_BIN := $(BUILD_DIR)/lanovo-camera
-COUNTERTOP_NATIVE = $(MAKE) -f "$(LIBCOUNTERTOP_DIR)/native/Makefile" API=27 PREFIX=lanovo OUT="$(abspath $(BUILD_DIR))" NDK="$(NDK)" SURFACE_BIN="$(abspath $(SURFACE_BIN))" CAMERA_BIN="$(abspath $(CAMERA_BIN))" CAMSHIM_BIN="$(abspath $(CAMSHIM_BIN))"
+CAMSHIM_BIN = $(BUILD_DIR)/liblanovo-camshim-api$(NATIVE_API).so
+CAMERA_BIN = $(BUILD_DIR)/lanovo-camera-api$(NATIVE_API)
+COUNTERTOP_NATIVE = $(MAKE) -f "$(LIBCOUNTERTOP_DIR)/native/Makefile" API="$(NATIVE_API)" PREFIX=lanovo OUT="$(abspath $(BUILD_DIR))" NDK="$(NDK)" SURFACE_BIN="$(abspath $(SURFACE_BIN))" CAMERA_BIN="$(abspath $(CAMERA_BIN))" CAMSHIM_BIN="$(abspath $(CAMSHIM_BIN))"
 PARTS_DIR := internal/parts/payload
 
 .PHONY: build

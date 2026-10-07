@@ -11,8 +11,5 @@ import (
 type View = sharedview.View
 
 func (v *Visuals) View() *View {
-	return sharedview.New(v, sharedview.Options{
-		Open: gpu.Open, Orientation: func() int { return int(display.Get().Orientation()) },
-		Visible: shell.Get().Visible, MaxFPS: func() int { return config.Get().Visual.MaxFPS },
-	})
+	return sharedview.New(v, sharedview.Dependencies{GPU: gpu.Get(), Display: display.Get(), Shell: shell.Get(), Settings: config.VisualSection})
 }

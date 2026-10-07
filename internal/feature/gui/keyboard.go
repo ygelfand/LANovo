@@ -7,13 +7,6 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
-var editor = widgets.NewEditor()
-
-func textField(cfg gogui.InputCfg, save func()) gogui.View {
-	return editor.Field(controls(), cfg, save)
-}
-func typing(w *gogui.Window) bool { return editor.Typing(w) }
-
 func (a *App) keyboard(w *gogui.Window) gogui.View {
 	a.mu.Lock()
 	r := a.r
@@ -21,12 +14,12 @@ func (a *App) keyboard(w *gogui.Window) gogui.View {
 	if r == nil {
 		return nil
 	}
-	at, view := editor.Keyboard(w, widgets.KeyboardOptions{
+	at, view := presentation.Editor.Keyboard(w, widgets.KeyboardOptions{
 		Size: widgets.KeyboardSize(
 			config.Get().Screen.Keyboard,
 		),
-		Palette: palette(),
-		Kit:     controls(),
+		Palette: presentation.Palette(),
+		Kit:     presentation.Kit(),
 		Cancel: say.T(
 			"keyboard.cancel",
 		),

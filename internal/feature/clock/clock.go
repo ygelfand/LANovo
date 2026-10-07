@@ -163,3 +163,8 @@ func sleep(ctx context.Context, d time.Duration) error {
 		return nil
 	}
 }
+
+// WatchSteps follows changes to the system clock.
+func (c *Clock) WatchSteps(changed func(time.Duration)) func() {
+	return c.Stepped.Listen(changed)
+}

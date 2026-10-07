@@ -2,13 +2,13 @@ package voice
 
 import (
 	"context"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/activity"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/recording"
-	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
@@ -44,34 +44,15 @@ func (s voiceSound) Claim(name string, fn func(context.Context, turn.Speaker) er
 		func(ctx context.Context, p *speaker.Speaker) error { return fn(ctx, voiceSpeaker{p}) },
 	)
 }
+func (s voiceSound) Duck(on bool) { s.Backgrounds().Duck(on) }
 func newConversation(vs *esphome.VoiceSatellite) *conversation {
-	return turn.NewConversation(vs, turn.Options{
-		Source:  voiceMic{mic.Get()},
-		Speaker: voiceSpeaker{speaker.Get()},
-		Sound: voiceSound{
-			speaker.Sound(),
-		},
-		Player:       media.Get(),
-		Log:          activity.Get(),
-		Recorder:     recording.Get(),
-		Models:       func() []wake.Model { return wake.Lib().Ours() },
-		Adapting:     mic.Get().SetAdapting,
-		Duck:         speaker.Sound().Backgrounds().Duck,
-		HardwareTail: speaker.HardwareTail,
-		Shown:        Shown.Emit,
-		Failure:      feedback.Failure,
-		Words: turn.Words{
-			MaxListen:   wakeword.MaxListen,
-			MaxThink:    wakeword.MaxThink,
-			FollowUp:    wakeword.FollowUp,
-			Buffer:      wakeword.Buffer,
-			ChimeLength: wakeword.ChimeLength,
-			Tones:       wakeword.Tones,
-			Chime:       wakeword.Chime,
-			Delivery:    func(slot int) string { return string(wakeword.Delivery(slot)) },
-		},
-		Muted:     func() (bool, error) { return privacy.Get().MicMuted(), nil },
-		Cancelled: feedback.Canceled,
+	return turn.NewConversation(vs, turn.Dependencies{
+		Source: voiceMic{mic.Get()}, Speaker: voiceSpeaker{speaker.Get()}, Sound: voiceSound{speaker.Sound()},
+		Player: media.Get(), Log: activity.Get(), Recorder: recording.Get(), Models: func() []wake.Model { return wake.Lib().Ours() },
+		HardwareTail: speaker.HardwareTail, Failure: feedback.Failure, Cancelled: feedback.Canceled,
+		Words:        turn.Words{Settings: config.WakeSection, Speaker: speaker.Sound()},
+		Muted:        func() (bool, error) { return privacy.Get().MicMuted(), nil },
+		Presentation: &turn.Presentation{Settings: config.WakeSection, Shown: &Shown},
 	})
 }
 

@@ -1,13 +1,11 @@
 package config
 
-// Sendspin is the room's part in whole-house audio.
-type Sendspin struct {
-	// Enabled is whether the room listens for a server. Off by default: it opens a port and
-	// advertises itself, which is not something to start doing without being asked.
-	Enabled bool `json:"enabled"`
-}
+import "github.com/ygelfand/libcountertop/pkg/settings/schema"
 
-func defaultSendspin() Sendspin { return Sendspin{} }
+// Sendspin is the room's part in whole-house audio.
+type Sendspin = schema.Sendspin
+
+var defaultSendspin = schema.DefaultSendspin
 
 // SendspinWriter changes the room's part in whole-house audio.
 type SendspinWriter struct{ st *Store }

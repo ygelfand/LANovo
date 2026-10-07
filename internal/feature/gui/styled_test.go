@@ -58,7 +58,7 @@ func TestEveryControlGoesThroughTheStyle(t *testing.T) {
 			if what == "ColorPanel" {
 				if _, ok := unstyled[name+":ColorPanel"]; !ok {
 					t.Errorf(
-						"%s: a hand-picked panel colour; use panel() or another style.Kit element",
+						"%s: a hand-picked panel colour; use presentation.Toolkit.Panel() or another style.Kit element",
 						fs.Position(sel.Pos()),
 					)
 				}

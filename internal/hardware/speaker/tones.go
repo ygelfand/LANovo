@@ -2,71 +2,18 @@ package speaker
 
 import (
 	"math"
-	"time"
 
-	"github.com/ygelfand/LANovo/internal/config"
+	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
 )
 
 // Note is one tone in a chime. A zero frequency is a rest.
-type Note struct {
-	Freq float64
-	Ms   int
-}
+type Note = sharedtone.Note
 
 // The sounds the device makes about itself, as opposed to anything it was asked to play.
 //
 // Direction carries the meaning — rising for on, falling for off — and a hold is two notes where a
 // press is one, so they are told apart without looking.
-const toneLevel = 0.3
-
-var (
-	ToneVolume = []Note{{Freq: 880, Ms: 80}}
-
-	ToneMute     = []Note{{Freq: 880, Ms: 70}, {Freq: 587, Ms: 110}}
-	ToneUnmute   = []Note{{Freq: 587, Ms: 70}, {Freq: 880, Ms: 110}}
-	ToneMuteHold = []Note{{Freq: 587, Ms: 70}, {Freq: 440, Ms: 130}}
-
-	// ToneTrouble falls twice and ends low, which no acknowledgement does. A request that cannot be
-	// served has to sound different from one that was, or a failure is indistinguishable from the
-	// device having ignored the person entirely.
-	ToneTrouble = []Note{{Freq: 622, Ms: 90}, {Freq: 466, Ms: 90}, {Freq: 349, Ms: 180}}
-
-	// ToneCancel is one short falling pair: the request was dropped, which is neither a failure nor
-	// an answer.
-	ToneCancel = []Note{{Freq: 698, Ms: 60}, {Freq: 466, Ms: 90}}
-
-	// ToneTimer is a timer that has finished. Three of the same note, because it repeats until
-	// somebody stops it and a melody wears out faster than a beep does.
-	ToneTimer = []Note{
-		{Freq: 880, Ms: 160}, {Ms: 130},
-		{Freq: 880, Ms: 160}, {Ms: 130},
-		{Freq: 880, Ms: 160},
-	}
-)
-
-// Length is how long notes take to sound, rests included.
-func Length(notes []Note) time.Duration {
-	var ms int
-	for _, n := range notes {
-		ms += n.Ms
-	}
-	return time.Duration(ms) * time.Millisecond
-}
-
-// chimes is what an acknowledgement can sound like. Told apart by shape rather than pitch, so two
-// devices in earshot set to different ones are distinguishable without knowing which is which.
-//
-// None maps to nothing, and Chime already declines to play an empty tone, so silence needs no
-// special case anywhere downstream.
-var chimes = map[config.Chime][]Note{
-	config.ChimeNone:  nil,
-	config.ChimeChirp: ToneVolume,
-	config.ChimeDing:  {{Freq: 1319, Ms: 160}},
-	config.ChimeRise:  {{Freq: 659, Ms: 55}, {Freq: 880, Ms: 55}, {Freq: 1319, Ms: 110}},
-}
-
-// ChimeTone is what an acknowledgement set to c sounds like.
-func ChimeTone(c config.Chime) []Note { return chimes[c] }
+const toneLevel = sharedtone.Level
 
 // Chime plays a tone alongside whatever is playing rather than instead of it: pressing volume during
 // a reply should beep and leave the reply alone.

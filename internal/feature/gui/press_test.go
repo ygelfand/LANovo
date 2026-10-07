@@ -6,9 +6,7 @@ import (
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
-
 	backend "github.com/ygelfand/libcountertop/pkg/display/gogui"
-	interaction "github.com/ygelfand/libcountertop/pkg/display/interaction"
 )
 
 type frames chan struct{}
@@ -25,7 +23,7 @@ func (f frames) Frame(int, [4]float32, []float32, []uint32) (uint32, uint32, err
 
 func pressRig(t *testing.T, fired chan string) (*backend.Renderer, frames) {
 	t.Helper()
-	interactions = interaction.New()
+	presentation.Reset()
 	f := make(frames, 64)
 	w := gogui.SimpleWindow("press", 400, 400, &struct{}{}, func(w *gogui.Window) {
 		w.SetView(func(*gogui.Window) gogui.View {
@@ -33,9 +31,9 @@ func pressRig(t *testing.T, fired chan string) (*backend.Renderer, frames) {
 				gogui.ContainerCfg{
 					Sizing:     gogui.FillFill,
 					Scrollable: true,
-					OnGesture:  holdStill,
+					OnGesture:  presentation.HoldStill,
 					Content: []gogui.View{
-						pressable(
+						presentation.Presses.Pressable(
 							gogui.Row,
 							gogui.ContainerCfg{ID: "row", Sizing: gogui.FillFit, Height: 100},
 							func(gogui.EventCtx) { fired <- "row" },

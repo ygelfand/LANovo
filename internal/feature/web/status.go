@@ -14,6 +14,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/metrics"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
+	netaddress "github.com/ygelfand/libcountertop/pkg/network/address"
 )
 
 //go:embed status.html
@@ -128,7 +129,7 @@ func network(r metrics.Reader) Group {
 
 	// Every address, v6 included. This is a page for looking at rather than a code to scan, so
 	// the reason the onboarding screen shows only v4 does not apply.
-	ips := metrics.Addresses()
+	ips := netaddress.Addresses()
 	if len(ips) == 0 {
 		rows = append(rows, Row{"Address", unknown})
 	}

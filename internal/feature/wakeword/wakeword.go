@@ -16,11 +16,11 @@ import (
 	"log/slog"
 	"sync"
 
-	esphome "github.com/ygelfand/go-esphome-device"
-
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
+	esphome "github.com/ygelfand/go-esphome-device"
+	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
 	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
@@ -243,4 +243,4 @@ func (w *WakeWord) Restore(c config.Config) {
 }
 
 // Chime plays the tone slot n is set to.
-func Chime(slot int) { speaker.Sound().Chime(speaker.ChimeTone(saved(slot).Tone)) }
+func Chime(slot int) { speaker.Sound().Chime(sharedtone.Wake(saved(slot).Tone)) }

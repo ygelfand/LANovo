@@ -4,14 +4,15 @@ package livecam
 import (
 	"errors"
 	"fmt"
+	"log/slog"
+	"time"
+
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/mtkcamera"
 	camerasession "github.com/ygelfand/libcountertop/pkg/camera/session"
-	"log/slog"
-	"time"
 )
 
 const FPS = 30
@@ -27,7 +28,7 @@ type Session = camerasession.Session
 type Size = camerasession.Size
 
 // Sizes is each stream as it is encoded, turned to stand upright.
-func Sizes() []Size { return sizesFor(Turn()) }
+func Sizes() []Size { return hub.Sizes() }
 
 func sizesFor(q int) []Size {
 	k := Saved()

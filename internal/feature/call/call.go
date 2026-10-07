@@ -1,6 +1,8 @@
 package call
 
 import (
+	"sync"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
@@ -12,11 +14,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
-	"sync"
-	"time"
 )
 
-// component binds application configuration restoration to the shared controller.
+// componentCall binds application configuration restoration to the shared controller.
 type componentCall struct{ *sharedcall.Calls }
 
 func (c *componentCall) Restore(v config.Config) { c.Calls.Restore(v.Call) }
@@ -27,19 +27,16 @@ var shared *sharedcall.Calls
 func Get() *sharedcall.Calls {
 	once.Do(func() {
 		shared = sharedcall.New(sharedcall.Dependencies{
-			Settings: config.CallSettings{},
-			Identity: discovery.Self,
+			Settings: config.CallSection,
 			Peers:    discovery.Get(),
 			Port:     web.Port,
 			Shell:    shell.Get(),
 			Privacy:  privacy.Get(),
 			Media:    media.Get(),
 			Sound:    device{},
-			Camera:   sharedcall.NewCamera(livecam.Sessions(), livecam.Sizes),
+			Camera:   sharedcall.NewCamera(livecam.Sessions()),
 			Display:  display.Get(),
-			Message: func(title, body string, hold time.Duration) {
-				message.Get().Show(message.Message{Title: title, Body: body, Tone: message.ToneInfo}, hold)
-			},
+			Messages: message.Get(),
 		})
 	})
 	return shared

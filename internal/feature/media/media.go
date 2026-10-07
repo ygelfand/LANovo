@@ -90,12 +90,8 @@ func (p *Player) build() {
 	arb := speaker.Sound().Backgrounds()
 	p.stream = pcm.New(pcm.Options{
 		Sink: speaker.Get(), Rate: speaker.Rate, Channels: speaker.Channels, Changed: p.refresh,
-		DuckDB: func() float64 { return config.Get().Media.DuckDB },
-		Arbitration: pcm.Arbitration{
-			Took: func(p pcm.Producer) { arb.Took(p) },
-			Gave: func(p pcm.Producer) { arb.Gave(p) },
-			Owns: func(p pcm.Producer) bool { return arb.Owns(p) },
-		},
+		DuckDB:      func() float64 { return config.Get().Media.DuckDB },
+		Arbitration: arb,
 	})
 }
 

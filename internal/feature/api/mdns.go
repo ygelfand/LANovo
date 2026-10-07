@@ -4,15 +4,14 @@ import (
 	"context"
 	"net"
 
-	"github.com/ygelfand/go-esphome-device/mdns"
-
-	"github.com/ygelfand/LANovo/internal/feature/network"
 	"github.com/ygelfand/LANovo/internal/layout"
+	"github.com/ygelfand/go-esphome-device/mdns"
+	netadvert "github.com/ygelfand/libcountertop/pkg/network/advertise"
 )
 
 // advertise publishes the addresses the device actually has; the library falls back to loopback without them.
 func (a *API) advertise(ctx context.Context, port int) {
-	network.Advertise(ctx, "esphome", func(ips []net.IP) (func(), error) {
+	netadvert.Advertise(ctx, "esphome", func(ips []net.IP) (func(), error) {
 		adv, err := mdns.Advertise(mdns.Config{
 			Name:         a.name,
 			FriendlyName: a.srv.Info.FriendlyName,

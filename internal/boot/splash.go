@@ -33,7 +33,7 @@ func startSplash(ctx context.Context) {
 
 		w, h := viewed(ctx)
 		rv := reveal.New(chosen())
-		layer, err := gpu.Open(w, h)
+		layer, err := gpu.Get().Open(w, h)
 		if err != nil {
 			slog.Error(
 				"the boot animation could not start",

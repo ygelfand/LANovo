@@ -6,7 +6,6 @@ import (
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
-
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/call"
@@ -15,6 +14,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
+	sharedhomeview "github.com/ygelfand/libcountertop/pkg/display/homeview"
 	"github.com/ygelfand/libcountertop/pkg/display/style"
 	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
 	"github.com/ygelfand/libcountertop/pkg/say"
@@ -40,7 +40,7 @@ func callBody(w *gogui.Window) gogui.View {
 	controls := []gogui.View{callButtons(vw, c)}
 	if c.State == sharedcall.Talking {
 		level := volume.Get().Level(config.StreamVoice)
-		controls = append([]gogui.View{rowView("call-volume", "call",
+		controls = append([]gogui.View{presentation.Row("call-volume", "call",
 			widget.Row{Label: say.T("call.volume"), Kind: widget.Slider, Level: level},
 			func(l int) { volume.Get().Set(config.StreamVoice, l) }, false)}, controls...)
 	}
@@ -226,7 +226,7 @@ func callButtons(vw int, c sharedcall.Call) gogui.View {
 	switch c.State {
 	case sharedcall.Ringing:
 		buttons = []gogui.View{
-			wideKey(
+			presentation.Toolkit.WideKey(
 				"call-decline",
 				gogui.IconClose,
 				glyph,
@@ -238,7 +238,7 @@ func callButtons(vw int, c sharedcall.Call) gogui.View {
 		if c.Video {
 			buttons = append(
 				buttons,
-				wideKey(
+				presentation.Toolkit.WideKey(
 					"call-answer-audio",
 					gogui.IconPhone,
 					glyph,
@@ -246,7 +246,7 @@ func callButtons(vw int, c sharedcall.Call) gogui.View {
 					style.Partial,
 					func(gogui.EventCtx) { calls.AnswerAudio() },
 				),
-				wideKey(
+				presentation.Toolkit.WideKey(
 					"call-answer-video",
 					gogui.IconVideo,
 					glyph,
@@ -258,7 +258,7 @@ func callButtons(vw int, c sharedcall.Call) gogui.View {
 		} else {
 			buttons = append(
 				buttons,
-				wideKey(
+				presentation.Toolkit.WideKey(
 					"call-answer",
 					gogui.IconPhone,
 					glyph,
@@ -270,7 +270,7 @@ func callButtons(vw int, c sharedcall.Call) gogui.View {
 		}
 	case sharedcall.Calling:
 		buttons = []gogui.View{
-			wideKey(
+			presentation.Toolkit.WideKey(
 				"call-cancel",
 				gogui.IconClose,
 				glyph,
@@ -285,7 +285,7 @@ func callButtons(vw int, c sharedcall.Call) gogui.View {
 			mute, state = say.T("call.unmute"), style.Chosen
 		}
 		buttons = []gogui.View{
-			wideKey(
+			presentation.Toolkit.WideKey(
 				"call-mute",
 				mute,
 				words,
@@ -301,7 +301,7 @@ func callButtons(vw int, c sharedcall.Call) gogui.View {
 			}
 			buttons = append(
 				buttons,
-				wideKey(
+				presentation.Toolkit.WideKey(
 					"call-camera",
 					camera,
 					words,
@@ -313,7 +313,7 @@ func callButtons(vw int, c sharedcall.Call) gogui.View {
 		}
 		buttons = append(
 			buttons,
-			wideKey(
+			presentation.Toolkit.WideKey(
 				"call-hangup",
 				gogui.IconClose,
 				glyph,
@@ -362,7 +362,7 @@ func profileScreen(p *sharedcall.Profile) *Screen {
 func profileBody(w *gogui.Window, prof *sharedcall.Profile) gogui.View {
 	p, ok := discovery.Get().Find(prof.ID)
 	if !ok {
-		return column([]gogui.View{gogui.Label(say.T("call.gone"), secondary())})
+		return sharedhomeview.Column([]gogui.View{gogui.Label(say.T("call.gone"), secondary())})
 	}
 	t := gogui.CurrentTheme().Cfg
 	vw, vh := w.WindowSize()
@@ -408,7 +408,7 @@ func profileBody(w *gogui.Window, prof *sharedcall.Profile) gogui.View {
 		),
 	}
 	for i, r := range details {
-		rows = append(rows, rowView(fmt.Sprintf("profile-%d", i), "profile", r, nil, false))
+		rows = append(rows, presentation.Row(fmt.Sprintf("profile-%d", i), "profile", r, nil, false))
 	}
 
 	glyph := iconStyle(t.TextStyleDef.Color)
@@ -423,7 +423,7 @@ func profileBody(w *gogui.Window, prof *sharedcall.Profile) gogui.View {
 		Padding: gogui.NewPadding(reach()*0.5, 0, 0, 0),
 		Spacing: gogui.SpacingLarge,
 		Content: []gogui.View{
-			wideKey(
+			presentation.Toolkit.WideKey(
 				"profile-audio",
 				gogui.IconPhone,
 				glyph,
@@ -431,8 +431,8 @@ func profileBody(w *gogui.Window, prof *sharedcall.Profile) gogui.View {
 				style.Partial,
 				func(gogui.EventCtx) { dial(p, false) },
 			),
-			wideKey("profile-video", gogui.IconVideo, glyph, height, style.Partial, video),
+			presentation.Toolkit.WideKey("profile-video", gogui.IconVideo, glyph, height, style.Partial, video),
 		},
 	}))
-	return column(rows)
+	return sharedhomeview.Column(rows)
 }

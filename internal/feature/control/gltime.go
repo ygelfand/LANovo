@@ -38,7 +38,7 @@ func gltime(args []string) (string, error) {
 		seconds = 5
 	}
 	w, h := display.Get().Native()
-	l, err := gpu.Open(w, h)
+	l, err := gpu.Get().Open(w, h)
 	if err != nil {
 		return "", err
 	}

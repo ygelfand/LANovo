@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
+	shareda2dp "github.com/ygelfand/libcountertop/pkg/bluetooth/a2dp"
 	"github.com/ygelfand/libcountertop/pkg/bluetooth/avrcp"
 )
 
@@ -32,14 +33,14 @@ func sink(args []string) (string, error) {
 			within = time.Duration(ms) * time.Millisecond
 		}
 
-		a2dp.Trace(within)
+		shareda2dp.Trace(within)
 		return fmt.Sprintf("tracing frames for %s, then: adb logcat -s lanovod\n", within), nil
 
 	// Opening the channel is a round trip, so the lookup is two steps: once to ask for the channel,
 	// again to ask the question. A single command would send the question before there was
 	// anywhere to send it.
 	case "look":
-		a2dp.Trace(10 * time.Second)
+		shareda2dp.Trace(10 * time.Second)
 
 		if len(args) < 2 {
 			a2dp.Get().Looking()
@@ -56,7 +57,7 @@ func sink(args []string) (string, error) {
 
 	// Three steps, because each is a round trip: a channel, then a session on it, then the image.
 	case "art":
-		a2dp.Trace(10 * time.Second)
+		shareda2dp.Trace(10 * time.Second)
 
 		if len(args) < 2 {
 			return "", fmt.Errorf("bt: art PSM | art hello | art HANDLE")
@@ -82,12 +83,12 @@ func sink(args []string) (string, error) {
 		return fmt.Sprintf("asked for the image channel on %#04x, then: bt art hello\n", psm), nil
 
 	case "browse":
-		a2dp.Trace(10 * time.Second)
+		shareda2dp.Trace(10 * time.Second)
 		a2dp.Get().Browsing()
 		return "asked for the browsing channel, then: adb logcat -s lanovod\n", nil
 
 	case "queue":
-		a2dp.Trace(10 * time.Second)
+		shareda2dp.Trace(10 * time.Second)
 		a2dp.Get().Queue()
 		return "asked the addressed player what is lined up, then: adb logcat -s lanovod\n", nil
 
@@ -100,7 +101,7 @@ func sink(args []string) (string, error) {
 			}
 			within = time.Duration(secs) * time.Second
 		}
-		return a2dp.Dump(within)
+		return a2dp.Get().Dump(within)
 
 	case "attrs":
 		ids := []uint32{avrcp.AttrCoverArt}
@@ -117,7 +118,7 @@ func sink(args []string) (string, error) {
 
 		// The answer comes back on the channel rather than from here, so the trace has to be on to
 		// see it. Long enough for the round trip and no longer.
-		a2dp.Trace(3 * time.Second)
+		shareda2dp.Trace(3 * time.Second)
 		a2dp.Get().Attributes(ids...)
 		return fmt.Sprintf("asked for %v, watch the trace\n", ids), nil
 	}

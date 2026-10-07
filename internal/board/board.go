@@ -16,6 +16,9 @@ const (
 )
 
 type Board struct {
+	// NativeAPI is the Android ABI used by this board's helpers; zero means none.
+	NativeAPI int
+
 	Name  string
 	Model string
 	SoC   SoC

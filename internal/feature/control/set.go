@@ -512,7 +512,7 @@ func presenceRows() []setting {
 
 func homeRows() []setting {
 	var rows []setting
-	for _, s := range homecontrol.Selections() {
+	for _, s := range homecontrol.Get().Selections() {
 		rows = append(rows, setting{
 			name:  "home.control." + s.Key,
 			field: "Home.Control",
@@ -529,13 +529,13 @@ func homeRows() []setting {
 		name:  "home.enabled",
 		field: "Home.Enabled",
 		says:  func(c config.Config) string { return knob.OnOff(c.Home.Enabled) },
-		use:   toggle(homecontrol.SetEnabled),
+		use:   toggle(homecontrol.Get().SetEnabled),
 	})
 	rows = append(rows, setting{
 		name:  "home.combine",
 		field: "Home.Combine",
 		says:  func(c config.Config) string { return knob.OnOff(c.Home.Combine) },
-		use:   toggle(homecontrol.SetCombined),
+		use:   toggle(homecontrol.Get().SetCombined),
 	})
 	return rows
 }

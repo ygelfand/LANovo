@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/hardware/speaker"
+	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
 )
 
 // heard swaps the speaker for a list of what reached it, and points the settings at a file of this
@@ -83,7 +83,7 @@ func TestTheAcknowledgementFollowsTheSetting(t *testing.T) {
 			t.Errorf("%v played %d times, want once", chime, len(*played))
 			continue
 		}
-		if want := speaker.ChimeTone(chime); len((*played)[0]) != len(want) {
+		if want := sharedtone.Wake(chime); len((*played)[0]) != len(want) {
 			t.Errorf(
 				"%v played %d notes, want the %d its tone has",
 				chime,

@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"context"
-	"github.com/libp2p/zeroconf/v2"
 	"log/slog"
 	"net"
 	"slices"
@@ -10,15 +9,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/libp2p/zeroconf/v2"
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
-	"github.com/ygelfand/LANovo/internal/feature/network"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
+	mdns "github.com/ygelfand/libcountertop/pkg/network/advertise"
 	sharedpeer "github.com/ygelfand/libcountertop/pkg/network/peer"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 	"github.com/ygelfand/libcountertop/pkg/say"
@@ -61,6 +61,9 @@ func Get() *Discovery {
 }
 
 func (d *Discovery) Name() string { return "discovery" }
+
+// Self describes this device using its current identity and addresses.
+func (d *Discovery) Self() Peer { return Self() }
 
 func (d *Discovery) Peers() []Peer {
 	d.mu.Lock()
@@ -141,10 +144,10 @@ func record(self string) []string {
 }
 
 func advertise(ctx context.Context, self string) {
-	network.Advertise(ctx, "countertop", func(ips []net.IP) (func(), error) {
+	mdns.Advertise(ctx, "countertop", func(ips []net.IP) (func(), error) {
 		name := config.Get().Device.Name
 		srv, err := zeroconf.RegisterProxy(
-			name, service, domain, web.Port, layout.Slug(name), network.Strings(ips),
+			name, service, domain, web.Port, layout.Slug(name), mdns.Strings(ips),
 			record(self), nil, zeroconf.TTL(ttl),
 		)
 		if err != nil {

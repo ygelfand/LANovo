@@ -1,14 +1,15 @@
 package voice
 
 import (
+	"slices"
+	"testing"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
 	esphome "github.com/ygelfand/go-esphome-device"
 	"github.com/ygelfand/libcountertop/pkg/assistant/turn"
 	"github.com/ygelfand/libcountertop/pkg/inference/wakeslots"
-	"slices"
-	"testing"
 )
 
 func TestSecondaryPhraseUsesItsSlotRatherThanTheCompactAdvertisement(t *testing.T) {
@@ -16,7 +17,7 @@ func TestSecondaryPhraseUsesItsSlotRatherThanTheCompactAdvertisement(t *testing.
 	selected.Set([]string{"", "B"})
 	c := turn.NewConversation(
 		&esphome.VoiceSatellite{ActiveWakeWords: []string{"B"}},
-		turn.Options{Word: selected.ID},
+		turn.Dependencies{Word: selected.ID},
 	)
 	if phrase, ok := c.PhraseFor(1); !ok || phrase != "B" {
 		t.Fatal(phrase, ok)

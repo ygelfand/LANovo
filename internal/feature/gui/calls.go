@@ -6,7 +6,6 @@ import (
 	"log/slog"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
-
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
@@ -78,7 +77,7 @@ func callsBoard(at ui.Rect, _ dashboard.Tab, pal theme.Theme) gogui.View {
 		Padding:    gogui.NoPadding,
 		Spacing:    gogui.SpacingPx(gap),
 		Scrollable: true,
-		OnGesture:  holdStill,
+		OnGesture:  presentation.HoldStill,
 		Content:    views,
 	}))
 }
@@ -91,7 +90,7 @@ func peerTile(id string, side float32, p discovery.Peer, pal theme.Theme) gogui.
 	glyph := iconStyle(t.TextStyleDef.Color)
 	glyph.Size = reach() * 0.4
 	action := func(suffix, icon string, do func(gogui.EventCtx)) gogui.View {
-		return wideKey(id+"-"+suffix, icon, glyph, reach()*0.9, style.Partial, do)
+		return presentation.Toolkit.WideKey(id+"-"+suffix, icon, glyph, reach()*0.9, style.Partial, do)
 	}
 	var video func(gogui.EventCtx)
 	if p.Video() && board.Current().CameraWidth > 0 {
@@ -141,7 +140,7 @@ func peerTile(id string, side float32, p discovery.Peer, pal theme.Theme) gogui.
 			),
 		},
 	}
-	controls().Tile(&cfg, style.Rest)
+	presentation.Kit().Tile(&cfg, style.Rest)
 	return gogui.Column(cfg)
 }
 

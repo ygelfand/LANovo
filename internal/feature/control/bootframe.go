@@ -55,7 +55,7 @@ func bootFrame(args []string) (string, error) {
 		return "", fmt.Errorf("%q is not a number, a size or a theme", a)
 	}
 
-	l, err := gpu.OpenOffscreen(w, h)
+	l, err := gpu.Get().OpenOffscreen(w, h)
 	if err != nil {
 		return "", err
 	}

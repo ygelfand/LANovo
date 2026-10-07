@@ -295,3 +295,6 @@ func (h *HomeAssistant) call(
 		return nil, ctx.Err()
 	}
 }
+
+// Watch reports Home Assistant access changes until unsubscribed.
+func (h *HomeAssistant) Watch(changed func(Access)) func() { return h.Changed.Listen(changed) }

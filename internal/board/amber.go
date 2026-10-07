@@ -1,6 +1,7 @@
 package board
 
 var Amber = Board{
+	NativeAPI:    27,
 	Name:         "amber",
 	Model:        "Lenovo Smart Display 8",
 	SoC:          Qualcomm,

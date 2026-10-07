@@ -8,7 +8,6 @@ import (
 
 	"github.com/go-gui-org/go-glyph"
 	gogui "github.com/go-gui-org/go-gui/gui"
-
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/weather"
 	"github.com/ygelfand/LANovo/internal/ui"
@@ -93,7 +92,7 @@ func weatherSample(w *gogui.Window, look config.WeatherLook, tw, th float32) gog
 		HAlign:  gogui.HAlignCenter,
 		VAlign:  gogui.VAlignMiddle,
 		Clip:    true,
-		Content: []gogui.View{build(w, th*0.28, r, palette())},
+		Content: []gogui.View{build(w, th*0.28, r, presentation.Palette())},
 	})
 }
 
@@ -187,7 +186,7 @@ func cardWeather(_ *gogui.Window, size float32, r weather.Reading, ink theme.The
 			),
 		)
 	}
-	return gogui.Row(panel(gogui.ContainerCfg{
+	return gogui.Row(presentation.Toolkit.Panel(gogui.ContainerCfg{
 		Padding: gogui.PaddingLarge,
 		Spacing: gogui.SpacingPx(size * 0.3),
 		VAlign:  gogui.VAlignMiddle,

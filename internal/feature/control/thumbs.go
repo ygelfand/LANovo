@@ -64,7 +64,7 @@ func thumbs(args []string) (string, error) {
 }
 
 func renderThumb(k visual.Kind, w, h, frames int) (*image.RGBA, error) {
-	l, err := gpu.OpenOffscreen(w, h)
+	l, err := gpu.Get().OpenOffscreen(w, h)
 	if err != nil {
 		return nil, err
 	}
@@ -170,7 +170,7 @@ func clip(args []string) (string, error) {
 	if h > w {
 		rw, rh = rh, rw
 	}
-	l, err := gpu.OpenOffscreen(rw, rh)
+	l, err := gpu.Get().OpenOffscreen(rw, rh)
 	if err != nil {
 		return "", err
 	}

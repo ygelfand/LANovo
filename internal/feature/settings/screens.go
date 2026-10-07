@@ -47,7 +47,7 @@ func root() *shell.Page {
 		NetworkPage:    func() shell.View { return networkPage() },
 		FeaturesPage:   func() shell.View { return featuresPage() },
 		DisplayPage:    func() shell.View { return displayPage() },
-		HomePage:       func() shell.View { return homecontrol.Page() },
+		HomePage:       func() shell.View { return homecontrol.Get().Page() },
 		VolumePage:     func() shell.View { return volume.Page() },
 		AssistantsPage: func() shell.View { return assistantsPage() },
 		SystemPage:     func() shell.View { return systemPage() },

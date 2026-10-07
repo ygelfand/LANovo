@@ -4,11 +4,9 @@ import (
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
-
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard/face"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
-	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/idle"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
@@ -18,7 +16,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
 	"github.com/ygelfand/libcountertop/pkg/display/style"
-	widgets "github.com/ygelfand/libcountertop/pkg/display/widgets"
+	sharedwidgets "github.com/ygelfand/libcountertop/pkg/display/widgets"
+	sharedhome "github.com/ygelfand/libcountertop/pkg/homeassistant/homecontrol"
 	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
 	"github.com/ygelfand/libcountertop/pkg/say"
 )
@@ -33,9 +32,9 @@ func (a *App) screenFor(v shell.View) *Screen {
 		return a.videoScreen(t)
 	case *shell.Page:
 		return pageScreen(t)
-	case *homecontrol.Home:
+	case *sharedhome.Home:
 		return homeScreen(t)
-	case *homecontrol.Picker:
+	case *sharedhome.Picker:
 		return pickerScreen(t)
 	case *sharedcall.View:
 		return callScreen(t)
@@ -77,22 +76,18 @@ func secondary() gogui.TextStyle {
 }
 
 func pageBody(w *gogui.Window, p *shell.Page) gogui.View {
-	return widgets.PageBody(w, p, widgets.PageRenderer{
-		Row: rowView, Tile: tileView, Preview: livePreview, Beside: beside,
+	return sharedwidgets.PageBody(w, p, sharedwidgets.PageRenderer{
+		Row: presentation.Row, Tile: tileView, Preview: livePreview, Beside: beside,
 	})
 }
 
-func fieldRow(id string, r widget.Row) gogui.View {
-	return editor.Row(controls(), id, r)
-}
-
-var cameraPreview = &widgets.LivePreview{}
+var cameraPreview = &sharedwidgets.LivePreview{}
 
 func livePreview(w *gogui.Window, watch func(ui.Rect) bool) gogui.View {
 	return cameraPreview.View(w, say.T("camera.starting"), watch)
 }
 
-var beside = widgets.Beside
+var beside = sharedwidgets.Beside
 
 func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) gogui.View {
 	t := gogui.CurrentTheme().Cfg
@@ -104,9 +99,9 @@ func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) go
 	case c.Weather != "":
 		content = append(content, weatherSample(w, c.Weather, float32(tw), float32(th)))
 	case c.Style != "":
-		content = append(content, styleSample(c.Style, float32(tw), float32(th)))
+		content = append(content, sharedwidgets.StyleSample(c.Style, float32(tw), float32(th)))
 	case c.Palette != nil:
-		content = append(content, swatchView(*c.Palette, float32(tw), float32(th)))
+		content = append(content, sharedwidgets.Swatch(*c.Palette, float32(tw), float32(th)))
 	case native:
 		content = append(content, faceTile(w, build, tw, th))
 	case c.Paint != nil:
@@ -117,7 +112,7 @@ func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) go
 					"tile/"+page+"/"+c.Label+"/"+time.Now().Format("15:04"),
 					tw,
 					th,
-					palette().Surface,
+					presentation.Palette().Surface,
 					c.Paint,
 				),
 				tw,
@@ -125,37 +120,16 @@ func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) go
 			),
 		)
 	}
-	return toolkit.Tile(id, c.Label, c.Chosen, content, tap)
+	return presentation.Toolkit.Tile(id, c.Label, c.Chosen, content, tap)
 }
 
-func preview(page string, r widget.Row) gogui.View { return widgets.RowPreview(page, r, palette()) }
+func reach() float32 { return style.Reach() }
 
-func rowView(id, page string, r widget.Row, tap func(int), glyphs bool) gogui.View {
-	return toolkit.Row(
-		id,
-		page,
-		r,
-		tap,
-		glyphs,
-		widgets.RowRenderer{Field: fieldRow, Preview: preview, Grip: grip},
-	)
-}
-
-var outline = widgets.Outline
-
-var highlight = widgets.Highlight
-
-var gestures = &widgets.Gestures{Release: release}
-
-func reach() float32               { return style.Reach() }
-func grip(v gogui.View) gogui.View { return gestures.Grip(v) }
-func holdStill(e gogui.EventCtx)   { gestures.HoldStill(e) }
-
-var swatchView = widgets.Swatch
+var swatchView = sharedwidgets.Swatch
 
 func faceTile(w *gogui.Window, build faceView, tw, th int) gogui.View {
 	cfg := config.Get()
-	pal := palette()
+	pal := presentation.Palette()
 	r := face.Read(time.Now(), cfg.Screen.Hours == config.TwentyFourHour).Undated()
 	return gogui.Column(gogui.ContainerCfg{
 		Width:   float32(tw),

@@ -14,6 +14,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
+	sharedgpu "github.com/ygelfand/libcountertop/pkg/display/gpu"
 )
 
 const (
@@ -56,7 +57,7 @@ func LookFor(show Showing) Look {
 }
 
 type slot struct {
-	layer  *gpu.Layer
+	layer  *sharedgpu.Layer
 	vis    visual.Visual
 	kind   string
 	base   int
@@ -239,8 +240,8 @@ func (s *stager) frame(w wanted, hiding bool) {
 }
 
 func (s *stager) open(w wanted, z int, at ui.Rect) *slot {
-	l, err := gpu.OpenAt(w.at.W, w.at.H, z)
-	if errors.Is(err, gpu.ErrNoHelper) {
+	l, err := gpu.Get().OpenAt(w.at.W, w.at.H, z)
+	if errors.Is(err, sharedgpu.ErrNoHelper) {
 		return nil
 	}
 	if err != nil {

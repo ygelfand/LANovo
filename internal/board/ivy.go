@@ -1,6 +1,7 @@
 package board
 
 var Ivy = Board{
+	NativeAPI:    27,
 	Name:         "ivy",
 	Model:        "Lenovo Smart Display 7",
 	SoC:          MediaTek,

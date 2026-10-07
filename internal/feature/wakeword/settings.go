@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/hardware/speaker"
+	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
 )
 
 // What a slot is set to is read from the config, never back out of the entity. The entities are a
@@ -20,7 +20,7 @@ func Tones(slot int) bool { return !saved(slot).Tone.Silent() }
 
 // ChimeLength is how long that sound lasts.
 func ChimeLength(slot int) time.Duration {
-	return speaker.Length(speaker.ChimeTone(saved(slot).Tone))
+	return sharedtone.Length(sharedtone.Wake(saved(slot).Tone))
 }
 
 // Delivery is how a slot's reply should reach the device.

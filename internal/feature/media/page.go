@@ -2,7 +2,6 @@ package media
 
 import (
 	"sync"
-	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -19,15 +18,7 @@ var theCard *sharedcard.Card
 
 func card() *sharedcard.Card {
 	cardOnce.Do(func() {
-		theCard = sharedcard.New(
-			sharedcard.Options{
-				Now:    func() Now { return Get().Now() },
-				Source: func() Source { return Get().source() },
-				Idle:   func() time.Duration { return config.Get().Idle.Media.After() },
-				Reset:  func() { Get().sourceOwner().ResetSession() },
-				Shell:  shell.Get(),
-			},
-		)
+		theCard = sharedcard.New(sharedcard.Dependencies{Player: Get(), Idle: config.IdleSection, Shell: shell.Get()})
 	})
 	return theCard
 }
@@ -43,23 +34,11 @@ func onRail() {
 			shell.Get().Push(Page())
 		}})
 }
-func Heading(now Now) string {
-	if now.Title != "" {
-		return now.Title
-	}
-	if now.Paused {
-		return "Paused"
-	}
-	if now.Playing {
-		return "Playing"
-	}
-	return "Nothing playing"
-}
 
 // transport is whoever the buttons reach: whoever holds the card, or Home Assistant before anything
 // has played.
-func Transport() Source {
-	if s := Get().source(); s != nil {
+func (p *Player) Transport() Controller {
+	if s := p.source(); s != nil {
 		return s
 	}
 	return homeAssistant{}
@@ -79,3 +58,8 @@ func (homeAssistant) Stop()         { Get().Stop() }
 func (homeAssistant) Now() Now      { return Get().queued() }
 func (homeAssistant) Kind() Kind    { return FromQueue }
 func (homeAssistant) Label() string { return "" }
+
+func (p *Player) Holder() Source { return p.source() }
+
+// ResetSession drops the media card's completed source session.
+func (p *Player) ResetSession() { p.sourceOwner().ResetSession() }

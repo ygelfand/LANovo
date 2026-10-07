@@ -2,12 +2,13 @@ package gui
 
 import (
 	gogui "github.com/go-gui-org/go-gui/gui"
-
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	sharedwidgets "github.com/ygelfand/libcountertop/pkg/display/widgets"
+	sharedhome "github.com/ygelfand/libcountertop/pkg/homeassistant/homecontrol"
 )
 
 type tabKind struct {
@@ -16,7 +17,7 @@ type tabKind struct {
 }
 
 var tabKinds = map[string]tabKind{
-	homecontrol.TabKind: {glyph: homeGlyph, board: homeBoard},
+	sharedhome.TabKind: {glyph: homeGlyph, board: homeBoard},
 	discovery.TabKind: {
 		glyph: func(dashboard.Tab) string { return gogui.IconPhone },
 		board: callsBoard,
@@ -24,11 +25,11 @@ var tabKinds = map[string]tabKind{
 }
 
 func homeGlyph(t dashboard.Tab) string {
-	return glyphFor(homecontrol.Selection{Key: t.Key})
+	return glyphFor(sharedhome.Selection{Key: t.Key})
 }
 
 func homeBoard(at ui.Rect, t dashboard.Tab, pal theme.Theme) gogui.View {
-	s, ok := homecontrol.Dash().Find(t.Key)
+	s, ok := homecontrol.Get().Dash().Find(t.Key)
 	if !ok {
 		return nil
 	}
@@ -48,7 +49,7 @@ func tabStrip(at ui.Rect, tabs []dashboard.Tab, open string, pal theme.Theme) go
 			Spacing: gogui.SpacingMedium,
 			VAlign:  gogui.VAlignMiddle,
 		}
-		tab(&cfg, &st, chosen(t.Key == open))
+		presentation.Toolkit.Tab(&cfg, &st, sharedwidgets.Chosen(t.Key == open))
 		content := []gogui.View{gogui.Label(t.Name, st)}
 		if kind, ok := tabKinds[t.Kind]; ok && kind.glyph != nil {
 			mark := iconStyle(st.Color)
@@ -58,7 +59,7 @@ func tabStrip(at ui.Rect, tabs []dashboard.Tab, open string, pal theme.Theme) go
 		cfg.Content = content
 		pills = append(
 			pills,
-			pressable(gogui.Row, cfg, func(gogui.EventCtx) { dashboard.Show(t.Key) }),
+			presentation.Presses.Pressable(gogui.Row, cfg, func(gogui.EventCtx) { dashboard.Show(t.Key) }),
 		)
 	}
 	return placed(at, gogui.Row(gogui.ContainerCfg{

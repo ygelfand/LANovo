@@ -16,11 +16,11 @@ import (
 	"log/slog"
 	"sync"
 
-	esphome "github.com/ygelfand/go-esphome-device"
-
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
+	esphome "github.com/ygelfand/go-esphome-device"
+	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
 )
 
 func init() {
@@ -114,20 +114,20 @@ type Note = speaker.Note
 
 // Failure says something did not work: a request that cannot be served has to sound different from
 // one that was, or it is indistinguishable from the device having ignored the person.
-func Failure() { sound(speaker.ToneTrouble) }
+func Failure() { sound(sharedtone.ToneTrouble) }
 
 // Canceled is a request dropped on purpose, which is neither a failure nor an answer.
-func Canceled() { sound(speaker.ToneCancel) }
+func Canceled() { sound(sharedtone.ToneCancel) }
 
 // Volume acknowledges a level moving, for the presses a screen is not being watched for.
 //
 // The one occasion whose sound is chosen. The others carry meaning in their shape — rising for on,
 // falling twice for trouble — and a setting that overrode those would be choosing what the device
 // is allowed to say rather than how it says it.
-func Volume() { sound(speaker.ChimeTone(config.Get().Feedback.Chime)) }
+func Volume() { sound(sharedtone.Wake(config.Get().Feedback.Chime)) }
 
 // Muted and Unmuted are the microphones being cut and restored. Rising for on, falling for off, so
 // which way it went is audible without looking.
-func Muted() { sound(speaker.ToneMute) }
+func Muted() { sound(sharedtone.ToneMute) }
 
-func Unmuted() { sound(speaker.ToneUnmute) }
+func Unmuted() { sound(sharedtone.ToneUnmute) }

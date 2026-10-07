@@ -15,6 +15,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
 	esphome "github.com/ygelfand/go-esphome-device"
+	netaddress "github.com/ygelfand/libcountertop/pkg/network/address"
 	"github.com/ygelfand/libcountertop/pkg/runtime/collector"
 )
 
@@ -387,7 +388,7 @@ func (d *Diag) wireless() {
 }
 
 func addresses() []string {
-	ips := metrics.Addresses()
+	ips := netaddress.Addresses()
 	out := make([]string, 0, len(ips))
 	for _, ip := range ips {
 		out = append(out, ip.String())

@@ -16,7 +16,7 @@ func upgradeCard(w *gogui.Window) gogui.View {
 	if !up.Active() {
 		return nil
 	}
-	pal := palette()
+	pal := presentation.Palette()
 	img, key := ui.Logo(), "logo/light"
 	if theme.Dark(pal.Background) {
 		img, key = ui.Night(), "logo/night"

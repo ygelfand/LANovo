@@ -16,11 +16,11 @@ import (
 	"sync"
 	"time"
 
-	esphome "github.com/ygelfand/go-esphome-device"
-	"github.com/ygelfand/go-esphome-device/api"
-
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
+	esphome "github.com/ygelfand/go-esphome-device"
+	"github.com/ygelfand/go-esphome-device/api"
+	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
 	"github.com/ygelfand/libcountertop/pkg/hook"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
@@ -284,7 +284,7 @@ func (t *Timers) ring(ctx context.Context) {
 
 	over := time.After(ringFor)
 	for {
-		sound.Interject(func(p *speaker.Speaker) { p.Chime(alarmLevel, speaker.ToneTimer...) })
+		sound.Interject(func(p *speaker.Speaker) { p.Chime(alarmLevel, sharedtone.ToneTimer...) })
 
 		select {
 		case <-ctx.Done():

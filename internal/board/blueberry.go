@@ -1,6 +1,7 @@
 package board
 
 var Blueberry = Board{
+	NativeAPI:    27,
 	Name:         "blueberry",
 	Model:        "Lenovo Smart Display 10",
 	SoC:          Qualcomm,

@@ -2,8 +2,6 @@ package gui
 
 import (
 	gogui "github.com/go-gui-org/go-gui/gui"
-	"golang.org/x/exp/shiny/materialdesign/icons"
-
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/assistant"
 	"github.com/ygelfand/LANovo/internal/feature/message"
@@ -12,6 +10,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/voice"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"golang.org/x/exp/shiny/materialdesign/icons"
 )
 
 const priorityAlert = 30
@@ -23,7 +22,7 @@ func messageCard(w *gogui.Window) gogui.View {
 	}
 	t := gogui.CurrentTheme()
 	vw, vh := w.WindowSize()
-	tint := color(m.Tone.Color(palette()))
+	tint := color(m.Tone.Color(presentation.Palette()))
 
 	words := []gogui.View{}
 	if m.Title != "" {
@@ -41,7 +40,7 @@ func messageCard(w *gogui.Window) gogui.View {
 		),
 	)
 
-	card := gogui.Row(panel(gogui.ContainerCfg{
+	card := gogui.Row(presentation.Toolkit.Panel(gogui.ContainerCfg{
 		ID:        "message",
 		Width:     float32(vw) * 0.82,
 		MinHeight: float32(vh) * 0.4,
@@ -120,7 +119,7 @@ func timerCard(w *gogui.Window) gogui.View {
 	if !c.Ringing && c.Of > 0 {
 		content = append(
 			content,
-			progressBar(
+			presentation.Toolkit.ProgressBar(
 				gogui.ProgressBarCfg{
 					Percent: float32(min(max(c.Left.Seconds()/c.Of.Seconds(), 0), 1)),
 					Sizing:  gogui.FillFit,
@@ -133,7 +132,7 @@ func timerCard(w *gogui.Window) gogui.View {
 	if c.Ringing {
 		stop = func(gogui.EventCtx) { timer.Get().Stop() }
 	}
-	card := pressable(gogui.Column, panel(gogui.ContainerCfg{
+	card := presentation.Presses.Pressable(gogui.Column, presentation.Toolkit.Panel(gogui.ContainerCfg{
 		ID:      "timer",
 		Width:   float32(vw) * 0.84,
 		Sizing:  gogui.FixedFit,
@@ -171,7 +170,7 @@ func assistantPanel(w *gogui.Window) gogui.View {
 	pad := t.Cfg.PaddingLarge.Left
 	bandW, bandH := float32(vw)-2*pad, deep*0.34
 
-	ink := color(palette().Text)
+	ink := color(presentation.Palette().Text)
 	switch show.Phase {
 	case voice.Listening:
 		ink = t.Cfg.ColorAccent
@@ -262,7 +261,7 @@ func assistantPanel(w *gogui.Window) gogui.View {
 			),
 		)
 	}
-	return gogui.Column(panel(gogui.ContainerCfg{
+	return gogui.Column(presentation.Toolkit.Panel(gogui.ContainerCfg{
 		ID:           "assistant",
 		Float:        true,
 		FloatOffsetY: deep * (float32(show.Down) - 1),
@@ -304,7 +303,7 @@ func captions(w *gogui.Window, show assistant.Showing) gogui.View {
 		content = append(content, gogui.Column(gogui.ContainerCfg{
 			ID:      "assistant-captions",
 			Sizing:  gogui.FillFit,
-			Color:   color(palette().Background).WithOpacity(0.6),
+			Color:   color(presentation.Palette().Background).WithOpacity(0.6),
 			Radius:  gogui.RadiusLarge,
 			Padding: gogui.PaddingLarge,
 			Spacing: gogui.SpacingSmall,

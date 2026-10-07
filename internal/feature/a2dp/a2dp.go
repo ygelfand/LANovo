@@ -18,42 +18,22 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/service"
+	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
 	sharedspeaker "github.com/ygelfand/libcountertop/pkg/bluetooth/a2dp"
-	"github.com/ygelfand/libcountertop/pkg/media/pcm"
 )
 
-type Sink = sharedspeaker.Sink
-
 var once sync.Once
-var shared *Sink
+var shared *sharedspeaker.Sink
 
-func build() *Sink {
-	a := speaker.Sound().Backgrounds()
-	return sharedspeaker.New(
-		sharedspeaker.Options{
-			Queue:            speaker.Get(),
-			Radio:            ble.Get,
-			Bonds:            layout.StateDir + "/bonds",
-			CaptureDirectory: "/data/local/tmp",
-			Name:             func() string { return config.Get().Device.Name },
-			Enabled:          func() bool { return config.Get().Bluetooth.Speaker },
-			SaveEnabled:      func(v bool) error { return config.Set().Bluetooth().Speaker(v) },
-			VolumeSet:        func(v int) { volume.Get().Set(config.StreamMedia, v) },
-			VolumeChanged: func(f func(int)) func() {
-				return volume.Get().Changed.Listen(func(c volume.Change) {
-					if c.Stream == config.StreamMedia {
-						f(c.Level)
-					}
-				})
-			},
-			Media:  func() sharedspeaker.Media { return media.Get() },
-			Took:   func(p pcm.Producer) { a.Took(p) },
-			Gave:   func(p pcm.Producer) { a.Gave(p) },
-			DuckDB: func() float64 { return config.Get().Media.DuckDB },
-		},
-	)
+func build() *sharedspeaker.Sink {
+	return sharedspeaker.New(sharedspeaker.Dependencies{
+		Queue: speaker.Get(), Radio: ble.Get, Bonds: layout.StateDir + "/bonds", CaptureDirectory: "/data/local/tmp",
+		Name: func() string { return config.Get().Device.Name }, Settings: config.BluetoothSection,
+		Volume: sharedvolume.For(volume.Get(), config.StreamMedia), Media: media.Get(),
+		Arbitration: speaker.Sound().Backgrounds(), Ducking: config.MediaSection,
+	})
 }
-func Get() *Sink { once.Do(func() { shared = build() }); return shared }
+func Get() *sharedspeaker.Sink { once.Do(func() { shared = build() }); return shared }
 func init() {
 	component.Register(
 		component.Device,
@@ -62,7 +42,3 @@ func init() {
 		component.Supervise(service.Restart(5*time.Second, time.Minute)),
 	)
 }
-
-var Trace = sharedspeaker.Trace
-
-func Dump(d time.Duration) (string, error) { return Get().Dump(d) }
