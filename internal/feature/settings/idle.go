@@ -28,17 +28,9 @@ func choose[T labeled](
 	return sharedpages.Choose(title, options, now, use, preview)
 }
 func idlePages() *sharedpages.IdlePages {
-	return sharedpages.NewIdlePages(sharedpages.IdleOptions{Read: func() sharedpages.IdleState {
-		c := config.Get()
-		return sharedpages.IdleState{
-			Screen:  c.Screen,
-			Clock:   c.Clock,
-			Idle:    c.Idle,
-			Visual:  c.Visual,
-			Weather: c.Weather,
-		}
-	}, Push: shell.Get().Push, Idle: idle.Get(), MediaIdle: media.Get().SetIdle, Label: visuals.Get().SetLabel, Thumbnail: visual.ThumbnailFit, Weather: sharedpages.WeatherActions{Title: weather.Get().Title, Fetch: weather.Get().Fetch, Offered: weather.Get().Offered, SetDashboard: weather.SetDashboard, SetIdle: weather.SetIdle, SetAnimate: weather.SetAnimate, SetThemed: weather.SetThemed, SetPosition: weather.SetPosition, SetAlign: weather.SetAlign, SetSize: weather.SetSize, SetEntity: weather.SetEntity, SetLook: weather.SetLook}})
+	return sharedpages.NewIdlePages(sharedpages.IdleDependencies{Preferences: preferences(), Shell: shell.Get(), Idle: idle.Get(), Media: media.Get(), Visuals: visuals.Get(), Weather: weather.Get(), Thumbnail: visual.ThumbnailFit})
 }
+
 func idlePage() *shell.Page               { return idlePages().Page() }
 func idleVisualPage(slot int) *shell.Page { return idlePages().Visual(slot) }
 func idleSourcePage(slot int) *shell.Page { return idlePages().Source(slot) }

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/ygelfand/LANovo/internal/config"
+	esphome "github.com/ygelfand/go-esphome-device"
 )
 
 // A setting changed from the screen has to reach Home Assistant, and one changed from Home
@@ -23,7 +24,7 @@ func TestSettingTheChimeTellsBothSides(t *testing.T) {
 		if got := config.Get().Feedback.Chime; got != want {
 			t.Errorf("the file says %q, want %q", got, want)
 		}
-		if got := f.chime.Get(); got != want.Label() {
+		if got := f.Entities()[0].(*esphome.Select).Get(); got != want.Label() {
 			t.Errorf("the entity says %q, want %q", got, want.Label())
 		}
 	}
@@ -36,7 +37,7 @@ func TestTheEntityCommandSavesTheChime(t *testing.T) {
 	f := Get()
 
 	for _, want := range config.Chimes() {
-		f.chime.OnCommand(want.Label())
+		f.Entities()[0].(*esphome.Select).OnCommand(want.Label())
 
 		if got := config.Get().Feedback.Chime; got != want {
 			t.Errorf("%q from Home Assistant saved as %q", want, got)
@@ -52,7 +53,7 @@ func TestAnUnknownChimeIsIgnored(t *testing.T) {
 	f := Get()
 	f.SetChime(config.DefaultChime)
 
-	f.chime.OnCommand("Foghorn")
+	f.Entities()[0].(*esphome.Select).OnCommand("Foghorn")
 
 	if got := config.Get().Feedback.Chime; got != config.DefaultChime {
 		t.Errorf("an unknown chime left the setting on %q", got)

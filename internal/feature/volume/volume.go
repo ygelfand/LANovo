@@ -15,7 +15,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	esphome "github.com/ygelfand/go-esphome-device"
-	"github.com/ygelfand/libcountertop/pkg/audio/ducking"
+	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
+	sharedview "github.com/ygelfand/libcountertop/pkg/display/volume"
 	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
@@ -33,6 +34,7 @@ type Change struct {
 }
 
 type Volume struct {
+	entities *sharedvolume.Entities
 	// Changed carries every change, however it was made.
 	Changed hook.Hook[Change]
 
@@ -43,7 +45,7 @@ type Volume struct {
 	// sounding is the stream the card is carrying, which is the one its gain follows.
 	sounding config.Stream
 
-	card card
+	card *sharedview.Card
 	duck *esphome.Number
 }
 
@@ -59,6 +61,7 @@ func Get() *Volume {
 			numbers:  map[config.Stream]*esphome.Number{},
 			sounding: config.StreamMedia,
 		}
+		shared.card = sharedview.NewCard(shell.Get())
 		shared.build()
 	})
 	return shared
@@ -66,13 +69,7 @@ func Get() *Volume {
 
 func (v *Volume) Name() string { return "volume" }
 
-func (v *Volume) Entities() []esphome.Entity {
-	out := make([]esphome.Entity, 0, len(v.numbers))
-	for _, s := range config.Streams() {
-		out = append(out, v.numbers[s])
-	}
-	return append(out, v.duck)
-}
+func (v *Volume) Entities() []esphome.Entity { return v.entities.Entities() }
 
 // Restore puts the levels back where they were left.
 func (v *Volume) Restore(c config.Config) {
@@ -106,9 +103,9 @@ func (v *Volume) Set(s config.Stream, level int) {
 	// The card counts as showing once it is up, so this is also the path every change after the
 	// first takes.
 	if showing(s) {
-		v.card.stir()
+		v.card.Stir()
 	} else {
-		v.card.show(Change{Stream: s, Level: level})
+		v.card.Show(s)
 	}
 
 	if err := config.Set().Volume().Level(s, level); err != nil {
@@ -144,7 +141,7 @@ func (v *Volume) Adjust(s config.Stream, steps int) {
 // picking a different stream on the card moves the buttons to it — which is the whole of what the
 // card being a selection buys.
 func (v *Volume) Target() config.Stream {
-	if s, ok := (&v.card).selected(); ok {
+	if s, ok := v.card.Selected(); ok {
 		return s
 	}
 	return v.Sounds()
@@ -187,53 +184,13 @@ func (v *Volume) hold(s config.Stream, level int) {
 }
 
 // SetDuckDB saves the media ducking depth and publishes its effective value.
-func (v *Volume) SetDuckDB(db float64) error {
-	if err := config.Set().Media().DuckDB(db); err != nil {
-		return err
-	}
-	v.duck.Set(float32(db))
-	return nil
-}
+func (v *Volume) SetDuckDB(db float64) error { return v.entities.SetDuckDB(db) }
 
 func (v *Volume) build() {
-	v.duck = &esphome.Number{
-		Base: esphome.Base{
-			ObjectID: "media_duck_level",
-			Name:     "Music ducking",
-			Icon:     "mdi:volume-medium",
-			Category: esphome.CategoryConfig,
-			DeviceID: component.DevicePlayback,
-		},
-		Min:  ducking.MinimumDB,
-		Max:  ducking.MaximumDB,
-		Step: 1,
-		Unit: "dB",
-		Mode: esphome.NumberBox,
-	}
-	v.duck.OnCommand = func(db float32) {
-		if err := v.SetDuckDB(float64(db)); err != nil {
-			slog.Error("saving the ducking level failed", "err", err)
-		}
-	}
-
-	for _, s := range config.Streams() {
-		stream := s
-
-		n := &esphome.Number{
-			Base: esphome.Base{
-				ObjectID: "volume_" + string(stream),
-				Name:     stream.Label() + " volume",
-				Icon:     "mdi:volume-high",
-				Category: esphome.CategoryConfig,
-				DeviceID: component.DevicePlayback,
-			},
-			Min: 0, Max: 100, Step: 1, Unit: "%",
-			Mode: esphome.NumberSlider,
-		}
-		n.OnCommand = func(level float32) { shared.Set(stream, int(level)) }
-
-		v.numbers[stream] = n
-	}
+	streams := config.Streams()
+	v.entities = sharedvolume.NewEntities(v, streams, config.MediaSection, component.DevicePlayback)
+	v.numbers = v.entities.Numbers
+	v.duck = v.entities.Duck
 }
 
 func clamp(level int) int {

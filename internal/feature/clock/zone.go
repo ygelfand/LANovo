@@ -29,3 +29,5 @@ var spec = zonepolicy.Spec
 func (c *Clock) SetZone(s string)      { c.zonePolicy.SetZone(s) }
 func (c *Clock) Zone() string          { return c.zonePolicy.Zone() }
 func (c *Clock) zoneFromHome(s string) { c.zonePolicy.FromHome(s) }
+
+func (c *Clock) ChosenZone() string { return c.Zone() }

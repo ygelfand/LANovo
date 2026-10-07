@@ -4,17 +4,11 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
-// Feedback is the noises the device makes about itself, as opposed to anything it was asked to
-// play.
-type Feedback struct {
-	// Chime is which sound an acknowledgement makes, and whether it makes one at all.
-	Chime Chime `json:"chime"`
-}
+type Feedback = schema.Feedback
 
-// DefaultChime is the short rising pair, which is what the device has always done.
-const DefaultChime = ChimeChirp
+const DefaultChime = schema.DefaultChime
 
-func defaultFeedback() Feedback { return Feedback{Chime: DefaultChime} }
+var defaultFeedback = schema.DefaultFeedback
 
 type Chime = schema.Chime
 

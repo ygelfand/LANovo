@@ -1,10 +1,9 @@
 package weather
 
 import (
-	esphome "github.com/ygelfand/go-esphome-device"
-
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	esphome "github.com/ygelfand/go-esphome-device"
 )
 
 const entityMost = 128
@@ -73,29 +72,29 @@ func (w *Weather) build() {
 		},
 	}
 	h := w.ha
-	h.entity.OnCommand = SetEntity
+	h.entity.OnCommand = w.SetEntity
 	h.look.OnCommand = func(l string) {
 		if v, ok := config.ByLabel(config.WeatherLooks(), l); ok {
-			SetLook(v)
+			w.SetLook(v)
 		}
 	}
-	h.dashboard.OnCommand = SetDashboard
-	h.idle.OnCommand = SetIdle
-	h.animate.OnCommand = SetAnimate
-	h.themed.OnCommand = SetThemed
+	h.dashboard.OnCommand = w.SetDashboard
+	h.idle.OnCommand = w.SetIdle
+	h.animate.OnCommand = w.SetAnimate
+	h.themed.OnCommand = w.SetThemed
 	h.position.OnCommand = func(l string) {
 		if v, ok := config.ByLabel(config.Positions(), l); ok {
-			SetPosition(v)
+			w.SetPosition(v)
 		}
 	}
 	h.align.OnCommand = func(l string) {
 		if v, ok := config.ByLabel(config.Aligns(), l); ok {
-			SetAlign(v)
+			w.SetAlign(v)
 		}
 	}
 	h.size.OnCommand = func(l string) {
 		if v, ok := config.ByLabel(config.Sizes(), l); ok {
-			SetSize(v)
+			w.SetSize(v)
 		}
 	}
 }

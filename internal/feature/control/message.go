@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ygelfand/LANovo/internal/feature/message"
+	sharedmessage "github.com/ygelfand/libcountertop/pkg/display/message"
 )
 
 // say puts a message on the screen, which is otherwise only reachable by Home Assistant calling an
@@ -26,8 +27,8 @@ func say(args []string) error {
 	// Refused rather than treated as ordinary, which is what the action does with an unrecognized
 	// tone. A message from Home Assistant is worth showing however it was labeled; one typed here
 	// is being typed to look at the labeling.
-	tone := message.Tone(args[0])
-	if !slices.Contains(message.Tones(), tone) {
+	tone := sharedmessage.Tone(args[0])
+	if !slices.Contains(sharedmessage.Tones(), tone) {
 		return fmt.Errorf("no such tone %q, want one of %s", args[0], tones())
 	}
 
@@ -41,7 +42,7 @@ func say(args []string) error {
 		return fmt.Errorf("the message has no body")
 	}
 
-	message.Get().Show(message.Message{Title: title, Body: body, Tone: tone}, message.Hold(secs))
+	message.Get().Show(sharedmessage.Message{Title: title, Body: body, Tone: tone}, sharedmessage.Hold(secs))
 	return nil
 }
 
@@ -62,8 +63,8 @@ func split(args []string) (title, body string) {
 func join(words []string) string { return strings.TrimSpace(strings.Join(words, " ")) }
 
 func tones() string {
-	out := make([]string, 0, len(message.Tones()))
-	for _, t := range message.Tones() {
+	out := make([]string, 0, len(sharedmessage.Tones()))
+	for _, t := range sharedmessage.Tones() {
 		out = append(out, string(t))
 	}
 	return strings.Join(out, ", ")

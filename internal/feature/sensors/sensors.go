@@ -176,6 +176,9 @@ func (s *Sensors) Turn(rot display.Orientation) {
 // is usually stood in, and a logo that appears and then flips a moment later is the device telling
 // you it was not looking.
 func (s *Sensors) Orient() {
+	// Constructors can run before board detection. Resolve mounting here, once the
+	// hardware identity is known, including boards without an accelerometer.
+	s.resetMounted()
 	if err := s.Start(context.Background()); err != nil {
 		slog.Warn("could not read the orientation before drawing", "err", err)
 		return
@@ -201,6 +204,15 @@ func (s *Sensors) Orient() {
 	display.Get().SetOrientation(rot)
 	s.facing.Set(rot.String())
 	slog.Info("standing", "orientation", rot)
+}
+
+func (s *Sensors) resetMounted() {
+	s.mu.Lock()
+	s.tracker = motion.NewTracker()
+	rot := s.tracker.Orientation()
+	s.mu.Unlock()
+	display.Get().SetOrientation(rot)
+	s.facing.Set(rot.String())
 }
 
 // Start finds the parts. A board missing one is not a board that cannot run: each is reported and

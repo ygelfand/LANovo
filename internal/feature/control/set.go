@@ -226,63 +226,63 @@ func settings() []setting {
 			"weather.entity",
 			"Weather.Entity",
 			func(c config.Config) string { return orNone(c.Weather.Entity) },
-			words(weather.SetEntity),
+			words(weather.Get().SetEntity),
 		},
 
 		{
 			"weather.look",
 			"Weather.Look",
 			func(c config.Config) string { return string(c.Weather.Look) },
-			choose(config.WeatherLooks(), weather.SetLook),
+			choose(config.WeatherLooks(), weather.Get().SetLook),
 		},
 
 		{
 			"weather.dashboard",
 			"Weather.Dashboard",
 			func(c config.Config) string { return knob.OnOff(c.Weather.Dashboard) },
-			toggle(weather.SetDashboard),
+			toggle(weather.Get().SetDashboard),
 		},
 
 		{
 			"weather.idle",
 			"Weather.Idle",
 			func(c config.Config) string { return knob.OnOff(c.Weather.Idle) },
-			toggle(weather.SetIdle),
+			toggle(weather.Get().SetIdle),
 		},
 
 		{
 			"weather.animate",
 			"Weather.Animate",
 			func(c config.Config) string { return knob.OnOff(c.Weather.Animate) },
-			toggle(weather.SetAnimate),
+			toggle(weather.Get().SetAnimate),
 		},
 
 		{
 			"weather.themed",
 			"Weather.Themed",
 			func(c config.Config) string { return knob.OnOff(c.Weather.Themed) },
-			toggle(weather.SetThemed),
+			toggle(weather.Get().SetThemed),
 		},
 
 		{
 			"weather.position",
 			"Weather.Position",
 			func(c config.Config) string { return string(c.Weather.Position) },
-			choose(config.Positions(), weather.SetPosition),
+			choose(config.Positions(), weather.Get().SetPosition),
 		},
 
 		{
 			"weather.align",
 			"Weather.Align",
 			func(c config.Config) string { return string(c.Weather.Align) },
-			choose(config.Aligns(), weather.SetAlign),
+			choose(config.Aligns(), weather.Get().SetAlign),
 		},
 
 		{
 			"weather.size",
 			"Weather.Size",
 			func(c config.Config) string { return string(c.Weather.Size) },
-			choose(config.Sizes(), weather.SetSize),
+			choose(config.Sizes(), weather.Get().SetSize),
 		},
 
 		{"screen.language", "Screen.Language", func(config.Config) string { return text.Chosen() },

@@ -8,6 +8,8 @@ func section[T any](field func(*Config) *T) storage.Binding[Config, T] {
 
 // Saved sections resolve the current store lazily and preserve its atomic update policy.
 var (
+	FeedbackSection  = section(func(c *Config) *Feedback { return &c.Feedback })
+	APISection       = section(func(c *Config) *API { return &c.API })
 	NetworkSection   = section(func(c *Config) *Network { return &c.Network })
 	CallSection      = section(func(c *Config) *Call { return &c.Call })
 	CastSection      = section(func(c *Config) *Cast { return &c.Cast })

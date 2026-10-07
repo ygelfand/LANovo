@@ -12,6 +12,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/states"
+	sharedha "github.com/ygelfand/libcountertop/pkg/homeassistant"
 )
 
 const (
@@ -54,7 +55,7 @@ type Weather struct {
 
 	ha entities
 
-	offered  []homeassistant.Entity
+	offered  []sharedha.Entity
 	failed   error
 	fetching bool
 	fetched  bool
@@ -62,7 +63,7 @@ type Weather struct {
 
 const fetchWait = 10 * time.Second
 
-func (w *Weather) Offered() ([]homeassistant.Entity, error, bool) {
+func (w *Weather) Offered() ([]sharedha.Entity, error, bool) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	return w.offered, w.failed, w.fetched
@@ -80,7 +81,7 @@ func (w *Weather) Fetch() {
 		ctx, cancel := context.WithTimeout(context.Background(), fetchWait)
 		defer cancel()
 		list, err := homeassistant.Get().
-			Entities(ctx, homeassistant.Filter{Domains: []string{"weather"}})
+			Entities(ctx, sharedha.Filter{Domains: []string{"weather"}})
 		w.mu.Lock()
 		w.offered, w.failed, w.fetching, w.fetched = list, err, false, true
 		w.mu.Unlock()
@@ -88,7 +89,7 @@ func (w *Weather) Fetch() {
 			slog.Info("weather entities", "err", err)
 		}
 		if err == nil && len(list) > 0 && strings.TrimSpace(config.Get().Weather.Entity) == "" {
-			SetEntity(list[0].ID)
+			w.SetEntity(list[0].ID)
 		}
 		shell.Get().Redraw()
 	}()
@@ -126,7 +127,7 @@ func (w *Weather) Now() (Reading, bool) {
 	}
 	if entity == "" {
 		if _, _, fetched := w.Offered(); !fetched &&
-			homeassistant.Get().Access() == homeassistant.Allowed {
+			homeassistant.Get().Access() == sharedha.Allowed {
 			w.Fetch()
 		}
 		return Reading{}, false
@@ -176,28 +177,32 @@ func (w *Weather) follow(entity string) map[string]*states.Value {
 	return values
 }
 
-func save(what string, err error) {
+func (w *Weather) save(what string, err error) {
 	if err != nil {
 		slog.Error("saving a weather setting failed", "setting", what, "err", err)
 	}
-	Get().publish(config.Get().Weather)
+	w.publish(config.Get().Weather)
 	shell.Get().Redraw()
 }
 
-func SetEntity(v string) { save("entity", config.Set().Weather().Entity(strings.TrimSpace(v))) }
+func (w *Weather) SetEntity(v string) {
+	w.save("entity", config.Set().Weather().Entity(strings.TrimSpace(v)))
+}
 
-func SetLook(v config.WeatherLook) { save("look", config.Set().Weather().Look(v)) }
+func (w *Weather) SetLook(v config.WeatherLook) { w.save("look", config.Set().Weather().Look(v)) }
 
-func SetDashboard(on bool) { save("dashboard", config.Set().Weather().Dashboard(on)) }
+func (w *Weather) SetDashboard(on bool) { w.save("dashboard", config.Set().Weather().Dashboard(on)) }
 
-func SetIdle(on bool) { save("idle", config.Set().Weather().Idle(on)) }
+func (w *Weather) SetIdle(on bool) { w.save("idle", config.Set().Weather().Idle(on)) }
 
-func SetAnimate(on bool) { save("animate", config.Set().Weather().Animate(on)) }
+func (w *Weather) SetAnimate(on bool) { w.save("animate", config.Set().Weather().Animate(on)) }
 
-func SetThemed(on bool) { save("themed", config.Set().Weather().Themed(on)) }
+func (w *Weather) SetThemed(on bool) { w.save("themed", config.Set().Weather().Themed(on)) }
 
-func SetPosition(v config.Position) { save("position", config.Set().Weather().Position(v)) }
+func (w *Weather) SetPosition(v config.Position) {
+	w.save("position", config.Set().Weather().Position(v))
+}
 
-func SetAlign(v config.Align) { save("align", config.Set().Weather().Align(v)) }
+func (w *Weather) SetAlign(v config.Align) { w.save("align", config.Set().Weather().Align(v)) }
 
-func SetSize(v config.Size) { save("size", config.Set().Weather().Size(v)) }
+func (w *Weather) SetSize(v config.Size) { w.save("size", config.Set().Weather().Size(v)) }

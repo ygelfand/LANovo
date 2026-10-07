@@ -16,11 +16,11 @@ import (
 	"log/slog"
 	"sync"
 
-	esphome "github.com/ygelfand/go-esphome-device"
-
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/lib/viewassist"
+	esphome "github.com/ygelfand/go-esphome-device"
+	sharedmessage "github.com/ygelfand/libcountertop/pkg/display/message"
 )
 
 func init() {
@@ -96,11 +96,11 @@ func (s *Satellite) SetState(said viewassist.State) {
 		return
 	}
 
-	message.Get().Show(message.Message{
+	message.Get().Show(sharedmessage.Message{
 		Title: said.Title,
 		Body:  said.Message,
-		Tone:  message.ToneInfo,
-	}, message.Hold(0))
+		Tone:  sharedmessage.ToneInfo,
+	}, sharedmessage.Hold(0))
 }
 
 // Actions is what Home Assistant may call. The names are View Assist's own, so an automation

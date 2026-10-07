@@ -7,8 +7,6 @@ package dashboard
 import (
 	"sync"
 
-	esphome "github.com/ygelfand/go-esphome-device"
-
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
@@ -19,6 +17,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
+	esphome "github.com/ygelfand/go-esphome-device"
 	sharedlib "github.com/ygelfand/libcountertop/pkg/display/dashboard"
 )
 
@@ -89,50 +88,13 @@ func (d *Dashboard) Ready() bool {
 func (d *Dashboard) Redraw() { shell.Get().Redraw() }
 
 func (d *Dashboard) build() {
-	d.controls = sharedlib.NewControls(sharedlib.ControlOptions{
-		DeviceID: component.DeviceScreen,
-		Read:     func() sharedlib.State { return state(config.Get()) },
-		Redraw:   d.Redraw,
-		Hours: sharedlib.Choices(
-			config.HourFormats(),
-			func(v config.HourFormat) error { return config.Set().Screen().Hours(v) },
-		),
-		Face: sharedlib.Choices(
-			config.Faces(),
-			func(v config.Face) error { return config.Set().Clock().Face(v) },
-		),
-		Position: sharedlib.Choices(
-			config.Positions(),
-			func(v config.Position) error { return config.Set().Clock().Position(v) },
-		),
-		Size: sharedlib.Choices(
-			config.Sizes(),
-			func(v config.Size) error { return config.Set().Clock().Size(v) },
-		),
-		Ink: sharedlib.Choices(
-			config.Inks(),
-			func(v config.Ink) error { return config.Set().Clock().Ink(v) },
-		),
-		Date: func(v bool) error { return config.Set().Clock().Date(v) },
-	})
+	d.controls = sharedlib.NewControls(sharedlib.Dependencies{Preferences: sharedlib.Preferences{Screen: config.ScreenSection, Clock: config.ClockSection}, Display: shell.Get(), DeviceID: component.DeviceScreen})
 	d.format, d.face, d.place, d.size, d.ink = d.controls.Format, d.controls.Face, d.controls.Position, d.controls.Size, d.controls.Ink
 	d.date = d.controls.Date
 }
-func (d *Dashboard) SetHours(v config.HourFormat) {
-	d.controls.Commit("clock_format", func() error { return config.Set().Screen().Hours(v) })
-}
-func (d *Dashboard) SetFace(v config.Face) {
-	d.controls.Commit("clock_face", func() error { return config.Set().Clock().Face(v) })
-}
-func (d *Dashboard) SetPosition(v config.Position) {
-	d.controls.Commit("clock_position", func() error { return config.Set().Clock().Position(v) })
-}
-func (d *Dashboard) SetSize(v config.Size) {
-	d.controls.Commit("clock_size", func() error { return config.Set().Clock().Size(v) })
-}
-func (d *Dashboard) SetInk(v config.Ink) {
-	d.controls.Commit("clock_color", func() error { return config.Set().Clock().Ink(v) })
-}
-func (d *Dashboard) SetDate(v bool) {
-	d.controls.Commit("clock_date", func() error { return config.Set().Clock().Date(v) })
-}
+func (d *Dashboard) SetHours(v config.HourFormat)  { d.controls.SetHours(v) }
+func (d *Dashboard) SetFace(v config.Face)         { d.controls.SetFace(v) }
+func (d *Dashboard) SetPosition(v config.Position) { d.controls.SetPosition(v) }
+func (d *Dashboard) SetSize(v config.Size)         { d.controls.SetSize(v) }
+func (d *Dashboard) SetInk(v config.Ink)           { d.controls.SetInk(v) }
+func (d *Dashboard) SetDate(v bool)                { d.controls.SetDate(v) }

@@ -26,6 +26,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
+	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
 	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
 	"github.com/ygelfand/libcountertop/pkg/say"
 )
@@ -37,22 +38,14 @@ var none []func(int)
 func open(v shell.View) func(int) { return func(int) { shell.Get().Push(v) } }
 
 func root() *shell.Page {
-	return sharedsettings.RootPage(sharedsettings.RootOptions{
-		Network:        func() string { return wifi.Get().Network() },
-		Theme:          func() string { return themeSays(config.Get().Screen.Theme) },
-		Assistants:     phrases,
-		MediaLevel:     func() int { return config.Get().Volume.Level(config.StreamMedia) },
-		Version:        layout.Version,
-		Push:           shell.Get().Push,
-		NetworkPage:    func() shell.View { return networkPage() },
-		FeaturesPage:   func() shell.View { return featuresPage() },
-		DisplayPage:    func() shell.View { return displayPage() },
-		HomePage:       func() shell.View { return homecontrol.Get().Page() },
-		VolumePage:     func() shell.View { return volume.Page() },
-		AssistantsPage: func() shell.View { return assistantsPage() },
-		SystemPage:     func() shell.View { return systemPage() },
-		DebugPage:      func() shell.View { return debugPage() },
-		AboutPage:      func() shell.View { return aboutPage() },
+	return sharedsettings.RootPage(sharedsettings.RootDependencies{
+		Network: wifi.Get(), Screen: config.ScreenSection, Basic: basicPages(), Assistants: assistantPages(), Home: homecontrol.Get(), Shell: shell.Get(),
+		Version:      layout.Version,
+		Volume:       sharedvolume.For(volume.Get(), config.StreamMedia),
+		NetworkPage:  func() shell.View { return networkPage() },
+		FeaturesPage: func() shell.View { return featuresPage() },
+		VolumePage:   func() shell.View { return volume.Page() },
+		AboutPage:    func() shell.View { return aboutPage() },
 		Sections: func() []sharedsettings.Section {
 			return []sharedsettings.Section{
 				{
