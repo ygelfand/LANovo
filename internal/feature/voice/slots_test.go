@@ -5,6 +5,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
 	esphome "github.com/ygelfand/go-esphome-device"
+	"github.com/ygelfand/libcountertop/pkg/assistant/turn"
 	"github.com/ygelfand/libcountertop/pkg/inference/wakeslots"
 	"slices"
 	"testing"
@@ -13,11 +14,11 @@ import (
 func TestSecondaryPhraseUsesItsSlotRatherThanTheCompactAdvertisement(t *testing.T) {
 	var selected wakeslots.Selection
 	selected.Set([]string{"", "B"})
-	c := &conversation{vs: &esphome.VoiceSatellite{ActiveWakeWords: []string{"B"}}, word: selected.ID}
-	if phrase, ok := c.phraseFor(1); !ok || phrase != "B" {
+	c := turn.NewConversation(&esphome.VoiceSatellite{ActiveWakeWords: []string{"B"}}, turn.Options{Word: selected.ID})
+	if phrase, ok := c.PhraseFor(1); !ok || phrase != "B" {
 		t.Fatal(phrase, ok)
 	}
-	if _, ok := c.phraseFor(0); ok {
+	if _, ok := c.PhraseFor(0); ok {
 		t.Fatal("empty primary has a phrase")
 	}
 }

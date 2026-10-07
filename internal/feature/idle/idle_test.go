@@ -1,6 +1,7 @@
 package idle
 
 import (
+	sharedview "github.com/ygelfand/libcountertop/pkg/display/idleview"
 	"slices"
 	"testing"
 	"time"
@@ -88,7 +89,7 @@ func TestAClockAcrossDifferentVisualsIsSplitAtTheSeam(t *testing.T) {
 }
 
 func TestOnlyChosenVisualsAreDrawn(t *testing.T) {
-	got := chosen(config.Idle{Second: config.IdleVisual{Kind: "orb"}})
+	got := sharedview.Chosen(config.Idle{Second: config.IdleVisual{Kind: "orb"}})
 	if len(got) != 1 || got[0].Kind != "orb" {
 		t.Errorf("chosen %v", got)
 	}

@@ -14,11 +14,11 @@ import (
 	"sync"
 	"time"
 
-	esphome "github.com/ygelfand/go-esphome-device"
-
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/service"
+	esphome "github.com/ygelfand/go-esphome-device"
 	"github.com/ygelfand/libcountertop/pkg/hook"
+	zonepolicy "github.com/ygelfand/libcountertop/pkg/settings/timezone"
 )
 
 func init() {
@@ -64,7 +64,8 @@ type Clock struct {
 	asked *esphome.Conn
 
 	// zone is the override: which place the device keeps time by, whatever the server says.
-	zone *esphome.Select
+	zone       *esphome.Select
+	zonePolicy *zonepolicy.Policy
 }
 
 var (

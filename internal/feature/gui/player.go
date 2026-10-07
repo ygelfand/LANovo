@@ -124,7 +124,7 @@ func playerBody(w *gogui.Window) gogui.View {
 
 	var cover gogui.View
 	if now.Art != nil {
-		cover = gogui.Image(gogui.ImageCfg{Src: squared(now.Art), Width: side, Height: side})
+		cover = gogui.Image(gogui.ImageCfg{Src: squared(ui.Picture(now.Art, now.ArtID)), Width: side, Height: side})
 	} else {
 		st := t.TextStyleIconXLarge
 		st.Color = t.Cfg.ColorTextSecondary
@@ -296,7 +296,7 @@ func queue(now media.Now) gogui.View {
 		var content []gogui.View
 		if tr.Art != nil {
 			side := reach()
-			content = append(content, gogui.Image(gogui.ImageCfg{Src: squared(tr.Art), Width: side, Height: side}))
+			content = append(content, gogui.Image(gogui.ImageCfg{Src: squared(ui.Picture(tr.Art, tr.ArtID)), Width: side, Height: side}))
 		}
 		content = append(content, gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Clip: true, Content: line}))
 		if tr.Length > 0 {
@@ -330,7 +330,7 @@ func (a *App) mini(w *gogui.Window) gogui.View {
 
 	var art gogui.View
 	if now.Art != nil {
-		art = gogui.Image(gogui.ImageCfg{Src: squared(now.Art), Width: side, Height: side})
+		art = gogui.Image(gogui.ImageCfg{Src: squared(ui.Picture(now.Art, now.ArtID)), Width: side, Height: side})
 	} else {
 		st := t.TextStyleIconLarge
 		st.Color = t.Cfg.ColorTextSecondary

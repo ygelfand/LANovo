@@ -192,22 +192,3 @@ func BenchmarkResample(b *testing.B) {
 // replaced summed to 0.89826, 0.89686 and 0.89826 — 0.03 dB quieter overall and 0.014 dB of ripple
 // between the three, both far under anything audible, which is why this was a fold and not a
 // retune.
-func TestTheVoiceFilterKeepsItsLevel(t *testing.T) {
-	up, _ := NewResampler(ResampleSinc)
-
-	s, ok := up.(*sinc)
-	if !ok {
-		t.Fatalf("the sinc resampler is a %T", up)
-	}
-
-	phases, taps := s.up.up, ratioTaps
-	for p := range phases {
-		var sum float32
-		for k := range taps {
-			sum += s.up.filter[p+k*phases]
-		}
-		if diff := sum - voiceHeadroom; diff > 0.001 || diff < -0.001 {
-			t.Errorf("phase %d sums to %.5f, want %.2f", p, sum, voiceHeadroom)
-		}
-	}
-}

@@ -1,6 +1,7 @@
 package visuals
 
 import (
+	esphome "github.com/ygelfand/go-esphome-device"
 	"math"
 	"sync"
 	"sync/atomic"
@@ -146,26 +147,26 @@ func TestRestoreFallsBackFromAnUnbuiltVisual(t *testing.T) {
 		if v.Kind() != visual.Kind(config.DefaultVisual) {
 			t.Errorf("restoring %q chose %q, want %q", saved, v.Kind(), config.DefaultVisual)
 		}
-		if v.kind.Get() != v.Kind().Label() {
-			t.Errorf("restoring %q left the select on %q", saved, v.kind.Get())
+		if v.Entities()[0].(*esphome.Select).Get() != v.Kind().Label() {
+			t.Errorf("restoring %q left the select on %q", saved, v.Entities()[0].(*esphome.Select).Get())
 		}
 	}
 
 	cfg := config.Defaults()
 	cfg.Visual.Kind = string(visual.LCARS)
 	v.Restore(cfg)
-	if v.Kind() != visual.LCARS || v.kind.Get() != visual.LCARS.Label() {
-		t.Errorf("restoring lcars gave %q / %q", v.Kind(), v.kind.Get())
+	if v.Kind() != visual.LCARS || v.Entities()[0].(*esphome.Select).Get() != visual.LCARS.Label() {
+		t.Errorf("restoring lcars gave %q / %q", v.Kind(), v.Entities()[0].(*esphome.Select).Get())
 	}
 }
 
 func TestTheSelectOffersEveryBuiltVisual(t *testing.T) {
 	_, v := newRig()
-	if len(v.kind.Options) != len(visual.Built()) {
-		t.Fatalf("%d options for %d visuals", len(v.kind.Options), len(visual.Built()))
+	if len(v.Entities()[0].(*esphome.Select).Options) != len(visual.Built()) {
+		t.Fatalf("%d options for %d visuals", len(v.Entities()[0].(*esphome.Select).Options), len(visual.Built()))
 	}
 	seen := map[string]bool{}
-	for _, o := range v.kind.Options {
+	for _, o := range v.Entities()[0].(*esphome.Select).Options {
 		if seen[o] {
 			t.Errorf("%q offered twice", o)
 		}

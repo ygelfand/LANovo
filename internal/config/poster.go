@@ -2,67 +2,24 @@ package config
 
 import (
 	"strings"
-	"time"
 
-	"github.com/ygelfand/libcountertop/pkg/say"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
-type Poster struct {
-	Enabled bool        `json:"enabled"`
-	Every   PosterEvery `json:"every"`
-	Server  string      `json:"server"`
-	Key     string      `json:"key"`
-	Albums  string      `json:"albums"`
-	Tags    string      `json:"tags"`
-	Last    string      `json:"last"`
-}
-
-func defaultPoster() Poster { return Poster{Every: PosterHourly} }
-
-type PosterEvery string
+type Poster = schema.Poster
+type PosterEvery = schema.PosterEvery
 
 const (
-	PosterNever  PosterEvery = "never"
-	PosterWake   PosterEvery = "wake"
-	PosterHourly PosterEvery = "hourly"
-	PosterDaily  PosterEvery = "daily"
+	PosterNever  = schema.PosterNever
+	PosterWake   = schema.PosterWake
+	PosterHourly = schema.PosterHourly
+	PosterDaily  = schema.PosterDaily
 )
 
-func PosterEveries() []PosterEvery {
-	return []PosterEvery{PosterNever, PosterWake, PosterHourly, PosterDaily}
-}
+var PosterEveries = schema.PosterEveries
+var Names = schema.Names
 
-func (p PosterEvery) Label() string {
-	switch p {
-	case PosterNever:
-		return say.T("poster.never")
-	case PosterWake:
-		return say.T("poster.wake")
-	case PosterDaily:
-		return say.T("poster.daily")
-	}
-	return say.T("poster.hourly")
-}
-
-func (p PosterEvery) Period() time.Duration {
-	switch p {
-	case PosterHourly:
-		return time.Hour
-	case PosterDaily:
-		return 24 * time.Hour
-	}
-	return 0
-}
-
-func Names(list string) []string {
-	var out []string
-	for s := range strings.SplitSeq(list, ",") {
-		if s = strings.TrimSpace(s); s != "" {
-			out = append(out, s)
-		}
-	}
-	return out
-}
+func defaultPoster() Poster { return schema.DefaultPoster() }
 
 type PosterWriter struct{ st *Store }
 

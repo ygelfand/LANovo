@@ -5,6 +5,9 @@ on:
   push:
     branches: [main]
 
+env:
+  GOWORK: "off"
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -15,6 +18,11 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+
+      - name: install Android NDK
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;30.0.16248370"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/30.0.16248370" >> "$GITHUB_ENV"
 
       - name: vet
         run: make vet

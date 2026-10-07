@@ -58,15 +58,15 @@ SETRW = blockdev --setrw $$(ls -d /dev/block/bootdevice/by-name /dev/block/platf
 NDK ?= $(firstword $(ANDROID_NDK_HOME) $(ANDROID_NDK_LATEST_HOME) $(wildcard /opt/homebrew/Caskroom/android-ndk/*/AndroidNDK*.app/Contents/NDK))
 NDK_HOST := $(if $(filter Darwin,$(shell uname -s)),darwin-x86_64,linux-x86_64)
 NDK_CC = $(NDK)/toolchains/llvm/prebuilt/$(NDK_HOST)/bin/armv7a-linux-androideabi27-clang
-SURFACE_SRC := native/lanovo-surface
+LIBCOUNTERTOP_MODULE := github.com/ygelfand/libcountertop
+# Resolve both Go and native sources from the same selected module (or local go.work).
+LIBCOUNTERTOP_DIR = $(shell go list -m -f '{{.Dir}}' $(LIBCOUNTERTOP_MODULE))
+SURFACE_SRC = $(LIBCOUNTERTOP_DIR)/native/surface
 SURFACE_BIN := $(BUILD_DIR)/lanovo-surface
-SURFACE_STUBS := $(BUILD_DIR)/stubs
 SURFACE := /system/bin/lanovo-surface
-CAMSHIM_SRC := native/lanovo-camshim
 CAMSHIM_BIN := $(BUILD_DIR)/liblanovo-camshim.so
-CAMERA_SRC := native/lanovo-camera
 CAMERA_BIN := $(BUILD_DIR)/lanovo-camera
-CAMERA_STUBS := $(BUILD_DIR)/camstubs
+COUNTERTOP_NATIVE = $(MAKE) -f "$(LIBCOUNTERTOP_DIR)/native/Makefile" API=27 PREFIX=lanovo OUT="$(abspath $(BUILD_DIR))" NDK="$(NDK)" SURFACE_BIN="$(abspath $(SURFACE_BIN))" CAMERA_BIN="$(abspath $(CAMERA_BIN))" CAMSHIM_BIN="$(abspath $(CAMSHIM_BIN))"
 PARTS_DIR := internal/parts/payload
 
 .PHONY: build
@@ -85,33 +85,22 @@ build-lanovod: build-surface build-camshim build-camera ## Cross-compile lanovod
 	cp $(CAMERA_BIN) $(PARTS_DIR)/lanovo-camera
 	$(DEVICE_ENV) go build -tags "payload$(if $(TAGS),$(comma)$(TAGS))" -ldflags "$(DEVICE_LDFLAGS)" -o $(DEVICE_BIN) ./cmd/lanovod
 
+# go list may know the version before its source archive has been downloaded.
+.PHONY: countertop-native-source
+countertop-native-source:
+	@test -n "$(LIBCOUNTERTOP_DIR)" || go mod download $(LIBCOUNTERTOP_MODULE)
+
 .PHONY: build-surface
-build-surface: ## Build the SurfaceFlinger helper with the NDK
-	@test -x "$(NDK_CC)" || { echo "no NDK clang at $(NDK_CC); set NDK or ANDROID_NDK_HOME"; exit 1; }
-	@mkdir -p $(SURFACE_STUBS)
-	@for lib in gui utils binder; do \
-		up=$$(echo $$lib | tr a-z A-Z); \
-		$(NDK_CC) -shared -DLIB$$up -Wl,-soname,lib$$lib.so -o $(SURFACE_STUBS)/lib$$lib.so $(SURFACE_SRC)/stubs.c || exit 1; \
-	done
-	$(NDK_CC) -O2 -Wall -Werror -o $(SURFACE_BIN) $(SURFACE_SRC)/surface.c $(SURFACE_SRC)/video.c $(SURFACE_SRC)/gl.c $(SURFACE_SRC)/ui.c $(SURFACE_SRC)/drm.c $(SURFACE_SRC)/audio.c $(SURFACE_SRC)/wire.c \
-		-L$(SURFACE_STUBS) -lgui -lutils -lbinder -landroid -lmediandk -lEGL -lGLESv2 -llog -lm -Wl,--allow-shlib-undefined
+build-surface: countertop-native-source ## Build the SurfaceFlinger helper with the NDK
+	+$(COUNTERTOP_NATIVE) surface
 
 .PHONY: build-camshim
-build-camshim: ## Build the camera service preload with the NDK
-	@test -x "$(NDK_CC)" || { echo "no NDK clang at $(NDK_CC); set NDK or ANDROID_NDK_HOME"; exit 1; }
-	@mkdir -p $(BUILD_DIR)
-	$(NDK_CC) -O2 -Wall -Werror -Wno-unused-parameter -shared -fPIC -o $(CAMSHIM_BIN) $(CAMSHIM_SRC)/camshim.c
+build-camshim: countertop-native-source ## Build the camera service preload with the NDK
+	+$(COUNTERTOP_NATIVE) camshim
 
 .PHONY: build-camera
-build-camera: ## Build the camera helper with the NDK
-	@test -x "$(NDK_CC)" || { echo "no NDK clang at $(NDK_CC); set NDK or ANDROID_NDK_HOME"; exit 1; }
-	@mkdir -p $(CAMERA_STUBS)
-	@for lib in camera_client gui utils binder; do \
-		up=$$(echo $$lib | tr a-z A-Z); \
-		$(NDK_CC) -shared -DLIB$$up -Wl,-soname,lib$$lib.so -o $(CAMERA_STUBS)/lib$$lib.so $(CAMERA_SRC)/stubs.c || exit 1; \
-	done
-	$(NDK_CC) -O2 -Wall -Werror -o $(CAMERA_BIN) $(CAMERA_SRC)/camera.c $(CAMERA_SRC)/turn.c $(CAMERA_SRC)/cam2.c \
-		-L$(CAMERA_STUBS) -lcamera_client -lgui -lutils -lbinder -lcamera2ndk -lmediandk -landroid -lEGL -lGLESv2 -llog -lm -Wl,--allow-shlib-undefined
+build-camera: countertop-native-source ## Build the camera helper with the NDK
+	+$(COUNTERTOP_NATIVE) camera
 
 .PHONY: run-lanovoctl
 run-lanovoctl: ## Run lanovoctl on the host (make run-lanovoctl ARGS="check")
@@ -138,10 +127,8 @@ test: ## Run tests (make test PKG=./internal/... TIMEOUT=30s)
 HOST_CC ?= cc
 
 .PHONY: test-native
-test-native: ## Run the lanovo-surface tests that need no device, with the host compiler
-	@mkdir -p $(BUILD_DIR)
-	$(HOST_CC) -O1 -g -Wall -Werror -fsanitize=undefined -fno-sanitize-recover=all -I$(SURFACE_SRC) -o $(BUILD_DIR)/wire_test $(SURFACE_SRC)/wire.c $(SURFACE_SRC)/test/wire_test.c
-	$(BUILD_DIR)/wire_test
+test-native: countertop-native-source ## Run the shared native wire tests with the host compiler
+	+$(COUNTERTOP_NATIVE) test HOST_CC="$(or $(HOST_CC),cc)"
 
 .PHONY: test-race
 test-race: ## Run tests with the race detector
@@ -179,7 +166,7 @@ check: fmt vet lint test ## Format, vet, lint and test
 .PHONY: thumbs
 thumbs: device ## Render the visual picker's thumbnails on the device into what the binary embeds
 	$(ADB) shell rm -rf /data/local/tmp/lanovo-thumbs
-	$(ADB) shell lanovod ctl thumbs /data/local/tmp/lanovo-thumbs
+	$(ADB) shell lanovod ctl display thumbs /data/local/tmp/lanovo-thumbs
 	rm -f $(CURDIR)/internal/ui/visual/thumbs/*.jpg
 	$(ADB) pull /data/local/tmp/lanovo-thumbs/. $(CURDIR)/internal/ui/visual/thumbs/
 

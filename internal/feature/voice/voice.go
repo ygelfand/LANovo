@@ -75,7 +75,7 @@ func build() *Voice {
 	}
 	v.selection.Set(slots)
 	v.turn = newConversation(v.vs)
-	v.turn.word = v.selection.ID
+	v.turn.Word = v.selection.ID
 	slog.Info("wake words", "ours", len(ours), "slots", slots)
 
 	v.vs.OnTimer = timer.Get().Event
@@ -140,7 +140,8 @@ func (v *Voice) Interrupt() {
 		slog.Debug("stop word ignored, the turn is listening")
 		return
 	}
-	if !speaker.Sound().Busy() && !timer.Get().Ringing() && !media.Get().Playing() {
+	playing, _ := media.Get().Playing()
+	if !speaker.Sound().Busy() && !timer.Get().Ringing() && !playing {
 		slog.Debug("stop word ignored, nothing to stop")
 		return
 	}
@@ -169,7 +170,7 @@ func (v *Voice) Stop() bool {
 		return true
 	}
 
-	if media.Get().Playing() {
+	if playing, _ := media.Get().Playing(); playing {
 		media.Get().Pause()
 		return true
 	}

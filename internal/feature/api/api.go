@@ -103,7 +103,7 @@ func (a *API) Start(context.Context) error {
 			Devices: subDevices(device.Name),
 
 			VoiceFeatures:     voice.Features,
-			BluetoothFeatures: bluetooth.Get().Advertise(),
+		BluetoothFeatures: bluetooth.Get().Features(),
 		},
 		PSK:    psk,
 		Logger: slog.Default(),

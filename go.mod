@@ -22,7 +22,7 @@ require (
 	github.com/mdlayher/genetlink v1.4.0
 	github.com/mdlayher/netlink v1.9.0
 	github.com/mewkiz/flac v1.0.13
-	github.com/nicksnyder/go-i18n/v2 v2.6.1
+	github.com/nicksnyder/go-i18n/v2 v2.6.1 // indirect
 	github.com/pion/ice/v4 v4.4.4
 	github.com/pion/interceptor v0.1.49
 	github.com/pion/opus v0.1.1-0.20261005072002-44637de087b3
@@ -33,13 +33,14 @@ require (
 	github.com/tfriedel6/canvas v0.12.1
 	github.com/tphakala/go-aac v0.7.0
 	github.com/ygelfand/go-esphome-device v0.0.12
+	github.com/ygelfand/libcountertop v0.1.0
 	github.com/zserge/microwakeword v0.0.0-20260330234603-bfaf3840114e
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 	golang.org/x/image v0.46.0
 	golang.org/x/sys v0.48.0
 	golang.org/x/text v0.42.0
 	google.golang.org/protobuf v1.36.11
-	gopkg.in/yaml.v3 v3.0.1
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	rsc.io/qr v0.2.0
 )
 

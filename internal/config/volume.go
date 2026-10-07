@@ -1,6 +1,8 @@
 package config
 
-import "github.com/ygelfand/libcountertop/pkg/say"
+import (
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+)
 
 // Volume is how loud each kind of sound is, as a percentage.
 //
@@ -42,30 +44,15 @@ func (v Volume) Level(s Stream) int {
 	return v.Media
 }
 
-// Stream is a kind of sound, each with its own level.
-type Stream string
+type Stream = schema.Stream
 
 const (
-	StreamMedia    Stream = "media"
-	StreamAlerts   Stream = "alerts"
-	StreamVoice    Stream = "voice"
-	StreamFeedback Stream = "feedback"
+	StreamMain     = schema.StreamMain
+	StreamMedia    = schema.StreamMedia
+	StreamAlerts   = schema.StreamAlerts
+	StreamVoice    = schema.StreamVoice
+	StreamFeedback = schema.StreamFeedback
 )
-
-// Label is how the setting is shown.
-func (s Stream) Label() string {
-	switch s {
-	case StreamMedia:
-		return say.T("stream.media")
-	case StreamAlerts:
-		return say.T("stream.alerts")
-	case StreamVoice:
-		return say.T("stream.voice")
-	case StreamFeedback:
-		return say.T("stream.feedback")
-	}
-	return string(s)
-}
 
 // Streams is every kind of sound the device makes.
 func Streams() []Stream {

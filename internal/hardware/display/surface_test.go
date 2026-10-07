@@ -74,7 +74,7 @@ func (h *helper) conn(c *net.UnixConn) {
 		}
 		switch binary.LittleEndian.Uint32(hdr) {
 		case 1:
-			send(c, 1, nil, 4)
+			send(c, 1, nil, 5, 12, 20)
 		case 2:
 			f, _ := os.CreateTemp(h.t.TempDir(), "ui")
 			f.Truncate(int64(w[3] * w[4] * 4))

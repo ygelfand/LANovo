@@ -2,6 +2,7 @@ package gui
 
 import (
 	"fmt"
+	"github.com/ygelfand/LANovo/internal/ui"
 	"math"
 	"strings"
 	"time"
@@ -43,7 +44,8 @@ func (a *App) video(w *gogui.Window, p *videoplayer.Page) gogui.View {
 	var layers []gogui.View
 	if look.Picture {
 		if vh > vw && look.FrameW > 0 && look.FrameH > 0 {
-			if mark := look.Controls.Now().Mark; mark != nil {
+			if now := look.Controls.Now(); len(now.Mark) > 0 {
+				mark := ui.Picture(now.Mark, now.MarkID)
 				above := (vh - vw*look.FrameH/look.FrameW) / 2
 				layers = append(layers, floatAt(0, 0, float32(vw), float32(above), centredImage(still(mark), float32(vw)/2, float32(above)/2)))
 			}
@@ -193,10 +195,10 @@ func (a *App) videoBand(w *gogui.Window, p *videoplayer.Page, look videoplayer.L
 		words = append(words, gogui.Label(sub, quiet))
 	}
 	heading := []gogui.View{gogui.Column(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Content: words})}
-	if now.Mark != nil && vw > vh {
-		mw, mh := now.Mark.Size()
+	if mark := ui.Picture(now.Mark, now.MarkID); mark != nil && vw > vh {
+		mw, mh := mark.Size()
 		side := reach()
-		heading = append([]gogui.View{gogui.Image(gogui.ImageCfg{Src: still(now.Mark), Width: side * float32(mw) / float32(max(mh, 1)), Height: side})}, heading...)
+		heading = append([]gogui.View{gogui.Image(gogui.ImageCfg{Src: still(mark), Width: side * float32(mw) / float32(max(mh, 1)), Height: side})}, heading...)
 	}
 
 	rows := []gogui.View{gogui.Row(gogui.ContainerCfg{Sizing: gogui.FillFit, Padding: gogui.NoPadding, Spacing: gogui.SpacingMedium, VAlign: gogui.VAlignMiddle, Content: heading})}

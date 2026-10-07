@@ -22,8 +22,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	esphome "github.com/ygelfand/go-esphome-device"
-
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
@@ -35,6 +33,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
 	"github.com/ygelfand/LANovo/internal/ui"
+	esphome "github.com/ygelfand/go-esphome-device"
 	"github.com/ygelfand/libcountertop/pkg/fetch"
 	"github.com/ygelfand/libcountertop/pkg/media/cast"
 	_ "github.com/ygelfand/libcountertop/pkg/media/cast/protocols/all"
@@ -173,14 +172,14 @@ func (r *Receiver) Name() string { return "cast receiver" }
 
 func (r *Receiver) output() *output {
 	o := newOutput()
-	o.ended = func() {
+	o.SetEnded(func() {
 		r.mu.Lock()
 		s := r.service
 		r.mu.Unlock()
 		if s != nil {
 			s.End()
 		}
-	}
+	})
 	return o
 }
 

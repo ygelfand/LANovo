@@ -1,30 +1,17 @@
 package config
 
-// Visual is the live audio visual the device draws.
-type Visual struct {
-	// Kind names one of the visuals in internal/ui/visual.
-	Kind string `json:"kind"`
+import "github.com/ygelfand/libcountertop/pkg/settings/schema"
 
-	Label string `json:"label"`
+type Visual = schema.Visual
 
-	MaxFPS int `json:"max_fps"`
+var MaxFPSSteps = schema.MaxFPSSteps
 
-	Seed int `json:"seed"`
-}
+const DefaultVisual = schema.DefaultVisual
+const DefaultLabel = schema.DefaultLabel
+const DefaultMaxFPS = schema.DefaultMaxFPS
 
-var MaxFPSSteps = []int{10, 15, 20, 30, 45, 60}
+var defaultVisual = schema.DefaultVisualSettings
 
-const (
-	DefaultVisual = "orb"
-	DefaultLabel  = "LANOVO"
-	DefaultMaxFPS = 60
-)
-
-func defaultVisual() Visual {
-	return Visual{Kind: DefaultVisual, Label: DefaultLabel, MaxFPS: DefaultMaxFPS}
-}
-
-// VisualWriter changes it.
 type VisualWriter struct{ st *Store }
 
 func (w VisualWriter) Kind(v string) error {

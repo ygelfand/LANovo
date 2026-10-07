@@ -2,7 +2,6 @@ package sendspin
 
 import (
 	"context"
-	"fmt"
 	core "github.com/ygelfand/libcountertop/pkg/audio/sendspin"
 	"log/slog"
 	"sync"
@@ -15,8 +14,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/feature/media"
-	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+	"hash/maphash"
 )
 
 func init() {
@@ -46,9 +45,8 @@ type Player struct {
 	playing track
 	paused  bool
 
-	// artwork is the newest image the server sent, decoded once on arrival rather than on every
-	// redraw.
-	artwork *ui.Image
+	// artwork is the newest encoded image the server sent. The display decodes it on demand.
+	artwork []byte
 
 	// Where the track had reached when the server last said, and when that was. The server sends
 	// progress now and then rather than continuously, so the bar runs from the clock between.
@@ -205,6 +203,7 @@ func (p *Player) Now() media.Now {
 		Artist:  p.playing.Artist,
 		Album:   p.playing.Album,
 		Art:     p.artwork,
+		ArtID:   artID(p.artwork),
 		Elapsed: p.reached(playing),
 		Length:  p.length,
 		Can:     media.CanPause | media.CanNext | media.CanPrevious,
@@ -310,26 +309,24 @@ func (p *Player) plays(t track) {
 
 // drew keeps the newest album art.
 func (p *Player) drew(art protocol.ArtworkChunk) {
-	img, err := ui.Decode(art.Data)
-	if err != nil {
-		slog.Warn("sendspin artwork", "channel", art.Channel, "err", err)
-		return
-	}
-
 	p.mu.Lock()
-	p.artwork = img
+	p.artwork = append([]byte(nil), art.Data...)
 	p.mu.Unlock()
-
-	w, h := img.Size()
-	slog.Debug("sendspin artwork", "channel", art.Channel, "size", fmt.Sprintf("%dx%d", w, h))
 	media.Get().Changed()
 }
-
-// Artwork is the newest album art the server sent, and nil when there is none.
-func (p *Player) Artwork() *ui.Image {
+func (p *Player) Artwork() []byte {
 	p.mu.Lock()
 	defer p.mu.Unlock()
-	return p.artwork
+	return append([]byte(nil), p.artwork...)
+}
+
+var artSeed = maphash.MakeSeed()
+
+func artID(art []byte) uint64 {
+	if len(art) == 0 {
+		return 0
+	}
+	return maphash.Bytes(artSeed, art)
 }
 
 // Restore puts the switch back where it was left. Listening waits for Run, once there is a network.

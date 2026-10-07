@@ -1,10 +1,10 @@
 package config
 
-import "github.com/ygelfand/libcountertop/pkg/say"
-
 import (
 	"fmt"
 	"slices"
+
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
 func errSlot(n int) error { return fmt.Errorf("config: wake slot %d", n) }
@@ -193,31 +193,11 @@ func (w WakeWriter) word(f func(*WakeWord)) error {
 	})
 }
 
-// Delivery is how a spoken reply reaches the device. It is per slot because a local pipeline and a
-// cloud one differ in how long the audio takes to start, so the trade between starting sooner and
-// not gapping is not the same for both.
-type Delivery string
+type Delivery = schema.Delivery
 
 const (
-	// DeliveryWhole fetches the reply from the url Home Assistant serves it at. It cannot gap and it
-	// says when the audio has ended, which the stream does not.
-	DeliveryWhole Delivery = "whole"
-
-	// DeliveryStream takes the reply over the API as it is generated. It starts sooner and it can
-	// gap: the chunks arrive at about the rate they play, so any hiccup splices silence into a word.
-	DeliveryStream Delivery = "stream"
+	DeliveryWhole  = schema.DeliveryWhole
+	DeliveryStream = schema.DeliveryStream
 )
 
-// Label is how the setting is shown.
-func (d Delivery) Label() string {
-	switch d {
-	case DeliveryWhole:
-		return say.T("delivery.whole")
-	case DeliveryStream:
-		return say.T("delivery.stream")
-	}
-	return string(d)
-}
-
-// Deliveries is how a reply can arrive, in the order it is offered.
-func Deliveries() []Delivery { return []Delivery{DeliveryWhole, DeliveryStream} }
+var Deliveries = schema.Deliveries

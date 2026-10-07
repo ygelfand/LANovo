@@ -1,6 +1,8 @@
 package config
 
-import "github.com/ygelfand/libcountertop/pkg/say"
+import (
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+)
 
 // Feedback is the noises the device makes about itself, as opposed to anything it was asked to
 // play.
@@ -14,49 +16,16 @@ const DefaultChime = ChimeChirp
 
 func defaultFeedback() Feedback { return Feedback{Chime: DefaultChime} }
 
-// Chime is what the device sounds like when it acknowledges something.
-//
-// A choice rather than a switch, because the device sits in a room with other devices in it and a
-// beep that is distinguishable from the microwave is worth more than a beep. None is one of the
-// answers: a display on a bedside table should be able to say nothing at all.
-type Chime string
+type Chime = schema.Chime
 
 const (
-	// ChimeNone is silence. It covers every sound the device makes about itself, not only the
-	// acknowledgement, because somebody who turned the chimes off wants the device quiet rather
-	// than quieter.
-	ChimeNone Chime = "none"
-
-	// ChimeChirp is two quick rising notes.
-	ChimeChirp Chime = "chirp"
-
-	// ChimeDing is one clear note, for a room where the chirp reads as a notification.
-	ChimeDing Chime = "ding"
-
-	// ChimeRise is three rising notes, which is the most this should ever be: an acknowledgement
-	// longer than a moment is in the way of the thing it is acknowledging.
-	ChimeRise Chime = "rise"
+	ChimeNone  = schema.ChimeNone
+	ChimeChirp = schema.ChimeChirp
+	ChimeDing  = schema.ChimeDing
+	ChimeRise  = schema.ChimeRise
 )
 
-// Label is how the setting is shown.
-func (c Chime) Label() string {
-	switch c {
-	case ChimeNone:
-		return say.T("chime.none")
-	case ChimeDing:
-		return say.T("chime.ding")
-	case ChimeRise:
-		return say.T("chime.rise")
-	}
-	return say.T("chime.chirp")
-}
-
-// Chimes is every value the setting takes, in the order they are offered. None first, because it is
-// the one somebody goes looking for.
-func Chimes() []Chime { return []Chime{ChimeNone, ChimeChirp, ChimeDing, ChimeRise} }
-
-// Silent reports whether the device should make no sound of its own.
-func (c Chime) Silent() bool { return c == ChimeNone }
+var Chimes = schema.Chimes
 
 // FeedbackWriter changes the noises the device makes about itself.
 type FeedbackWriter struct{ st *Store }

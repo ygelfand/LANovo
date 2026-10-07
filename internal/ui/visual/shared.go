@@ -1,15 +1,9 @@
 // Package visual adapts shared visual renderers to product labels and artwork.
 package visual
 
-import (
-	"github.com/ygelfand/libcountertop/pkg/display/ui"
-	shared "github.com/ygelfand/libcountertop/pkg/display/visual"
-	"github.com/ygelfand/libcountertop/pkg/say"
-	"slices"
-	"strings"
-)
+import shared "github.com/ygelfand/libcountertop/pkg/display/visual"
 
-type Kind shared.Kind
+type Kind = shared.Kind
 
 const LensFlares Kind = Kind(shared.LensFlares)
 const ClassicVU Kind = Kind(shared.ClassicVU)
@@ -72,33 +66,6 @@ var LayoutOf = shared.LayoutOf
 var Portrait = shared.Portrait
 var SetSeed = shared.SetSeed
 
-func (k Kind) Traits() Traits { return shared.Kind(k).Traits() }
-func (k Kind) Label() string {
-	if !slices.Contains(shared.Kinds(), shared.Kind(k)) {
-		k = Default
-	}
-	return say.T("visual." + string(k))
-}
-func kinds(in []shared.Kind) []Kind {
-	out := make([]Kind, len(in))
-	for i, k := range in {
-		out[i] = Kind(k)
-	}
-	return out
-}
-func Kinds() []Kind { return kinds(shared.Kinds()) }
-func Built() []Kind {
-	out := kinds(shared.Built())
-	slices.SortFunc(out, func(a, b Kind) int { return strings.Compare(strings.ToLower(a.Label()), strings.ToLower(b.Label())) })
-	return out
-}
-
-type branded struct{ Visual }
-
-func (v branded) Shade(g GL, fresh bool, in ui.Rect, x Input) error {
-	if strings.TrimSpace(x.Label) == "" {
-		x.Label = "LANOVO"
-	}
-	return v.Visual.Shade(g, fresh, in, x)
-}
-func New(k Kind) Visual { return branded{Visual: shared.New(shared.Kind(k))} }
+var Kinds = shared.Kinds
+var Built = shared.Built
+var New = shared.New

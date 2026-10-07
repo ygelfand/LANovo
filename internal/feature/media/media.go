@@ -6,14 +6,11 @@ package media
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"math"
 	"sync"
 	"sync/atomic"
 	"time"
-
-	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -21,6 +18,10 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/service"
+	esphome "github.com/ygelfand/go-esphome-device"
+	"github.com/ygelfand/libcountertop/pkg/hook"
+	"github.com/ygelfand/libcountertop/pkg/media/ownership"
+	"github.com/ygelfand/libcountertop/pkg/media/pcm"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
@@ -31,42 +32,19 @@ func init() {
 
 // Player is the media player entity and whatever it is playing.
 type Player struct {
-	mp *esphome.MediaPlayer
+	Begun hook.Hook[Source]
+	mp    *esphome.MediaPlayer
 
 	mu sync.Mutex
 
-	// cur is what the player was last asked for. Held as a pointer so a fetch that has been
-	// abandoned can tell it is no longer the current one.
-	cur *track
-
-	playing bool
+	stream *pcm.Stream
 
 	// speaking is set while a reply or an announcement is sounding, which Home Assistant is told is
 	// the player playing: to the room the device is making noise either way.
 	speaking atomic.Bool
 
-	// held is the screen this put up, so stopping takes away that and nothing else, and sounded is
-	// when something was last playing.
-	held    *shell.Hold
-	sounded time.Time
-	stalled time.Time
-	live    Source
-	begun   Source
-
-	// What the arbiter has said. down is standing aside for another producer, kept is the audio put
-	// aside when that happened, and gain is the duck applied to what is written next.
-	down bool
-	kept []int16
-	gain float32
-}
-
-type track struct {
-	// stop abandons the fetch. A download that has been silenced should not arrive and play itself.
-	stop context.CancelFunc
-
-	// fetching is the download still in flight. Nothing is queued until it lands, so without this
-	// the drain check calls the track finished before it has started.
-	fetching bool
+	owner     *ownership.Owner[Source]
+	ownerInit sync.Once
 }
 
 var (
@@ -76,7 +54,7 @@ var (
 
 func Get() *Player {
 	once.Do(func() {
-		shared = &Player{gain: 1}
+		shared = &Player{}
 		shared.build()
 		onRail()
 	})
@@ -101,17 +79,32 @@ func (p *Player) build() {
 			esphome.MediaPlayerFeaturePlayMedia |
 			esphome.MediaPlayerFeatureBrowseMedia |
 			esphome.MediaPlayerFeaturePlay |
+			esphome.MediaPlayerFeaturePause |
 			esphome.MediaPlayerFeatureStop |
 			esphome.MediaPlayerFeatureAnnounce,
 		SupportedFormats: Formats,
+		SupportsPause:    true,
 	}
 
 	p.mp.OnCommand = p.command
+	arb := speaker.Sound().Backgrounds()
+	p.stream = pcm.New(pcm.Options{
+		Sink: speaker.Get(), Rate: speaker.Rate, Channels: speaker.Channels, Changed: p.refresh,
+		DuckDB: func() float64 { return config.Get().Media.DuckDB },
+		Arbitration: pcm.Arbitration{
+			Took: func(p pcm.Producer) { arb.Took(p) },
+			Gave: func(p pcm.Producer) { arb.Gave(p) },
+			Owns: func(p pcm.Producer) bool { return arb.Owns(p) },
+		},
+	})
 }
 
 // Run keeps the entity's state honest: what is queued drains on its own, and nothing else would
 // notice that the last of it had gone.
 func (p *Player) Run(ctx context.Context) error {
+	p.stream.Start(ctx)
+	defer p.stream.Close()
+	defer card().Close()
 	tick := time.NewTicker(250 * time.Millisecond)
 	defer tick.Stop()
 
@@ -122,112 +115,33 @@ func (p *Player) Run(ctx context.Context) error {
 		case <-tick.C:
 		}
 
-		// Standing aside empties the queue without the track being over: what was in it is held
-		// until whatever took the background gives it back.
-		p.mu.Lock()
-		done := p.playing && !p.down && len(p.kept) == 0 &&
-			(p.cur == nil || !p.cur.fetching) && speaker.Get().Queued() == 0
-		if done {
-			p.cur, p.playing = nil, false
-		}
-		p.mu.Unlock()
-
-		if done {
-			speaker.Sound().Backgrounds().Gave(p)
-			p.refresh()
-		}
 		p.follow()
 		p.tick()
 	}
 }
 
-func (p *Player) tick() {
-	if !Showing() {
-		return
-	}
-	now := p.Now()
-	if !now.Playing || now.Length <= 0 {
-		return
-	}
-	if Page().(*screen).moved(now.Elapsed) {
-		shell.Get().Redraw()
-	}
-}
+func (p *Player) tick() { card().Tick() }
 
 // Began claims the card for a source that is playing. The kind holding the live session is carrying
 // on, a next track, a resume, a restarted stream; any other kind is taking over, which puts its
 // player up and stops whatever held the card.
 func (p *Player) Began(s Source) {
-	var replaced Source
-	p.mu.Lock()
-	if p.live == nil || p.live.Kind() != s.Kind() {
-		p.begun = s
-		if held := p.source(); held != nil && held.Kind() != s.Kind() {
-			replaced = held
-		}
+	replaced, fresh, displaced := p.sourceOwner().Begin(s)
+	if fresh {
+		card().Began(s)
+		p.Begun.Emit(s)
 	}
-	p.live = s
-	p.mu.Unlock()
-	p.External(s)
-	if replaced != nil {
-		slog.Info("the player was replaced", "was", fmt.Sprintf("%T", replaced), "by", fmt.Sprintf("%T", s))
+	p.refresh()
+	if displaced {
 		replaced.Stop()
 	}
 }
 
 // Ended says a source's session is over, so the next time it begins is a start again.
-func (p *Player) Ended(s Source) {
-	p.mu.Lock()
-	if p.live != nil && p.live.Kind() == s.Kind() {
-		p.live = nil
-	}
-	p.mu.Unlock()
-}
+func (p *Player) Ended(s Source) { p.sourceOwner().End(s) }
 
 // follow puts the player up when a source has begun and takes it away afterwards.
-func (p *Player) follow() {
-	now := p.Now()
-	playing := now.Playing || now.Hold
-	src := p.source()
-
-	idle := !now.Playing && (now.Paused || now.Hold)
-	p.mu.Lock()
-	begun := p.begun
-	p.begun = nil
-	if playing {
-		p.sounded = time.Now()
-	}
-	switch {
-	case !idle:
-		p.stalled = time.Time{}
-	case p.stalled.IsZero():
-		p.stalled = time.Now()
-	}
-	stalled := time.Since(p.stalled)
-	held, quiet := p.held, time.Since(p.sounded)
-	if !playing && quiet > gap && begun == nil {
-		p.live = nil
-	}
-	p.mu.Unlock()
-
-	switch {
-	case begun != nil && begun == src:
-		slog.Info("the player opened", "by", fmt.Sprintf("%T", src))
-		p.Open()
-
-	case !playing && held.Held() && quiet > gap:
-		slog.Info("the player is done", "quiet", quiet.Round(time.Second))
-		held.Keep(false)
-	}
-
-	if limit := config.Get().Idle.Media.After(); idle && src != nil && limit > 0 && stalled > limit {
-		slog.Info("the player was left idle", "for", stalled.Round(time.Second), "by", fmt.Sprintf("%T", src))
-		p.mu.Lock()
-		p.stalled = time.Time{}
-		p.mu.Unlock()
-		src.Stop()
-	}
-}
+func (p *Player) follow() { card().Follow() }
 
 func (p *Player) SetIdle(v config.Delay) {
 	if err := config.Set().Idle().Media(v); err != nil {
@@ -235,41 +149,17 @@ func (p *Player) SetIdle(v config.Delay) {
 	}
 }
 
-// gap is how long nothing may be playing before the card goes.
-const gap = 5 * time.Second
-
-// Open shows the player for whatever is playing: the source's own if it has one, the card if not.
-func (p *Player) Open() {
-	if o, ok := p.source().(Opener); ok && o.Open() {
-		p.mu.Lock()
-		card := p.held
-		p.held = nil
-		p.mu.Unlock()
-		card.Release()
-		return
-	}
-	p.mu.Lock()
-	held := p.held
-	p.mu.Unlock()
-	if held.Held() {
-		return
-	}
-	hold := shell.Get().Hold(Page())
-	p.mu.Lock()
-	p.held = hold
-	p.mu.Unlock()
-}
+func (p *Player) Open() { card().Open() }
 
 // Pause quietens whatever is playing without giving up its place, which is what a voice turn wants
 // from it. A source that cannot pause is stopped instead: silence is the point.
 func (p *Player) Pause() {
-	if s := p.source(); s != nil {
-		s.Pause()
+	if source := p.source(); source != nil {
+		source.Pause()
 		return
 	}
-	p.Stop()
+	p.stream.Pause()
 }
-
 func (p *Player) command(c esphome.MediaCommand) {
 	if c.HasVolume {
 		volume.Get().Set(config.StreamMedia, int(math.Round(float64(c.Volume)*100)))
@@ -321,93 +211,35 @@ func (p *Player) command(c esphome.MediaCommand) {
 // play fetches a url and queues it. Home Assistant serves it already converted, at the card's rate
 // for music and at the pipeline's for an announcement.
 func (p *Player) play(url string, announcement bool) {
-	p.Stop()
-
-	ctx, stop := context.WithCancel(context.Background())
-	t := &track{stop: stop, fetching: true}
-
-	p.mu.Lock()
-	p.cur, p.playing = t, true
-	p.mu.Unlock()
-
-	// Playing is what claims the card, for this queue as for every other source.
 	if announcement {
-		p.External(homeAssistant{})
-	} else {
-		p.Began(homeAssistant{})
+		p.announce(url)
+		return
 	}
-
-	// Before anything is queued: taking the background is what stands the others down, and they put
-	// their audio aside rather than leaving it in the queue under this one.
-	speaker.Sound().Backgrounds().Took(p)
-	p.refresh()
-
-	safe.Go("media fetch", func() {
-		defer stop()
-		defer func() {
-			p.mu.Lock()
-			t.fetching = false
-			p.mu.Unlock()
-		}()
-
+	p.Began(homeAssistant{})
+	p.stream.Play(url)
+}
+func (p *Player) announce(url string) {
+	p.Sounding(true)
+	claim := speaker.Sound().Claim("announce", func(ctx context.Context, spk *speaker.Speaker) error {
 		samples, err := Fetch(ctx, url)
 		if err != nil {
-			slog.Error("fetching media failed", "url", url, "err", err)
-
-			p.mu.Lock()
-			if p.cur == t {
-				p.playing = false
-			}
-			p.mu.Unlock()
-			speaker.Sound().Backgrounds().Gave(p)
-			p.refresh()
-			return
+			return err
 		}
-		if ctx.Err() != nil {
-			return
+		spk.PlayVoice(samples)
+		spk.PlayVoice(make([]int16, speaker.VoiceRate*Tail/1000))
+		return nil
+	})
+	safe.Go("announce", func() {
+		<-claim.Done()
+		p.Sounding(false)
+		if err := claim.Err(); err != nil {
+			slog.Error("playing announcement failed", "err", err)
 		}
-
-		// Something took the background while this was downloading, so the queue is theirs now.
-		if !speaker.Sound().Backgrounds().Owns(p) {
-			return
-		}
-
-		speaker.Scale(samples, p.ducking())
-
-		if announcement {
-			// Mono at the pipeline's rate, so it goes through the resampler like a spoken reply,
-			// with a tail so the last word is not clipped by the filter running out.
-			speaker.Get().PlayVoice(samples)
-			speaker.Get().PlayVoice(make([]int16, speaker.VoiceRate*Tail/1000))
-			return
-		}
-		speaker.Get().Play(samples)
 	})
 }
 
 // Stop abandons whatever is playing and throws away what has not been heard.
-func (p *Player) Stop() {
-	p.mu.Lock()
-	cur := p.cur
-	p.cur, p.playing = nil, false
-	p.kept = nil
-	p.mu.Unlock()
-
-	if cur != nil {
-		cur.stop()
-	}
-
-	// Only what is ours. Stopping a track that has already stood aside should not empty the queue
-	// of whatever took the speaker from it.
-	if speaker.Sound().Backgrounds().Owns(p) {
-		speaker.Get().Drain()
-	}
-
-	// After draining: leaving the background says whatever was waiting behind this may be heard,
-	// and it should not come back to find this track's remainder still queued.
-	speaker.Sound().Backgrounds().Gave(p)
-	p.refresh()
-}
+func (p *Player) Stop() { p.stream.Stop(); p.refresh() }
 
 // Playing reports whether anything is sounding, which a voice turn asks before ducking.
 // Sounding marks a reply or an announcement as playing, and puts back whatever the player was doing
@@ -417,13 +249,15 @@ func (p *Player) Sounding(on bool) {
 	p.refresh()
 }
 
-func (p *Player) Playing() bool {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	return p.playing
+func (p *Player) Playing() (playing, paused bool) {
+	playing, paused = p.stream.Playing()
+	if s := p.source(); s != nil {
+		n := s.Now()
+		playing = playing || n.Playing && !n.Paused
+		paused = paused || n.Paused
+	}
+	return
 }
-
 func (p *Player) adjust(by int) {
 	v := volume.Get()
 	v.Set(config.StreamMedia, v.Level(config.StreamMedia)+by)
@@ -461,4 +295,11 @@ func (p *Player) refresh() {
 	if Showing() {
 		shell.Get().Redraw()
 	}
+}
+
+func (p *Player) sourceOwner() *ownership.Owner[Source] {
+	p.ownerInit.Do(func() {
+		p.owner = ownership.New(func(s Source) uint8 { return uint8(s.Kind()) })
+	})
+	return p.owner
 }

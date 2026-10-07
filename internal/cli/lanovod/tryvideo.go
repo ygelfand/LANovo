@@ -18,7 +18,10 @@ type fileFrames struct {
 	next  int
 }
 
-func (f *fileFrames) Next() (video.Frame, error) {
+func (f *fileFrames) Next(ctx context.Context) (video.Frame, error) {
+	if err := ctx.Err(); err != nil {
+		return video.Frame{}, err
+	}
 	if f.next == len(f.units) {
 		return video.Frame{}, io.EOF
 	}

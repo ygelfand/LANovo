@@ -147,7 +147,7 @@ func (s *stager) run() {
 		} else if s.hiding.IsZero() {
 			s.hiding = time.Now()
 			s.shown.Store(false)
-			Get().hide()
+			Get().Hide()
 		} else if time.Since(s.hiding) > stageHide {
 			s.close()
 			s.hiding = time.Time{}
@@ -193,7 +193,7 @@ func (s *stager) frame(w wanted, hiding bool) {
 	}
 	if !hiding && !s.shown.Load() {
 		s.shown.Store(true)
-		Get().paint()
+		Get().Paint()
 	}
 	if s.retiring != nil {
 		if s.retireIn--; s.retireIn <= 0 {

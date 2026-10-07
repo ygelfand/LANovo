@@ -55,7 +55,7 @@ var (
 	Widevine   = shared.Widevine
 )
 
-func Dial(path string) (*Client, error) { return shared.DialVersion(path, 4) }
+func Dial(path string) (*Client, error) { return shared.Dial(path) }
 func DialWait(path string, wait time.Duration) (*Client, error) {
-	return shared.DialWaitVersion(path, wait, 4)
+	return shared.DialWait(path, wait)
 }

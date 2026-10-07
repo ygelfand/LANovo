@@ -39,3 +39,7 @@ ehthumbs.db
 Thumbs.db
 
 scratch/
+
+# Local multi-repository development
+go.work
+go.work.sum

@@ -139,7 +139,7 @@ func (s *stopping) Stop() { s.stopped++ }
 func TestAReplacedSourceIsStoppedForGood(t *testing.T) {
 	p := Get()
 	group, cast, next := &stopping{peer: peer{kind: FromGroup}}, &peer{kind: FromCast}, &peer{kind: FromCast}
-	t.Cleanup(func() { p.Ended(group); p.Ended(cast); p.External(nil); opens(p) })
+	t.Cleanup(func() { p.Ended(group); p.Ended(cast); p.External(nil) })
 
 	p.Began(group)
 	p.Began(group)
@@ -159,56 +159,51 @@ func TestAReplacedSourceIsStoppedForGood(t *testing.T) {
 	}
 }
 
-// opens is whether the last Began asked for the player to go up, taking the request as follow does.
-func opens(p *Player) bool {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-	begun := p.begun
-	p.begun = nil
-	return begun != nil
-}
-
 func TestOnlyANewSessionOpensThePlayer(t *testing.T) {
 	p := Get()
+	requests := 0
+	stop := p.Begun.Listen(func(Source) { requests++ })
+	defer stop()
+	opens := func() bool { n := requests; requests = 0; return n > 0 }
 	phone, group := &peer{kind: FromBluetooth}, &peer{kind: FromGroup}
-	t.Cleanup(func() { p.Ended(phone); p.Ended(group); p.External(nil); opens(p) })
-	opens(p)
+	t.Cleanup(func() { p.Ended(phone); p.Ended(group); p.External(nil) })
+	opens()
 
 	p.External(phone)
-	if opens(p) {
+	if opens() {
 		t.Error("claiming the card without beginning opened the player")
 	}
 
 	p.Began(phone)
-	if !opens(p) {
+	if !opens() {
 		t.Error("a source beginning did not open the player")
 	}
 
 	p.Began(phone)
-	if opens(p) {
+	if opens() {
 		t.Error("the same source beginning again, a next track or a resume, opened the player")
 	}
 
 	p.Began(&peer{kind: FromBluetooth})
-	if opens(p) {
+	if opens() {
 		t.Error("another source of the same kind, a cast's next track, opened the player")
 	}
 	p.Began(phone)
-	opens(p)
+	opens()
 
 	p.Began(group)
-	if !opens(p) {
+	if !opens() {
 		t.Error("another source beginning did not open the player")
 	}
 
 	p.Began(phone)
-	if !opens(p) {
+	if !opens() {
 		t.Error("coming back after another source took over did not open the player")
 	}
 
 	p.Ended(phone)
 	p.Began(phone)
-	if !opens(p) {
+	if !opens() {
 		t.Error("beginning after its session ended did not open the player")
 	}
 }

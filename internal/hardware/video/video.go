@@ -5,54 +5,23 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
+	sharedstream "github.com/ygelfand/libcountertop/pkg/media/videostream"
 )
 
-type Frame struct {
-	Data  []byte
-	At    time.Duration
-	Crypt *surface.Crypt
-}
-
-type Source interface {
-	Next() (Frame, error)
-}
-
-type Clock func() (at time.Duration, running bool)
-
-type Stream struct {
-	Codec         uint32
-	Width, Height uint32
-	Session       uint32
-	Source        Source
-	Clock         Clock
-	Over          Overlay
-	Started       func()
-	Waiting       func(bool)
-}
-
-type Band struct {
-	Pix    []byte
-	Stride int
-	At     display.Rect
-}
-
-type Overlay interface {
-	Band(o display.Orientation, fw, fh int) (Band, bool)
-	Changed() <-chan struct{}
-}
-
-type Report struct {
-	Shown, Dropped int
-	Turns          int
-	Orientation    display.Orientation
-	At             display.Rect
-}
+type Frame = sharedstream.Frame
+type Source = sharedstream.Source
+type Clock = sharedstream.Clock
+type Stream = sharedstream.Stream
+type Band = sharedstream.Band
+type Overlay = sharedstream.Overlay
+type Report = sharedstream.Report
 
 const (
 	videoZ    = -2
@@ -130,7 +99,7 @@ type Screen interface {
 }
 
 func Play(ctx context.Context, s Stream) (Report, error) {
-	return On(ctx, &Beneath{}, s)
+	return On(ctx, &Beneath{Rotation: func() display.Orientation { return display.Get().Orientation() }, Size: func() (int, int) { return display.Get().Native() }}, s)
 }
 
 func On(ctx context.Context, p Screen, s Stream) (Report, error) {
@@ -142,7 +111,7 @@ func On(ctx context.Context, p Screen, s Stream) (Report, error) {
 	if err != nil {
 		return Report{}, err
 	}
-	want := spec{codec: codec, w: int(s.Width), h: int(s.Height), session: s.Session}
+	want := spec{Codec: codec, W: int(s.Width), H: int(s.Height), Session: s.Session}
 	k, keeps := p.(keeper)
 	var id uint32
 	reused := false
@@ -159,7 +128,7 @@ func On(ctx context.Context, p Screen, s Stream) (Report, error) {
 		if s.Session != 0 {
 			decoder = board.Current().SecureDecoders[surface.MIME(codec)]
 		}
-		if err := c.VideoOpen(id, codec, want.w, want.h, videoZ, s.Session, decoder); err != nil {
+		if err := c.VideoOpen(id, codec, want.W, want.H, videoZ, s.Session, decoder); err != nil {
 			return Report{}, fmt.Errorf("video: opening the decoder: %w", err)
 		}
 	}
@@ -191,8 +160,11 @@ func On(ctx context.Context, p Screen, s Stream) (Report, error) {
 	defer ctrl.close()
 
 	ctx, cancel := context.WithCancel(ctx)
-	defer cancel()
+	var workers sync.WaitGroup
+	defer func() { cancel(); workers.Wait() }()
+	workers.Add(1)
 	go func() {
+		defer workers.Done()
 		t := time.NewTicker(clockTick)
 		defer t.Stop()
 		for {
@@ -210,10 +182,12 @@ func On(ctx context.Context, p Screen, s Stream) (Report, error) {
 
 	frames := make(chan Frame, buffered)
 	failed := make(chan error, 1)
+	workers.Add(1)
 	go func() {
+		defer workers.Done()
 		defer close(frames)
 		for {
-			f, err := s.Source.Next()
+			f, err := s.Source.Next(ctx)
 			if err != nil {
 				if !errors.Is(err, io.EOF) {
 					failed <- err

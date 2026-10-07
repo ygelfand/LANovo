@@ -5,72 +5,43 @@ import (
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
-
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
+	sharedcard "github.com/ygelfand/libcountertop/pkg/display/mediacard"
 	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
-// Page is what is playing, with the transport for it. One instance, so the shell can recognize it.
-func Page() shell.View {
-	pageOnce.Do(func() { page = &screen{} })
-	return page
-}
+type screen = sharedcard.Screen
 
-var (
-	pageOnce sync.Once
-	page     *screen
-)
+var cardOnce sync.Once
+var theCard *sharedcard.Card
 
-// Showing reports whether the player is the screen being looked at.
-func Showing() bool { return shell.Get().Top() == Page() }
-
-// onRail puts the player in the dock, so it can be reached when nothing is playing.
-func onRail() {
-	drawer.Get().Add(drawer.Entry{
-		Name:  func() string { return say.T("rail.media") },
-		Order: drawer.OrderPlayer,
-		Glyph: func() string { return gogui.IconMusic },
-		Open: func() {
-			if now := Get().Now(); now.Playing || now.Paused {
-				Get().Open()
-				return
-			}
-			shell.Get().Push(Page())
-		},
+func card() *sharedcard.Card {
+	cardOnce.Do(func() {
+		theCard = sharedcard.New(sharedcard.Options{Now: func() Now { return Get().Now() }, Source: func() Source { return Get().source() }, Idle: func() time.Duration { return config.Get().Idle.Media.After() }, Reset: func() { Get().sourceOwner().ResetSession() }, Shell: shell.Get()})
 	})
+	return theCard
 }
-
-type screen struct {
-	mu    sync.Mutex
-	shown time.Duration
+func Page() shell.View { return card().Page() }
+func Showing() bool    { return shell.Get().Top() == Page() }
+func onRail() {
+	drawer.Get().Add(drawer.Entry{Name: func() string { return say.T("rail.media") }, Order: drawer.OrderPlayer, Glyph: func() string { return gogui.IconMusic }, Open: func() {
+		if now := Get().Now(); now.Playing || now.Paused {
+			card().Open()
+			return
+		}
+		shell.Get().Push(Page())
+	}})
 }
-
-func (v *screen) Covers() bool { return true }
-
-func (v *screen) Shows(s config.Stream) bool { return s == config.StreamMedia }
-
-func (v *screen) Timeout() time.Duration { return shell.SettingsTimeout }
-
-func (v *screen) moved(elapsed time.Duration) bool {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	second := elapsed / time.Second
-	if second == v.shown {
-		return false
-	}
-	v.shown = second
-	return true
-}
-
 func Heading(now Now) string {
-	switch {
-	case now.Title != "":
+	if now.Title != "" {
 		return now.Title
-	case now.Paused:
+	}
+	if now.Paused {
 		return "Paused"
-	case now.Playing:
+	}
+	if now.Playing {
 		return "Playing"
 	}
 	return "Nothing playing"
@@ -91,8 +62,8 @@ func Transport() Source {
 // It answers only to stopping, since a url has no transport beyond ending it.
 type homeAssistant struct{}
 
-func (homeAssistant) Play()         {}
-func (homeAssistant) Pause()        {}
+func (homeAssistant) Play()         { Get().stream.Unpause() }
+func (homeAssistant) Pause()        { Get().stream.Pause() }
 func (homeAssistant) Next()         {}
 func (homeAssistant) Previous()     {}
 func (homeAssistant) Stop()         { Get().Stop() }
