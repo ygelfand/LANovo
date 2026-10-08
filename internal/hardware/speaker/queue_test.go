@@ -26,7 +26,6 @@ func TestMixExtendsPastTheQueue(t *testing.T) {
 	}
 }
 
-// Two things at once are louder than either, and wrapping would turn that into a crack.
 func TestMixClampsInsteadOfWrapping(t *testing.T) {
 	got := mix([]int16{math.MaxInt16}, []int16{math.MaxInt16})
 	if got[0] != math.MaxInt16 {
@@ -46,11 +45,9 @@ func TestMixIntoNothing(t *testing.T) {
 	}
 }
 
-// A buffer the queue only part fills has silence spliced into it. Expected at the end of a sound;
-// repeatedly during one means audio is arriving slower than it plays out.
 func TestAPartFilledBufferCountsAsASplice(t *testing.T) {
 	s := &Speaker{}
-	s.pending = make([]int16, period) // half a buffer
+	s.pending = make([]int16, period)
 
 	buf := make([]byte, period*Channels*Bits/8)
 	s.fill(buf)
@@ -60,7 +57,6 @@ func TestAPartFilledBufferCountsAsASplice(t *testing.T) {
 	}
 }
 
-// A full buffer is not a splice, however little is left behind it.
 func TestAFullBufferIsNotASplice(t *testing.T) {
 	s := &Speaker{}
 	s.pending = make([]int16, period*Channels)
@@ -73,8 +69,6 @@ func TestAFullBufferIsNotASplice(t *testing.T) {
 	}
 }
 
-// Silence while nothing is playing is the resting state, not a fault. Only silence that interrupts
-// something is worth counting.
 func TestSilenceIsOnlyAnUnderrunAfterAudio(t *testing.T) {
 	s := &Speaker{}
 	buf := make([]byte, period*Channels*Bits/8)
@@ -93,8 +87,6 @@ func TestSilenceIsOnlyAnUnderrunAfterAudio(t *testing.T) {
 	}
 }
 
-// Audio offered with no card is dropped rather than queued: nothing would drain it, so it would
-// grow for as long as the speaker stayed away.
 func TestAudioWithNoCardIsDroppedRatherThanQueued(t *testing.T) {
 	s := &Speaker{}
 	s.Play(make([]int16, 128))
@@ -144,14 +136,12 @@ func TestAHardwareVolumeLeavesTheSamplesAndScalesOnlyTheEchoReference(t *testing
 	}
 }
 
-// A speaker nobody has set is silent. Guessing full is how a device ends up shouting at someone.
 func TestVolumeStartsSilent(t *testing.T) {
 	if got := (&Speaker{}).Volume(); got != 0 {
 		t.Errorf("a fresh speaker is at %v, want 0", got)
 	}
 }
 
-// Silence is a level somebody can ask for, and must not read back as anything else.
 func TestSilenceIsALevel(t *testing.T) {
 	s := &Speaker{}
 	s.SetVolume(1)
@@ -162,7 +152,6 @@ func TestSilenceIsALevel(t *testing.T) {
 	}
 }
 
-// A rest is silence of the right length, not a missing note: chimes rely on it for their spacing.
 func TestARestIsSilenceOfTheRightLength(t *testing.T) {
 	got := tone(Note{Freq: 0, Ms: 10}, 1)
 
@@ -176,7 +165,6 @@ func TestARestIsSilenceOfTheRightLength(t *testing.T) {
 	}
 }
 
-// Both channels carry the same tone: a chime on one side only reads as a fault in the speaker.
 func TestAToneIsOnBothChannels(t *testing.T) {
 	got := tone(Note{Freq: 440, Ms: 50}, 1)
 
@@ -194,9 +182,6 @@ func TestAToneIsOnBothChannels(t *testing.T) {
 	}
 }
 
-// The ramp is what stops the ends clicking. It reaches full only in the middle, so the ends are
-// near silence rather than at it — a hundredth of the peak is quiet enough not to be heard as an
-// edge, and asking for exactly zero would only be asserting where the envelope happens to land.
 func TestAToneRampsInAndOut(t *testing.T) {
 	got := tone(Note{Freq: 440, Ms: 100}, 1)
 

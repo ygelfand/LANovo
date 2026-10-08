@@ -20,8 +20,6 @@ func TestAFreshDeviceIdlesIntoTheClockItAlreadyShows(t *testing.T) {
 	}
 }
 
-// Never has to be zero, because every caller reads zero as not sleeping rather than as sleeping
-// straight away — the difference between a clock that settles and one that never shows its face.
 func TestNeverIsNoWaitAtAll(t *testing.T) {
 	if got := DelayNever.After(); got != 0 {
 		t.Errorf("never is %v, want zero", got)
@@ -37,7 +35,6 @@ func TestNeverIsNoWaitAtAll(t *testing.T) {
 	}
 }
 
-// Shortest first, with Never last: it is the one somebody picks on purpose.
 func TestTheDelaysAreInOrder(t *testing.T) {
 	delays := Delays()
 
@@ -54,8 +51,6 @@ func TestTheDelaysAreInOrder(t *testing.T) {
 	}
 }
 
-// Home Assistant speaks labels, so every delay has to survive the round trip or picking one there
-// saves a different one.
 func TestEveryDelayRoundTripsThroughItsLabel(t *testing.T) {
 	seen := map[string]Delay{}
 

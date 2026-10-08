@@ -1,9 +1,10 @@
 package gui
 
 import (
-	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/libcountertop/pkg/display/clockkind"
 	"github.com/ygelfand/libcountertop/pkg/display/clockview"
+
+	"github.com/ygelfand/LANovo/internal/config"
 )
 
 type faceView = clockview.View

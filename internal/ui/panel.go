@@ -7,11 +7,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
-// panel is a display.Panel as something to draw on. The panel takes color channels and works in
-// viewed coordinates, which is what a surface is.
 type panel struct{ p *display.Panel }
 
-// Of is the panel as a surface.
 func Of(p *display.Panel) Surface { return panel{p: p} }
 
 func (s panel) Size() (w, h int) { return s.p.Width, s.p.Height }

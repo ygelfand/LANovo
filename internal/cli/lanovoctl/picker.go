@@ -8,11 +8,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/host/device"
 )
 
-// resolveSerial decides which device to act on.
-//
-// An explicit --serial always wins. On a terminal the person picks, even when only one device is
-// attached, so it is clear what is about to be written to. Off a terminal there is nobody to ask,
-// so the choice is left to device.Connect, which takes the only one or says there are several.
 func resolveSerial(ctx context.Context, out io.Writer, want string) (string, error) {
 	if want != "" {
 		return want, nil

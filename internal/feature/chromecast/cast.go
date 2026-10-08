@@ -1,7 +1,3 @@
-// Package chromecast answers as a Chromecast, so anything in the house can cast to this device.
-//
-// The protocol is internal/lib/cast. This is the part that owns a socket: the listener on 8009, the
-// service on the network, and the switch that says whether either should exist.
 package chromecast
 
 import (
@@ -22,6 +18,14 @@ import (
 	"sync/atomic"
 	"time"
 
+	esphome "github.com/ygelfand/go-esphome-device"
+	"github.com/ygelfand/libcountertop/pkg/fetch"
+	"github.com/ygelfand/libcountertop/pkg/media/cast"
+	_ "github.com/ygelfand/libcountertop/pkg/media/cast/protocols/all"
+	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube"
+	mdns "github.com/ygelfand/libcountertop/pkg/network/advertise"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
@@ -32,24 +36,12 @@ import (
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
 	"github.com/ygelfand/LANovo/internal/ui"
-	esphome "github.com/ygelfand/go-esphome-device"
-	"github.com/ygelfand/libcountertop/pkg/fetch"
-	"github.com/ygelfand/libcountertop/pkg/media/cast"
-	_ "github.com/ygelfand/libcountertop/pkg/media/cast/protocols/all"
-	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube"
-	mdns "github.com/ygelfand/libcountertop/pkg/network/advertise"
-	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {
 	component.Register(component.Device, Get, component.Order(60))
 }
 
-// Receiver is the device as something to cast to.
-//
-// Nothing runs until the switch is on. Off it holds no socket and answers no query, which is the
-// point of the switch: a device that advertises itself on the network is not something to turn on
-// for somebody.
 type Receiver struct {
 	enable *esphome.Switch
 	demand *esphome.Switch
@@ -219,7 +211,6 @@ func (r *Receiver) SetLoungeOnDemand(on bool) {
 	}
 }
 
-// SetOracle changes where device credentials come from. Empty is credentials made on the device.
 func (r *Receiver) SetOracle(url string) {
 	url = strings.TrimSpace(url)
 	if err := config.Set().Cast().Oracle(url); err != nil {
@@ -245,10 +236,8 @@ func (r *Receiver) credentials(c *cast.Credentials) {
 	r.expires.Set(float32(c.NotAfter.Unix()))
 }
 
-// Enabled reports whether the user has asked for it.
 func (r *Receiver) Enabled() bool { return config.Get().Cast.Receiver }
 
-// Start brings the receiver up if it is wanted, once the network is there.
 func (r *Receiver) Start(context.Context) error {
 	if !r.Enabled() {
 		r.booted(component.Progress{Done: true, Doing: "off"})
@@ -296,13 +285,11 @@ func (r *Receiver) Startup() component.Progress {
 	return component.Progress{Doing: "waiting for the network"}
 }
 
-// Close takes it down, so a restart does not leave a socket held or a service advertised.
 func (r *Receiver) Close() error {
 	r.down()
 	return nil
 }
 
-// SetReceiver turns it on or off. Home Assistant's switch and the harness both come here.
 type registrar interface {
 	ForgetRegistration()
 	Unsave()
@@ -376,7 +363,6 @@ func (r *Receiver) SetReceiver(on bool) {
 	r.booted(component.Progress{Done: true, Doing: fmt.Sprintf("port %d", cast.Port)})
 }
 
-// up opens the socket and puts the service on the network.
 func deviceName() string {
 	if name := config.Get().Device.Name; name != "" {
 		return name
@@ -426,15 +412,13 @@ func (r *Receiver) up() error {
 
 	advert, err := cast.NewAdvertiser(device, cast.Port)
 	if err != nil {
-		listener.Close()
+		_ = listener.Close()
 		return err
 	}
 
 	service := cast.NewService(cast.NewReceiver(name))
 	service.Fault = func(err error) { slog.Debug("a cast sender sent something unreadable", "err", err) }
 
-	// What is playing goes back into the record, so the cast menu says what the room is doing
-	// rather than only that the device exists.
 	unspoken := map[string]bool{}
 	service.Receiver.Launched = func(app string) {
 		unspoken = map[string]bool{}
@@ -585,7 +569,6 @@ func (r *Receiver) up() error {
 	return nil
 }
 
-// contentShape is a contentId without its path or query, which can carry tokens.
 func contentShape(id string) string {
 	if u, err := url.Parse(
 		id,
@@ -596,10 +579,6 @@ func contentShape(id string) string {
 	return fmt.Sprintf("opaque, %d characters", len(id))
 }
 
-// hardware is the wifi address, which is what the device's identity on the network is derived
-// from. Empty if it cannot be read: the identity is then derived from nothing, which is stable for
-// this device and the same on every device, so a house with two of them would see one. Rare enough
-// to log rather than refuse to start over.
 func hardware() string {
 	raw, err := os.ReadFile(layout.MACPath)
 	if err != nil {
@@ -609,12 +588,10 @@ func hardware() string {
 	return layout.MAC(string(raw))
 }
 
-// accept serves senders until the listener closes.
 func (r *Receiver) accept(ctx context.Context, listener net.Listener, service *cast.Service) {
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
-			// Closing the listener is how this loop is stopped, so that is not a fault.
 			if ctx.Err() != nil || errors.Is(err, net.ErrClosed) {
 				return
 			}
@@ -640,10 +617,8 @@ func (r *Receiver) accept(ctx context.Context, listener net.Listener, service *c
 	}
 }
 
-// DebugLog logs every cast connection and every message on it in full.
 const DebugLog = true
 
-// trace logs one message in full, JSON as it is and protobuf as hex.
 func trace(peer string, in bool, m cast.Message) {
 	if m.Namespace == cast.NSHeartbeat || m.Namespace == cast.NSDeviceAuth {
 		return
@@ -660,7 +635,6 @@ func trace(peer string, in bool, m cast.Message) {
 		"namespace", m.Namespace, "body", body)
 }
 
-// down closes the socket and takes the service off the network.
 func (r *Receiver) down() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -675,11 +649,11 @@ func (r *Receiver) down() {
 		r.advert = nil
 	}
 	if r.listener != nil {
-		r.listener.Close()
+		_ = r.listener.Close()
 		r.listener = nil
 	}
 	if r.setup != nil {
-		r.setup.Close()
+		_ = r.setup.Close()
 		r.setup = nil
 	}
 	if r.service != nil {
@@ -688,8 +662,6 @@ func (r *Receiver) down() {
 	}
 }
 
-// Playing is what a sender has given the device, for anything that wants to draw it. Nil when
-// nothing is.
 func (r *Receiver) Playing() *cast.Media {
 	r.mu.Lock()
 	service := r.service

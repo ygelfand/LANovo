@@ -1,4 +1,3 @@
-// Package lanovod is the command tree for the on-device agent.
 package lanovod
 
 import (
@@ -27,8 +26,6 @@ func newRoot() *cobra.Command {
 }
 
 func Execute() {
-	// init starts lanovod from a service definition that passes no arguments, so a bare
-	// invocation has to mean "be the agent" rather than print usage and exit.
 	if len(os.Args) == 1 {
 		os.Args = append(os.Args, "run")
 	}
@@ -37,8 +34,6 @@ func Execute() {
 		return
 	}
 
-	// Another lanovod holding the device gets its own code, so init's logs separate it from a
-	// crash. Both leave the service restarting and look identical otherwise.
 	var taken *boot.Taken
 	if errors.As(err, &taken) {
 		os.Exit(boot.ExitTaken)

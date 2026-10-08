@@ -2,8 +2,6 @@ package control
 
 import "testing"
 
-// Control names have spaces in them — "AUDIO_REF_EC_UL1 MUX" — so the value cannot be told from
-// the name by position. An equals separates them.
 func TestAControlNameKeepsItsSpaces(t *testing.T) {
 	name, value, setting := either([]string{"AUDIO_REF_EC_UL1", "MUX"})
 
@@ -29,7 +27,6 @@ func TestAnEqualsSeparatesTheValue(t *testing.T) {
 	}
 }
 
-// A value with a space in it is one value. Some of the card's items have them.
 func TestAValueKeepsItsSpaces(t *testing.T) {
 	_, value, _ := either([]string{"Some", "Control", "=", "Two", "Words"})
 
@@ -38,8 +35,6 @@ func TestAValueKeepsItsSpaces(t *testing.T) {
 	}
 }
 
-// Setting a control to nothing is a mistake worth reporting rather than a way to clear it: the
-// card has no empty item, so this would otherwise be refused with a list of what it does take.
 func TestAnEqualsWithNothingAfterItIsStillSetting(t *testing.T) {
 	name, value, setting := either([]string{"Control", "="})
 

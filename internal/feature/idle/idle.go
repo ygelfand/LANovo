@@ -10,6 +10,8 @@ import (
 	gogui "github.com/go-gui-org/go-gui/gui"
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	"github.com/ygelfand/libcountertop/pkg/say"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
@@ -21,7 +23,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/touch"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
-	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 const check = 200 * time.Millisecond
@@ -64,8 +65,6 @@ func Get() *Idle {
 	return shared
 }
 
-// Lock puts the idle screen up now, clearing whatever was open so nothing sits under it to go
-// back to.
 func (i *Idle) Lock() {
 	shell.Get().Close()
 	i.Show()
@@ -117,8 +116,6 @@ func (i *Idle) Run(ctx context.Context) error {
 	}
 }
 
-// covered takes the idle screen out of the way once anything opens over it, so going back from
-// that never lands on it.
 func (i *Idle) covered() {
 	i.mu.Lock()
 	hold := i.hold

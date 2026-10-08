@@ -4,6 +4,12 @@ import (
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
+	sharedwidgets "github.com/ygelfand/libcountertop/pkg/display/widgets"
+	sharedhome "github.com/ygelfand/libcountertop/pkg/homeassistant/homecontrol"
+	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
+	"github.com/ygelfand/libcountertop/pkg/say"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard/face"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
@@ -15,11 +21,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
-	"github.com/ygelfand/libcountertop/pkg/display/style"
-	sharedwidgets "github.com/ygelfand/libcountertop/pkg/display/widgets"
-	sharedhome "github.com/ygelfand/libcountertop/pkg/homeassistant/homecontrol"
-	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
-	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 func (a *App) screenFor(v shell.View) *Screen {
@@ -124,8 +125,6 @@ func tileView(w *gogui.Window, id, page string, c widget.Cell, tap func(int)) go
 }
 
 func reach() float32 { return style.Reach() }
-
-var swatchView = sharedwidgets.Swatch
 
 func faceTile(w *gogui.Window, build faceView, tw, th int) gogui.View {
 	cfg := config.Get()

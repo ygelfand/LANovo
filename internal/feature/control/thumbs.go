@@ -11,11 +11,12 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
-	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
 )
 
 const (

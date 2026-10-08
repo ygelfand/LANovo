@@ -5,8 +5,6 @@ import (
 	"testing"
 )
 
-// As the device prints it, taken from /proc/net/unix on the Smart Display while lanovod was up.
-// The names matter: three of these start with @lanovod and only one of them is the lock.
 const table = `Num       RefCount Protocol Flags    Type St Inode Path
 00000000: 00000002 00000000 00010000 0005 01 18691 /dev/socket/lmkd
 00000000: 00000002 00000000 00000000 0002 01 120751 @lanovod-4943-4
@@ -26,8 +24,6 @@ func TestTheInodeIsReadOffTheTable(t *testing.T) {
 	}
 }
 
-// @lanovod and @lanovod-4943-3 are open at the same time. A prefix match would pick whichever came
-// first and name the wrong process.
 func TestOnlyTheExactNameMatches(t *testing.T) {
 	for _, name := range []string{"@lanovod", "@lanovod-4943-3"} {
 		got, ok := inodeIn(strings.NewReader(table), name)
@@ -46,7 +42,7 @@ func TestANameThatIsNotThereIsNotFound(t *testing.T) {
 	}
 }
 
-// A socket with no path has no name column at all, which is most of the table on a real device.
+// A socket with no path has no name column in /proc/net/unix.
 func TestALineWithNoPathIsSkipped(t *testing.T) {
 	if _, ok := inodeIn(strings.NewReader(table), ""); ok {
 		t.Error("an empty name matched a line with no path")
@@ -61,8 +57,6 @@ func TestRubbishIsNotAnInode(t *testing.T) {
 	}
 }
 
-// The exit code is what init reads, so it has to be its own rather than something a shell already
-// means by convention.
 func TestTheExitCodeIsItsOwn(t *testing.T) {
 	if ExitTaken == 0 || ExitTaken == 1 || ExitTaken == 2 {
 		t.Errorf(
@@ -72,15 +66,12 @@ func TestTheExitCodeIsItsOwn(t *testing.T) {
 	}
 }
 
-// Abstract, so there is nothing on the filesystem to go stale after a hard stop.
 func TestTheLockIsAbstract(t *testing.T) {
 	if !strings.HasPrefix(instance, "@") {
 		t.Errorf("%q is not an abstract name, so it leaves a file behind", instance)
 	}
 }
 
-// Without a holder the message still has to say what is held and that it could not be pinned down,
-// rather than reading as though nothing is wrong.
 func TestAnUnknownHolderStillSaysWhatIsHeld(t *testing.T) {
 	msg := (&Taken{Err: errNowhere}).Error()
 

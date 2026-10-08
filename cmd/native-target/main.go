@@ -1,12 +1,12 @@
-// native-target prints the board metadata's native ABI for make.
 package main
 
 import (
 	"fmt"
 	"os"
 
-	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/libcountertop/pkg/build/native"
+
+	"github.com/ygelfand/LANovo/internal/board"
 )
 
 func main() {

@@ -2,11 +2,13 @@ package detect
 
 import (
 	"context"
-	"github.com/ygelfand/LANovo/internal/layout"
-	sharedengine "github.com/ygelfand/libcountertop/pkg/inference/detect"
 	"log/slog"
 	"sync"
 	"time"
+
+	sharedengine "github.com/ygelfand/libcountertop/pkg/inference/detect"
+
+	"github.com/ygelfand/LANovo/internal/layout"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -20,14 +22,10 @@ import (
 )
 
 func init() {
-	// Before the API, so Home Assistant cannot read the wake words while they are still loading and
-	// be told about one that then fails.
 	component.Register(component.Device, Get, component.Order(40),
 		component.Supervise(service.Restart(time.Second, 30*time.Second)))
 }
 
-// Detect is the engine as the device runs it: the wake words the user chose, loaded into it, and
-// the turn that follows when one of them fires.
 type Detect struct {
 	engine *Engine
 	stop   *sharedengine.StopWord
@@ -44,8 +42,6 @@ func Get() *Detect {
 }
 
 func newDetect() *Detect {
-	// Sized to reach the stop word's reserved index. The slots between it and Home Assistant's are
-	// never loaded, and an unloaded slot is one comparison a frame.
 	e := New(StopSlot + 1)
 
 	e.Threshold = func(slot int) float64 {
@@ -64,9 +60,6 @@ func newDetect() *Detect {
 
 	e.OnDetect = d.fired
 
-	// The engine loads on every start, including a restart. Home Assistant only pushes a selection
-	// when the user changes one, so an engine that came back empty would leave the device deaf while
-	// it went on advertising wake words it was not listening for.
 	e.Load = func() error {
 		turn := voice.Get()
 		turn.SetSlots(d.load(turn.Slots()))
@@ -74,12 +67,8 @@ func newDetect() *Detect {
 		return nil
 	}
 
-	// A selection downloads models and lets go of the ones it replaced, so it is the one thing that
-	// moves what the device has on disk.
 	voice.Get().OnWakeWord(d.load)
 
-	// A muted microphone is not scored at all: the slider is the one thing in this device that has
-	// to mean what it says.
 	mic.Get().Speech.Listen(func(f mic.Frame) {
 		if privacy.Get().MicMuted() || call.Get().PausesWake() {
 			return
@@ -103,8 +92,6 @@ func (d *Detect) Run(ctx context.Context) error { return d.engine.Run(ctx) }
 
 func (d *Detect) Close() error { return d.engine.Close() }
 
-// fired is a detection, off the audio path. The stop word is not one of Home Assistant's slots and
-// means something else entirely, so it goes its own way before any of this.
 func (d *Detect) fired(slot int) {
 	if slot == StopSlot {
 		voice.Get().Interrupt()
@@ -113,12 +100,7 @@ func (d *Detect) fired(slot int) {
 	voice.Get().Start(slot)
 }
 
-// load puts one wake word in each slot and reports the ids that came up. Whatever the engine refuses
-// is left out, so Home Assistant reverts that slot rather than showing a wake word the device is not
-// listening for.
 func (d *Detect) load(ids []string) []string {
-	// A selection may name a model Home Assistant is offering but this device has never had, so the
-	// library is asked rather than a list captured at boot: this is where a new word arrives.
 	models := wake.Lib().Ensure(ids)
 
 	accepted := make([]string, 0, wakeword.Slots)
@@ -146,8 +128,6 @@ func (d *Detect) load(ids []string) []string {
 		accepted = append(accepted, m.ID)
 	}
 
-	// Nothing keeps a model no slot is listening for: they are a megabyte each and the device
-	// fetches one again in seconds.
 	if gone, freed := wake.Lib().Purge(accepted); gone > 0 {
 		slog.Info("wake words dropped", "count", gone, "freed", freed)
 	}

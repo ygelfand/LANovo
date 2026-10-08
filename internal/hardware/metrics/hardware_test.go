@@ -6,24 +6,21 @@ import (
 	"testing"
 )
 
-// board writes the files a biscuit has, with the values it reported, so the parsing is tested against
-// what the device actually says rather than against what this machine happens to have.
 func board(t *testing.T) Reader {
 	t.Helper()
 	root := t.TempDir()
 
 	for path, body := range map[string]string{
-		"sys/class/thermal/thermal_zone0/type": "mtktswmt\n",
-		"sys/class/thermal/thermal_zone0/temp": "46000\n",
-		"sys/class/thermal/thermal_zone1/type": "mtktscpu\n",
-		"sys/class/thermal/thermal_zone1/temp": "45500\n",
-		"sys/class/thermal/thermal_zone2/type": "mtkts1\n",
-		"sys/class/thermal/thermal_zone2/temp": "43400\n",
-		"sys/devices/system/cpu/present":       "0-3\n",
-		"sys/devices/system/cpu/online":        "0-1\n",
-		"proc/loadavg":                         "7.40 7.30 7.25 5/623 6841\n",
-		"proc/meminfo":                         "MemTotal:         482956 kB\nMemFree:           25708 kB\nMemAvailable:     247308 kB\n",
-		// Which index the sensor lands on is not fixed, so put it elsewhere to prove it is searched for.
+		"sys/class/thermal/thermal_zone0/type":               "mtktswmt\n",
+		"sys/class/thermal/thermal_zone0/temp":               "46000\n",
+		"sys/class/thermal/thermal_zone1/type":               "mtktscpu\n",
+		"sys/class/thermal/thermal_zone1/temp":               "45500\n",
+		"sys/class/thermal/thermal_zone2/type":               "mtkts1\n",
+		"sys/class/thermal/thermal_zone2/temp":               "43400\n",
+		"sys/devices/system/cpu/present":                     "0-3\n",
+		"sys/devices/system/cpu/online":                      "0-1\n",
+		"proc/loadavg":                                       "7.40 7.30 7.25 5/623 6841\n",
+		"proc/meminfo":                                       "MemTotal:         482956 kB\nMemFree:           25708 kB\nMemAvailable:     247308 kB\n",
 		"sys/bus/iio/devices/iio:device2/illuminance0_input": "556\n",
 	} {
 		full := filepath.Join(root, path)
@@ -55,7 +52,6 @@ func TestTemperaturesComeBackByZoneNameInDegrees(t *testing.T) {
 	}
 }
 
-// Present and online differ on this hardware, and that difference is the reason to report both.
 func TestCoresReportsPresentAndOnline(t *testing.T) {
 	present, online := board(t).Cores()
 
@@ -98,8 +94,6 @@ func TestLoadAndMemory(t *testing.T) {
 		t.Errorf("load = %v, %v, want 7.40, 7.30", one.Value, five.Value)
 	}
 
-	// Available, not free: free counts only untouched pages and reads alarmingly low on a machine that
-	// is working properly — 25 MB here against 247 MB actually available.
 	available, total := r.Memory()
 	if !available.Known || available.Value != 247308 {
 		t.Errorf("available = %+v, want 247308", available)
@@ -109,8 +103,6 @@ func TestLoadAndMemory(t *testing.T) {
 	}
 }
 
-// A board without a sensor reports nothing rather than zero, so Home Assistant shows unknown instead of
-// a plausible lie.
 func TestMissingFilesAreUnknownNotZero(t *testing.T) {
 	r := Reader{Root: t.TempDir()}
 

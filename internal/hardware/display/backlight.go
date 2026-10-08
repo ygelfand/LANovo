@@ -7,18 +7,11 @@ import (
 	"strings"
 )
 
-// Backlight is the panel's brightness control. SurfaceFlinger and the lights HAL normally drive
-// this; with both stopped, nothing turns the panel on and a drawn frame is invisible.
-//
-// The display controller's own node rather than the PMIC's wled underneath it. Writing wled goes
-// behind the controller's back, and bringing the panel up pushes its idea of the level back down,
-// wiping anything set beforehand — a panel that stays dark until something writes again.
+// Writing the PMIC's wled directly is reset when the controller brings the panel up.
 const Backlight = "/sys/class/leds/lcd-backlight/brightness"
 
-// DefaultBrightness is what the boot screen comes up at, before anything has read a setting.
 const DefaultBrightness = 70
 
-// SetBacklight sets brightness as a percentage of the driver's maximum.
 func SetBacklight(percent int) error {
 	full, err := backlightMax()
 	if err != nil {

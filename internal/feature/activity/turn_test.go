@@ -7,7 +7,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 )
 
-// caught collects the events a turn fires, so a test can read what Home Assistant would have.
 func caught(t *testing.T) *[]component.Event {
 	t.Helper()
 
@@ -18,8 +17,6 @@ func caught(t *testing.T) *[]component.Event {
 	return &got
 }
 
-// A phase is only reported if the turn reached it, which is the difference between "spent no time
-// speaking" and "never got as far as speaking".
 func TestAFailedTurnReportsNoPhaseItNeverReached(t *testing.T) {
 	got := caught(t)
 
@@ -87,8 +84,6 @@ func TestAWholeTurnReportsEveryPhase(t *testing.T) {
 	}
 }
 
-// Several things notice a turn is over — the run closing, the reply finishing, a timeout — and the
-// event has to be the one, not one each.
 func TestEndingTwiceFiresOnce(t *testing.T) {
 	got := caught(t)
 
@@ -104,7 +99,6 @@ func TestEndingTwiceFiresOnce(t *testing.T) {
 	}
 }
 
-// A turn nobody started is what a cancel arriving while idle has, so every method takes a nil.
 func TestNoTurnIsSafeToMark(t *testing.T) {
 	got := caught(t)
 

@@ -10,11 +10,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
-// Run writes to the card until ctx is canceled, a period at a time.
-//
-// It keeps writing after the audio stops rather than going quiet with the loop: the card is what
-// paces everything, and a loop that only runs when there is something to say has to be restarted
-// and resynchronized every time, which is heard as a click at the start of each sound.
 func (s *Speaker) Run(ctx context.Context) error {
 	buf := make([]byte, period*Channels*Bits/8)
 	var warned bool
@@ -28,8 +23,6 @@ func (s *Speaker) Run(ctx context.Context) error {
 
 		out := s.device()
 		if out == nil {
-			// Nothing to write to. Play is already counting what that costs and the supervisor is
-			// what reopens the card, so this waits a buffer's worth rather than spinning.
 			select {
 			case <-ctx.Done():
 				return nil
@@ -54,26 +47,18 @@ func (s *Speaker) Run(ctx context.Context) error {
 	}
 }
 
-// Source is asked for the frames the card is about to play, addressed by absolute output frame
-// index. A room playing along with the rest of the house needs that: where audio lands has to follow
-// from when the server said to play it, not from when it happened to arrive.
 type Source interface {
-	// Render fills out with the frames starting at output frame index at, silence where it has none.
 	Render(at uint64, out []int16)
 }
 
-// Attach sets the Source, or clears it with nil. Only one at a time: two things placing audio by
-// absolute frame would be two things deciding what the room plays.
 func (s *Speaker) Attach(src Source) {
 	s.srcMu.Lock()
 	defer s.srcMu.Unlock()
 	s.src = src
 }
 
-// Written is the output frame index of the next frame to go to the card.
 func (s *Speaker) Written() uint64 { return s.written.Load() }
 
-// render asks the Source for this period. Called only from the write loop, so the buffer is reused.
 func (s *Speaker) render() []int16 {
 	s.srcMu.Lock()
 	src := s.src
@@ -94,18 +79,12 @@ func (s *Speaker) render() []int16 {
 	return s.srcBuf
 }
 
-// fill puts one period into buf, from the queue where there is any and silence where there is not.
 func (s *Speaker) fill(buf []byte) {
 	chunk := s.take()
 	want := period * Channels
 
-	// A source places its audio by frame index rather than queueing it, so it is mixed in here
-	// rather than taken from the queue. Both at once is a chime over a stream, which is right.
 	placed := s.render()
 
-	// The queue emptied part way through this buffer, so silence is spliced into whatever was
-	// playing. At the end of a sound that is expected; repeatedly during one means audio is arriving
-	// slower than it plays out.
 	switch {
 	case len(chunk) > 0 && len(chunk) < want:
 		s.splices.Add(1)
@@ -172,7 +151,6 @@ func (s *Speaker) fill(buf []byte) {
 	}
 }
 
-// open reports whether there is a card to write to.
 func (s *Speaker) open() bool { return s.device() != nil }
 
 func (s *Speaker) device() *alsa.Playback {
@@ -182,8 +160,6 @@ func (s *Speaker) device() *alsa.Playback {
 	return s.out
 }
 
-// SetVolume sets the playback gain, nought to one. It is applied as the queue drains rather than as
-// it is filled, so turning the dial reaches audio already waiting.
 func (s *Speaker) SetVolume(gain float32) {
 	gain = max(0, min(gain, 1))
 	s.level.Store(math.Float32bits(gain))
@@ -197,28 +173,15 @@ func (s *Speaker) SetVolume(gain float32) {
 	}
 }
 
-// Volume is the playback gain.
 func (s *Speaker) Volume() float32 {
 	return math.Float32frombits(s.level.Load())
 }
 
-// curve is the device's own volume curve, copied from MEDIA_VOLUME_CURVE in
-// /system/etc/volume_tables.xml: volume index against attenuation in millibels.
-//
-// Loudness is roughly logarithmic, so a percentage used as amplitude directly puts everything
-// useful in the bottom of the slider — half would be six decibels down, which is barely quieter.
-// This is what the panel's own framework played at each index, so it is what the hardware was set
-// up to sound like.
-//
-// One curve for every stream, which the tables agree with: audio_policy_volumes.xml sends music on
-// the speaker here, and the system and notification curves for the speaker have the same points.
-// They only differ for a headset, which this device has no socket for.
+// MEDIA_VOLUME_CURVE from /system/etc/volume_tables.xml: index against attenuation in millibels.
 var curve = []struct{ at, mB int }{
 	{1, -5800}, {20, -4000}, {60, -1700}, {100, 0},
 }
 
-// Gain is what a percentage sounds like, as a multiplier. Between the curve's points it
-// interpolates, which is what the framework did with the same table.
 func Gain(percent int) float32 {
 	percent = min(max(percent, 0), 100)
 	if percent == 0 {
@@ -242,9 +205,6 @@ func Gain(percent int) float32 {
 	return float32(math.Pow(10, mB/2000))
 }
 
-// Stats is what to look at when a device is playing but sounds wrong. Splices are buffers the queue
-// only part filled, underruns ones it did not reach at all while something was playing, and dropped
-// is audio offered with no card open.
 func (s *Speaker) Stats() (queued int, splices, underruns, dropped uint64) {
 	return s.Queued(), s.splices.Load(), s.underruns.Load(), s.deaf.Load()
 }

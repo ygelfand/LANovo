@@ -2,8 +2,9 @@ package lanovod
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/ygelfand/LANovo/internal/feature/control"
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
+
+	"github.com/ygelfand/LANovo/internal/feature/control"
 )
 
 var sequence = harness.Sequence

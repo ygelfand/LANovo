@@ -55,7 +55,6 @@ func TestTheSoonestRunningTimerIsTheOneShown(t *testing.T) {
 	}
 }
 
-// A paused timer is not counting, so it is not what the ring is counting down.
 func TestAPausedTimerIsNotShownEvenWhenItIsTheSoonest(t *testing.T) {
 	now := time.Now()
 	ts := build()
@@ -162,8 +161,6 @@ func TestStopSaysWhenThereWasNothingRinging(t *testing.T) {
 	}
 }
 
-// Forgetting is for a Home Assistant that went away, which has nothing to do with a timer already
-// sounding in the room.
 func TestForgettingLeavesARingingTimerAlone(t *testing.T) {
 	ts := build()
 	t.Cleanup(func() { ts.Stop() })

@@ -22,7 +22,6 @@ func TestDefaultsAreUsable(t *testing.T) {
 	}
 }
 
-// A device that has never been configured reads its defaults rather than failing to start.
 func TestLoadWithNoFile(t *testing.T) {
 	st, err := Load(filepath.Join(t.TempDir(), "state.json"))
 	if err != nil {
@@ -34,7 +33,6 @@ func TestLoadWithNoFile(t *testing.T) {
 	}
 }
 
-// The whole point of the store: a setting survives the process that set it.
 func TestSettingPersists(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.json")
 
@@ -63,8 +61,6 @@ func TestSettingPersists(t *testing.T) {
 	}
 }
 
-// A setting nobody has touched keeps its default when another is written, rather than coming back
-// as a zero.
 func TestWritingOneSettingLeavesTheRest(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.json")
 
@@ -86,7 +82,6 @@ func TestWritingOneSettingLeavesTheRest(t *testing.T) {
 	}
 }
 
-// Device is what the process was told, not what anyone chose, so it is not written to the file.
 func TestDeviceIsNotPersisted(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.json")
 
@@ -138,17 +133,12 @@ func TestLabelsRoundTrip(t *testing.T) {
 	}
 }
 
-// Home Assistant can send anything; an unknown label must not resolve to the first option.
 func TestUnknownLabelIsRejected(t *testing.T) {
 	if _, ok := ByLabel(ScreenModes(), "Nonesuch"); ok {
 		t.Error("an unknown label resolved to a mode")
 	}
 }
 
-// Settings are changed from several places at once — Home Assistant, the buttons, the drawer — and
-// all of them write the whole document through one temporary file. Overlapping writes must not
-// leave something that does not parse, because a store that cannot read its file will not write to
-// it either, and the device silently stops saving anything.
 func TestConcurrentUpdatesLeaveAReadableFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.json")
 
@@ -182,7 +172,6 @@ func TestConcurrentUpdatesLeaveAReadableFile(t *testing.T) {
 	}
 }
 
-// The last change to be made is the one on disk, not whichever write finished last.
 func TestUpdateWritesTheNewestState(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.json")
 
@@ -206,16 +195,12 @@ func TestUpdateWritesTheNewestState(t *testing.T) {
 	}
 }
 
-// A device nobody has added shows the code to scan, so the default has to be false: defaulting the
-// other way hides the one screen that explains how to add it.
 func TestAdoptionDefaultsToFalse(t *testing.T) {
 	if Defaults().API.Adopted {
 		t.Error("a device out of the box thinks it has been adopted")
 	}
 }
 
-// Adoption is what the onboarding screen waits on, so it has to outlive the process that recorded
-// it — otherwise every restart puts the code back on a device that has been added.
 func TestAdoptionPersists(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.json")
 
@@ -236,8 +221,6 @@ func TestAdoptionPersists(t *testing.T) {
 	}
 }
 
-// Every label has to be distinct, or a select shows two rows that do the same thing and one of
-// them cannot be chosen.
 func TestLabelsAreDistinct(t *testing.T) {
 	seen := map[string]bool{}
 	for _, label := range Labels(ScreenModes()) {

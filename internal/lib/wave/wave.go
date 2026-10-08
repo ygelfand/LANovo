@@ -1,11 +1,7 @@
-// Package wave writes the one audio format anything here needs to hand to something else.
 package wave
 
-// Header is how many bytes a RIFF header takes, which is also where the audio starts.
 const Header = 44
 
-// Mono16 wraps 16-bit little-endian mono samples in a RIFF header, which is what makes them
-// playable by anything rather than only by whatever knew the rate already.
 func Mono16(pcm []byte, rate int) []byte { return PCM16(pcm, rate, 1) }
 
 func PCM16(pcm []byte, rate, channels int) []byte {

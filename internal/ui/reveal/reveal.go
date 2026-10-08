@@ -1,11 +1,12 @@
-// Package reveal binds product artwork to the shared boot reveal.
 package reveal
 
 import (
 	_ "embed"
+
+	shared "github.com/ygelfand/libcountertop/pkg/display/boot"
+
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
-	shared "github.com/ygelfand/libcountertop/pkg/display/boot"
 )
 
 //go:embed reveal.glsl

@@ -8,7 +8,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
-// Stashed is what goes off / to /data: apps only zygote loads, and zygote never runs.
 var Stashed = []string{"/system/app", "/system/priv-app"}
 
 type move struct{ from, to string }
@@ -28,7 +27,6 @@ func moves(listing string) []move {
 	return out
 }
 
-// Stash moves everything under Stashed into layout.Stash, skipping what is already gone.
 func Stash(d *device.Device) ([]Step, error) {
 	listing, _ := d.Shell("ls -d " + strings.Join(Stashed, "/* ") + "/* 2>/dev/null")
 	todo := moves(listing)

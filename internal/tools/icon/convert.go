@@ -7,54 +7,42 @@ import (
 	"golang.org/x/image/math/f32"
 )
 
-// side is the square IconVG is drawn in, from -half to +half.
 const (
 	side = 48
 	half = side / 2
 )
 
-// box is the region an svg draws in, and how that maps onto the square.
 type box struct {
 	x, y, w, h float32
 }
 
-// scale fits the longer side, so a tall icon keeps its shape rather than being stretched square.
 func (b box) scale() float32 { return side / max(b.w, b.h) }
 
-// at maps an absolute point.
 func (b box) at(x, y float32) (float32, float32) {
 	s := b.scale()
 	return (x-b.x)*s - b.w*s/2, (y-b.y)*s - b.h*s/2
 }
 
-// by maps a distance, which has no origin to move.
 func (b box) by(dx, dy float32) (float32, float32) {
 	s := b.scale()
 	return dx * s, dy * s
 }
 
-// convert turns one path's d attribute into IconVG drawing operations.
-//
-// Whether a command is absolute or relative decides which of the encoder's two forms is used, and
-// the mapping differs between them: an absolute point moves onto the square, a relative one is only
-// scaled.
 func convert(enc *iconvg.Encoder, b box, d string) error {
 	p := &scanner{s: d}
 
 	var op byte
 	var started bool
 
-	// Where the pen is, in svg coordinates, for turning a relative moveto into an absolute start.
 	var cx, cy float32
 
-	// Where the current subpath began, since a close returns there.
 	var sx, sy float32
 
 	for !p.done() {
 		if c := p.command(); c != 0 {
 			op = c
 		} else if op == 'M' {
-			// A repeated moveto is a lineto, which is the one implicit command that changes.
+			// SVG: coordinates repeated after a moveto are linetos.
 			op = 'L'
 		} else if op == 'm' {
 			op = 'l'
@@ -97,7 +85,6 @@ func convert(enc *iconvg.Encoder, b box, d string) error {
 				enc.StartPath(0, x, y)
 				started = true
 			} else {
-				// A second subpath closes the one before it and moves, which is one operation.
 				enc.ClosePathAbsMoveTo(x, y)
 			}
 
@@ -247,7 +234,6 @@ func convert(enc *iconvg.Encoder, b box, d string) error {
 				return err
 			}
 
-			// The radii are lengths rather than points, so they scale without moving.
 			sr := b.scale()
 
 			if abs {
@@ -271,7 +257,6 @@ func convert(enc *iconvg.Encoder, b box, d string) error {
 	return nil
 }
 
-// start is the encoder set up to draw one icon.
 func start() *iconvg.Encoder {
 	var enc iconvg.Encoder
 	enc.Reset(iconvg.Metadata{

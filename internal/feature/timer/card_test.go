@@ -5,8 +5,6 @@ import (
 	"time"
 )
 
-// What the countdown reads. Rounded up, because a five minute timer that says 4:59 the instant it
-// starts looks like it lost a second before anyone blinked.
 func TestTheCountdownReads(t *testing.T) {
 	for _, tc := range []struct {
 		left time.Duration
@@ -29,8 +27,6 @@ func TestTheCountdownReads(t *testing.T) {
 	}
 }
 
-// The panel is only repainted when what it says changes. The countdown is looked at four times a
-// second and only moves once, so a timer with an hour left must not wake the driver 14,400 times.
 func TestOnlyASecondChangingIsWorthRepainting(t *testing.T) {
 	at := func(left time.Duration) string {
 		return Card{Showing: true, Name: "Pasta", Left: left, Of: time.Hour}.key()
@@ -44,8 +40,6 @@ func TestOnlyASecondChangingIsWorthRepainting(t *testing.T) {
 	}
 }
 
-// Nothing showing has no key at all, so the card coming and going is a change like any other and
-// the release is not skipped because the last frame happened to match.
 func TestNothingShowingIsItsOwnState(t *testing.T) {
 	if got := (Card{}).key(); got != "" {
 		t.Errorf("a card that is not showing keys as %q", got)
@@ -55,7 +49,6 @@ func TestNothingShowingIsItsOwnState(t *testing.T) {
 	}
 }
 
-// Ringing is a different thing to look at from counting down, even at the same moment on the clock.
 func TestRingingIsNotTheSameFrameAsCountingDown(t *testing.T) {
 	counting := Card{Showing: true, Left: time.Second}
 	ringing := Card{Showing: true, Left: time.Second, Ringing: true}

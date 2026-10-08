@@ -1,9 +1,10 @@
 package detect
 
 import (
-	"github.com/ygelfand/LANovo/internal/config"
 	esphome "github.com/ygelfand/go-esphome-device"
 	sharedengine "github.com/ygelfand/libcountertop/pkg/inference/detect"
+
+	"github.com/ygelfand/LANovo/internal/config"
 )
 
 const StopSlot = sharedengine.StopSlot

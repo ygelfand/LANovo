@@ -1,7 +1,3 @@
-// Package sensors reads what the room is doing and says so.
-//
-// Ambient light, proximity and which way up the device is. All three come from parts Lenovo's app
-// drove as Android Things user drivers, so nothing else is reading them.
 package sensors
 
 import (
@@ -14,6 +10,8 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	"github.com/ygelfand/libcountertop/pkg/hook"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -23,7 +21,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/light"
 	"github.com/ygelfand/LANovo/internal/hardware/motion"
 	"github.com/ygelfand/LANovo/internal/service"
-	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 func init() {
@@ -31,38 +28,21 @@ func init() {
 		component.Supervise(service.Restart(5*time.Second, time.Minute)))
 }
 
-// interval is how often the parts are read. The accelerometer decides how quickly the screen
-// follows the device being turned, which is the fastest thing here that matters.
 const interval = 250 * time.Millisecond
 
-// A reading reaches Home Assistant when it has actually moved, rather than on a timer. Everything
-// is read every interval either way — the parts are on a bus that is already being talked to, and
-// their interrupt lines go nowhere we can reach — so the only question is what is worth saying.
+// The parts' interrupt lines are not wired anywhere reachable.
 const (
-	// change is how far a reading must move from the last one sent, as a fraction of it.
 	change = 0.05
 
-	// Below this a reading has not really moved, whatever the fraction says: five percent of a
-	// nearly dark room is under the part's own noise, and would report on every tick.
-	//
-	// The part wanders about twelve counts end to end at rest, which through the glass is around
-	// ten lux of room, so this clears the noise with a little to spare. It only decides matters
-	// below three hundred lux; above that the fraction is larger.
 	leastLux  = 15
 	leastNear = 4
 
-	// stale is the longest Home Assistant goes without hearing anything. Nothing needs it, but its
-	// hourly statistics are thin if a still room says nothing for an afternoon.
 	stale = 5 * time.Minute
 )
 
-// settle is how much of each reading moves the level the backlight follows, which at four readings
-// a second lands a real change within about a second. Without it a hand passing the sensor steps
-// the panel, and brightness that jumps reads worse than brightness that lags.
 const settle = 0.25
 
 type Sensors struct {
-	// Turned carries every change in which way up the device is.
 	Turned hook.Hook[display.Orientation]
 
 	Arrived hook.Hook[bool]
@@ -74,11 +54,9 @@ type Sensors struct {
 	facing    *esphome.TextSensor
 	nearby    presence
 
-	// What Home Assistant was last told, so it only hears about a reading that has moved.
 	toldLux  told
 	toldNear told
 
-	// following is the smoothed light the backlight tracks, and whether it has a value yet.
 	following float64
 	followed  bool
 	held      float64
@@ -94,16 +72,12 @@ type Sensors struct {
 	tracker *motion.Tracker
 }
 
-// told is the last reading handed to Home Assistant, and when.
 type told struct {
 	value float64
 	at    time.Time
 	sent  bool
 }
 
-// worth reports whether a reading differs enough from the last one sent to be worth sending, and
-// remembers it when it does. Comparing against what was sent rather than what was last read is
-// what stops a reading sitting on the boundary from reporting every tick.
 func (t *told) worth(v, least float64) bool {
 	now := time.Now()
 
@@ -149,19 +123,12 @@ func (s *Sensors) Seen() (time.Duration, bool) {
 	return time.Since(time.Unix(0, at)), true
 }
 
-// Orientation is which way up the device is.
 func (s *Sensors) Orientation() display.Orientation { return s.tracker.Orientation() }
 
 func (s *Sensors) Ambient() (lux float64, ok bool) {
 	return math.Float64frombits(s.ambient.Load()), s.lit.Load()
 }
 
-// Turn faces the picture a way nobody moved the device to.
-//
-// For the harness: which way up the device is stands behind a lot of the drawing, and checking that
-// by hand means somebody standing over it. The tracker is deliberately left alone, so the next real
-// movement corrects this — a lie told to the display rather than to the sensor, which is the kind
-// the accelerometer can overrule.
 func (s *Sensors) Turn(rot display.Orientation) {
 	slog.Info("turned by hand", "orientation", rot)
 
@@ -170,14 +137,7 @@ func (s *Sensors) Turn(rot display.Orientation) {
 	s.Turned.Emit(rot)
 }
 
-// Orient reads which way up the device is and turns the screen to match, before anything is drawn.
-//
-// Called at boot rather than left to the reading loop: the panel opens at the rotation the device
-// is usually stood in, and a logo that appears and then flips a moment later is the device telling
-// you it was not looking.
 func (s *Sensors) Orient() {
-	// Constructors can run before board detection. Resolve mounting here, once the
-	// hardware identity is known, including boards without an accelerometer.
 	s.resetMounted()
 	if err := s.Start(context.Background()); err != nil {
 		slog.Warn("could not read the orientation before drawing", "err", err)
@@ -215,8 +175,6 @@ func (s *Sensors) resetMounted() {
 	s.facing.Set(rot.String())
 }
 
-// Start finds the parts. A board missing one is not a board that cannot run: each is reported and
-// left out. Opening twice is a no-op, since Orient opens before the supervisor does.
 func (s *Sensors) Start(context.Context) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -257,7 +215,6 @@ func (s *Sensors) Close() error {
 	return err
 }
 
-// Run reads the parts until ctx is canceled.
 func (s *Sensors) Run(ctx context.Context) error {
 	tick := time.NewTicker(interval)
 	defer tick.Stop()
@@ -274,7 +231,6 @@ func (s *Sensors) Run(ctx context.Context) error {
 	}
 }
 
-// follow turns the screen when the device is turned.
 func (s *Sensors) follow() {
 	s.mu.Lock()
 	m := s.motion
@@ -301,7 +257,6 @@ func (s *Sensors) follow() {
 	s.Turned.Emit(rot)
 }
 
-// publish reads the parts and passes on whatever has moved.
 func (s *Sensors) publish() {
 	s.mu.Lock()
 	l := s.light
@@ -316,9 +271,6 @@ func (s *Sensors) publish() {
 	} else {
 		s.autoBacklight(lux)
 
-		// The smoothed level rather than the reading, which at four readings a second wanders
-		// several lux with nothing in front of the sensor. It is also what the backlight follows,
-		// so the number reported is the one the panel is acting on.
 		if s.toldLux.worth(s.following, leastLux) {
 			s.lux.Set(float32(s.following))
 		}
@@ -343,10 +295,6 @@ func (s *Sensors) publish() {
 	}
 }
 
-// autoBacklight sets the brightness from the light sensor, when the panel is set to automatic.
-//
-// It follows a smoothed level rather than the reading itself: at four readings a second a hand
-// crossing the sensor would otherwise step the panel and step it back.
 func (s *Sensors) autoBacklight(lux float64) {
 	if !s.followed {
 		s.following, s.followed, s.held = lux, true, lux
@@ -361,8 +309,6 @@ func (s *Sensors) autoBacklight(lux float64) {
 		return
 	}
 
-	// The stored level is the bias here rather than a level to set, so the slider is a preference
-	// the curve is read through rather than something automatic overwrites.
 	s.held = hold(s.held, s.following, lux)
 	want := Brightness(s.held, cfg.Screen.Backlight)
 	if s.shown == 0 {

@@ -2,7 +2,6 @@ package mic
 
 import "encoding/binary"
 
-// Samples reads interleaved S16_LE bytes as signed samples.
 func Samples(b []byte) []int16 {
 	out := make([]int16, len(b)/2)
 	for i := range out {
@@ -11,7 +10,6 @@ func Samples(b []byte) []int16 {
 	return out
 }
 
-// samplesOf reads interleaved S16_LE, or S32_LE by its top sixteen bits.
 func samplesOf(b []byte, bits int) []int16 {
 	if bits != 32 {
 		return Samples(b)
@@ -23,7 +21,6 @@ func samplesOf(b []byte, bits int) []int16 {
 	return out
 }
 
-// Channel pulls one channel out of an interleaved frame: 0 is left, 1 is right.
 func Channel(samples []int16, ch int) []int16 {
 	if ch < 0 || ch >= Channels {
 		return nil
@@ -36,8 +33,6 @@ func Channel(samples []int16, ch int) []int16 {
 	return out
 }
 
-// Peak is the loudest sample in a frame, which is what says whether anything is being heard at
-// all.
 func Peak(samples []int16) int {
 	var peak int
 	for _, s := range samples {
@@ -52,8 +47,6 @@ func Peak(samples []int16) int {
 	return peak
 }
 
-// Identical reports whether both channels carry exactly the same samples, which is what a
-// misrouted capture looks like: one microphone copied rather than two.
 func Identical(samples []int16) bool {
 	if len(samples) < Channels {
 		return false

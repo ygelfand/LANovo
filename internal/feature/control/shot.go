@@ -12,13 +12,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
-// DefaultShot is where a screenshot lands when the caller does not say.
 const DefaultShot = "/data/misc/lanovo/screen.png"
 
-// shot writes what is on the panel to a PNG and answers with the path.
-//
-// What is on it rather than what is being drawn: the buffer being drawn into holds the frame
-// before last, so reading that would capture a picture nobody saw.
 func shot(args []string) (string, error) {
 	path := DefaultShot
 	if len(args) > 0 {
@@ -42,8 +37,6 @@ func shot(args []string) (string, error) {
 	return path, nil
 }
 
-// composed is the panel as SurfaceFlinger composed it, GL and video layers included, or lanovod's own
-// layer where there is no SurfaceFlinger helper.
 func composed() (*image.RGBA, error) {
 	if c := display.Get().Helper(); c != nil {
 		pix, w, h, err := c.ScreenRead()
@@ -73,7 +66,6 @@ func composed() (*image.RGBA, error) {
 	return img, nil
 }
 
-// pause waits, for a sequence that has to let something settle or animate.
 func pause(args []string) error {
 	if len(args) == 0 {
 		return fmt.Errorf("want milliseconds")

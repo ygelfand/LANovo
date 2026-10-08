@@ -1,9 +1,10 @@
 package media
 
 import (
-	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	esphome "github.com/ygelfand/go-esphome-device"
 	"github.com/ygelfand/libcountertop/pkg/media/pcm"
+
+	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
 var Formats = []esphome.MediaFormat{

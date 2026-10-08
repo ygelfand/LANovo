@@ -6,9 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ygelfand/libcountertop/pkg/hook"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/setting"
-	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 const StreamGroup setting.Group = "Streams"
@@ -29,8 +30,6 @@ const (
 )
 
 var StreamsChanged hook.Hook[[]int]
-
-var streamKnobs = []string{"main_on", "main_size", "sub_on", "sub_size", "keyframe", "quality"}
 
 func mainSizes() []string {
 	if board.Current().SoC == board.MediaTek {

@@ -1,10 +1,12 @@
 package face
 
 import (
-	"github.com/ygelfand/LANovo/internal/config"
-	shared "github.com/ygelfand/libcountertop/pkg/display/clockface"
 	"slices"
 	"testing"
+
+	shared "github.com/ygelfand/libcountertop/pkg/display/clockface"
+
+	"github.com/ygelfand/LANovo/internal/config"
 )
 
 func TestConfiguredFacesMatchSharedRenderers(t *testing.T) {

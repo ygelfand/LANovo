@@ -20,9 +20,6 @@ func newKey(t *testing.T) esphome.PSK {
 	return k
 }
 
-// A device that has never been paired comes up on the reserved zero key, which is how Home
-// Assistant adds one it has just found. Inventing a key instead would leave a secret that has to
-// reach the person setting the device up.
 func TestNoKeyIsUnprovisioned(t *testing.T) {
 	psk, err := loadPSK(filepath.Join(t.TempDir(), "psk"))
 	if err != nil {
@@ -36,8 +33,6 @@ func TestNoKeyIsUnprovisioned(t *testing.T) {
 	}
 }
 
-// Coming up unprovisioned writes nothing. A key on disk is what an adopted device is, so leaving
-// one there would make a device that has never been added look like one that has.
 func TestUnprovisionedWritesNothing(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "psk")
 
@@ -49,8 +44,6 @@ func TestUnprovisionedWritesNothing(t *testing.T) {
 	}
 }
 
-// A key Home Assistant pushed has to survive a restart, or the next connection reverts to the old
-// one and pairing silently breaks.
 func TestKeyRoundTrips(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "psk")
 
@@ -68,7 +61,6 @@ func TestKeyRoundTrips(t *testing.T) {
 	}
 }
 
-// The key file is written by the installer and read here, so trailing whitespace is normal.
 func TestKeyIgnoresTrailingWhitespace(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "psk")
 
@@ -86,8 +78,6 @@ func TestKeyIgnoresTrailingWhitespace(t *testing.T) {
 	}
 }
 
-// A key file that is there but unreadable is a mistake worth reporting: running unprovisioned
-// instead would silently drop the pairing the user set up.
 func TestUnreadableKeyIsAnError(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "psk")
 	if err := os.WriteFile(path, []byte("not a key"), 0o600); err != nil {
@@ -99,7 +89,6 @@ func TestUnreadableKeyIsAnError(t *testing.T) {
 	}
 }
 
-// The key is a secret, so it must not be left group or world readable.
 func TestKeyIsWrittenPrivate(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "psk")
 
@@ -116,7 +105,6 @@ func TestKeyIsWrittenPrivate(t *testing.T) {
 	}
 }
 
-// The directory may not exist on a device that has never been configured.
 func TestKeyCreatesItsDirectory(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "made", "up", "psk")
 

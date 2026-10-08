@@ -2,13 +2,14 @@ package gui
 
 import (
 	gogui "github.com/go-gui-org/go-gui/gui"
+	sharedwidgets "github.com/ygelfand/libcountertop/pkg/display/widgets"
+	sharedhome "github.com/ygelfand/libcountertop/pkg/homeassistant/homecontrol"
+
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
-	sharedwidgets "github.com/ygelfand/libcountertop/pkg/display/widgets"
-	sharedhome "github.com/ygelfand/libcountertop/pkg/homeassistant/homecontrol"
 )
 
 type tabKind struct {
@@ -59,7 +60,11 @@ func tabStrip(at ui.Rect, tabs []dashboard.Tab, open string, pal theme.Theme) go
 		cfg.Content = content
 		pills = append(
 			pills,
-			presentation.Presses.Pressable(gogui.Row, cfg, func(gogui.EventCtx) { dashboard.Show(t.Key) }),
+			presentation.Presses.Pressable(
+				gogui.Row,
+				cfg,
+				func(gogui.EventCtx) { dashboard.Show(t.Key) },
+			),
 		)
 	}
 	return placed(at, gogui.Row(gogui.ContainerCfg{

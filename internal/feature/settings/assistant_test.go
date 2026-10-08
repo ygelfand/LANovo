@@ -25,8 +25,6 @@ func TestTheSensitivitySliderIsTheThresholdTurnedAround(t *testing.T) {
 	}
 }
 
-// Dragging to either end saves something the engine can use rather than a number that turns
-// detection off or makes it fire on silence.
 func TestDraggingToTheEndsSavesAUsableThreshold(t *testing.T) {
 	config.Use(t.TempDir() + "/state.json")
 
@@ -40,7 +38,6 @@ func TestDraggingToTheEndsSavesAUsableThreshold(t *testing.T) {
 	}
 }
 
-// What a slider shows and what it saves have to agree, or a page redrawn after a drag jumps.
 func TestTheSliderShowsWhatItSaved(t *testing.T) {
 	config.Use(t.TempDir() + "/state.json")
 
@@ -53,7 +50,6 @@ func TestTheSliderShowsWhatItSaved(t *testing.T) {
 	}
 }
 
-// Every slot has a page, and each writes to its own.
 func TestEachSlotSetsItsOwnThreshold(t *testing.T) {
 	config.Use(t.TempDir() + "/state.json")
 

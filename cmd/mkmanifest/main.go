@@ -1,5 +1,3 @@
-// Command mkmanifest writes the manifest a device fetches to learn a release exists. It shares
-// update.Manifest with lanovod, so what a release publishes and what a device parses cannot drift.
 package main
 
 import (

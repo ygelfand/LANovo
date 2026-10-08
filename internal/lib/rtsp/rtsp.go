@@ -1,4 +1,3 @@
-// Package rtsp supplies product labels to the shared RTSP server.
 package rtsp
 
 import shared "github.com/ygelfand/libcountertop/pkg/media/rtsp"

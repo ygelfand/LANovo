@@ -18,14 +18,11 @@ func TestABenchReportsWhatOneFrameCost(t *testing.T) {
 		t.Errorf("a frame panned in %v, want 1.5ms", pan)
 	}
 
-	// 7.5ms a frame is 133.3 a second, and the rate has to come from both halves: timing only the
-	// drawing would say the panel is faster than it is.
 	if rate := b.Rate(); rate < 133 || rate > 134 {
 		t.Errorf("the rate is %.1f fps, want about 133.3", rate)
 	}
 }
 
-// Nothing measured is not a divide by zero.
 func TestAnEmptyBench(t *testing.T) {
 	var b Bench
 
@@ -37,7 +34,6 @@ func TestAnEmptyBench(t *testing.T) {
 	}
 }
 
-// A run that took no measurable time would divide by zero on the way to the rate.
 func TestABenchThatTookNoTime(t *testing.T) {
 	b := Bench{Frames: 10}
 	if b.Rate() != 0 {
@@ -45,8 +41,6 @@ func TestABenchThatTookNoTime(t *testing.T) {
 	}
 }
 
-// It holds the render loop while it runs, so asking with nothing rendering has to come back rather
-// than wait for a loop that will never answer.
 func TestABenchWithNothingRenderingGivesUp(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
@@ -60,7 +54,6 @@ func TestABenchWithNothingRenderingGivesUp(t *testing.T) {
 	}
 }
 
-// Asking for no frames is a mistake worth naming rather than an answer of zero.
 func TestABenchOfNoFrames(t *testing.T) {
 	if _, err := NewDriver("/dev/null").Bench(context.Background(), 0); err == nil {
 		t.Error("asking for no frames was accepted")

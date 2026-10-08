@@ -1,11 +1,3 @@
-// Package slot tells the bootloader that the running boot worked.
-//
-// This device is A/B: two copies of the system, and a bootloader that boots one of them with a
-// retry counter it decrements on every attempt. Something in userspace has to say the boot was good
-// or the counter reaches zero, the bootloader marks the slot unbootable and starts the other one —
-// which on this device is the stock slot, with no lanovod on it.
-//
-// On a stock Android that is update_engine's job. lanovod stops update_engine, so it is ours.
 package slot
 
 import (
@@ -14,14 +6,10 @@ import (
 	"syscall"
 )
 
-// bin is absolute because PATH is not set up when init starts a service.
+// PATH is not set up when init starts a service.
 const bin = "/system/bin/bootctl"
 
-// MarkBooted tells the bootloader this slot is good, which resets its retry counter.
-//
-// Runs the device's own bootctl for the same reason prop runs setprop: what it does is write
-// attribute bits into the GPT through the boot_control HAL, and a mistake there costs the partition
-// table rather than a failed call.
+// bootctl writes GPT attribute bits through the boot_control HAL.
 func MarkBooted() error {
 	if _, err := os.Stat(bin); err != nil {
 		return fmt.Errorf("slot: %s: %w", bin, err)

@@ -10,7 +10,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/metrics"
 )
 
-// at is a reader over a /proc/stat holding one moment's counters.
 func at(t *testing.T, line string) metrics.Reader {
 	t.Helper()
 
@@ -28,8 +27,6 @@ func watching() *Diag {
 	return &Diag{usage: &esphome.Sensor{Base: esphome.Base{ObjectID: "cpu_usage"}}}
 }
 
-// The first sample has nothing to subtract, and reporting it anyway would publish the average
-// since boot as if it were the last thirty seconds.
 func TestTheFirstSampleReportsNothing(t *testing.T) {
 	d := watching()
 	d.busy(at(t, "cpu 100 0 100 800 0 0 0 0\n"))
@@ -39,21 +36,17 @@ func TestTheFirstSampleReportsNothing(t *testing.T) {
 	}
 }
 
-// What is wanted is the interval, not the whole time since boot. Between these two readings the
-// board did 50 jiffies of work out of 100 elapsed.
 func TestUsageIsTheDifferenceBetweenTwoReadings(t *testing.T) {
 	d := watching()
 
-	d.busy(at(t, "cpu 100 0 100 800 0 0 0 0\n")) // 200 busy of 1000
-	d.busy(at(t, "cpu 125 0 125 850 0 0 0 0\n")) // 250 busy of 1100
+	d.busy(at(t, "cpu 100 0 100 800 0 0 0 0\n"))
+	d.busy(at(t, "cpu 125 0 125 850 0 0 0 0\n"))
 
 	if got := d.usage.Get(); got != 50 {
 		t.Errorf("usage = %v%%, want 50%%", got)
 	}
 }
 
-// An idle interval reads as idle, which is the whole point: the load average on this board says
-// three at the same moment.
 func TestAnIdleIntervalReadsAsIdle(t *testing.T) {
 	d := watching()
 
@@ -65,8 +58,6 @@ func TestAnIdleIntervalReadsAsIdle(t *testing.T) {
 	}
 }
 
-// Counters that went backwards mean the machine restarted under us, or a torn read. Neither is a
-// measurement, and publishing a negative percentage is worse than publishing nothing.
 func TestCountersGoingBackwardsPublishNothing(t *testing.T) {
 	d := watching()
 
@@ -78,7 +69,6 @@ func TestCountersGoingBackwardsPublishNothing(t *testing.T) {
 	}
 }
 
-// Two readings taken with nothing in between have no interval to describe.
 func TestTwoIdenticalReadingsPublishNothing(t *testing.T) {
 	d := watching()
 
@@ -91,8 +81,6 @@ func TestTwoIdenticalReadingsPublishNothing(t *testing.T) {
 	}
 }
 
-// A board with nothing to read leaves the sensor alone rather than reporting zero, which would
-// read as an idle device instead of an unknown one.
 func TestNoProcStatLeavesTheSensorAlone(t *testing.T) {
 	d := watching()
 	d.usage.Set(42)

@@ -7,5 +7,3 @@ import (
 var H264 = videostream.H264
 var VP9 = videostream.VP9
 var Split = videostream.Split
-var accessUnits = videostream.AccessUnits
-var ivfFrames = videostream.IVFFrames

@@ -11,7 +11,6 @@ const LiveDelayMost = schema.LiveDelayMost
 
 var defaultCast = schema.DefaultCast
 
-// CastWriter changes it.
 type CastWriter struct{ st *Store }
 
 func (w CastWriter) Receiver(v bool) error {

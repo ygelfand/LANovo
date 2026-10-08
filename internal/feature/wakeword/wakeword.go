@@ -1,14 +1,3 @@
-// Package wakeword is the wake word slots: how sensitive each one is, what it does when it fires,
-// and how the reply that follows should arrive.
-//
-// Home Assistant pairs each of its wake word slots with its own pipeline, so everything here is per
-// slot: two wake words can mean two different assistants, and they should not look or sound the
-// same.
-//
-// Detection itself is not here — it runs against the microphones and calls in when it fires. There
-// is no switch for it either: a slot with no wake word is off, and every slot off is detection off,
-// which is what Home Assistant's own wake word selects already say. A second control could only
-// disagree.
 package wakeword
 
 import (
@@ -16,24 +5,21 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	esphome "github.com/ygelfand/go-esphome-device"
 	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
 	"github.com/ygelfand/libcountertop/pkg/hook"
+
+	"github.com/ygelfand/LANovo/internal/component"
+	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
 func init() {
 	component.Register(component.Device, Get, component.Order(20))
 }
 
-// Slots is how many wake words Home Assistant offers at once, and so how many assistants there are
-// to configure. It is the sub-device count, since each slot has a page of its own.
 const Slots = component.Assistants
 
-// Requested is a slot woken by hand rather than by hearing anything. What that means is the
-// conversation's to decide, so this only says which slot.
 var Requested hook.Hook[int]
 
 type WakeWord struct {
@@ -67,13 +53,10 @@ func Get() *WakeWord {
 	return shared
 }
 
-// newSlot builds one slot's entities. They sit on the assistant's own sub-device, beside Home
-// Assistant's Assistant and Wake word selects for the same slot, so no name carries the number.
 func newSlot(n int) slot {
 	on := component.AssistantDevice(n)
 
 	s := slot{
-		// Not diagnostic: waking the device by hand is something to do, not something to inspect.
 		wake: &esphome.Button{
 			Base: esphome.Base{
 				ObjectID: fmt.Sprintf("wake_assistant_%d", n+1),
@@ -242,5 +225,4 @@ func (w *WakeWord) Restore(c config.Config) {
 	slog.Info("restored", "what", "wake word settings", "slots", len(w.slots))
 }
 
-// Chime plays the tone slot n is set to.
 func Chime(slot int) { speaker.Sound().Chime(sharedtone.Wake(saved(slot).Tone)) }

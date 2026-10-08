@@ -1,12 +1,3 @@
-// Command gen converts a numeral set's SVG sources into the Go the device carries.
-//
-// Dev only, run by hand, never on the device and never imported by it. What it writes is checked
-// in, the way the Material icons arrive already converted: the device build must not need this
-// program, the SVGs, or anything that reads them.
-//
-//	go run ./internal/tools/numeral/convert segment
-//
-// With no arguments it does every directory under svg/.
 package main
 
 import (
@@ -26,7 +17,6 @@ const (
 	svg  = "svg"
 )
 
-// glyphs are the eleven files a set has to have, in the order the Set holds them.
 var glyphs = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "colon"}
 
 func main() {
@@ -54,9 +44,6 @@ func main() {
 func convert(set string) error {
 	dir := filepath.Join(root, svg, set)
 
-	// The design box is read off the first glyph and every other one is held to it. A set whose
-	// digits were drawn in different boxes cannot be laid out by arithmetic, which is the whole
-	// reason for having a box.
 	var w, h int
 
 	out := new(bytes.Buffer)
@@ -67,8 +54,6 @@ func convert(set string) error {
 	fmt.Fprintf(out, "package numeral\n\n")
 	fmt.Fprintf(out, "import \"github.com/ygelfand/LANovo/internal/ui\"\n\n")
 
-	// Only the data. Nothing here registers the set: what the device offers is decided by hand in
-	// sets.go, so generating a set is not the same act as shipping one.
 	fmt.Fprintf(out, "var %s = Set{\n", name)
 	fmt.Fprintf(out, "\tName: %q,\n", title(set))
 
@@ -115,13 +100,10 @@ func convert(set string) error {
 	return os.WriteFile(filepath.Join(root, set+".go"), pretty, 0o644)
 }
 
-// names are the sets whose label is not just their directory capitalized, because they are named
-// after something that has its own spelling.
 var names = map[string]string{
 	"dseg": "DSEG",
 }
 
-// title is what the picker shows for a set.
 func title(set string) string {
 	if name, ok := names[set]; ok {
 		return name
@@ -129,8 +111,6 @@ func title(set string) string {
 	return strings.ToUpper(set[:1]) + set[1:]
 }
 
-// viewBox reads the design box off the SVG, which is what the Set records so a face can lay digits
-// out without measuring anything.
 func viewBox(data []byte) (w, h int, err error) {
 	s := string(data)
 
@@ -152,8 +132,6 @@ func viewBox(data []byte) (w, h int, err error) {
 	return w, h, nil
 }
 
-// literal is the icon as Go source, as a string conversion rather than a slice of numbers: the
-// bytes are opaque and a page of them formatted one per line is a page nobody reads.
 func literal(b []byte) string {
 	var q strings.Builder
 	q.WriteString(`ui.Icon("`)

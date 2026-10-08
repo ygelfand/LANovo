@@ -11,11 +11,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/host/device"
 )
 
-// decodeBase64 undoes the device-side base64 used to carry raw bytes through adb's text mode.
-//
-// Only line endings are dropped: anything else the device printed cannot be told apart from the
-// payload, because dd's own summary is made of base64 characters. That is why every caller sends
-// stderr to /dev/null, and why what comes back is checked for the boot magic before it is used.
 func decodeBase64(s string) ([]byte, error) {
 	var clean strings.Builder
 	for _, r := range s {
@@ -32,32 +27,23 @@ func decodeBase64(s string) ([]byte, error) {
 	return base64.StdEncoding.DecodeString(clean.String())
 }
 
-// Check is one prerequisite and whether the device meets it.
 type Check struct {
 	Name string
 	OK   bool
 
-	// Got is what the device reported, Want what it needed to be.
 	Got  string
 	Want string
 
-	// Fatal marks a check the install cannot proceed without.
 	Fatal bool
 
-	// Fix is what the person has to do about it. Empty when LANovo handles it.
 	Fix string
 }
 
-// The firmware LANovo is developed against. Same image for amber and blueberry.
 const (
 	WantIncremental = "5307861"
 	WantIoT         = "1.1.0"
 )
 
-// Preflight reads the device and reports what is and is not in order.
-//
-// It checks rather than fixes the prerequisites: unlocking the bootloader and flashing the debug
-// firmware are done with fastboot before LANovo is involved.
 func Preflight(d *device.Device) ([]Check, error) {
 	props := map[string]string{}
 	for _, p := range []string{
@@ -102,7 +88,6 @@ func Preflight(d *device.Device) ([]Check, error) {
 			Fix:   "unlock with fastboot — see the XDA thread in the README",
 		},
 		{
-			// No Fix: the install turns it off itself.
 			Name:  Verity,
 			Got:   props[prop.VerityMode],
 			Want:  "disabled",
@@ -163,10 +148,8 @@ func mustSlots(d *device.Device) []string {
 	return slots
 }
 
-// Verity is the name of the check DisableVerity clears.
 const Verity = "dm-verity"
 
-// Failed reports whether a named check is present and did not pass.
 func Failed(checks []Check, name string) bool {
 	for _, c := range checks {
 		if c.Name == name {
@@ -176,10 +159,7 @@ func Failed(checks []Check, name string) bool {
 	return false
 }
 
-// DisableVerity turns dm-verity off and brings the device back on the patched image.
-//
-// Before anything else, not at the end like the boot patch: /system cannot be written while verity
-// is enforcing.
+// /system cannot be written while verity is enforcing.
 func DisableVerity(ctx context.Context, d *device.Device) (rebooted bool, err error) {
 	reboot, err := d.DisableVerity(ctx)
 	if err != nil {
@@ -196,7 +176,6 @@ func DisableVerity(ctx context.Context, d *device.Device) (rebooted bool, err er
 		return true, err
 	}
 
-	// Root goes with the reboot, and everything after this needs it back.
 	if err := d.Root(ctx); err != nil {
 		return true, err
 	}
@@ -207,10 +186,8 @@ func DisableVerity(ctx context.Context, d *device.Device) (rebooted bool, err er
 	return true, nil
 }
 
-// Blocked is the fatal checks that failed.
 func Blocked(checks []Check) []Check { return BlockedExcept(checks) }
 
-// BlockedExcept is Blocked without the named checks, for the ones a caller is about to fix itself.
 func BlockedExcept(checks []Check, skip ...string) []Check {
 	var out []Check
 	for _, c := range checks {

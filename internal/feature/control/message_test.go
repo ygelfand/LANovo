@@ -2,8 +2,6 @@ package control
 
 import "testing"
 
-// One reserved word rather than quoting rules, in a protocol whose point is being typed by hand.
-// The cases that matter are the ones somebody will actually type.
 func TestTheTitleComesOffAtTheColon(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -44,7 +42,6 @@ func TestTheTitleComesOffAtTheColon(t *testing.T) {
 	}
 }
 
-// A card with nothing on it says nothing, which is the one thing the action refuses too.
 func TestAMessageWithNoBodyIsRefused(t *testing.T) {
 	for _, args := range [][]string{
 		{"info", "5", "Title", ":"},

@@ -1,9 +1,9 @@
-// Package face adapts shared clock faces to product settings.
 package face
 
 import (
-	"github.com/ygelfand/LANovo/internal/config"
 	shared "github.com/ygelfand/libcountertop/pkg/display/clockface"
+
+	"github.com/ygelfand/LANovo/internal/config"
 )
 
 type Face = shared.Face

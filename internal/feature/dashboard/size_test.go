@@ -6,8 +6,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// Small is smaller than medium is smaller than large, on both sides. Obvious, and the one thing the
-// setting actually promises.
 func TestTheSizesAreInOrder(t *testing.T) {
 	for _, at := range config.Positions() {
 		for _, s := range screens {
@@ -28,8 +26,6 @@ func TestTheSizesAreInOrder(t *testing.T) {
 	}
 }
 
-// A smaller clock keeps its shape rather than being squeezed: a face fits itself to the box, so a
-// box that shrank on one side only would stretch the face rather than scale it.
 func TestShrinkingKeepsTheShape(t *testing.T) {
 	const tolerance = 0.01
 
@@ -52,9 +48,6 @@ func TestShrinkingKeepsTheShape(t *testing.T) {
 	}
 }
 
-// Size must not move the clock off the edge the position names. Scaling a top band about its middle
-// would put a small clock a third of the way down the screen, which is not the top anybody asked
-// for — so top stays against the top and bottom against the bottom, whatever the size.
 func TestSizeDoesNotDragTheClockOffItsEdge(t *testing.T) {
 	for _, s := range screens {
 		for _, size := range config.Sizes() {
@@ -71,13 +64,11 @@ func TestSizeDoesNotDragTheClockOffItsEdge(t *testing.T) {
 	}
 }
 
-// Centered stays centered at every size, which is the other half of the same promise.
 func TestACenteredClockStaysCentered(t *testing.T) {
 	for _, s := range screens {
 		for _, size := range config.Sizes() {
 			box := Box(config.PositionCenter, size, s.w, s.h)
 
-			// Off by at most one, since halving an odd number of leftover pixels cannot be even.
 			if gap := (box.X) - (s.w - box.X - box.W); gap > 1 || gap < -1 {
 				t.Errorf("%s %s: %d px to the left, %d to the right",
 					size, s.name, box.X, s.w-box.X-box.W)
@@ -90,7 +81,6 @@ func TestACenteredClockStaysCentered(t *testing.T) {
 	}
 }
 
-// A size this build does not have fills what it is given rather than collapsing to nothing.
 func TestAnUnknownSizeIsLarge(t *testing.T) {
 	got := Box(config.PositionCenter, config.Size("enormous"), 1200, 1920)
 

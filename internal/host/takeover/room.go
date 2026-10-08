@@ -9,17 +9,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
-// RoomMargin is what an install leaves behind on /.
-//
-// Filling a filesystem to the last block is its own fault to have later, and / holds the init
-// script and the name file as well as the binary. It is small because the margin is not the point:
-// the point is finding out before anything is written rather than partway through.
 const RoomMargin = 4 << 20
 
-// Room reports whether a lanovod of need bytes will fit on /.
-//
-// The binary already there counts as room, because adb push truncates the destination before it
-// writes: replacing a 21MB binary with a 22MB one needs one more megabyte, not twenty-two.
+// adb push truncates the destination before it writes.
 func Room(d *device.Device, need int64) (Check, error) {
 	free, err := freeOnRoot(d)
 	if err != nil {
@@ -43,10 +35,7 @@ func Room(d *device.Device, need int64) (Check, error) {
 	}, nil
 }
 
-// freeOnRoot is how many bytes / has left.
-//
-// The free count rather than the one available to an unprivileged process: the install runs as
-// root, and root may write into the blocks ext4 holds back.
+// Root may write into the blocks ext4 holds back.
 func freeOnRoot(d *device.Device) (int64, error) {
 	out, err := d.Shell(`stat -f -c "%f %S" /`)
 	if err != nil {
@@ -75,8 +64,6 @@ func parseFree(out string) (int64, error) {
 	return blocks * size, nil
 }
 
-// sizeOf is how many bytes the file at path takes. A file that is not there is no bytes, which is
-// the answer a first install wants rather than an error.
 func sizeOf(d *device.Device, path string) (int64, error) {
 	out, code, err := d.ShellCode(`stat -c "%s" ` + path)
 	if err != nil {
@@ -96,5 +83,4 @@ func parseSize(out string) (int64, error) {
 	return n, nil
 }
 
-// megabytes is a size as somebody reading an installer would write it.
 func megabytes(b int64) string { return fmt.Sprintf("%.1f MB", float64(b)/(1<<20)) }

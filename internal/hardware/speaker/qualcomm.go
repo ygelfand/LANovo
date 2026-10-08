@@ -22,7 +22,6 @@ var qualcommRoute = []setting{
 // RX digital volume 84 is 0 dB.
 const rxUnity = 84
 
-// qualcomm drives the codec's amplifier through its enable line.
 type qualcomm struct {
 	amp    gpio.Pin
 	chip   *board.Chip

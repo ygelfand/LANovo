@@ -9,17 +9,11 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
-// How long to wait for the device to finish starting, and how often to look.
 const (
 	readyWait  = 90 * time.Second
 	readyEvery = 200 * time.Millisecond
 )
 
-// ready blocks until the boot screen has let go of the panel.
-//
-// The control socket answers long before the device has finished starting, so waiting for the
-// socket is waiting for the wrong thing: a whole test sequence has run against the splash and
-// looked like a bug in what it was testing. This is the question that was actually being asked.
 func ready(args []string) (string, error) {
 	wait := readyWait
 	if len(args) > 0 {

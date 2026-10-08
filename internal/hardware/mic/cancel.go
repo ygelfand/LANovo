@@ -6,8 +6,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/libcountertop/pkg/audio/aec"
+
+	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
 const (
@@ -247,7 +248,9 @@ func (m *Mics) clean(left, right, ref []int16) ([]int16, []int16, bool) {
 				} else {
 					m.pre[side].SetEcho(nil)
 				}
-				m.pre[side].Run(chunk)
+				if err := m.pre[side].Run(chunk); err != nil {
+					slog.Error("noise suppression failed", "err", err)
+				}
 			}
 		}
 	}

@@ -17,8 +17,6 @@ func models(ids ...string) []wake.Model {
 	return out
 }
 
-// What a device listens for when nothing has been chosen decides whether a fresh install can be
-// spoken to at all, and it must not come down to which model sorts first.
 func TestNothingChosenPreselectsTheDefault(t *testing.T) {
 	config.Use(t.TempDir() + "/state.json")
 	for name, tc := range map[string]struct {
@@ -43,8 +41,6 @@ func TestNothingChosenPreselectsTheDefault(t *testing.T) {
 	}
 }
 
-// Each slot is paired with its own pipeline, so a slot with nothing in it has to stay empty rather
-// than let the slot after it slide up: the answer would come back from the wrong assistant.
 func TestAnEmptySlotIsAGapRatherThanAShift(t *testing.T) {
 	config.Use(t.TempDir() + "/state.json")
 	if err := config.Set().Wake(1).ID("hey_jarvis"); err != nil {
@@ -60,8 +56,6 @@ func TestAnEmptySlotIsAGapRatherThanAShift(t *testing.T) {
 	}
 }
 
-// A slot naming a model the device does not have is a slot that cannot hear: claiming it would leave
-// it looking armed while nothing is loaded.
 func TestASlotNamingAMissingModelIsEmpty(t *testing.T) {
 	config.Use(t.TempDir() + "/state.json")
 	if err := config.Set().Wake(0).ID("never_installed"); err != nil {

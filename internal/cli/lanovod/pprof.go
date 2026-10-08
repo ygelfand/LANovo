@@ -8,11 +8,6 @@ import (
 	"time"
 )
 
-// The profiler, off unless asked for.
-//
-// Answering "what is the device doing with the CPU" by elimination costs a lot of turns and gets
-// it wrong; a profile names the function. Bound to the loopback, so reaching it means `adb forward
-// tcp:6060 tcp:6060` and then the usual `go tool pprof`.
 const pprofAddr = "127.0.0.1:6060"
 
 func startPprof() {

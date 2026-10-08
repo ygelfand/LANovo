@@ -7,11 +7,6 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
 )
 
-// Play queues interleaved stereo samples.
-//
-// Audio offered while the card is not open is dropped rather than queued. Nothing is draining the
-// queue then, so it would grow for as long as the speaker stayed away, and a device that cannot
-// play should say so in the log rather than in memory.
 func (s *Speaker) Play(samples []int16) {
 	if !s.open() {
 		if n := s.deaf.Add(1); n == 1 || n%100 == 0 {
@@ -25,8 +20,6 @@ func (s *Speaker) Play(samples []int16) {
 	s.qmu.Unlock()
 }
 
-// Take empties the queue and hands back what had not been played, so a sound that yields to another
-// can carry on from where it was rather than skipping whatever it had queued.
 func (s *Speaker) Take() []int16 {
 	s.qmu.Lock()
 	defer s.qmu.Unlock()
@@ -36,8 +29,6 @@ func (s *Speaker) Take() []int16 {
 	return pending
 }
 
-// Adjust rewrites the queue in place. Taking it out and putting it back would leave it empty in
-// between, and a buffer filled then pads with silence.
 func (s *Speaker) Adjust(rewrite func([]int16)) {
 	s.qmu.Lock()
 	defer s.qmu.Unlock()
@@ -45,9 +36,7 @@ func (s *Speaker) Adjust(rewrite func([]int16)) {
 	rewrite(s.pending)
 }
 
-// PlayVoice queues 16 kHz mono, which is what a voice pipeline sends. The codec only takes 48 kHz
-// stereo, so it is stretched and duplicated across both channels. The resampler carries state
-// between calls, so a reply delivered in chunks is one continuous signal.
+// The codec only takes 48 kHz stereo.
 func (s *Speaker) PlayVoice(mono []int16) {
 	s.voiceMu.Lock()
 	if s.voice == nil {
@@ -59,8 +48,6 @@ func (s *Speaker) PlayVoice(mono []int16) {
 	s.Play(out)
 }
 
-// SetResampling picks how voice is stretched and reports what it settled on, which is the filter
-// for anything this build does not have. It takes effect on the next reply.
 func (s *Speaker) SetResampling(r Resampling) Resampling {
 	s.voiceMu.Lock()
 	defer s.voiceMu.Unlock()
@@ -69,7 +56,6 @@ func (s *Speaker) SetResampling(r Resampling) Resampling {
 	return s.using
 }
 
-// Resampling is the one in use.
 func (s *Speaker) Resampling() Resampling {
 	s.voiceMu.Lock()
 	defer s.voiceMu.Unlock()
@@ -80,8 +66,6 @@ func (s *Speaker) Resampling() Resampling {
 	return s.using
 }
 
-// Clipped counts voice samples the resampler pushed past full scale. Interpolation overshoots a
-// transient, and because volume is applied further along that distortion survives being turned down.
 func (s *Speaker) Clipped() uint64 {
 	s.voiceMu.Lock()
 	defer s.voiceMu.Unlock()
@@ -92,8 +76,6 @@ func (s *Speaker) Clipped() uint64 {
 	return s.voice.Clipped()
 }
 
-// Drain discards anything queued but not yet played, for a barge-in. The resampler's history goes
-// with it: whatever comes next is a different utterance.
 func (s *Speaker) Drain() {
 	s.qmu.Lock()
 	s.pending = nil
@@ -106,7 +88,6 @@ func (s *Speaker) Drain() {
 	s.voiceMu.Unlock()
 }
 
-// Queued is how many frames are waiting.
 func (s *Speaker) Queued() int {
 	s.qmu.Lock()
 	defer s.qmu.Unlock()
@@ -114,8 +95,6 @@ func (s *Speaker) Queued() int {
 	return len(s.pending) / Channels
 }
 
-// Overlay mixes samples into what is already queued, extending the queue if they outlast it. Sums
-// are clamped: two things at once are louder than either, and wrapping would turn that into a crack.
 func (s *Speaker) Overlay(samples []int16) {
 	if !s.open() {
 		s.Play(samples)
@@ -128,7 +107,6 @@ func (s *Speaker) Overlay(samples []int16) {
 	s.pending = mix(s.pending, samples)
 }
 
-// take pulls up to one period off the front of the queue.
 func (s *Speaker) take() []int16 {
 	s.qmu.Lock()
 	defer s.qmu.Unlock()
@@ -143,7 +121,6 @@ func (s *Speaker) take() []int16 {
 	return chunk
 }
 
-// mix sums add into the front of into, extending it if add outlasts it.
 func mix(into, add []int16) []int16 {
 	for i, v := range add {
 		if i >= len(into) {
@@ -164,5 +141,4 @@ func clamp(v int32) int16 {
 	return int16(v)
 }
 
-// Scale multiplies samples in place, clamping rather than wrapping.
 var Scale = analysis.Scale

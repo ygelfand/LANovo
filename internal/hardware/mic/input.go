@@ -5,14 +5,12 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
-// The gain setting's range; DefaultGain is where each board's stock firmware leaves its microphones.
 const (
 	MinGain     = 0
 	MaxGain     = 124
 	DefaultGain = 84
 )
 
-// input is the part of the capture path that differs by SoC.
 type input interface {
 	device() int
 	bits() int
@@ -20,8 +18,6 @@ type input interface {
 	gain(m *alsa.Mixer, gain int) error
 }
 
-// setting is one mixer control and what to put in it: a number, or the name of a choice for an
-// enumerated one.
 type setting struct {
 	name   string
 	value  uint32

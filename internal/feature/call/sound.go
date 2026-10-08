@@ -20,7 +20,8 @@ func (device) Play(pcm []int16) {
 func (device) Queued() int { return speaker.Get().Queued() }
 
 func (device) Claim(name string, run func(context.Context) error) {
-	speaker.Sound().Claim(name, func(ctx context.Context, _ *speaker.Speaker) error { return run(ctx) })
+	speaker.Sound().
+		Claim(name, func(ctx context.Context, _ *speaker.Speaker) error { return run(ctx) })
 }
 func (device) Sounding()    { volume.Get().Sounding(config.StreamVoice) }
 func (device) Duck(on bool) { speaker.Sound().Backgrounds().Duck(on) }

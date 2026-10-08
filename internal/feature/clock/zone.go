@@ -1,9 +1,10 @@
 package clock
 
 import (
-	"github.com/ygelfand/LANovo/internal/config"
 	esphome "github.com/ygelfand/go-esphome-device"
 	zonepolicy "github.com/ygelfand/libcountertop/pkg/settings/timezone"
+
+	"github.com/ygelfand/LANovo/internal/config"
 )
 
 const FollowHome = zonepolicy.FollowHome

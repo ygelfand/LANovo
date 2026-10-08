@@ -3,10 +3,11 @@ package network
 import (
 	"sync"
 
-	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/libcountertop/pkg/fetch"
 	"github.com/ygelfand/libcountertop/pkg/network/policy"
+
+	"github.com/ygelfand/LANovo/internal/component"
+	"github.com/ygelfand/LANovo/internal/config"
 )
 
 func init() {

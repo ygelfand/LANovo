@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-// The last frame is painted by the render loop, so asking when nothing is rendering has to come
-// back and say so. A process on its way out cannot wait for a loop that will never answer.
 func TestALastFrameWithNothingRenderingGivesUp(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
@@ -22,8 +20,6 @@ func TestALastFrameWithNothingRenderingGivesUp(t *testing.T) {
 	}
 }
 
-// parting is what stops the render loop drawing over the last frame, so it may only be set once
-// that frame is actually on the panel.
 func TestAFrameThatDidNotGoUpDoesNotStopRendering(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -40,7 +36,6 @@ func TestAFrameThatDidNotGoUpDoesNotStopRendering(t *testing.T) {
 	}
 }
 
-// Once the last frame is up, nothing still unwinding gets to land over it.
 func TestNothingRendersOverTheLastFrame(t *testing.T) {
 	d := NewDriver("/dev/null")
 

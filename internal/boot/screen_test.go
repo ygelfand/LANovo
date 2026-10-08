@@ -9,8 +9,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
-// The panel is 1200x1920 and is stood either way up, so both are the real thing rather than a
-// convenient square.
 var sizes = []struct {
 	name string
 	w, h int
@@ -26,8 +24,6 @@ func coming() []component.Progress {
 	}
 }
 
-// The mark goes beside the list on a wide picture and above it on a tall one, and the two never
-// overlap: the list is drawn over whatever the logo left behind.
 func TestSplitDividesTheLongEdge(t *testing.T) {
 	for _, s := range sizes {
 		logo, list := reveal.Split(s.w, s.h)
@@ -57,8 +53,6 @@ func TestSplitDividesTheLongEdge(t *testing.T) {
 	}
 }
 
-// Everything drawn has to land on the picture. The panel is written pixel by pixel, so anything
-// off the edge is a write past the buffer rather than something clipped.
 func TestDrawBootFitsBothWaysUp(t *testing.T) {
 	for _, s := range sizes {
 		img := ui.NewImage(s.w, s.h, theme.Brand().Surface)
@@ -69,8 +63,6 @@ func TestDrawBootFitsBothWaysUp(t *testing.T) {
 	}
 }
 
-// The list is the only account anyone gets of what happened at start-up, so it has to actually
-// appear rather than leaving the logo on its own.
 func TestDrawBootWritesTheList(t *testing.T) {
 	plain := ui.NewImage(1920, 1200, theme.Brand().Surface)
 	if err := drawLogo(plain); err != nil {
@@ -82,14 +74,12 @@ func TestDrawBootWritesTheList(t *testing.T) {
 		t.Fatalf("drawBoot: %v", err)
 	}
 
-	// Only in the half the list was given, so a differently placed logo is not what this sees.
 	_, list := reveal.Split(1920, 1200)
 	if same(plain, listed, list) {
 		t.Error("the list area is identical with and without a list to draw")
 	}
 }
 
-// A component that is up and one that is not have to look different, or the screen says nothing.
 func TestDoneAndWaitingLookDifferent(t *testing.T) {
 	waiting := ui.NewImage(1920, 1200, theme.Brand().Surface)
 	if err := drawBoot(
@@ -113,7 +103,6 @@ func TestDoneAndWaitingLookDifferent(t *testing.T) {
 	}
 }
 
-// Nothing to wait for is the moment before the screen is handed over, and it still has to draw.
 func TestDrawBootWithNothingWaiting(t *testing.T) {
 	img := ui.NewImage(1920, 1200, theme.Brand().Surface)
 
@@ -122,8 +111,6 @@ func TestDrawBootWithNothingWaiting(t *testing.T) {
 	}
 }
 
-// Every full-screen screen carries the build, so which one a device is showing does not decide
-// whether you can tell what it is running.
 func TestEveryScreenShowsTheVersion(t *testing.T) {
 	for _, tc := range []struct {
 		name string
@@ -141,7 +128,6 @@ func TestEveryScreenShowsTheVersion(t *testing.T) {
 			t.Fatalf("%s: %v", tc.name, err)
 		}
 
-		// The bottom right corner, which is the only thing drawn there.
 		corner := ui.Rect{X: 1920 * 3 / 4, Y: 1200 * 3 / 4, W: 1920 / 4, H: 1200 / 4}
 		if same(plain, img, corner) {
 			t.Errorf("%s: nothing is drawn in the corner the build goes in", tc.name)
@@ -149,8 +135,6 @@ func TestEveryScreenShowsTheVersion(t *testing.T) {
 	}
 }
 
-// It stays in its corner. A build string is long, and one that ran off the panel or across the
-// list would be worse than not showing it.
 func TestVersionStaysInItsCorner(t *testing.T) {
 	for _, s := range sizes {
 		img := ui.NewImage(s.w, s.h, theme.Brand().Surface)
@@ -158,7 +142,6 @@ func TestVersionStaysInItsCorner(t *testing.T) {
 
 		drawVersion(img, theme.Brand())
 
-		// Nothing outside the bottom right eighth of the picture.
 		kept := ui.Rect{X: s.w / 2, Y: s.h * 7 / 8, W: s.w / 2, H: s.h / 8}
 		for y := range s.h {
 			for x := range s.w {
@@ -173,7 +156,6 @@ func TestVersionStaysInItsCorner(t *testing.T) {
 	}
 }
 
-// same reports whether two pictures agree everywhere in an area.
 func same(a, b *ui.Image, in ui.Rect) bool {
 	for y := in.Y; y < in.Y+in.H; y++ {
 		for x := in.X; x < in.X+in.W; x++ {

@@ -7,9 +7,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// The identifiers Home Assistant already knows these by. They predate the table, which would have
-// generated screen_backlight and screen_auto, and changing one orphans the entity it used to name
-// along with whatever automation referred to it.
 func TestTheEntityIdentifiersDoNotMove(t *testing.T) {
 	want := map[string]string{
 		"backlight": "backlight",
@@ -37,8 +34,6 @@ func TestTheEntityIdentifiersDoNotMove(t *testing.T) {
 	}
 }
 
-// Every row needs a name a person reads. say.T hands back the identifier for one nothing defines,
-// so a missing key shows up in Home Assistant as "screen.setting.backlight".
 func TestEveryRowIsNamed(t *testing.T) {
 	for _, s := range Table().Rows() {
 		if got := s.Named(); got == "" || strings.HasPrefix(got, "screen.") {
@@ -52,8 +47,6 @@ func TestEveryRowIsNamed(t *testing.T) {
 	}
 }
 
-// A row writes the field it describes and nothing else, so two rows cannot fight over one value the
-// way the camera's white balance did.
 func TestARowWritesOnlyItsOwnField(t *testing.T) {
 	for _, s := range Table().Rows() {
 		was := config.Defaults().Screen
@@ -78,7 +71,6 @@ func TestARowWritesOnlyItsOwnField(t *testing.T) {
 	}
 }
 
-// elsewhere is a value each row takes that is not its default.
 func elsewhere(name string) (string, bool) {
 	switch name {
 	case "backlight":

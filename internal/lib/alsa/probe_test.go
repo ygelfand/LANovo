@@ -5,10 +5,6 @@ import (
 	"testing"
 )
 
-// TestProbeMixer exercises the control ioctls against a real card, which is the only way to know
-// the structure layouts match the kernel's: a wrong size is rejected outright, and a wrong stride
-// reads a neighboring value's high half. Reading is enough, and the control device tolerates
-// several openers, so this runs safely alongside lanovod. Set ALSA_PROBE=1 on the device.
 func TestProbeMixer(t *testing.T) {
 	if os.Getenv("ALSA_PROBE") == "" {
 		t.Skip("set ALSA_PROBE=1 on a device with a sound card")
@@ -42,17 +38,13 @@ func TestProbeMixer(t *testing.T) {
 		case TypeEnumerated:
 			enums++
 			if len(v) > 0 && int(v[0]) >= len(c.Items) {
-				// Not a stride problem: these all have one value, so no stride is applied. The
-				// driver reports an out-of-range item for controls nothing has set.
+				// The driver reports an out-of-range item for controls nothing has set.
 				t.Logf("%s reports item %d with only %d items", c.Name, v[0], len(c.Items))
 			}
 		case TypeInteger, TypeBoolean:
 			integers++
 		}
 
-		// Only a control with several values exercises the stride at all, so these are the
-		// interesting ones: with the wrong width the second value comes from the middle of the
-		// first.
 		if c.Count > 1 {
 			multi++
 			t.Logf("%-28s type %d count %d value %v", c.Name, c.Type, c.Count, v)
@@ -61,7 +53,6 @@ func TestProbeMixer(t *testing.T) {
 	t.Logf("read %d integer or boolean controls, %d enumerated, %d with several values",
 		integers, enums, multi)
 
-	// Spot-check the controls the speaker path depends on.
 	for _, name := range []string{"Right Channel Only", "Audio_DacMux_Setting"} {
 		c, err := m.Find(name)
 		if err != nil {

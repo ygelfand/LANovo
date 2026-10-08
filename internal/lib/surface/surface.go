@@ -1,4 +1,3 @@
-// Package surface supplies this product's socket and protocol to libcountertop.
 package surface
 
 import (

@@ -74,8 +74,6 @@ func TestSlug(t *testing.T) {
 	}
 }
 
-// The name the installer suggests has to survive its own validation, or a device with nothing
-// typed cannot be installed.
 func TestSuggestedNameSlugFits(t *testing.T) {
 	slug := Slug(NameFromMAC("00:f4:8d:47:69:21"))
 

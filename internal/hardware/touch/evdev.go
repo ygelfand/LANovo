@@ -11,8 +11,7 @@ import (
 	"time"
 )
 
-// The event types and axes this driver sends. Protocol B: a contact is a slot, and a slot holds a
-// tracking id until it goes to -1.
+// Multi-touch protocol B: a slot holds a tracking id until it goes to -1.
 const (
 	evSyn = 0x00
 	evAbs = 0x03
@@ -25,11 +24,9 @@ const (
 	absMTTrackingID = 0x39
 )
 
-// released is the tracking id of a slot nobody is touching.
 const released = -1
 
-// rawEvent is the kernel's struct input_event. syscall.Timeval sizes itself per architecture,
-// which is what makes this 16 bytes on the device and 24 on a host.
+// struct input_event.
 type rawEvent struct {
 	Time  syscall.Timeval
 	Type  uint16
@@ -37,10 +34,8 @@ type rawEvent struct {
 	Value int32
 }
 
-// eventSize is what one event occupies on this architecture.
 var eventSize = binary.Size(rawEvent{})
 
-// read calls handle for every event until the file ends or fails.
 func read(f *os.File, handle func(rawEvent)) error {
 	r := bufio.NewReaderSize(f, eventSize*64)
 
@@ -56,19 +51,15 @@ func read(f *os.File, handle func(rawEvent)) error {
 	}
 }
 
-// slot is what is known about one contact between reports.
 type slot struct {
 	id      int
 	x, y    int
 	touched bool
 	changed bool
 
-	// lifting holds the id until the Up has gone out, which is what matches it to its own Down.
 	lifting bool
 }
 
-// decoder turns the event stream into contacts. The kernel sends only what changed, so the
-// current position of a finger that is still moving is whatever it last said.
 type decoder struct {
 	current int
 	slots   map[int]*slot
@@ -84,8 +75,6 @@ func (d *decoder) at(n int) *slot {
 	return d.slots[n]
 }
 
-// event takes one event and returns the contacts to report, which is nothing until SYN_REPORT
-// says the batch is complete.
 func (d *decoder) event(e rawEvent) []Contact {
 	switch e.Type {
 	case evAbs:
@@ -121,7 +110,6 @@ func (d *decoder) abs(code uint16, value int) {
 	}
 }
 
-// report drains what changed since the last one.
 func (d *decoder) report(now time.Time) []Contact {
 	var out []Contact
 

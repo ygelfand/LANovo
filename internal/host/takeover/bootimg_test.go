@@ -7,7 +7,6 @@ import (
 	"testing"
 )
 
-// bootPage builds a first page the way the device holds one.
 func bootPage(pageSize uint32, cmdline string) []byte {
 	page := make([]byte, max(int(pageSize), headerRead))
 
@@ -17,7 +16,6 @@ func bootPage(pageSize uint32, cmdline string) []byte {
 	return page
 }
 
-// The device's own command line, which is what this has to survive.
 const realCmdline = "core_ctl_disable_cpumask=0-7 kpti=0 console=ttyMSM0,115200,n8 earlyprintk " +
 	"androidboot.hardware=msm8x53 firmware_class.path=/oem/firmware buildvariant=userdebug " +
 	"androidboot.selinux=permissive androidboot.bootdevice=7824900.sdhci " +
@@ -38,8 +36,6 @@ func TestHeader(t *testing.T) {
 	}
 }
 
-// Writing to a boot partition on a guess is how a device stops booting, so anything that is not
-// clearly a boot image has to be refused.
 func TestHeaderRefusesWhatIsNotABootImage(t *testing.T) {
 	tests := []struct {
 		name string
@@ -69,7 +65,6 @@ func TestHeaderRefusesWhatIsNotABootImage(t *testing.T) {
 	}
 }
 
-// The field is NUL padded, and the trailing NULs are not part of the command line.
 func TestHeaderTrimsThePadding(t *testing.T) {
 	page := bootPage(2048, "console=ttyMSM0")
 
@@ -92,8 +87,6 @@ func TestPermissiveAppends(t *testing.T) {
 	}
 }
 
-// The field holds 512 bytes including its terminator, so a command line that would fill it has to
-// be refused rather than truncated — a truncated root= is an unbootable device.
 func TestPermissiveRefusesWhatWillNotFit(t *testing.T) {
 	long := strings.Repeat("a", cmdlineSize-len(PermissiveArg))
 
@@ -103,7 +96,6 @@ func TestPermissiveRefusesWhatWillNotFit(t *testing.T) {
 }
 
 func TestPermissiveLeavesRoomForTheTerminator(t *testing.T) {
-	// One byte short of filling the field once the argument is added.
 	base := strings.Repeat("a", cmdlineSize-len(PermissiveArg)-2)
 
 	got, err := permissive(base)
@@ -115,12 +107,9 @@ func TestPermissiveLeavesRoomForTheTerminator(t *testing.T) {
 	}
 }
 
-// Everything outside the command line is the kernel, the ramdisk and the sizes describing them.
-// One stray byte there and the device does not come back.
 func TestWriteCmdlineTouchesNothingElse(t *testing.T) {
 	page := bootPage(2048, realCmdline)
 
-	// Make the rest of the page recognizable.
 	for i := cmdlineOffset + cmdlineSize; i < len(page); i++ {
 		page[i] = byte(i)
 	}
@@ -160,7 +149,6 @@ func TestWriteCmdlineReplacesRatherThanAppends(t *testing.T) {
 	}
 }
 
-// The round trip is what the installer actually does: read, append, write, read back.
 func TestPatchRoundTrip(t *testing.T) {
 	page := bootPage(2048, realCmdline)
 
@@ -199,7 +187,6 @@ func TestWriteCmdlineRefusesAShortPage(t *testing.T) {
 }
 
 func TestDecodeBase64(t *testing.T) {
-	// What the device sends back: base64 with the shell's line endings through it.
 	const encoded = "QU5EUk9JRCE=\r\n"
 
 	got, err := decodeBase64(encoded)
@@ -211,7 +198,6 @@ func TestDecodeBase64(t *testing.T) {
 	}
 }
 
-// The shell wraps long output, so the payload arrives across many lines.
 func TestDecodeBase64IgnoresLineEndings(t *testing.T) {
 	const wrapped = "QU5E\r\nUk9J\nRCE=\n"
 
@@ -224,13 +210,9 @@ func TestDecodeBase64IgnoresLineEndings(t *testing.T) {
 	}
 }
 
-// Anything else the device printed cannot be told apart from the payload: dd's summary is made of
-// base64 characters. Nothing can be done about that in the decoder, so the guard is that a
-// corrupted read does not carry the boot magic and is refused.
 func TestChatterIsCaughtByTheMagicRatherThanTheDecoder(t *testing.T) {
 	page := bootPage(2048, realCmdline)
 
-	// What a merged stderr would do to the front of the payload.
 	corrupted := append([]byte("1+0 records in"), page...)
 
 	if _, _, err := header(corrupted); err == nil {
@@ -238,9 +220,6 @@ func TestChatterIsCaughtByTheMagicRatherThanTheDecoder(t *testing.T) {
 	}
 }
 
-// The page is read a second time just before it is written, and writing it back is the one thing
-// on this device that can leave it unable to boot. A page that is not a boot image is refused
-// rather than stamped with a command line.
 func TestWriteCmdlineRefusesAPageThatIsNotABootImage(t *testing.T) {
 	page := bootPage(2048, realCmdline)
 	copy(page, "NOTBOOT!")
@@ -250,15 +229,12 @@ func TestWriteCmdlineRefusesAPageThatIsNotABootImage(t *testing.T) {
 	}
 }
 
-// Nor one that is only the right length. A short read padded out, or a partition that changed
-// underneath, both arrive as bytes of the right size and nothing else.
 func TestWriteCmdlineRefusesAPageOfZeroes(t *testing.T) {
 	if err := writeCmdline(make([]byte, 2048), "console=ttyMSM0"); err == nil {
 		t.Error("a page of zeroes was written to")
 	}
 }
 
-// And the page it does accept is left with a command line that reads back.
 func TestWriteCmdlineAcceptsARealPage(t *testing.T) {
 	page := bootPage(2048, realCmdline)
 

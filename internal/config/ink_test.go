@@ -6,9 +6,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
-// The default has to leave the theme exactly as it was. It is the instruction not to recolor
-// anything, and a theme that came back subtly different would be a device that looks changed the
-// moment the setting exists.
 func TestTheDefaultInkChangesNothing(t *testing.T) {
 	for _, palette := range theme.All {
 		if got := DefaultInk.Over(palette); got != palette {
@@ -17,7 +14,6 @@ func TestTheDefaultInkChangesNothing(t *testing.T) {
 	}
 }
 
-// Every other ink has to actually recolor, or it is a row in a list that does nothing.
 func TestEveryInkRecolorsTheText(t *testing.T) {
 	palette := theme.Default()
 
@@ -36,9 +32,6 @@ func TestEveryInkRecolorsTheText(t *testing.T) {
 	}
 }
 
-// The roles the clock does not draw itself in are left alone. Accent is the second hand and has to
-// stay apart from the other two; Surface is the card the cards face sits on and the unlit lamps
-// behind the segments, which are the object rather than the clock.
 func TestInkLeavesTheOtherRolesAlone(t *testing.T) {
 	palette := theme.Default()
 
@@ -58,8 +51,6 @@ func TestInkLeavesTheOtherRolesAlone(t *testing.T) {
 	}
 }
 
-// The date has to sit apart from the time, the way it does in every theme: the same color for both
-// is a date that reads as part of the time.
 func TestTheDateIsSoftenedFromTheTime(t *testing.T) {
 	for _, palette := range theme.All {
 		for _, ink := range Inks() {
@@ -75,8 +66,6 @@ func TestTheDateIsSoftenedFromTheTime(t *testing.T) {
 	}
 }
 
-// A clock has to be readable on every theme, half of which are light and half dark. Four to one is
-// the usual floor for large text, and every numeral here is large.
 func TestEveryInkReadsOnEveryTheme(t *testing.T) {
 	const floor = 4.0
 
@@ -92,7 +81,6 @@ func TestEveryInkReadsOnEveryTheme(t *testing.T) {
 	}
 }
 
-// A name this build does not have leaves the theme alone rather than drawing the clock in nothing.
 func TestAnUnknownInkChangesNothing(t *testing.T) {
 	palette := theme.Default()
 
@@ -101,7 +89,6 @@ func TestAnUnknownInkChangesNothing(t *testing.T) {
 	}
 }
 
-// Color is what a swatch draws, so it has to answer for the default too rather than a zero color.
 func TestTheDefaultInkIsTheThemeText(t *testing.T) {
 	for _, palette := range theme.All {
 		if got := DefaultInk.Color(palette); got != palette.Text {

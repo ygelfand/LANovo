@@ -1,12 +1,13 @@
 package visuals
 
 import (
-	esphome "github.com/ygelfand/go-esphome-device"
 	"math"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"

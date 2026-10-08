@@ -7,13 +7,10 @@ import (
 
 func init() { register(Wave, wave{}) }
 
-// thin is the least a column is drawn as, in pixels. A silent passage is a line through the middle
-// rather than a gap: a waveform with holes in it reads as the drawing having failed.
 const thin = 1
 
 type wave struct{}
 
-// Draw is the samples as their extent over time, mirrored about the middle of the box.
 func (wave) Draw(s ui.Surface, in ui.Rect, f Frame, ink theme.Color, _ theme.Theme) {
 	if in.W <= 0 || in.H <= 0 || len(f.Columns) == 0 {
 		return

@@ -16,15 +16,3 @@ const (
 )
 
 var Shown hook.Hook[Showing]
-
-func shown(p phase) Phase {
-	switch p {
-	case phaseListening:
-		return Listening
-	case phaseThinking:
-		return Thinking
-	case phaseReplying:
-		return Replying
-	}
-	return Idle
-}

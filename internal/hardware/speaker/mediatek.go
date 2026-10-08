@@ -10,8 +10,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
-// mediatek feeds a TAS5805M over TDM out, which has nothing on the card to route. The amplifier is
-// loaded from the OEM app's tables and carries the volume in its own register.
 type mediatek struct {
 	chip *board.Chip
 
@@ -73,7 +71,6 @@ func (m *mediatek) volume(_ *alsa.Mixer, dB float64) (bool, error) {
 	return true, mtkaudio.AmpVolume(*m.chip, dB)
 }
 
-// silence keeps the I2S clocks running by writing zeros until stopped.
 func silence(out *alsa.Playback) (stop func() error) {
 	if out == nil {
 		return func() error { return nil }

@@ -9,7 +9,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
-// Where the word is drawn, worked out the same way drawLeaving works it out.
 func wordBand(w, h int) ui.Rect {
 	short := min(w, h)
 	mark := int(float64(short) * leavingMarkShare)
@@ -21,7 +20,6 @@ func wordBand(w, h int) ui.Rect {
 	return ui.Rect{Y: top + mark + wordHeight, W: w, H: wordHeight}
 }
 
-// Both ways up, since the panel is stood either way and this is the last thing it shows.
 func TestDrawLeavingFitsBothWaysUp(t *testing.T) {
 	for _, s := range sizes {
 		img := ui.NewImage(s.w, s.h, theme.Brand().Surface)
@@ -32,7 +30,6 @@ func TestDrawLeavingFitsBothWaysUp(t *testing.T) {
 	}
 }
 
-// The word is the whole point: without it this is the boot logo and says the wrong thing.
 func TestDrawLeavingWritesTheWord(t *testing.T) {
 	for _, s := range sizes {
 		blank := ui.NewImage(s.w, s.h, theme.Brand().Surface)
@@ -49,7 +46,6 @@ func TestDrawLeavingWritesTheWord(t *testing.T) {
 	}
 }
 
-// A restart that looked exactly like a cold boot would be the fault this is fixing.
 func TestLeavingDoesNotLookLikeTheBootLogo(t *testing.T) {
 	coming := ui.NewImage(1200, 1920, theme.Brand().Surface)
 	if err := drawLogo(coming); err != nil {
@@ -66,8 +62,6 @@ func TestLeavingDoesNotLookLikeTheBootLogo(t *testing.T) {
 	}
 }
 
-// The shutdown must not wait on a panel that is never going to take the frame. There is no render
-// loop in a test, which is the same position a device with no display is in.
 func TestLeavingGivesUpOnAPanelThatCannotTakeIt(t *testing.T) {
 	was := leavingWait
 	leavingWait = 50 * time.Millisecond
@@ -91,8 +85,6 @@ func TestLeavingGivesUpOnAPanelThatCannotTakeIt(t *testing.T) {
 	}
 }
 
-// The group keeps running while the frame is going up: stopping first is what would take the
-// display down before it could paint.
 func TestLeavingHoldsTheGroupUntilTheFrameIsDone(t *testing.T) {
 	was := leavingWait
 	leavingWait = 250 * time.Millisecond

@@ -13,27 +13,23 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/fetch"
+	"github.com/ygelfand/libcountertop/pkg/media/cast"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/libcountertop/pkg/fetch"
-	"github.com/ygelfand/libcountertop/pkg/media/cast"
 )
 
-// Retry is how long to wait after an oracle answer that could not be used.
 const Retry = 30 * time.Second
 
-// Drift is how far the local clock may be from the oracle's before it is logged.
 const Drift = 5 * time.Minute
 
-// CRLURL is Google's Cast device revocation list, an opaque protobuf that stock devices send with
-// every auth answer.
+// Stock Cast devices send this revocation list with every auth answer.
 const CRLURL = "https://clients3.google.com/cast/chromecast/device/crl"
 
-// CRLEvery is how often the revocation list is fetched again once there is one.
 const CRLEvery = 24 * time.Hour
 
-// keys holds the current device credentials and replaces them at notAfter.
 type keys struct {
 	name      string
 	path      string
@@ -77,8 +73,6 @@ func newKeys(name, path string) (*keys, error) {
 	return k, nil
 }
 
-// authority is the chain kept at path, or a new one made and kept there when there is none for
-// this name.
 func authority(name, path string) (*cast.Authority, error) {
 	if raw, err := os.ReadFile(path); err == nil {
 		a, err := cast.LoadAuthority(raw, name)
@@ -109,7 +103,6 @@ func writeKept(path string, data []byte) error {
 	return os.Rename(tmp, path)
 }
 
-// Current is the credentials to present and answer with now.
 func (k *keys) Current() *cast.Credentials {
 	if h := k.held.Load(); h != nil {
 		return h.creds
@@ -117,7 +110,6 @@ func (k *keys) Current() *cast.Credentials {
 	return nil
 }
 
-// CRL is the revocation list to answer with, or nil until one has been fetched.
 func (k *keys) CRL() []byte {
 	if c := k.crl.Load(); c != nil {
 		return *c
@@ -125,8 +117,6 @@ func (k *keys) CRL() []byte {
 	return nil
 }
 
-// revocations fetches the revocation list, again after Retry while it fails and after CRLEvery once
-// it has one.
 func (k *keys) revocations(ctx context.Context) {
 	for {
 		wait := CRLEvery
@@ -153,7 +143,6 @@ func (k *keys) revocations(ctx context.Context) {
 	}
 }
 
-// Retarget is the oracle setting having changed.
 func (k *keys) Retarget() {
 	select {
 	case k.retarget <- struct{}{}:
@@ -215,7 +204,6 @@ func (k *keys) run(ctx context.Context) {
 	}
 }
 
-// step brings the credentials up to date and says how long until they next need looking at.
 func (k *keys) step(ctx context.Context, url string) time.Duration {
 	now := time.Now()
 	h := k.held.Load()
@@ -284,7 +272,6 @@ func ask(ctx context.Context, url string) ([]byte, error) {
 	return io.ReadAll(io.LimitReader(resp.Body, 1<<20))
 }
 
-// load is the kept answer, if it came from the oracle now set.
 func (k *keys) load(url string) (*cast.Credentials, string) {
 	if url == "" {
 		return nil, ""

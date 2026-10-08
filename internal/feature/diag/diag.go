@@ -1,5 +1,3 @@
-// Package diag is what the device says about itself: how hot it is, what it is running on, where
-// on the network it is. Nothing here changes what it does.
 package diag
 
 import (
@@ -9,25 +7,22 @@ import (
 	"sync"
 	"time"
 
+	esphome "github.com/ygelfand/go-esphome-device"
+	netaddress "github.com/ygelfand/libcountertop/pkg/network/address"
+	"github.com/ygelfand/libcountertop/pkg/runtime/collector"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/metrics"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
-	esphome "github.com/ygelfand/go-esphome-device"
-	netaddress "github.com/ygelfand/libcountertop/pkg/network/address"
-	"github.com/ygelfand/libcountertop/pkg/runtime/collector"
 )
 
 func init() {
 	component.Register(component.Network, Get, component.Order(90))
 }
 
-// The thermal zones worth showing. This board has about fifty, most of them per-core and per-step
-// throttling zones that answer no question anybody asks.
-//
-// deca-cpu-max-step rather than one core: it is the part's own answer for how hot the hottest is,
-// which is what throttling follows. On an idle device it read 34.8 where apc0-cpu0-usr read 31.6.
+// deca-cpu-max-step is the SoC's hottest-core reading; throttling follows it.
 const (
 	cpuZone = "deca-cpu-max-step"
 	gpuZone = "gpu0-usr"
@@ -54,8 +49,6 @@ type Diag struct {
 
 	interval *esphome.Number
 
-	// wake restarts the collector's wait when the interval changes, so a shorter one takes effect
-	// now rather than after the wait already running.
 	wake chan struct{}
 
 	last struct {
@@ -64,9 +57,6 @@ type Diag struct {
 		recorded bool
 	}
 
-	// cpu is the jiffy counters from the previous sample. A percentage is the difference between
-	// two readings, so the first one after a start reports nothing rather than averaging over
-	// every second since boot.
 	cpu struct {
 		busy, total float64
 		recorded    bool
@@ -116,7 +106,6 @@ func (d *Diag) Entities() []esphome.Entity {
 
 func (d *Diag) Restore(c config.Config) { d.interval.Set(float32(c.Diag.Interval)) }
 
-// hardware is what the machine is doing with itself.
 func (d *Diag) hardware() {
 	temp := func(id, name string) *esphome.Sensor {
 		return &esphome.Sensor{
@@ -155,9 +144,6 @@ func (d *Diag) hardware() {
 		Decimals:   1,
 	}
 
-	// Beside the usage rather than replaced by it. The load average is a true reading and Home
-	// Assistant has been recording it; what it is not is an answer to how busy the board is,
-	// because three kernel threads hold it at three however idle the device gets.
 	d.load = &esphome.Sensor{
 		Base: esphome.Base{
 			ObjectID: "load_average", Name: "Load average", Icon: "mdi:gauge",
@@ -196,7 +182,6 @@ func (d *Diag) hardware() {
 	}
 }
 
-// radio is the link and what is moving over it.
 func (d *Diag) radio() {
 	d.signal = &esphome.Sensor{
 		Base: esphome.Base{
@@ -222,7 +207,6 @@ func (d *Diag) radio() {
 	d.txRate = rate("wifi_tx_rate", "Wi-Fi sent", "mdi:upload")
 }
 
-// identity is where the device is, for finding it again.
 func (d *Diag) identity() {
 	d.address = &esphome.TextSensor{
 		Base: esphome.Base{
@@ -246,7 +230,6 @@ func (d *Diag) identity() {
 	d.version.Set(layout.VersionString())
 }
 
-// collector builds the one setting these readings have: how often to take them.
 func (d *Diag) collector() {
 	d.interval = &esphome.Number{
 		Base: esphome.Base{
@@ -266,12 +249,10 @@ func (d *Diag) collector() {
 
 		d.interval.Set(float32(config.Get().Diag.Interval))
 
-		// The wait already running was measured against the old interval.
 		d.soon()
 	}
 }
 
-// soon asks the collector to sample without waiting out the rest of its interval.
 func (d *Diag) soon() {
 	select {
 	case d.wake <- struct{}{}:
@@ -279,11 +260,6 @@ func (d *Diag) soon() {
 	}
 }
 
-// Run collects the readings that drift, once at the start and then on the interval.
-//
-// Immediately, not after the first wait: the readings go into entities that hold their last value
-// until Home Assistant asks, so a device that waited would report nothing at all until then — and
-// a restart is exactly when somebody is looking.
 func (d *Diag) Run(ctx context.Context) error {
 	return collector.Run(
 		ctx,
@@ -293,7 +269,6 @@ func (d *Diag) Run(ctx context.Context) error {
 	)
 }
 
-// Sample takes every reading once.
 func (d *Diag) Sample() {
 	d.measure()
 	d.wireless()
@@ -333,11 +308,6 @@ func (d *Diag) measure() {
 	d.uptime.Set(float32(metrics.Uptime()))
 }
 
-// busy publishes how much of the time since the last sample the processor spent working.
-//
-// From the difference between two readings of /proc/stat, so it is the interval that is being
-// described rather than the whole time since boot. The first sample after a start has nothing to
-// subtract and reports nothing.
 func (d *Diag) busy(r metrics.Reader) {
 	busy, total := r.CPU()
 	if !busy.Known || !total.Known {
@@ -351,8 +321,6 @@ func (d *Diag) busy(r metrics.Reader) {
 		return
 	}
 
-	// A counter that went backwards is a machine that rebooted under us, or a file read that came
-	// back torn. Either way there is nothing to report until the next pair.
 	elapsed := total.Value - was.total
 	worked := busy.Value - was.busy
 	if elapsed <= 0 || worked < 0 {
@@ -361,8 +329,6 @@ func (d *Diag) busy(r metrics.Reader) {
 	d.usage.Set(float32(min(worked/elapsed, 1) * 100))
 }
 
-// wireless publishes the link and what is moving over it. Rates come from what changed since the
-// last sample, so the first one after a start reports nothing rather than counting from boot.
 func (d *Diag) wireless() {
 	signal, rx, tx := metrics.Reader{}.Wifi()
 	set(d.signal, signal)
@@ -396,8 +362,6 @@ func addresses() []string {
 	return out
 }
 
-// set publishes a reading, leaving the entity at its last value when the file was not there. A
-// sensor that reports zero for absent reads like a measurement.
 func set(s *esphome.Sensor, r metrics.Reading) {
 	if r.Known {
 		s.Set(float32(r.Value))

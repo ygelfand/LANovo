@@ -7,7 +7,6 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
 )
 
-// tone is a pure sine at a frequency, sampled at rate, as int16.
 func tone(hz, rate float64, n int, amp float64) []int16 {
 	out := make([]int16, n)
 	for i := range out {
@@ -16,7 +15,6 @@ func tone(hz, rate float64, n int, amp float64) []int16 {
 	return out
 }
 
-// loudest is the band with the most in it.
 func loudest(bands []float64) int {
 	at := 0
 	for i, v := range bands {
@@ -27,15 +25,12 @@ func loudest(bands []float64) int {
 	return at
 }
 
-// A transform with a right answer, checked against one: a single sine lands in a single bin, and
-// the bin is the one arithmetic says it should be.
 func TestASineLandsInItsOwnBin(t *testing.T) {
 	const rate = 48000
 
 	re := make([]float64, size)
 	im := make([]float64, size)
 
-	// Exactly eight cycles in the window, so the tone falls on a bin centre and does not leak.
 	const cycles = 8
 	for i := range re {
 		re[i] = math.Sin(2 * math.Pi * cycles * float64(i) / float64(size))
@@ -53,7 +48,6 @@ func TestASineLandsInItsOwnBin(t *testing.T) {
 		t.Errorf("a tone of %d cycles peaked in bin %d, want %d", cycles, at, cycles)
 	}
 
-	// And nowhere else worth mentioning.
 	for i := range size / 2 {
 		if i == cycles {
 			continue
@@ -66,8 +60,6 @@ func TestASineLandsInItsOwnBin(t *testing.T) {
 	_ = rate
 }
 
-// Silence has no spectrum. Worth its own test because the log scale has a floor and an empty window
-// is the input most likely to come out as minus infinity.
 func TestSilenceHasNoSpectrum(t *testing.T) {
 	for i, v := range spectrum(make([]int16, size)) {
 		if v != 0 {
@@ -76,8 +68,6 @@ func TestSilenceHasNoSpectrum(t *testing.T) {
 	}
 }
 
-// Low and high tones land at opposite ends, which is the property a picture of a spectrum has to
-// have for anyone to read it.
 func TestLowAndHighSitAtOppositeEnds(t *testing.T) {
 	low := loudest(spectrum(tone(200, 48000, size, 0.8)))
 	high := loudest(spectrum(tone(12000, 48000, size, 0.8)))
@@ -93,8 +83,6 @@ func TestLowAndHighSitAtOppositeEnds(t *testing.T) {
 	}
 }
 
-// A quieter tone reads lower than a loud one at the same frequency, which is the other half of
-// being readable.
 func TestQuieterReadsLower(t *testing.T) {
 	loud := spectrum(tone(1000, 48000, size, 0.9))
 	soft := spectrum(tone(1000, 48000, size, 0.05))
@@ -108,8 +96,6 @@ func TestQuieterReadsLower(t *testing.T) {
 	}
 }
 
-// Every band stays inside the range the scopes multiply a box by. One that did not would paint
-// outside its box, which is the contract every scope is held to.
 func TestBandsStayInRange(t *testing.T) {
 	for _, at := range []struct {
 		what    string

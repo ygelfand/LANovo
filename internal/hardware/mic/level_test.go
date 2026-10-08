@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// speech is a frame at a given level, as a tone: the leveler only looks at how loud a frame is.
 func speech(dbfs float64) []int16 {
 	frame := make([]int16, VoiceSamples)
 	amp := math.Pow(10, dbfs/20) * fullScale * math.Sqrt2
@@ -24,8 +23,6 @@ func levelOf(frame []int16) float64 {
 	return 20 * math.Log10(math.Sqrt(sum/float64(len(frame)))/fullScale)
 }
 
-// talk feeds someone speaking in a room: sentences with pauses between them, which is what keeps the
-// floor on the room rather than on the voice. Returns the last spoken frame after leveling.
 func talk(l *leveler, room, voice float64, seconds float64) []int16 {
 	var last []int16
 
@@ -120,7 +117,6 @@ func TestLevelerIsReadyWhenPlaybackStops(t *testing.T) {
 	}
 }
 
-// Quiet speech has to come up to the target, and then stay there.
 func TestLevelerReachesTheTarget(t *testing.T) {
 	l := newLeveler()
 
@@ -130,7 +126,6 @@ func TestLevelerReachesTheTarget(t *testing.T) {
 	}
 }
 
-// The ceiling has to hold, or a distant talker in a quiet room turns the room up instead.
 func TestLevelerStopsAtTheCeiling(t *testing.T) {
 	l := newLeveler()
 
@@ -143,8 +138,6 @@ func TestLevelerStopsAtTheCeiling(t *testing.T) {
 	}
 }
 
-// Loud speech is left alone rather than turned down: the level is already where models want it, and
-// anything hotter is the talker's business.
 func TestLevelerLeavesLoudSpeechAlone(t *testing.T) {
 	l := newLeveler()
 
@@ -156,7 +149,6 @@ func TestLevelerLeavesLoudSpeechAlone(t *testing.T) {
 	}
 }
 
-// Silence must not wind the gain up, or the room comes up to speaking level between sentences.
 func TestLevelerIgnoresSilence(t *testing.T) {
 	l := newLeveler()
 
@@ -174,8 +166,6 @@ func TestLevelerIgnoresSilence(t *testing.T) {
 	}
 }
 
-// peaky is speech-shaped in the way that matters here: its loudest sample sits well above its
-// average, so gain chosen from the average alone drives it into the ceiling.
 func peaky(rmsDBFS, crestDB float64) []int16 {
 	frame := speech(rmsDBFS)
 	frame[len(frame)/2] = int16(min(math.Pow(10, (rmsDBFS+crestDB)/20)*fullScale, fullScale-1))
@@ -229,8 +219,6 @@ func TestLevelerDoesNotClipPeakySpeech(t *testing.T) {
 	}
 }
 
-// Steady room noise must not be mistaken for speech, whatever level the room happens to sit at: gain
-// that follows the room presents the room at speaking level, and the wake models then hear it.
 func TestLevelerDoesNotFollowTheRoom(t *testing.T) {
 	for _, room := range []float64{-70, -55, -40} {
 		l := newLeveler()
@@ -246,7 +234,6 @@ func TestLevelerDoesNotFollowTheRoom(t *testing.T) {
 	}
 }
 
-// Speech standing above that same room does move it, again at any level.
 func TestLevelerFollowsWhatStandsAboveTheRoom(t *testing.T) {
 	for _, room := range []float64{-70, -55, -40} {
 		l := newLeveler()
@@ -267,7 +254,6 @@ func TestLevelerFollowsWhatStandsAboveTheRoom(t *testing.T) {
 	}
 }
 
-// Switching leveling off has to clear what it learned, so it is a way out of a bad adaptation.
 func TestForgetClearsTheLearning(t *testing.T) {
 	l := newLeveler()
 	fresh := l.gain
@@ -286,7 +272,6 @@ func TestForgetClearsTheLearning(t *testing.T) {
 	}
 }
 
-// Coming down from a loud frame has to be quick, and going up slow: the other way round pumps.
 func TestLevelerFallsFasterThanItRises(t *testing.T) {
 	l := newLeveler()
 	if l.fall <= l.rise {
@@ -294,13 +279,9 @@ func TestLevelerFallsFasterThanItRises(t *testing.T) {
 	}
 }
 
-// The published level is about the room, not about the gain in front of it: the same voice over the
-// same room noise has to read the same whether the room is quiet or loud, or a ring set to react to
-// it would be pinned at nothing in one house and at everything in another.
 func TestLevelIsRelativeToTheRoom(t *testing.T) {
 	quiet, loud := newLeveler(), newLeveler()
 
-	// Both rooms hear a voice 18 dB above their own noise.
 	settle(quiet, -60, 200)
 	settle(loud, -35, 200)
 
@@ -315,9 +296,6 @@ func TestLevelIsRelativeToTheRoom(t *testing.T) {
 		)
 	}
 
-	// 18 dB over the room is a quiet voice, not a loud one: captures of someone talking in a room put
-	// speech at 23 dB over the floor at the 90th percentile of frames and 30 dB at its loudest, in the
-	// band the level measures. So this has to show, without being anywhere near the top.
 	if quietVoice < 0.2 || quietVoice > 0.6 {
 		t.Errorf(
 			"a voice 18 dB over the room reads %.2f, want it visible and short of the top",
@@ -325,14 +303,11 @@ func TestLevelIsRelativeToTheRoom(t *testing.T) {
 		)
 	}
 
-	// And ordinary speech reaches most of the way up, or nothing ever fills the ring.
 	if talking := level(newRoom(t), -32, 40); talking < 0.6 {
 		t.Errorf("speech 25 dB over the room reads %.2f, want most of the way up", talking)
 	}
 }
 
-// newRoom is a leveler with a settled quiet room behind it, at 25 dB below the speech the caller is
-// about to feed it.
 func newRoom(t *testing.T) *leveler {
 	t.Helper()
 
@@ -341,8 +316,6 @@ func newRoom(t *testing.T) *leveler {
 	return l
 }
 
-// Silence has to read zero, and it has to come back down on its own: a level that stuck where the
-// last word left it would leave the ring lit at whatever was last said.
 func TestLevelRestsAtZeroAndFallsBack(t *testing.T) {
 	l := newLeveler()
 	settle(l, -55, 200)
@@ -356,20 +329,15 @@ func TestLevelRestsAtZeroAndFallsBack(t *testing.T) {
 		t.Fatalf("speech reads %.2f, want most of the way up", spoke)
 	}
 
-	// Half a second of quiet has it most of the way down but not out — the release is deliberately
-	// slow enough to see, or the ring would snap dark between words.
 	if after := level(l, -55, 25); after > 0.3 {
 		t.Errorf("half a second after speech the level is %.2f, want it mostly fallen", after)
 	}
 
-	// A second and a half is silence as far as anything watching is concerned.
 	if after := level(l, -55, 50); after > 0.05 {
 		t.Errorf("a second and a half after speech the level is %.2f, want nothing", after)
 	}
 }
 
-// The level rises faster than it falls. A meter that followed the decay of every syllable would
-// flicker, and one slow to rise would miss the start of the word that is the point of watching.
 func TestLevelRisesFasterThanItFalls(t *testing.T) {
 	l := newLeveler()
 	settle(l, -55, 200)
@@ -386,9 +354,6 @@ func TestLevelRisesFasterThanItFalls(t *testing.T) {
 	}
 }
 
-// The LED ring's whine lands above a kilohertz — measured at 25 dB over a dark room at 3 to 5 kHz,
-// and nothing at all below 1 kHz. The level has to ignore it, or lighting the ring reads as a busy
-// room and anything driving the ring from the level chases itself.
 func TestLevelIgnoresTheBandTheRingWhinesIn(t *testing.T) {
 	quiet := speech(-55)
 
@@ -398,7 +363,6 @@ func TestLevelIgnoresTheBandTheRingWhinesIn(t *testing.T) {
 			l.observe(quiet)
 		}
 
-		// The same level as speech that reads as loud, but up where the ring lives.
 		whine := tone(hz, -30)
 		var loudest float64
 		for range 60 {
@@ -410,8 +374,6 @@ func TestLevelIgnoresTheBandTheRingWhinesIn(t *testing.T) {
 		}
 	}
 
-	// And the same level in the speech band still reads, or the filter has thrown out the signal
-	// along with the whine.
 	l := newLeveler()
 	for range 200 {
 		l.observe(quiet)
@@ -421,13 +383,10 @@ func TestLevelIgnoresTheBandTheRingWhinesIn(t *testing.T) {
 	}
 }
 
-// A room's own steady noise sits at the bottom of the spectrum and never stops. It has to read as
-// nothing, or a ring following the room follows the fridge.
 func TestLevelIgnoresSteadyRoomNoise(t *testing.T) {
 	for _, hz := range []float64{60, 120} {
 		l := newLeveler()
 
-		// Loud steady hum, then a few dB louder, which is what a compressor cycling does.
 		hum := tone(hz, -45)
 		for range 300 {
 			l.observe(hum)
@@ -448,7 +407,6 @@ func TestLevelIgnoresSteadyRoomNoise(t *testing.T) {
 	}
 }
 
-// tone is a frame at one frequency and level, for asking what the level does with a band.
 func tone(hz, dbfs float64) []int16 {
 	frame := make([]int16, VoiceSamples)
 	amp := math.Pow(10, dbfs/20) * fullScale * math.Sqrt2
@@ -459,14 +417,12 @@ func tone(hz, dbfs float64) []int16 {
 	return frame
 }
 
-// settle feeds a steady level without reading anything back, for getting a room's floor established.
 func settle(l *leveler, dbfs float64, frames int) {
 	for range frames {
 		l.observe(speech(dbfs))
 	}
 }
 
-// level feeds a steady level and reports what was published at the end of it.
 func level(l *leveler, dbfs float64, frames int) float64 {
 	settle(l, dbfs, frames)
 	return float64(math.Float32frombits(l.level.Load()))

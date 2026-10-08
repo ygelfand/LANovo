@@ -13,7 +13,6 @@ func TestBrightnessStaysInRange(t *testing.T) {
 	}
 }
 
-// Nobody has touched the slider, so the curve has to be what it was tuned to.
 func TestTheMiddleOfTheSliderIsTheCurve(t *testing.T) {
 	for _, lux := range []float64{0, 2, 10, 100, 800, 10000} {
 		if got, want := Brightness(lux, NeutralBias), curve(lux); got != want {
@@ -22,7 +21,6 @@ func TestTheMiddleOfTheSliderIsTheCurve(t *testing.T) {
 	}
 }
 
-// A dark room must not black the panel out, and a bright one must not drive it to the top.
 func TestBrightnessEnds(t *testing.T) {
 	if got := Brightness(0, NeutralBias); got != MinBrightness {
 		t.Errorf("an unlit room gave %d, want %d", got, MinBrightness)
@@ -38,7 +36,6 @@ func TestBrightnessEnds(t *testing.T) {
 	}
 }
 
-// Brighter rooms are never dimmer, which is the one thing that would look broken.
 func TestBrightnessRisesWithTheRoom(t *testing.T) {
 	for _, bias := range []int{0, 25, NeutralBias, 75, 100} {
 		last := -1
@@ -58,8 +55,6 @@ func TestBrightnessRisesWithTheRoom(t *testing.T) {
 	}
 }
 
-// Turning the slider down has to dim the panel at every light level, not only in the middle of
-// the curve, since the complaint it answers is a room with the lights off.
 func TestTurningTheSliderDownDimsEveryRoom(t *testing.T) {
 	for _, lux := range []float64{0, 2, 10, 100, 800, 10000} {
 		dim := Brightness(lux, 0)
@@ -85,8 +80,6 @@ func TestTurningTheSliderDownDimsEveryRoom(t *testing.T) {
 	}
 }
 
-// Down at the bottom the panel has to still show something. A dark room with the slider at nought
-// is the darkest the device is ever driven, and it cannot be off.
 func TestTheDarkestTheSliderReachesIsStillLit(t *testing.T) {
 	if got := Brightness(0, 0); got != Floor {
 		t.Errorf("an unlit room with the slider down gave %d, want the floor of %d", got, Floor)
@@ -96,8 +89,6 @@ func TestTheDarkestTheSliderReachesIsStillLit(t *testing.T) {
 	}
 }
 
-// The point of the logarithmic curve: the bottom of the range is where people actually live, so
-// it must not be spent in the first few lux.
 func TestBrightnessSpendsItsRangeOnRoomsNotDaylight(t *testing.T) {
 	dim := Brightness(20, NeutralBias)
 	lit := Brightness(200, NeutralBias)
@@ -112,7 +103,6 @@ func TestBrightnessSpendsItsRangeOnRoomsNotDaylight(t *testing.T) {
 		t.Errorf("an office (%d) is no brighter than a dim room (%d)", lit, dim)
 	}
 
-	// A tenfold change in light should move the panel by a noticeable amount, but not the lot.
 	if step := lit - dim; step < 10 || step > 60 {
 		t.Errorf("ten times the light moved the panel by %d, want something in between", step)
 	}

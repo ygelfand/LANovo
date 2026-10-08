@@ -13,12 +13,10 @@ const (
 	Supplicant = layout.Supplicant
 	ConfigPath = layout.WifiConf
 
-	// update_config is what lets a join persist: the supplicant writes networks back itself.
+	// update_config makes the supplicant write networks back itself.
 	config = "ctrl_interface=" + sockets + "\nupdate_config=1\nbgscan=\"" + layout.WifiBgscan + "\"\n"
 )
 
-// Up makes the radio usable: driver loaded, interface up, supplicant answering. None of it happens
-// on its own once the framework is gone.
 func Up(d *device.Device) error {
 	if err := loadDriver(d); err != nil {
 		return err
@@ -29,8 +27,7 @@ func Up(d *device.Device) error {
 	return startSupplicant(d)
 }
 
-// loadDriver kickstarts qcacld, which registers wlan0. Writing fwpath calls the driver's own
-// kickstart_driver(), which runs its init and downloads firmware to the chip over SDIO.
+// Writing fwpath calls kickstart_driver(): driver init and firmware download over SDIO.
 func loadDriver(d *device.Device) error {
 	if out, _ := d.Shell(
 		"ls /sys/class/net/" + iface + " 2>/dev/null",
@@ -57,7 +54,6 @@ func loadDriver(d *device.Device) error {
 	return fmt.Errorf("wifi: %s did not appear after loading the driver", iface)
 }
 
-// startSupplicant runs one against our own configuration, unless one is already answering.
 func startSupplicant(d *device.Device) error {
 	if _, err := (shell{d}).Cmd("ping"); err == nil {
 		return nil
@@ -100,8 +96,7 @@ func startSupplicant(d *device.Device) error {
 	return fmt.Errorf("wifi: the supplicant did not answer on %s", sockets)
 }
 
-// start asks init for the supplicant. init learns the service by reading InitRC at boot, so the
-// install that first writes it has to run one directly; the reboot hands it over.
+// init reads InitRC only at boot.
 func start(d *device.Device) error {
 	if known, _ := d.Shell(
 		"getprop init.svc." + layout.SupplicantService,

@@ -9,23 +9,12 @@ import (
 	"unsafe"
 )
 
-// Control structure layouts. The ioctl number encodes each struct's size, so these have to match
-// the kernel's exactly or the call is rejected outright.
-//
-//	snd_ctl_elem_id     numid, iface, device, subdevice, name[44], index       = 64
-//	snd_ctl_elem_info   id, type, access, count, owner, value[128], dimen[8],
-//	                    reserved[56]                                           = 272
-//	snd_ctl_elem_value  id, indirect, pad, value[128 longs], tstamp, reserved   = 1224
-//
-// The value union holds a long long array, so it is 8-byte aligned and the word before it is
-// padded to match. snd_ctl_elem_info is the same size either way, because its own value union is
-// dominated by a 128-byte reserved member; snd_ctl_elem_value is not, because it stores integers
-// as an array of longs, and its trailing timespec is word sized too.
+// The ioctl number encodes each struct's size; the kernel rejects a mismatch.
 const (
 	elemIDSize   = 64
 	elemInfoSize = 272
 
-	elemValueSize = valueDataOff + 128*longSize + 128 // 1224
+	elemValueSize = valueDataOff + 128*longSize + 128 // 1224 on arm64
 
 	idNumidOff = 0
 	idNameOff  = 16
@@ -33,8 +22,7 @@ const (
 
 	infoTypeOff  = elemIDSize
 	infoCountOff = elemIDSize + 8
-	// The value union, which the control's type selects. For an integer control it is min, max and
-	// step; for an enumerated one, items, item and name[64].
+	// Integer controls: min, max, step. Enumerated: items, item, name[64].
 	infoRangeOff     = elemIDSize + 16
 	infoEnumItemsOff = elemIDSize + 16
 	infoEnumItemOff  = infoEnumItemsOff + 4
@@ -44,7 +32,6 @@ const (
 	valueDataOff = elemIDSize + 8
 )
 
-// Control types.
 const (
 	TypeBoolean    = 1
 	TypeInteger    = 2
@@ -59,7 +46,6 @@ var (
 	ioctlElemWrite = ioc(3, 'U', 0x13, elemValueSize)
 )
 
-// Mixer is an open control device.
 type Mixer struct {
 	f *os.File
 
@@ -67,8 +53,6 @@ type Mixer struct {
 	cached []Control
 }
 
-// OpenMixer opens a card's control device. Enumeration happens on first use and is cached: it
-// costs over a second, so callers should not do it on a path where something is waiting.
 func OpenMixer(card int) (*Mixer, error) {
 	f, err := os.OpenFile(fmt.Sprintf("/dev/snd/controlC%d", card), os.O_RDWR, 0)
 	if err != nil {
@@ -79,7 +63,6 @@ func OpenMixer(card int) (*Mixer, error) {
 
 func (m *Mixer) Close() error { return m.f.Close() }
 
-// Control is one mixer control.
 type Control struct {
 	Numid uint32
 	Name  string
@@ -87,16 +70,9 @@ type Control struct {
 	Count uint32
 	Items []string
 
-	// The range of an integer control, zero for any other type.
 	Min, Max, Step int64
 }
 
-// Controls lists the card's controls. There is no cheap way to ask how many there are, so this
-// walks numids until the kernel stops recognizing them.
-//
-// The walk costs one ioctl per control plus one per item name of every enumerated control, which
-// is over a second on this card, so the result is kept: the set does not change while the card
-// is open.
 func (m *Mixer) Controls() ([]Control, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -108,8 +84,6 @@ func (m *Mixer) Controls() ([]Control, error) {
 	for numid := uint32(1); ; numid++ {
 		c, err := m.info(numid)
 		if err != nil {
-			// The first gap is the end: numids are dense on a card that is not being
-			// reconfigured underneath us.
 			break
 		}
 		out = append(out, c)
@@ -121,7 +95,6 @@ func (m *Mixer) Controls() ([]Control, error) {
 	return out, nil
 }
 
-// Find looks a control up by name.
 func (m *Mixer) Find(name string) (Control, error) {
 	controls, err := m.Controls()
 	if err != nil {
@@ -135,7 +108,6 @@ func (m *Mixer) Find(name string) (Control, error) {
 	return Control{}, fmt.Errorf("alsa: no control named %q", name)
 }
 
-// info reads a control's metadata, including the names of an enumerated control's items.
 func (m *Mixer) info(numid uint32) (Control, error) {
 	var buf [elemInfoSize]byte
 	binary.LittleEndian.PutUint32(buf[idNumidOff:], numid)
@@ -149,8 +121,6 @@ func (m *Mixer) info(numid uint32) (Control, error) {
 		Type:  binary.LittleEndian.Uint32(buf[infoTypeOff:]),
 		Count: binary.LittleEndian.Uint32(buf[infoCountOff:]),
 	}
-	// The value union that follows the count is the type's own: min, max and step for an integer
-	// control, item names for an enumerated one.
 	switch c.Type {
 	case TypeInteger:
 		c.Min = int64(int32(binary.LittleEndian.Uint32(buf[infoRangeOff:])))
@@ -167,7 +137,7 @@ func (m *Mixer) info(numid uint32) (Control, error) {
 		return c, nil
 	}
 
-	// Item names come one per call: set the index, ask again, read the name back.
+	// The kernel returns one item name per call.
 	items := binary.LittleEndian.Uint32(buf[infoEnumItemsOff:])
 	for i := uint32(0); i < items; i++ {
 		var q [elemInfoSize]byte
@@ -181,7 +151,6 @@ func (m *Mixer) info(numid uint32) (Control, error) {
 	return c, nil
 }
 
-// Get reads a control's values.
 func (m *Mixer) Get(c Control) ([]uint32, error) {
 	var buf [elemValueSize]byte
 	binary.LittleEndian.PutUint32(buf[idNumidOff:], c.Numid)
@@ -201,9 +170,7 @@ func (m *Mixer) Get(c Control) ([]uint32, error) {
 	return out, nil
 }
 
-// valueWidth is the stride between a control's values in snd_ctl_elem_value, which is whichever
-// member of the union the control's type selects. Reading an integer control with a 32-bit stride
-// returns the high half of the previous value instead of the next one.
+// Reading an integer control with a 32-bit stride returns the high half of the previous value.
 func valueWidth(typ uint32) int {
 	switch typ {
 	case TypeEnumerated:
@@ -211,12 +178,11 @@ func valueWidth(typ uint32) int {
 	case TypeBytes:
 		return 1 // unsigned char data[512]
 	case TypeInteger64:
-		return 8 // long long value64[64], which is 8 on either ABI
+		return 8 // long long value64[64]
 	}
 	return longSize // long value[128]
 }
 
-// Set writes the same value to every channel of a control.
 func (m *Mixer) Set(c Control, v uint32) error {
 	var buf [elemValueSize]byte
 	binary.LittleEndian.PutUint32(buf[idNumidOff:], c.Numid)
@@ -230,8 +196,6 @@ func (m *Mixer) Set(c Control, v uint32) error {
 	return nil
 }
 
-// SetAll writes one value per channel, for controls that carry a different value in each: a
-// coefficient blob rather than a level.
 func (m *Mixer) SetAll(c Control, values []uint32) error {
 	if uint32(len(values)) != c.Count {
 		return fmt.Errorf("alsa: %q takes %d values, given %d", c.Name, c.Count, len(values))
@@ -253,7 +217,6 @@ func (m *Mixer) SetAll(c Control, values []uint32) error {
 	return nil
 }
 
-// SetBytes writes a byte-typed control, by name.
 func (m *Mixer) SetBytes(name string, data []byte) error {
 	c, err := m.Find(name)
 	if err != nil {
@@ -270,7 +233,6 @@ func (m *Mixer) SetBytes(name string, data []byte) error {
 	return m.SetAll(c, values)
 }
 
-// SetEnum picks an enumerated control's item by name.
 func (m *Mixer) SetEnum(name, item string) error {
 	c, err := m.Find(name)
 	if err != nil {
@@ -287,7 +249,6 @@ func (m *Mixer) SetEnum(name, item string) error {
 	return fmt.Errorf("alsa: %q has no item %q, only %v", name, item, c.Items)
 }
 
-// SetInt writes a value to an integer control, by name.
 func (m *Mixer) SetInt(name string, v uint32) error {
 	c, err := m.Find(name)
 	if err != nil {
@@ -299,7 +260,6 @@ func (m *Mixer) SetInt(name string, v uint32) error {
 	return m.Set(c, v)
 }
 
-// GetEnum reports an enumerated control's current item.
 func (m *Mixer) GetEnum(name string) (string, error) {
 	c, err := m.Find(name)
 	if err != nil {

@@ -6,6 +6,11 @@ import (
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
+	sharedhomeview "github.com/ygelfand/libcountertop/pkg/display/homeview"
+	"github.com/ygelfand/libcountertop/pkg/display/style"
+	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
+	"github.com/ygelfand/libcountertop/pkg/say"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/call"
@@ -14,10 +19,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/widget"
-	sharedhomeview "github.com/ygelfand/libcountertop/pkg/display/homeview"
-	"github.com/ygelfand/libcountertop/pkg/display/style"
-	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
-	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 func callScreen(v *sharedcall.View) *Screen {
@@ -408,7 +409,10 @@ func profileBody(w *gogui.Window, prof *sharedcall.Profile) gogui.View {
 		),
 	}
 	for i, r := range details {
-		rows = append(rows, presentation.Row(fmt.Sprintf("profile-%d", i), "profile", r, nil, false))
+		rows = append(
+			rows,
+			presentation.Row(fmt.Sprintf("profile-%d", i), "profile", r, nil, false),
+		)
 	}
 
 	glyph := iconStyle(t.TextStyleDef.Color)
@@ -431,7 +435,14 @@ func profileBody(w *gogui.Window, prof *sharedcall.Profile) gogui.View {
 				style.Partial,
 				func(gogui.EventCtx) { dial(p, false) },
 			),
-			presentation.Toolkit.WideKey("profile-video", gogui.IconVideo, glyph, height, style.Partial, video),
+			presentation.Toolkit.WideKey(
+				"profile-video",
+				gogui.IconVideo,
+				glyph,
+				height,
+				style.Partial,
+				video,
+			),
 		},
 	}))
 	return sharedhomeview.Column(rows)

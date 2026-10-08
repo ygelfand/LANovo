@@ -6,17 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	shareda2dp "github.com/ygelfand/libcountertop/pkg/bluetooth/a2dp"
 	"github.com/ygelfand/libcountertop/pkg/bluetooth/avrcp"
+
+	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 )
 
-// sink asks the speaker side for things nothing on screen has an opinion about.
-//
-//	bt trace [ms]   every frame but the audio, while it lasts
-//
-// The audio is left out because it is the only thing here that arrives by the hundred. Everything
-// else on a link is a handful of messages and worth a line each.
 func sink(args []string) (string, error) {
 	if len(args) == 0 {
 		return "", fmt.Errorf("bt: %q is not one of its commands", verbOf(args))
@@ -36,9 +31,6 @@ func sink(args []string) (string, error) {
 		shareda2dp.Trace(within)
 		return fmt.Sprintf("tracing frames for %s, then: adb logcat -s lanovod\n", within), nil
 
-	// Opening the channel is a round trip, so the lookup is two steps: once to ask for the channel,
-	// again to ask the question. A single command would send the question before there was
-	// anywhere to send it.
 	case "look":
 		shareda2dp.Trace(10 * time.Second)
 
@@ -55,7 +47,6 @@ func sink(args []string) (string, error) {
 		a2dp.Get().Look(uint16(class))
 		return fmt.Sprintf("looking up %#04x, watch the trace\n", class), nil
 
-	// Three steps, because each is a round trip: a channel, then a session on it, then the image.
 	case "art":
 		shareda2dp.Trace(10 * time.Second)
 
@@ -68,7 +59,6 @@ func sink(args []string) (string, error) {
 			a2dp.Get().Hello()
 			return "connecting to the image service, then: bt art HANDLE\n", nil
 
-		// A handle is seven digits and a channel is hex. Long enough to tell apart without asking.
 		case len(args[1]) == 7 && isDigits(args[1]):
 			a2dp.Get().Thumbnail(args[1])
 			return fmt.Sprintf("asked for image %s, watch the trace\n", args[1]), nil
@@ -116,8 +106,6 @@ func sink(args []string) (string, error) {
 			}
 		}
 
-		// The answer comes back on the channel rather than from here, so the trace has to be on to
-		// see it. Long enough for the round trip and no longer.
 		shareda2dp.Trace(3 * time.Second)
 		a2dp.Get().Attributes(ids...)
 		return fmt.Sprintf("asked for %v, watch the trace\n", ids), nil
@@ -125,8 +113,6 @@ func sink(args []string) (string, error) {
 	return "", fmt.Errorf("bt: %q is not one of its commands", verbOf(args))
 }
 
-// isDigits reports whether every character is one, which is what tells a seven digit image handle
-// from a channel number written in hex.
 func isDigits(s string) bool {
 	for _, r := range s {
 		if r < '0' || r > '9' {

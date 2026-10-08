@@ -3,11 +3,12 @@ package assistant
 import (
 	"sync"
 
+	sharedscreen "github.com/ygelfand/libcountertop/pkg/display/assistant"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/voice"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/hardware/touch"
-	sharedscreen "github.com/ygelfand/libcountertop/pkg/display/assistant"
 )
 
 func init() { component.Register(component.Device, Get, component.Order(45)) }

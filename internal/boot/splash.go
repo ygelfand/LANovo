@@ -7,6 +7,10 @@ import (
 	"sync/atomic"
 	"time"
 
+	bootview "github.com/ygelfand/libcountertop/pkg/display/boot"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+	"github.com/ygelfand/libcountertop/pkg/runtime/startup"
+
 	"github.com/ygelfand/LANovo/internal/android/slot"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
@@ -14,9 +18,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/touch"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/reveal"
-	bootview "github.com/ygelfand/libcountertop/pkg/display/boot"
-	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
-	"github.com/ygelfand/libcountertop/pkg/runtime/startup"
 )
 
 const (
@@ -25,7 +26,6 @@ const (
 	viewEvery = 50 * time.Millisecond
 )
 
-// startSplash runs the reveal, then what the device is still waiting for, and lets go once everything is up.
 func startSplash(ctx context.Context) {
 	safe.Go("splash", func() {
 		claim := display.Get().Claim(display.PriorityBoot)
@@ -97,10 +97,10 @@ func startSplash(ctx context.Context) {
 					fresh,
 					w,
 					h,
-					reveal.Moment{At: m.At, Trace: m.Trace, Header: m.Header, Ready: m.Ready},
+					reveal.Moment(m),
 				); err != nil {
 					slog.Error("the boot animation stopped", "err", err)
-					layer.Close()
+					_ = layer.Close()
 					layer = nil
 					return false
 				}
@@ -119,9 +119,6 @@ func startSplash(ctx context.Context) {
 		time.Sleep(2 * frame)
 		slog.Info("ready")
 
-		// Past the boot screen is the definition of a good boot: everything that holds is up and
-		// something else has the panel. Told here rather than from init, so a slot that comes up
-		// without lanovod is not recorded as one that worked.
 		if err := slot.MarkBooted(); err != nil {
 			slog.Warn("could not mark the boot good, this slot is spending its retries", "err", err)
 		}
@@ -143,7 +140,6 @@ func viewed(ctx context.Context) (int, int) {
 
 func handOver() bool { return component.Default().Ready() }
 
-// summary is what the screen currently says, for deciding whether to draw it again.
 func summary(progress []component.Progress) string { return startup.Summary(progress) }
 
 func wait(ctx context.Context, d time.Duration) bool {

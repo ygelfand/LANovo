@@ -1,13 +1,3 @@
-// Package all is what this device is made of.
-//
-// Components register themselves from init, so a component nobody imports is a component that
-// silently does not exist — no entity, no lifecycle, no error. This is the one list that pulls them
-// in, and importing it is what makes the registry complete.
-//
-// Order is not decided here. Each component declares its phase and its place within it, so this list
-// can stay alphabetical and mean nothing but membership. Hardware is listed as well as features:
-// relying on a feature to pull its driver in transitively is a component that disappears the moment
-// the feature stops importing it.
 package all
 
 import (

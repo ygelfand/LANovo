@@ -7,8 +7,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// The component is a singleton with a config store behind it, so each test points the store at a
-// file of its own and works through Get.
 func fresh(t *testing.T) *Volume {
 	t.Helper()
 
@@ -30,7 +28,6 @@ func TestRestoreTakesEveryStream(t *testing.T) {
 	}
 }
 
-// The split is the point: the streams must not share a level.
 func TestStreamsAreIndependent(t *testing.T) {
 	v := fresh(t)
 
@@ -74,8 +71,6 @@ func TestAdjustMovesOneStep(t *testing.T) {
 	}
 }
 
-// Holding a volume button at either end must not run the level off the scale, or coming back
-// takes as many presses as were wasted.
 func TestAdjustStopsAtTheEnds(t *testing.T) {
 	v := fresh(t)
 
@@ -113,8 +108,6 @@ func TestChangedFires(t *testing.T) {
 	}
 }
 
-// A command that does not move the level should not be announced, or every repeat of an unchanged
-// value wakes whatever is listening.
 func TestUnchangedLevelIsNotAnnounced(t *testing.T) {
 	v := fresh(t)
 	v.Set(config.StreamMedia, 50)
@@ -149,7 +142,6 @@ func TestSetPersists(t *testing.T) {
 	}
 }
 
-// Every stream needs an entity, or one of them cannot be set from Home Assistant at all.
 func TestEveryStreamHasAnEntity(t *testing.T) {
 	v := fresh(t)
 	for _, stream := range config.Streams() {
@@ -176,12 +168,3 @@ func TestDuckingIsASeparateSavedPlaybackSetting(t *testing.T) {
 		t.Fatal(got)
 	}
 }
-
-// The panel's proportions, smaller. The card is laid out from fractions of the shorter side and of
-// the height, so a canvas of a different shape is a different card.
-const (
-	testW = 300
-	testH = 480
-)
-
-// drawn is the card showing one stream, folded or with the rest under it.

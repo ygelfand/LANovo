@@ -2,10 +2,11 @@ package gui
 
 import (
 	gogui "github.com/go-gui-org/go-gui/gui"
+	"github.com/ygelfand/libcountertop/pkg/display/widgets"
+
 	"github.com/ygelfand/LANovo/internal/feature/firmware"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
-	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 )
 
 const priorityUpgrade = widgets.UpgradePriority

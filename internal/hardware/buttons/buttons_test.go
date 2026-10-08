@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-// value writes what sysfs would hold for a line.
 func value(t *testing.T, v string) *os.File {
 	t.Helper()
 
@@ -23,8 +22,6 @@ func value(t *testing.T, v string) *os.File {
 	return f
 }
 
-// The camera shutter is the one that reads the other way round: 1 means open, and open is not
-// engaged. Getting this backwards reports a covered camera as watching.
 func TestPolarity(t *testing.T) {
 	tests := []struct {
 		name string
@@ -60,8 +57,6 @@ func TestReadIgnoresWhitespace(t *testing.T) {
 	}
 }
 
-// read seeks to the start each time, because the same file is read again on every edge and a
-// file left at EOF would report nothing forever.
 func TestReadTwiceGivesTheSameAnswer(t *testing.T) {
 	l := line{VolumeUp, 85, false}
 	f := value(t, "1\n")
@@ -74,7 +69,6 @@ func TestReadTwiceGivesTheSameAnswer(t *testing.T) {
 	}
 }
 
-// Every control the device has is named and mapped to a line, and no two share a GPIO.
 func TestLines(t *testing.T) {
 	if len(lines()) != 4 {
 		t.Fatalf("%d lines, want the four controls", len(lines()))
@@ -92,8 +86,7 @@ func TestLines(t *testing.T) {
 	}
 }
 
-// The volume down key is on the PMIC rather than the SoC, which is why its number is nothing like
-// the others.
+// The volume down key is on the PMIC, not the SoC.
 func TestVolumeDownIsOnThePMIC(t *testing.T) {
 	for _, l := range lines() {
 		if l.button == VolumeDown && l.gpio != 1019 {

@@ -16,7 +16,6 @@ var byNameDirs = []string{"/dev/block/bootdevice/by-name", "/dev/block/platform/
 
 var writing sync.Mutex
 
-// Writable makes / read-write and hands back what puts it back. One holder at a time.
 func Writable() (restore func() error, err error) {
 	writing.Lock()
 	part, err := systemPartition()

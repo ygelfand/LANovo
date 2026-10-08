@@ -4,10 +4,6 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
-// Volume is how loud each kind of sound is, as a percentage.
-//
-// Split by what is making the sound: an alarm should not be held down by a quiet music setting.
-// Lenovo's own app carried the same split, at 40 for media against 60 for alarms.
 type Volume struct {
 	Media    int `json:"media"`
 	Alerts   int `json:"alerts"`
@@ -31,7 +27,6 @@ func defaultVolume() Volume {
 	}
 }
 
-// Level is the volume for one stream.
 func (v Volume) Level(s Stream) int {
 	switch s {
 	case StreamAlerts:
@@ -54,12 +49,10 @@ const (
 	StreamFeedback = schema.StreamFeedback
 )
 
-// Streams is every kind of sound the device makes.
 func Streams() []Stream {
 	return []Stream{StreamMedia, StreamAlerts, StreamVoice, StreamFeedback}
 }
 
-// VolumeWriter changes how loud each kind of sound is.
 type VolumeWriter struct{ st *Store }
 
 func (w VolumeWriter) Level(s Stream, v int) error {

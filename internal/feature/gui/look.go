@@ -2,8 +2,9 @@ package gui
 
 import (
 	gogui "github.com/go-gui-org/go-gui/gui"
-	"github.com/ygelfand/LANovo/internal/ui/theme"
 	sharedlib "github.com/ygelfand/libcountertop/pkg/display/appearance"
+
+	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
 type Size = sharedlib.Size

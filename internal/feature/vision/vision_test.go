@@ -10,11 +10,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
 )
 
-// One camera, wired to the thing that takes a picture.
-//
-// ESPHome has no key on CameraImageRequest — Home Assistant's client cannot name a camera — so the
-// library refuses a second one. A component offering two would fail at registration rather than
-// here, and an entity with no Image answers every request with nothing at all.
+// ESPHome's CameraImageRequest carries no key; the library allows one camera.
 func TestTheCameraIsOneEntityAndItTakesPictures(t *testing.T) {
 	v := Get()
 

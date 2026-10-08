@@ -9,16 +9,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// byHand is every setting the harness deliberately cannot reach, and why. A value here is a
-// decision; a value in neither this nor the settings table is an oversight, which is the whole
-// point of the test below.
-// manyRows is the fields more than one row may change, which is the fields that are a map rather
-// than a value. Every camera setting lives under the same key in the config and has its own row,
-// generated from the camera's own table, so they all report the same field and none of them is a
-// duplicate of another.
-//
-// Anything not here still may not be written twice: two rows on one value is the mistake this
-// catches, and it has caught it.
 var manyRows = map[string]bool{
 	"Camera.Settings": true,
 	"Home.Control":    true,
@@ -49,9 +39,6 @@ var byHand = map[string]string{
 
 	"Network.Address": "read back from the lease, not chosen",
 
-	// Nothing about these is deliberate. They are settings with no way to reach them from the
-	// harness, listed so that adding another is a choice rather than an accident, and so this list
-	// is the thing to work through rather than the config being re-read to find them.
 	"Screen.Drawer":       "not wired yet",
 	"Screen.Volume":       "not wired yet",
 	"Feedback.Chime":      "not wired yet",
@@ -64,8 +51,6 @@ var byHand = map[string]string{
 	"Cast.YouTube.Video":  "issued by YouTube on first use",
 }
 
-// leaves is every setting in the config, as a dotted path. A struct that holds other settings is
-// not one itself, so the walk stops at anything that is not another part of the config.
 func leaves(t reflect.Type, at string) []string {
 	var out []string
 	for i := range t.NumField() {
@@ -82,12 +67,6 @@ func leaves(t reflect.Type, at string) []string {
 	return out
 }
 
-// Every setting is either reachable from the harness or written down as not being. A new one is
-// neither until somebody decides, and this is what makes them decide.
-//
-// The failure it exists for: a setting added to the config and to Home Assistant, and to nothing
-// else. It works, it is saved, and the only way to change it on the device is to find the row and
-// tap it — which is the thing the harness exists to avoid, and which nothing reports.
 func TestEverySettingIsReachedOrAccountedFor(t *testing.T) {
 	reached := map[string]string{}
 	for _, s := range settings() {
@@ -118,9 +97,6 @@ func TestEverySettingIsReachedOrAccountedFor(t *testing.T) {
 	}
 }
 
-// A setting named in the table has to exist. Renaming a config field otherwise leaves the harness
-// claiming to change something that is not there, which only shows up as a command that reads back
-// the wrong thing.
 func TestEverySettingNamesARealField(t *testing.T) {
 	all := leaves(reflect.TypeOf(config.Config{}), "")
 
@@ -136,7 +112,6 @@ func TestEverySettingNamesARealField(t *testing.T) {
 	}
 }
 
-// How much of the device the harness can arrange, which is worth knowing rather than guessing at.
 func TestHowMuchIsReachable(t *testing.T) {
 	all := leaves(reflect.TypeOf(config.Config{}), "")
 	t.Logf("%d settings, %d reachable from the harness, %d accounted for by hand",

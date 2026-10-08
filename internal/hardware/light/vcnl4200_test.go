@@ -7,7 +7,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/i2c"
 )
 
-// chip is a VCNL4200 answering from a register map, so the driver can be exercised without one.
 type chip struct {
 	regs map[byte]uint16
 	err  error
@@ -51,8 +50,6 @@ func attached(t *testing.T, c *chip) *Sensor {
 	return s
 }
 
-// The part comes up shut down, so a driver that only reads would report a steady zero and look
-// like a dark room.
 func TestAttachStartsBothHalves(t *testing.T) {
 	c := newChip()
 	c.regs[regALSConf] = 0x0001
@@ -82,14 +79,12 @@ func TestIdentify(t *testing.T) {
 		t.Error("the part did not identify itself")
 	}
 
-	// Something else at the same address on another bus.
 	c.regs[regDeviceID] = 0x0000
 	if identify(dev) {
 		t.Error("a chip with the wrong id identified as this one")
 	}
 }
 
-// A bus error must not identify as the part, or Find settles on the first bus that fails.
 func TestIdentifyRejectsABusThatFails(t *testing.T) {
 	c := newChip()
 	c.err = errors.New("no acknowledgement")
@@ -113,8 +108,6 @@ func TestLux(t *testing.T) {
 		{"one count", 1, luxPerCount * window},
 		{"a lit room", 1000, 24 * window},
 
-		// What the part can see at all, which the glass in front of it turns into a room far
-		// brighter than anything indoors.
 		{"full scale", 0xffff, float64(0xffff) * luxPerCount * window},
 	}
 
@@ -149,8 +142,6 @@ func TestProximity(t *testing.T) {
 	}
 }
 
-// A read that failed has to reach the caller: a sensor reporting zero lux in error would drive
-// the backlight to its dimmest.
 func TestReadErrorsReachTheCaller(t *testing.T) {
 	c := newChip()
 	s := attached(t, c)

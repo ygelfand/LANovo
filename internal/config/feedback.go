@@ -21,7 +21,6 @@ const (
 
 var Chimes = schema.Chimes
 
-// FeedbackWriter changes the noises the device makes about itself.
 type FeedbackWriter struct{ st *Store }
 
 func (w FeedbackWriter) Chime(v Chime) error {

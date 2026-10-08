@@ -17,8 +17,6 @@ func TestNavigatingTakesTheView(t *testing.T) {
 	}
 }
 
-// Their status icons carry external paths alongside view names, so a path that names no view has to
-// be refused. A satellite that silently accepted one would look like it had obeyed.
 func TestAPathThatNamesNoViewIsRefused(t *testing.T) {
 	s := &Satellite{view: viewassist.Clock}
 
@@ -32,8 +30,6 @@ func TestAPathThatNamesNoViewIsRefused(t *testing.T) {
 	}
 }
 
-// A webpage is markup and there is no browser here, which is the whole reason the rest are drawn
-// natively. Refusing it says so where an automation can see it.
 func TestTheWebpageViewIsRefused(t *testing.T) {
 	s := &Satellite{view: viewassist.Clock}
 
@@ -45,8 +41,6 @@ func TestTheWebpageViewIsRefused(t *testing.T) {
 	}
 }
 
-// Every view this device can draw has to be reachable, or an automation written against the
-// contract hits one the satellite silently will not take.
 func TestEveryDrawableViewIsReachable(t *testing.T) {
 	s := &Satellite{view: viewassist.Clock}
 
@@ -64,7 +58,6 @@ func TestEveryDrawableViewIsReachable(t *testing.T) {
 	}
 }
 
-// The state is readable back, which is what a view will draw from once there is one.
 func TestTheStateIsKept(t *testing.T) {
 	s := &Satellite{}
 	said := viewassist.State{Title: "Kitchen", Message: "the oven is on"}

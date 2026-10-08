@@ -1,14 +1,17 @@
 package config
 
 import (
-	"github.com/ygelfand/libcountertop/pkg/audio/ducking"
 	"os"
 	"testing"
+
+	"github.com/ygelfand/libcountertop/pkg/audio/ducking"
 )
 
 func TestCommonDuckingDefaultAndSavedSetting(t *testing.T) {
 	path := t.TempDir() + "/state.json"
-	os.WriteFile(path, []byte(`{"volume":{"media":40}}`), 0600)
+	if err := os.WriteFile(path, []byte(`{"volume":{"media":40}}`), 0600); err != nil {
+		t.Fatal(err)
+	}
 	s, err := Load(path)
 	if err != nil {
 		t.Fatal(err)

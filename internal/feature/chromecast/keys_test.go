@@ -53,7 +53,7 @@ func oracleAnswer(t *testing.T, k *keys, from, until, now time.Time) []byte {
 func serve(t *testing.T, body []byte) string {
 	t.Helper()
 	s := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { w.Write(body) }),
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) { _, _ = w.Write(body) }),
 	)
 	t.Cleanup(s.Close)
 	return s.URL

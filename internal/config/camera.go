@@ -1,7 +1,10 @@
 package config
 
-import "github.com/ygelfand/libcountertop/pkg/settings/schema"
-import "maps"
+import (
+	"maps"
+
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+)
 
 type Camera = schema.Camera
 
@@ -15,7 +18,6 @@ func (w CameraWriter) Set(name, value string) error {
 
 func (w CameraWriter) Put(values map[string]string) error {
 	return w.st.Update(func(c *Config) {
-		// Get hands this map to readers without copying it.
 		settings := maps.Clone(c.Camera.Settings)
 		if settings == nil {
 			settings = map[string]string{}

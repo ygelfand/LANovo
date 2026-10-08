@@ -1,9 +1,9 @@
-// Package mtkcamera selects the product camera socket for the shared helper client.
 package mtkcamera
 
 import (
-	"github.com/ygelfand/LANovo/internal/layout"
 	shared "github.com/ygelfand/libcountertop/pkg/camera/helper"
+
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 type Config = shared.Config

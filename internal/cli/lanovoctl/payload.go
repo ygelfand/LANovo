@@ -7,9 +7,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/host/assets"
 )
 
-// lanovod resolves what to install: what the build ships, or a file when one was named.
-//
-// A build without a payload and no flag is an error rather than a silent nothing.
 func lanovod(path string) ([]byte, string, error) {
 	if path != "" {
 		data, err := os.ReadFile(path)

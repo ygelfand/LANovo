@@ -2,7 +2,6 @@ package settings
 
 import "testing"
 
-// The whole point of the confirmation is that reaching the row is not the same as acting on it.
 func TestTheExplainingRowDoesNothing(t *testing.T) {
 	done := 0
 	rows, acts := confirmPage("Restart", "what happens", func() { done++ }).Build()
@@ -28,8 +27,6 @@ func TestTheActionRowActs(t *testing.T) {
 	}
 }
 
-// A page whose actions are shorter than its rows panicked once when a row past the end was tapped.
-// Both ways round are wrong here, so the counts are checked rather than one bound.
 func TestEveryPowerRowHasAnAction(t *testing.T) {
 	rows, acts := powerPage().Build()
 

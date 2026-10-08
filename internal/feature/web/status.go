@@ -4,17 +4,19 @@ import (
 	_ "embed"
 	"fmt"
 	"html/template"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	netaddress "github.com/ygelfand/libcountertop/pkg/network/address"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/metrics"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
-	netaddress "github.com/ygelfand/libcountertop/pkg/network/address"
 )
 
 //go:embed status.html
@@ -22,37 +24,25 @@ var statusHTML string
 
 var statusPage = template.Must(template.New("status").Parse(statusHTML))
 
-// Status is what the device says about itself: what it is, what came up, and what it is set to.
-//
-// Nothing here is a secret. The encryption key, the network's passphrase and the onboarding code
-// are all reachable from this process and none of them appear: the page is unauthenticated to
-// anyone who can open port 80.
 type Status struct {
 	Name    string
 	Model   string
 	Version string
 
-	// Adopted is whether Home Assistant has ever subscribed, which is the one thing on the page
-	// somebody might be waiting for.
 	Adopted bool
 
 	Parts  []Part
 	Groups []Group
 }
 
-// Part is one component and how far it got, in the order the device starts them.
 type Part struct {
 	Name string
 
-	// State is ready, failed or waiting, and is the class the row is styled by as well as what it
-	// says.
 	State string
 
-	// Doing is what it is waiting on, or why it failed. Empty once it is up.
 	Doing string
 }
 
-// Group is one card: a heading and the rows under it.
 type Group struct {
 	Title string
 	Rows  []Row
@@ -60,8 +50,6 @@ type Group struct {
 
 type Row struct{ Name, Value string }
 
-// unknown is what a row shows for a reading the board did not give. Written out rather than left
-// blank, so a missing sensor reads as missing instead of as an empty page.
 const unknown = "—"
 
 func (s *Server) status(w http.ResponseWriter, r *http.Request) {
@@ -73,14 +61,11 @@ func (s *Server) status(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Cache-Control", "no-store")
 
-	statusPage.Execute(w, statusOf(component.Default(), metrics.Reader{}))
+	if err := statusPage.Execute(w, statusOf(component.Default(), metrics.Reader{})); err != nil {
+		slog.Error("rendering the status page failed", "err", err)
+	}
 }
 
-// statusOf gathers what the page shows.
-//
-// The registry and the reader are passed in rather than reached for, so a test can ask a registry
-// of its own and a directory of fixtures instead of building the real components and reading this
-// machine's sysfs.
 func statusOf(reg *component.Registry, r metrics.Reader) Status {
 	c := config.Get()
 
@@ -100,7 +85,6 @@ func statusOf(reg *component.Registry, r metrics.Reader) Status {
 	}
 }
 
-// parts is every component that says something about coming up.
 func parts(reg *component.Registry) []Part {
 	progress := reg.Progress()
 
@@ -127,8 +111,6 @@ func network(r metrics.Reader) Group {
 		{"MAC", or(wifi.Get().MAC())},
 	}
 
-	// Every address, v6 included. This is a page for looking at rather than a code to scan, so
-	// the reason the onboarding screen shows only v4 does not apply.
 	ips := netaddress.Addresses()
 	if len(ips) == 0 {
 		rows = append(rows, Row{"Address", unknown})
@@ -147,9 +129,6 @@ func network(r metrics.Reader) Group {
 	return Group{Title: "Network", Rows: rows}
 }
 
-// clock is the time as the device tells it, and where the zone came from. Which of the two zones
-// is in force is worth saying: one set on the device outranks the server, and a clock an hour out
-// is otherwise a mystery.
 func clock(c config.Config) Group {
 	now := time.Now()
 
@@ -171,7 +150,6 @@ func clock(c config.Config) Group {
 	}}
 }
 
-// utc is an offset in seconds as the hours and minutes anyone reads it in.
 func utc(seconds int) string {
 	sign := "+"
 	if seconds < 0 {
@@ -200,13 +178,9 @@ func volumes(c config.Config) Group {
 	return Group{Title: "Volume", Rows: rows}
 }
 
-// system is the machine underneath: how long it has been up, how loaded it is and how hot.
 func system(r metrics.Reader) Group {
 	rows := []Row{{"Uptime", since(metrics.Uptime())}}
 
-	// Since boot, not since a moment ago: this page is rendered once per request and has no
-	// previous reading to subtract. It answers "what has this device been doing", where the
-	// sensor in Home Assistant answers "what is it doing now".
 	if busy, total := r.CPU(); busy.Known && total.Known && total.Value > 0 {
 		rows = append(
 			rows,
@@ -214,9 +188,6 @@ func system(r metrics.Reader) Group {
 		)
 	}
 
-	// The floor is said out loud. Three kernel threads sit permanently in uninterruptible sleep on
-	// this board and Linux counts those, so the load never reads below three and a number that
-	// does not say so reads as a device in trouble.
 	if one, five := r.Load(); one.Known {
 		rows = append(
 			rows,
@@ -226,7 +197,7 @@ func system(r metrics.Reader) Group {
 	if _, online := r.Cores(); online.Known {
 		rows = append(rows, Row{"Cores online", strconv.Itoa(int(online.Value))})
 	}
-	// meminfo is in kB, which is the one reading on this page that is not already a byte count.
+	// /proc/meminfo reports kB.
 	if free, total := r.Memory(); free.Known && total.Known {
 		rows = append(
 			rows,
@@ -242,8 +213,6 @@ func system(r metrics.Reader) Group {
 	return Group{Title: "System", Rows: append(rows, hottest(r)...)}
 }
 
-// hottest is the two zones worth showing of the forty nine the kernel exposes: the part's own
-// answer for the hottest core, and the GPU. The rest are per-core throttling steps.
 func hottest(r metrics.Reader) []Row {
 	zones := r.Temperatures()
 
@@ -259,8 +228,6 @@ func hottest(r metrics.Reader) []Row {
 	return out
 }
 
-// since is a duration in seconds, to the two units that matter at that size. A device that has
-// been up eleven days does not need the seconds.
 func since(seconds float64) string {
 	d := time.Duration(seconds) * time.Second
 
@@ -275,7 +242,6 @@ func since(seconds float64) string {
 	return fmt.Sprintf("%ds", int(d.Seconds()))
 }
 
-// bytes is a size in the largest unit it fills.
 func bytes(v float64) string {
 	units := []string{"B", "KiB", "MiB", "GiB"}
 
@@ -291,15 +257,6 @@ func bytes(v float64) string {
 
 func percent(v int) string { return strconv.Itoa(v) + "%" }
 
-func yes(v bool) string {
-	if v {
-		return "On"
-	}
-	return "Off"
-}
-
-// or fills in for a reading that is not there yet, which on this page is most of them for the
-// first few seconds after boot.
 func or(s string) string {
 	if strings.TrimSpace(s) == "" {
 		return unknown

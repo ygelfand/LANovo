@@ -10,11 +10,12 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/boot"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 var (
@@ -55,8 +56,6 @@ func newRunCmd() *cobra.Command {
 				})
 			}
 
-			// init discards our stderr, so a panic would otherwise vanish and look like a silent
-			// restart. Log it, then let it kill the process as it would have.
 			defer func() {
 				if r := recover(); r != nil {
 					slog.Error("panic", "panic", r, "stack", string(debug.Stack()))
@@ -68,8 +67,6 @@ func newRunCmd() *cobra.Command {
 			ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
 			defer stop()
 
-			// Something sends SIGHUP, which by default kills the process. Logged rather than
-			// ignored outright, because who sends it is not yet known.
 			hangup := make(chan os.Signal, 4)
 			signal.Notify(hangup, syscall.SIGHUP)
 			go func() {
@@ -78,8 +75,7 @@ func newRunCmd() *cobra.Command {
 				}
 			}()
 
-			// The panel cannot be opened while SurfaceFlinger has it. From post-fs-data these have
-			// not started yet, and init's stop marks them so class_start skips them.
+			// init's ctl.stop marks a service so class_start skips it.
 			for _, svc := range layout.Displace {
 				if err := stopService(svc); err != nil {
 					slog.Warn("could not stop", "service", svc, "err", err)

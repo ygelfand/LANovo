@@ -98,7 +98,7 @@ func (o *commitOverlay) commit(flags uint32) error {
 	runtime.KeepAlive(in)
 	for _, at := range []int{8, 56} {
 		if f := int32(binary.LittleEndian.Uint32(req[at:])); f >= 0 && err == nil {
-			syscall.Close(int(f))
+			_ = syscall.Close(int(f))
 		}
 	}
 	if err != nil {
@@ -171,7 +171,7 @@ func (o *sessionOverlay) show() error {
 		return fmt.Errorf("display: overlay prepare: %w", err)
 	}
 	if f := int32(binary.LittleEndian.Uint32(prep[24:])); f >= 0 {
-		syscall.Close(int(f))
+		_ = syscall.Close(int(f))
 	}
 	return o.set(true, binary.LittleEndian.Uint32(prep[20:]))
 }
@@ -212,7 +212,7 @@ func (o *sessionOverlay) set(on bool, index uint32) error {
 }
 
 func (o *sessionOverlay) close() {
-	o.set(false, 0)
+	_ = o.set(false, 0)
 	o.dev.Close()
 	o.buf.close()
 }

@@ -1,9 +1,9 @@
-// Package component binds the shared registry to product configuration and board selection.
 package component
 
 import (
-	"github.com/ygelfand/LANovo/internal/config"
 	sharedlib "github.com/ygelfand/libcountertop/pkg/runtime/component"
+
+	"github.com/ygelfand/LANovo/internal/config"
 )
 
 type Option = sharedlib.Option

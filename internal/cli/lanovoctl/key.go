@@ -67,11 +67,6 @@ func newKeyCmd() *cobra.Command {
 	return c
 }
 
-// showKey prints it on a line of its own.
-//
-// Not in the two column layout the rest of an install uses: a key is forty four characters, it is
-// the one thing on the screen somebody has to copy exactly, and a column that wraps it is a key
-// that gets copied wrong.
 func showKey(out io.Writer, key string) {
 	fmt.Fprintf(out, "\n%s\n", styleTitle.Render("Encryption key"))
 	fmt.Fprintf(out, "  %s\n", key)
@@ -82,16 +77,9 @@ func showKey(out io.Writer, key string) {
 	)
 }
 
-// reportKey ends an install by saying how the device will be added.
-//
-// No key is the ordinary outcome, not a failure: the device comes up unprovisioned and Home
-// Assistant sets a key when it adds it, which is what the code on the screen is for. generate is
-// for an install that wants to choose the key itself instead.
 func reportKey(ctx context.Context, out io.Writer, d *device.Device, generate bool) {
 	key, err := takeover.Key(d)
 
-	// A device that already has one keeps it, whatever was asked for. Home Assistant holds that
-	// key, and replacing it during an install would break the pairing without saying so.
 	if generate && errors.Is(err, takeover.ErrNoKey) {
 		made, err := takeover.RotateKey(d)
 		if err != nil {

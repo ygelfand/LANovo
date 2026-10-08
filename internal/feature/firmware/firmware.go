@@ -1,9 +1,3 @@
-// Package firmware is what the device says about its own version, and the channel it follows to
-// learn about newer ones.
-//
-// Home Assistant decides whether an update is worth offering, comparing the two version strings
-// itself, and asks for one with a command. The device says what it runs, says what it found, and
-// acts when told.
 package firmware
 
 import (
@@ -13,13 +7,14 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	"github.com/ygelfand/libcountertop/pkg/hook"
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/update"
-	"github.com/ygelfand/libcountertop/pkg/hook"
-	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {
@@ -134,15 +129,12 @@ func build() *Firmware {
 
 func (u *Firmware) Restore(c config.Config) { u.channel.Set(u.Channel().Label()) }
 
-// RebootPending says a part init only reads at boot changed when this process started.
 func (u *Firmware) RebootPending(pending bool) {
 	u.mu.Lock()
 	u.rebootPending = pending
 	u.mu.Unlock()
 }
 
-// announce tells Home Assistant about a build it has not been told about, once there is somebody
-// to tell. LastVersion moves only once the event has gone out.
 func (u *Firmware) announce() {
 	u.announced.Do(func() {
 		u.mu.Lock()
@@ -165,13 +157,11 @@ func (u *Firmware) announce() {
 	})
 }
 
-// Settled records how an attempt ended.
 func (u *Firmware) Settled(event, status string) {
 	u.status.Set(component.Fit(status))
 	u.events.Trigger(event)
 }
 
-// Channel is the stream this device follows, as last chosen.
 func (u *Firmware) Channel() update.Channel {
 	if c, ok := config.ByLabel(update.Channels(), config.Get().Update.Channel); ok {
 		return c
@@ -179,8 +169,6 @@ func (u *Firmware) Channel() update.Channel {
 	return update.Stable
 }
 
-// Check looks for something newer and publishes what it found. A failed fetch leaves the last
-// answer in place.
 func (u *Firmware) Check(ctx context.Context) {
 	channel := u.Channel()
 
@@ -215,8 +203,6 @@ func (u *Firmware) command(cmd esphome.UpdateCommand) {
 	}
 }
 
-// Install replaces this binary with what the channel is serving and restarts into it. The version
-// comes from the manifest this device fetched, never from Home Assistant.
 func (u *Firmware) Install(ctx context.Context) {
 	found, err := update.Fetch(ctx, u.Channel())
 	u.mu.Lock()

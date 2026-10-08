@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	ionAlloc = 3<<30 | 20<<16 | 'I'<<8 | 0
+	ionAlloc = 3<<30 | 20<<16 | 'I'<<8
 	ionFree  = 3<<30 | 4<<16 | 'I'<<8 | 1
 	ionShare = 3<<30 | 8<<16 | 'I'<<8 | 4
 )
@@ -40,7 +40,7 @@ func ionAllocate(size int, heaps uint32) (*ionBuffer, error) {
 	share := make([]byte, 8)
 	copy(share, handle)
 	err = rawIoctl(dev.Fd(), ionShare, share)
-	rawIoctl(dev.Fd(), ionFree, append([]byte(nil), handle...))
+	_ = rawIoctl(dev.Fd(), ionFree, append([]byte(nil), handle...))
 	if err != nil {
 		return nil, fmt.Errorf("ion: sharing: %w", err)
 	}
@@ -48,15 +48,15 @@ func ionAllocate(size int, heaps uint32) (*ionBuffer, error) {
 
 	mem, err := syscall.Mmap(fd, 0, size, syscall.PROT_READ|syscall.PROT_WRITE, syscall.MAP_SHARED)
 	if err != nil {
-		syscall.Close(fd)
+		_ = syscall.Close(fd)
 		return nil, fmt.Errorf("ion: mapping %d bytes: %w", size, err)
 	}
 	return &ionBuffer{mem: mem, fd: fd}, nil
 }
 
 func (b *ionBuffer) close() {
-	syscall.Munmap(b.mem)
-	syscall.Close(b.fd)
+	_ = syscall.Munmap(b.mem)
+	_ = syscall.Close(b.fd)
 }
 
 func rawIoctl(fd uintptr, req uintptr, arg []byte) error {

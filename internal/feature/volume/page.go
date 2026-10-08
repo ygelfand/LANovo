@@ -3,13 +3,16 @@ package volume
 import (
 	"sync"
 
+	sharedview "github.com/ygelfand/libcountertop/pkg/display/volume"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	sharedview "github.com/ygelfand/libcountertop/pkg/display/volume"
 )
 
-var page = sync.OnceValue(func() *sharedview.Page { return sharedview.NewPage(Get(), config.Streams(), chimes{}, shell.Get()) })
+var page = sync.OnceValue(
+	func() *sharedview.Page { return sharedview.NewPage(Get(), config.Streams(), chimes{}, shell.Get()) },
+)
 
 func Page() shell.View { return page() }
 

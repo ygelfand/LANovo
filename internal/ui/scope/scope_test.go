@@ -10,9 +10,6 @@ import (
 
 var blank = theme.Color{R: 0x11, G: 0x11, B: 0x11}
 
-// outside counts painted pixels beyond a box. A scope goes wherever a host puts it, often over
-// something else, so painting outside overwrites whatever that was — the same contract the clock
-// faces are held to by their sweep test.
 func outside(img *ui.Image, in ui.Rect) int {
 	w, h := img.Size()
 
@@ -40,8 +37,6 @@ func painted(img *ui.Image, in ui.Rect) int {
 	return n
 }
 
-// frames worth drawing: silence, something quiet, and something loud. Each carries a trail, so the
-// spectrogram is held to the same contract with something in it rather than empty.
 func frames(columns int) map[string]Frame {
 	out := map[string]Frame{
 		"silence": Read(make([]int16, 960), columns),
@@ -51,7 +46,6 @@ func frames(columns int) map[string]Frame {
 
 	for what, f := range out {
 		var k Keeper
-		// More frames than the box is wide, so the trail is full and has been shifted.
 		for range columns + 4 {
 			f = k.Next(f, columns)
 		}
@@ -60,13 +54,12 @@ func frames(columns int) map[string]Frame {
 	return out
 }
 
-// Every scope, every shape of box, every kind of sound: nothing outside the box.
 func TestNoScopePaintsOutsideItsBox(t *testing.T) {
 	for _, box := range []ui.Rect{
-		{X: 40, Y: 30, W: 200, H: 60}, // a strip, as along the foot of a clock
-		{X: 10, Y: 10, W: 40, H: 180}, // tall, as down the side of something
-		{X: 0, Y: 0, W: 300, H: 200},  // the corner, where an off by one shows
-		{X: 120, Y: 90, W: 8, H: 8},   // barely there
+		{X: 40, Y: 30, W: 200, H: 60},
+		{X: 10, Y: 10, W: 40, H: 180},
+		{X: 0, Y: 0, W: 300, H: 200},
+		{X: 120, Y: 90, W: 8, H: 8},
 	} {
 		for _, k := range Kinds() {
 			for what, f := range frames(box.W) {
@@ -82,8 +75,6 @@ func TestNoScopePaintsOutsideItsBox(t *testing.T) {
 	}
 }
 
-// Silence still draws something for the waveform — a line through the middle rather than a gap,
-// because a waveform with holes in it reads as the drawing having failed.
 func TestASilentWaveformIsALineNotAGap(t *testing.T) {
 	box := ui.Rect{X: 0, Y: 0, W: 120, H: 40}
 
@@ -98,7 +89,6 @@ func TestASilentWaveformIsALineNotAGap(t *testing.T) {
 	}
 }
 
-// A zero box is a host with nothing to spare, not a reason to panic or to paint.
 func TestAnEmptyBoxDrawsNothing(t *testing.T) {
 	for _, k := range Kinds() {
 		for _, box := range []ui.Rect{{}, {X: 10, Y: 10, W: 0, H: 20}, {X: 10, Y: 10, W: 20, H: 0}} {
@@ -113,8 +103,6 @@ func TestAnEmptyBoxDrawsNothing(t *testing.T) {
 	}
 }
 
-// Of falls back rather than handing back nothing: a name this build does not have should draw the
-// default, not crash the screen that asked for it.
 func TestAnUnknownScopeFallsBack(t *testing.T) {
 	if Of("does-not-exist") == nil {
 		t.Fatal("an unknown scope is nil")
@@ -124,8 +112,6 @@ func TestAnUnknownScopeFallsBack(t *testing.T) {
 	}
 }
 
-// The meter is what makes a level readable: it rises fast, falls slowly, and the peak hangs before
-// it drops. Without the hold it is a bar that flickers.
 func TestTheMeterRisesFastAndFallsSlowly(t *testing.T) {
 	var m Meter
 
@@ -164,8 +150,6 @@ func TestThePeakHangsThenFalls(t *testing.T) {
 	}
 }
 
-// A frame is compared to decide whether to redraw, so silence has to reduce to the same frame every
-// time: fifty identical periods a second must not each cost a repaint.
 func TestSilenceReducesToTheSameFrameEveryTime(t *testing.T) {
 	a := Read(make([]int16, 960), 64)
 	b := Read(make([]int16, 960), 64)
@@ -201,8 +185,6 @@ func TestReadMeasuresTheLevel(t *testing.T) {
 	}
 }
 
-// marked is a frame whose spectrum is a single value, so a column can be told apart from its
-// neighbours once it is in a trail.
 func marked(at float64) Frame {
 	bands := make([]float64, Bands)
 	for i := range bands {
@@ -211,8 +193,6 @@ func marked(at float64) Frame {
 	return Frame{Bands: bands}
 }
 
-// The trail keeps the last width columns, newest last. Anything else and the spectrogram draws
-// time backwards or grows without bound.
 func TestTheTrailKeepsTheNewestColumnsInOrder(t *testing.T) {
 	const width = 4
 
@@ -246,7 +226,6 @@ func TestTheTrailGrowsBeforeItIsFull(t *testing.T) {
 	}
 }
 
-// A resized box starts again rather than showing a trail cut to a width it was never kept at.
 func TestAResizedTrailStartsAgain(t *testing.T) {
 	var k Keeper
 	for range 6 {
@@ -258,7 +237,6 @@ func TestAResizedTrailStartsAgain(t *testing.T) {
 	}
 }
 
-// A trail with nothing in it is a host that has not fed one yet, not a reason to panic.
 func TestTheSpectrogramWithoutATrailDrawsItsBox(t *testing.T) {
 	box := ui.Rect{X: 4, Y: 4, W: 40, H: 20}
 
@@ -271,23 +249,19 @@ func TestTheSpectrogramWithoutATrailDrawsItsBox(t *testing.T) {
 	}
 }
 
-// Time runs left to right, so the newest column is the rightmost one. Drawn against a trail whose
-// only loud column is the newest.
 func TestTheNewestColumnIsOnTheRight(t *testing.T) {
 	box := ui.Rect{X: 0, Y: 0, W: 16, H: 16}
 	palette := theme.All[0]
 
 	var k Keeper
-	var f Frame
 	for range box.W - 1 {
-		f = k.Next(marked(0), box.W)
+		k.Next(marked(0), box.W)
 	}
-	f = k.Next(marked(1), box.W)
+	f := k.Next(marked(1), box.W)
 
 	img := ui.NewImage(box.W, box.H, blank)
 	Of(Spectrogram).Draw(img, box, f, theme.Color{R: 0xff, G: 0xff, B: 0xff}, palette)
 
-	// Every quiet column is left as the surface; the loud one is not.
 	if got := img.At(box.W-1, box.H/2); got == palette.Surface {
 		t.Errorf("the rightmost column is the surface color, want the newest frame drawn there")
 	}

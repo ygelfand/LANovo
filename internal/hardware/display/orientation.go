@@ -1,8 +1,9 @@
 package display
 
 import (
-	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/libcountertop/pkg/display/geometry"
+
+	"github.com/ygelfand/LANovo/internal/board"
 )
 
 type Orientation = geometry.Orientation

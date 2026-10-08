@@ -124,7 +124,7 @@ func OpenSurface(sock string, wait time.Duration) (*Panel, error) {
 	}
 	p := &Panel{surf: c, sock: sock}
 	if err := p.attach(c); err != nil {
-		c.Close()
+		_ = c.Close()
 		return nil, err
 	}
 	p.rot = Mounted()
@@ -173,7 +173,7 @@ func (p *Panel) flipSurface() error {
 
 func (p *Panel) redial(cause error) error {
 	kept := append([]byte(nil), p.mem...)
-	p.surf.Close()
+	_ = p.surf.Close()
 	p.mem, p.layer = nil, nil
 
 	c, err := surface.DialWait(p.sock, reconnect)
@@ -181,7 +181,7 @@ func (p *Panel) redial(cause error) error {
 		return fmt.Errorf("display: lost the helper (%v) and could not get it back: %w", cause, err)
 	}
 	if err := p.attach(c); err != nil {
-		c.Close()
+		_ = c.Close()
 		return err
 	}
 	copy(p.mem, kept)

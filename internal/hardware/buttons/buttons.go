@@ -1,12 +1,3 @@
-// Package buttons reads the physical controls.
-//
-// None are kernel input devices — getevent sees only the power key, touchscreen and codec jacks.
-// The volume keys, mic mute slider and camera shutter are plain GPIO lines with edge=both, so
-// POLLPRI on the sysfs value delivers each change. This works even while another process holds
-// the line.
-//
-// One press usually means several things — the device acts on it, Home Assistant hears about it —
-// so it is a hook rather than a callback. Listeners run on the reader goroutine and must not block.
 package buttons
 
 import (
@@ -21,10 +12,11 @@ import (
 	"time"
 	"unsafe"
 
+	"github.com/ygelfand/libcountertop/pkg/hook"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/service"
-	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
 func init() {
@@ -32,9 +24,7 @@ func init() {
 		component.Supervise(service.Restart(time.Second, 30*time.Second)))
 }
 
-// Controller reads the buttons for the life of the process.
 type Controller struct {
-	// Events carries every change to whoever is listening.
 	Events hook.Hook[Event]
 
 	mu    sync.Mutex
@@ -46,19 +36,12 @@ var (
 	shared *Controller
 )
 
-// Get is the buttons. Nothing here opens anything: Start does.
 func Get() *Controller { once.Do(func() { shared = &Controller{} }); return shared }
 
 func (c *Controller) Name() string { return "buttons" }
 
-// Deliver reports a change as though a line had moved, for a caller standing in for a finger.
-//
-// The same hook the reader emits on, so everything downstream cannot tell the difference — which
-// is the point. A harness that called what the buttons happen to do today would be testing its own
-// copy of the wiring.
 func (c *Controller) Deliver(e Event) { c.Events.Emit(e) }
 
-// All is every control the driver knows, for anything that offers them by name.
 func All() []Button {
 	out := make([]Button, 0, len(lines()))
 	for _, l := range lines() {
@@ -67,7 +50,6 @@ func All() []Button {
 	return out
 }
 
-// Startup is ready once the lines are open.
 func (c *Controller) Startup() component.Progress {
 	c.mu.Lock()
 	w := c.watch
@@ -77,8 +59,6 @@ func (c *Controller) Startup() component.Progress {
 		return component.Progress{Doing: "taking the buttons"}
 	}
 
-	// Silent when they are all there, which is the usual case and not worth a line of its own.
-	// A board missing one is what someone reading this wants to know.
 	if missing := len(lines()) - len(w.files); missing > 0 {
 		return component.Progress{
 			Done:  true,
@@ -88,13 +68,9 @@ func (c *Controller) Startup() component.Progress {
 	return component.Progress{Done: true}
 }
 
-// Start exports the lines and opens them. Finding none is an error: the buttons are the one part of
-// the device that should work whatever else is wrong, so silently having none is worth a restart.
 func (c *Controller) Start(context.Context) error {
 	w, problems := Watch()
 	for _, p := range problems {
-		// A line that cannot be read is reported and skipped: a board without one of these should
-		// still have the others.
 		fmt.Fprintln(os.Stderr, "buttons:", p)
 	}
 	if len(w.files) == 0 {
@@ -108,9 +84,6 @@ func (c *Controller) Start(context.Context) error {
 	return nil
 }
 
-// Run reads until ctx is canceled, or until a line fails. A failure is returned rather than logged
-// so the supervisor reopens the lines: a reader that has quietly exited leaves the device with dead
-// buttons.
 func (c *Controller) Run(ctx context.Context) error {
 	c.mu.Lock()
 	w := c.watch
@@ -137,7 +110,6 @@ func (c *Controller) Run(ctx context.Context) error {
 	}
 }
 
-// Close releases the lines, which is also what unblocks the reader.
 func (c *Controller) Close() error {
 	c.mu.Lock()
 	w := c.watch
@@ -150,7 +122,6 @@ func (c *Controller) Close() error {
 	return nil
 }
 
-// State is what a control reads right now, and whether it could be read at all.
 func (c *Controller) State(b Button) (bool, bool) {
 	c.mu.Lock()
 	w := c.watch
@@ -162,7 +133,6 @@ func (c *Controller) State(b Button) (bool, bool) {
 	return w.State(b)
 }
 
-// Button is one control.
 type Button string
 
 const (
@@ -172,17 +142,14 @@ const (
 	CameraCover Button = "camera shutter"
 )
 
-// line is a control and the GPIO behind it.
 type line struct {
 	button Button
 	gpio   int
 
-	// activeLow inverts the reading. Buttons and the mic slider read 1 when engaged; the camera
-	// shutter reads 1 when OPEN.
+	// Buttons and the mic slider read 1 when engaged; the camera shutter reads 1 when open.
 	activeLow bool
 }
 
-// lines is this board's controls.
 func lines() []line {
 	var out []line
 	for _, b := range board.Current().Buttons {
@@ -191,14 +158,11 @@ func lines() []line {
 	return out
 }
 
-// Event is a change on one control. Pressed is true when a button is held or a slider is engaged —
-// for the camera that means the shutter is closed.
 type Event struct {
 	Button  Button
 	Pressed bool
 }
 
-// Watcher reports changes on every control at once.
 type Watcher struct {
 	files []*os.File
 	pfd   []pollFd
@@ -220,7 +184,6 @@ type pollFd struct {
 	revents int16
 }
 
-// export makes a line readable. Lenovo's OEM app exported these; with it gone, nothing does.
 func export(gpio int) error {
 	dir := fmt.Sprintf("/sys/class/gpio/gpio%d", gpio)
 	if _, err := os.Stat(dir); err != nil {
@@ -229,7 +192,6 @@ func export(gpio int) error {
 			[]byte(strconv.Itoa(gpio)),
 			0o200,
 		); err != nil {
-			// EBUSY means someone else already has it, which is fine.
 			if !errors.Is(err, syscall.EBUSY) {
 				return fmt.Errorf("export gpio%d: %w", gpio, err)
 			}
@@ -246,14 +208,12 @@ func export(gpio int) error {
 	if err := os.WriteFile(dir+"/direction", []byte("in"), 0o200); err != nil {
 		return fmt.Errorf("gpio%d direction: %w", gpio, err)
 	}
-	// Edges are what make this interrupt-driven rather than a polling loop.
 	if err := os.WriteFile(dir+"/edge", []byte("both"), 0o200); err != nil {
 		return fmt.Errorf("gpio%d edge: %w", gpio, err)
 	}
 	return nil
 }
 
-// Watch opens every control. Lines that cannot be read are reported and skipped.
 func Watch() (*Watcher, []error) {
 	w := &Watcher{}
 	var problems []error
@@ -278,7 +238,6 @@ func Watch() (*Watcher, []error) {
 	return w, problems
 }
 
-// State is what a control reads right now, without waiting for it to change.
 func (w *Watcher) State(b Button) (bool, bool) {
 	for i, l := range w.lines {
 		if l.button == b {
@@ -288,8 +247,6 @@ func (w *Watcher) State(b Button) (bool, bool) {
 	return false, false
 }
 
-// Next blocks until something changes and returns every change it found. timeoutMS below zero
-// waits indefinitely; a timeout returns no events and no error.
 func (w *Watcher) Next(timeoutMS int) ([]Event, error) {
 	if len(w.pfd) == 0 {
 		return nil, fmt.Errorf("no gpio lines could be opened")
@@ -328,7 +285,6 @@ func (w *Watcher) Close() {
 	}
 }
 
-// read re-reads from the start, which clears the poll and arms the next edge.
 func (l line) read(f *os.File) bool {
 	var b [8]byte
 	if _, err := f.Seek(0, 0); err != nil {

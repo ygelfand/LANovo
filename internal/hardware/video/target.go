@@ -1,9 +1,10 @@
 package video
 
 import (
+	"github.com/ygelfand/libcountertop/pkg/media/playback"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
-	"github.com/ygelfand/libcountertop/pkg/media/playback"
 )
 
 var heights = []int{360, 480, 720, 1080}

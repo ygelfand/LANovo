@@ -43,7 +43,7 @@ func Dial(ctx context.Context, server, page string, opts Options) (*Client, erro
 	c := &Client{conn: conn, canvas: image.NewRGBA(image.Rect(0, 0, opts.Width, opts.Height))}
 	if page != "" {
 		if err := c.send(openURL(page)); err != nil {
-			conn.Close()
+			_ = conn.Close()
 			return nil, err
 		}
 	}
@@ -51,7 +51,7 @@ func Dial(ctx context.Context, server, page string, opts Options) (*Client, erro
 }
 
 func (c *Client) Run(ctx context.Context) error {
-	stop := context.AfterFunc(ctx, func() { c.conn.Close() })
+	stop := context.AfterFunc(ctx, func() { _ = c.conn.Close() })
 	defer stop()
 	go c.keepalive(ctx)
 	for {
@@ -206,7 +206,9 @@ func (c *Client) keepalive(ctx context.Context) {
 func (c *Client) send(b []byte) error {
 	c.wmu.Lock()
 	defer c.wmu.Unlock()
-	c.conn.SetWriteDeadline(time.Now().Add(5 * time.Second))
+	if err := c.conn.SetWriteDeadline(time.Now().Add(5 * time.Second)); err != nil {
+		return fmt.Errorf("webview: %w", err)
+	}
 	if err := c.conn.WriteMessage(websocket.BinaryMessage, b); err != nil {
 		return fmt.Errorf("webview: %w", err)
 	}

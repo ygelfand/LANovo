@@ -8,10 +8,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// Nothing here turns the receiver on. Doing so binds a port and puts a service on the network,
-// which is not something a test should do to whatever machine it runs on — and is also the thing
-// the switch exists to stop happening by accident.
-
 func fresh(t *testing.T) *Receiver {
 	t.Helper()
 
@@ -19,7 +15,6 @@ func fresh(t *testing.T) *Receiver {
 	return build()
 }
 
-// A device that advertises itself on the network is not something to turn on for somebody.
 func TestTheReceiverIsOffUntilAsked(t *testing.T) {
 	r := fresh(t)
 
@@ -31,7 +26,6 @@ func TestTheReceiverIsOffUntilAsked(t *testing.T) {
 	}
 }
 
-// Off, it holds nothing: no socket, no service, nothing to take down.
 func TestStartingWhileOffDoesNothing(t *testing.T) {
 	r := fresh(t)
 
@@ -50,7 +44,6 @@ func TestStartingWhileOffDoesNothing(t *testing.T) {
 	}
 }
 
-// Closing something that never started is what happens on every restart where the switch was off.
 func TestClosingWithoutStartingIsSafe(t *testing.T) {
 	r := fresh(t)
 
@@ -62,8 +55,6 @@ func TestClosingWithoutStartingIsSafe(t *testing.T) {
 	}
 }
 
-// The switch is what Home Assistant and the harness both come through, so it has to carry the
-// setting rather than shadow it.
 func TestTheSwitchFollowsTheSetting(t *testing.T) {
 	r := fresh(t)
 
@@ -71,7 +62,6 @@ func TestTheSwitchFollowsTheSetting(t *testing.T) {
 		t.Error("the switch reads on for a receiver that is off")
 	}
 
-	// Turning it off when it is already off saves the setting and starts nothing.
 	r.SetReceiver(false)
 
 	if config.Get().Cast.Receiver {
@@ -85,8 +75,6 @@ func TestTheSwitchFollowsTheSetting(t *testing.T) {
 	}
 }
 
-// The entity has to be there for Home Assistant to show anything at all, and its identifier is what
-// an automation refers to — renaming it silently breaks whatever was pointing at it.
 func TestTheSwitchIsPublished(t *testing.T) {
 	r := fresh(t)
 

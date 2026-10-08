@@ -6,7 +6,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// The screen this device has, and the two rotations it can be at.
 var screens = []struct {
 	name string
 	w, h int
@@ -15,11 +14,6 @@ var screens = []struct {
 	{"portrait", 1200, 1920},
 }
 
-// Whatever it is given, the box has to be on the screen: a face draws inside it, so a box that ran
-// off the panel would take the clock with it.
-//
-// Every position against every size, because the two are multiplied rather than chosen between and
-// the arithmetic that places a shrunken box is per position.
 func TestEveryBoxIsOnTheScreen(t *testing.T) {
 	for _, at := range config.Positions() {
 		for _, size := range config.Sizes() {
@@ -41,9 +35,6 @@ func TestEveryBoxIsOnTheScreen(t *testing.T) {
 	}
 }
 
-// Top is above center and center is above bottom, measured by where the middle of the box lands.
-// That is the whole of what the setting promises, and it has to hold at every size: a small clock
-// set to the top that drifted into the middle would be honoring neither setting.
 func TestThePositionsAreInOrder(t *testing.T) {
 	for _, size := range config.Sizes() {
 		for _, s := range screens {
@@ -56,7 +47,7 @@ func TestThePositionsAreInOrder(t *testing.T) {
 			center := mid(config.PositionCenter)
 			bottom := mid(config.PositionBottom)
 
-			if !(top < center && center < bottom) {
+			if top >= center || center >= bottom {
 				t.Errorf("%s %s: the middles are top %d, center %d, bottom %d",
 					size, s.name, top, center, bottom)
 			}
@@ -64,8 +55,6 @@ func TestThePositionsAreInOrder(t *testing.T) {
 	}
 }
 
-// Centered and large is the whole screen, which is what the device did before either setting
-// existed: an upgrade must not move the clock on somebody who never asked for it to move.
 func TestCenteredAndLargeIsTheWholeScreen(t *testing.T) {
 	for _, s := range screens {
 		box := Box(config.PositionCenter, config.SizeLarge, s.w, s.h)
@@ -76,7 +65,6 @@ func TestCenteredAndLargeIsTheWholeScreen(t *testing.T) {
 	}
 }
 
-// A name this build does not have is centered rather than left with no box at all.
 func TestAnUnknownPositionIsCentered(t *testing.T) {
 	got := Box(config.Position("sideways"), config.DefaultSize, 1200, 1920)
 

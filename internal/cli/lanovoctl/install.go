@@ -256,7 +256,6 @@ func newInstallCmd() *cobra.Command {
 	return c
 }
 
-// rebootChoice is what the flags said. Nothing given means ask, which is why this is not a bool.
 type rebootChoice int
 
 const (
@@ -275,10 +274,6 @@ func rebootChoiceOf(yes, no bool) rebootChoice {
 	return rebootAsk
 }
 
-// finish starts the service, then reboots if anything needs one.
-//
-// settles means something changed that only init re-reads at boot: the service definition or the
-// boot command line. A binary swap settles nothing.
 func finish(
 	ctx context.Context,
 	out io.Writer,
@@ -326,7 +321,6 @@ func finish(
 	}
 	fmt.Fprintf(out, "  %-18s %s\n", "up", styleDone.Render("lanovod started"))
 
-	// Last, so it is the thing left on the screen when the install ends.
 	reportKey(ctx, out, d, genKey)
 	return nil
 }

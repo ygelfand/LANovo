@@ -6,7 +6,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 )
 
-// The panel, as this device has it.
 const (
 	fbW = 1200
 	fbH = 1920
@@ -34,8 +33,6 @@ func TestSize(t *testing.T) {
 	}
 }
 
-// Every viewed pixel must land somewhere in the framebuffer, at every rotation. One that does not
-// is a row or column drawn off the edge.
 func TestProjectStaysInTheFramebuffer(t *testing.T) {
 	for _, rot := range []Orientation{Rotate0, Rotate90, Rotate180, Rotate270} {
 		w, h := rot.Size(fbW, fbH)
@@ -58,8 +55,6 @@ func TestProjectStaysInTheFramebuffer(t *testing.T) {
 	}
 }
 
-// Unproject is what makes a touch land where it was drawn, so it has to be the exact inverse at
-// every rotation. Anything else and taps drift as the device turns.
 func TestUnprojectIsTheInverseOfProject(t *testing.T) {
 	for _, rot := range []Orientation{Rotate0, Rotate90, Rotate180, Rotate270} {
 		w, h := rot.Size(fbW, fbH)
@@ -76,14 +71,11 @@ func TestUnprojectIsTheInverseOfProject(t *testing.T) {
 	}
 }
 
-// Distinct viewed pixels must not land on the same framebuffer pixel, or the picture folds.
 func TestProjectIsOneToOne(t *testing.T) {
 	for _, rot := range []Orientation{Rotate0, Rotate90, Rotate180, Rotate270} {
 		w, h := rot.Size(fbW, fbH)
 		seen := map[[2]int]bool{}
 
-		// A stride, rather than every pixel: two million points per rotation says nothing more
-		// than a few thousand spread across the panel.
 		for vx := 0; vx < w; vx += 7 {
 			for vy := 0; vy < h; vy += 11 {
 				at := [2]int{}
@@ -98,7 +90,6 @@ func TestProjectIsOneToOne(t *testing.T) {
 	}
 }
 
-// Rotate0 is the identity, which is what makes it the one to reason about the others against.
 func TestRotate0IsIdentity(t *testing.T) {
 	for _, v := range [][2]int{{0, 0}, {5, 9}, {fbW - 1, fbH - 1}} {
 		x, y := Rotate0.Project(fbW, fbH, v[0], v[1])
@@ -147,8 +138,6 @@ func TestOrientationNames(t *testing.T) {
 	}
 }
 
-// The driver holds the rotation whether or not a panel is open, so a device turned before the
-// panel is taken still comes up the right way round.
 func TestDriverHoldsOrientationWithNoPanel(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -162,13 +151,10 @@ func TestDriverHoldsOrientationWithNoPanel(t *testing.T) {
 	}
 }
 
-// Turning to the rotation already shown must not wake the render loop, or a device resting on a
-// boundary redraws forever.
 func TestSettingTheSameOrientationDoesNothing(t *testing.T) {
 	d := NewDriver("/dev/null")
 	d.SetOrientation(Rotate180)
 
-	// Drain whatever the first change queued.
 	select {
 	case <-d.changed:
 	default:
@@ -183,8 +169,6 @@ func TestSettingTheSameOrientationDoesNothing(t *testing.T) {
 	}
 }
 
-// Turning a panel swaps what it calls its width and height, which is what everything drawing on
-// it works in.
 func TestTurnResizesTheViewedPanel(t *testing.T) {
 	p := &Panel{fbW: fbW, fbH: fbH}
 

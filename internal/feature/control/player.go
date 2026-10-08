@@ -1,8 +1,9 @@
 package control
 
 import (
-	"github.com/ygelfand/LANovo/internal/feature/media"
 	sharedsource "github.com/ygelfand/libcountertop/pkg/media/source"
+
+	"github.com/ygelfand/LANovo/internal/feature/media"
 )
 
 func player(a []string) (string, error) {

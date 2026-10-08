@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// esphome entities do not poll, so a device left alone has to look for releases itself.
+// ESPHome update entities do not poll.
 const (
 	checkEvery  = 24 * time.Hour
 	checkSettle = 5 * time.Minute

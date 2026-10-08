@@ -1,4 +1,3 @@
-// Package setting binds shared settings descriptions to the product's translations.
 package setting
 
 import (

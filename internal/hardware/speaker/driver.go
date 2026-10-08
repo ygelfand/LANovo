@@ -7,12 +7,6 @@ import (
 	"time"
 )
 
-// Driver decides who gets to make a sound. It does not touch the hardware: Speaker owns the device
-// and the queue, and this owns who may fill it.
-//
-// One claim holds it at a time, and taking it silences whatever had it. A claim covers the whole
-// errand rather than just the audio, so canceling a reply abandons the download instead of
-// dropping it once it arrives.
 type Driver struct {
 	s *Speaker
 
@@ -21,10 +15,6 @@ type Driver struct {
 	bg  Background
 	arb *Arbiter
 
-	// yielded is whether the background has been told to stand down, kept equal to "something holds
-	// the speaker". A flag rather than a count because claims displace one another: pairing a
-	// suspend with every claim and a resume with every release leaks a hold each time one sound
-	// takes over from another, and the background then never plays again.
 	yielded bool
 }
 
@@ -35,49 +25,32 @@ var (
 	sound     *Driver
 )
 
-// Sound is who may make one. Everything audible goes through it, so silencing the device is one
-// call wherever the sound came from.
 func Sound() *Driver {
 	soundOnce.Do(func() { sound = NewDriver(Get()) })
 	return sound
 }
 
-// Background is a long sound that yields to the others rather than being taken from: music, which
-// plays for minutes and cannot be started again from where it was. Everything else is an errand
-// that runs to the end, so a claim is enough for it.
 type Background interface {
-	// Stand says whether anything holds the speaker. Standing down stops filling the queue and puts
-	// aside what is in it, and it is said before the claim that displaced it queues anything, so the
-	// two never fight over the same audio.
-	//
-	// It is the state rather than a change to it, so saying the same thing twice does nothing and a
-	// missed word is corrected by the next one.
 	Stand(down bool)
 }
 
-// Yields registers the background sound. There is one.
 func (d *Driver) Yields(b Background) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	d.bg = b
 }
 
-// Backgrounds is this driver's arbiter, made on first use, which is what lets several long sounds
-// share the one background.
 func (d *Driver) Backgrounds() *Arbiter {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
 	if d.arb == nil {
 		d.arb = &Arbiter{}
-		d.bg = d.arb // set here rather than through Yields, which wants the same lock
+		d.bg = d.arb
 	}
 	return d.arb
 }
 
-// Claim takes the speaker and does whatever it takes to make the sound: play queues audio and
-// returns, and the claim ends once what it queued has played out. It must return when ctx is done,
-// which is what being silenced means.
 func (d *Driver) Claim(name string, play func(ctx context.Context, s *Speaker) error) *Claim {
 	ctx, cancel := context.WithCancel(context.Background())
 	c := &Claim{name: name, cancel: cancel, done: make(chan struct{})}
@@ -87,7 +60,6 @@ func (d *Driver) Claim(name string, play func(ctx context.Context, s *Speaker) e
 	d.now = c
 	d.mu.Unlock()
 
-	// Before the errand queues anything, so the two never fight over the same audio.
 	d.settle()
 	previous.preempt(d.s)
 
@@ -104,8 +76,6 @@ func (d *Driver) Claim(name string, play func(ctx context.Context, s *Speaker) e
 	return c
 }
 
-// release lets the background sound carry on, once nothing else wants the speaker. A claim that was
-// displaced releases nothing: the one that took it is still playing.
 func (d *Driver) release(c *Claim) {
 	d.mu.Lock()
 	if d.now != c {
@@ -118,8 +88,6 @@ func (d *Driver) release(c *Claim) {
 	d.settle()
 }
 
-// settle tells the background whether it may play, which is whenever nothing holds the speaker.
-// Every change to now goes through here, so the two cannot drift apart.
 func (d *Driver) settle() {
 	d.mu.Lock()
 	want := d.now != nil
@@ -137,13 +105,8 @@ func (d *Driver) settle() {
 	bg.Stand(want)
 }
 
-// Interject makes a sound without taking the speaker from what has it. Short feedback — a volume
-// beep, a mute tone — is worth hearing, and not worth losing a reply over: it goes into the queue
-// behind whatever is already there rather than replacing it.
 func (d *Driver) Interject(play func(s *Speaker)) { play(d.s) }
 
-// Silence stops whatever is playing and empties the queue whether anything claimed it or not. It is
-// safe when nothing is playing.
 func (d *Driver) Silence() {
 	d.mu.Lock()
 	c := d.now
@@ -155,23 +118,16 @@ func (d *Driver) Silence() {
 	d.settle()
 }
 
-// Busy reports whether anything holds the speaker.
 func (d *Driver) Busy() bool {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	return d.now != nil && !d.now.Finished()
 }
 
-// HardwareTail is how long the playback buffer goes on sounding after the queue has run out, so
-// nothing should conclude the room is quiet until it has passed.
 const HardwareTail = 150 * time.Millisecond
 
-// dry is how long the queue has to stay empty to count as finished. Audio arrives in chunks with
-// gaps between them, so one empty read means nothing.
 const dry = 400 * time.Millisecond
 
-// await waits for what was queued to play out, and reports when the queue first ran dry: what comes
-// after that is confirmation, and counting it would overstate how long the sound took.
 func (d *Driver) await(ctx context.Context) time.Time {
 	const tick = 50 * time.Millisecond
 
@@ -197,7 +153,6 @@ func (d *Driver) await(ctx context.Context) time.Time {
 	}
 }
 
-// Claim is a hold on the speaker.
 type Claim struct {
 	name   string
 	cancel context.CancelFunc
@@ -210,7 +165,6 @@ type Claim struct {
 	finished time.Time
 }
 
-// Started records that sound has begun, which is where a reply's timing starts counting from.
 func (c *Claim) Started() {
 	if c == nil {
 		return
@@ -222,7 +176,6 @@ func (c *Claim) Started() {
 	}
 }
 
-// Playing is when the sound began, zero if it never did.
 func (c *Claim) Playing() time.Time {
 	if c == nil {
 		return time.Time{}
@@ -232,7 +185,6 @@ func (c *Claim) Playing() time.Time {
 	return c.started
 }
 
-// Quiet is when the queue first ran dry, zero while the sound is still going.
 func (c *Claim) Quiet() time.Time {
 	if c == nil {
 		return time.Time{}
@@ -242,7 +194,6 @@ func (c *Claim) Quiet() time.Time {
 	return c.finished
 }
 
-// Done closes when the sound is over, whether it played out or was silenced.
 func (c *Claim) Done() <-chan struct{} {
 	if c == nil {
 		closed := make(chan struct{})
@@ -252,7 +203,6 @@ func (c *Claim) Done() <-chan struct{} {
 	return c.done
 }
 
-// Stopped reports whether the claim was taken away rather than finishing.
 func (c *Claim) Stopped() bool {
 	if c == nil {
 		return false
@@ -262,7 +212,6 @@ func (c *Claim) Stopped() bool {
 	return c.stopped
 }
 
-// Err is what the errand failed with, if it did.
 func (c *Claim) Err() error {
 	if c == nil {
 		return nil
@@ -281,8 +230,6 @@ func (c *Claim) Finished() bool {
 	}
 }
 
-// preempt makes way for another sound. A claim that has already played out is left alone: its audio
-// has been heard, and draining then would cut off whatever is playing without a claim.
 func (c *Claim) preempt(s *Speaker) {
 	if c == nil || c.Finished() {
 		return
@@ -290,8 +237,6 @@ func (c *Claim) preempt(s *Speaker) {
 	c.stop(s)
 }
 
-// stop cancels the errand and silences the queue it was filling. Waiting for it to unwind is
-// bounded: something that will not return must not stop the next sound from being made.
 func (c *Claim) stop(s *Speaker) {
 	if c == nil {
 		return
@@ -310,7 +255,6 @@ func (c *Claim) stop(s *Speaker) {
 		slog.Warn("sound would not stop", "claim", c.name)
 	}
 
-	// Whatever it queued on the way out goes too.
 	s.Drain()
 }
 

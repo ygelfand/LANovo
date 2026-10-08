@@ -8,7 +8,7 @@ import (
 	"unsafe"
 )
 
-// FormatS16_LE is 16-bit little endian, the only format the playback codec accepts.
+// The playback codec accepts only S16_LE.
 const FormatS16_LE = 2
 
 var (
@@ -16,7 +16,6 @@ var (
 	ioctlDrain  = ioc(0, 'A', 0x44, 0)
 )
 
-// Playback is an open PCM playback stream.
 type Playback struct {
 	f          *os.File
 	cfg        Config
@@ -24,10 +23,7 @@ type Playback struct {
 	started    bool
 }
 
-// OpenPlayback configures a playback stream. The hardware starts itself once the buffer is full.
-//
-// The open is non-blocking: mediaserver holds this device, and a blocking open waits forever.
-// A held device returns ErrBusy. Writes block normally once the device is ours.
+// mediaserver holds this device, and a blocking open waits forever.
 func OpenPlayback(card, device int, cfg Config) (*Playback, error) {
 	path := fmt.Sprintf("/dev/snd/pcmC%dD%dp", card, device)
 	f, err := os.OpenFile(path, os.O_WRONLY|syscall.O_NONBLOCK, 0)
@@ -38,7 +34,6 @@ func OpenPlayback(card, device int, cfg Config) (*Playback, error) {
 		return nil, err
 	}
 
-	// Writes should block; only the open needed to fail fast.
 	if err := clearNonBlock(f); err != nil {
 		_ = f.Close()
 		return nil, err
@@ -76,11 +71,6 @@ func OpenPlayback(card, device int, cfg Config) (*Playback, error) {
 	}, nil
 }
 
-// granted refuses a stream the hardware would run differently from how it was asked to.
-//
-// Failing here is the point: a caller writes in whole periods of the size it configured, so a period or
-// rate the driver quietly changed means every write is misaligned with what the hardware consumes, and
-// the result is audible as noise and wrong-sounding audio rather than as an error.
 func granted(p *hwParams, cfg Config) error {
 	for _, got := range []struct {
 		what  string
@@ -99,11 +89,8 @@ func granted(p *hwParams, cfg Config) error {
 	return nil
 }
 
-// FrameBytes is the size of one interleaved frame across all channels.
 func (p *Playback) FrameBytes() int { return p.frameBytes }
 
-// Write plays whole frames, blocking until the hardware has room. On underrun the stream is
-// re-prepared and the call reports it, since a gap in playback is worth knowing about.
 func (p *Playback) Write(buf []byte) (int, error) {
 	frames := len(buf) / p.frameBytes
 	if frames == 0 {
@@ -124,7 +111,7 @@ func (p *Playback) Write(buf []byte) (int, error) {
 
 	if !p.started {
 		p.started = true
-		// EBADFD if the stream is already running, which is not an error here.
+		// EBADFD: the stream is already running.
 		if err := ioctlArgless(p.f.Fd(), ioctlStart); err != nil && err != syscall.Errno(0x4d) {
 			return int(x.result) * p.frameBytes, fmt.Errorf("start: %w", err)
 		}
@@ -134,7 +121,6 @@ func (p *Playback) Write(buf []byte) (int, error) {
 
 func (p *Playback) Delay() (int, error) { return delay(p.f.Fd()) }
 
-// Drain waits for buffered audio to finish playing.
 func (p *Playback) Drain() error { return ioctlArgless(p.f.Fd(), ioctlDrain) }
 
 func (p *Playback) Close() error {
@@ -142,13 +128,10 @@ func (p *Playback) Close() error {
 	return p.f.Close()
 }
 
-// ErrUnderrun means the hardware ran out of samples; playback gapped.
 var ErrUnderrun = fmt.Errorf("alsa: playback underrun")
 
-// ErrBusy means another process holds the device.
 var ErrBusy = errors.New("alsa: device busy")
 
-// clearNonBlock puts the descriptor back into blocking mode.
 func clearNonBlock(f *os.File) error {
 	flags, _, errno := syscall.Syscall(syscall.SYS_FCNTL, f.Fd(), syscall.F_GETFL, 0)
 	if errno != 0 {

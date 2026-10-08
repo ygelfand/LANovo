@@ -1,9 +1,3 @@
-// Command sbcdecode turns a captured SBC stream into raw PCM, so a decode can be compared against
-// a reference implementation rather than judged by ear.
-//
-// Dev only, like everything under internal/tools: nothing here is imported by the device build.
-//
-//	go run ./internal/tools/sbcdecode in.sbc out.pcm
 package main
 
 import (
@@ -39,7 +33,6 @@ func main() {
 	for len(in) > 0 {
 		f, err := sbc.Unpack(in)
 		if err != nil {
-			// Resynchronise the way the sink does, rather than giving up on the rest.
 			at, ok := sbc.Find(in[1:])
 			if !ok {
 				break
@@ -55,10 +48,12 @@ func main() {
 			break
 		}
 
-		// Interleaved, which is what every tool that reads a pcm file expects.
 		for i := range audio[0] {
 			for _, ch := range audio {
-				binary.Write(out, binary.LittleEndian, ch[i])
+				if err := binary.Write(out, binary.LittleEndian, ch[i]); err != nil {
+					fmt.Fprintln(os.Stderr, err)
+					os.Exit(1)
+				}
 			}
 		}
 

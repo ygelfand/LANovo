@@ -15,27 +15,17 @@ import (
 
 var InitRC = parts.InitRC.Data()
 
-// Step is one thing an install did.
 type Step struct {
 	What string
 	Note string
 }
 
-// Result is what an install did and what is left to do.
 type Result struct {
 	Steps []Step
 
-	// Settles is true when something changed that only takes effect at boot: the service
-	// definition and /default.prop, both of which init reads once. Replacing the binary is not one
-	// of those — restarting the service is enough — so re-running an install does not ask for a
-	// reboot it does not need.
 	Settles bool
 }
 
-// Install puts lanovod and its init service on the device. lanovod writes the rest of its parts
-// itself when it starts.
-//
-// binary is the lanovod to install. / is made writable for the duration and put back afterwards.
 func Install(d *device.Device, binary []byte) (Result, error) {
 	var res Result
 
@@ -43,7 +33,6 @@ func Install(d *device.Device, binary []byte) (Result, error) {
 		return res, errors.New("no lanovod to install")
 	}
 
-	// Whether the service definition is about to change decides whether a reboot is wanted.
 	existing, _ := d.ReadFile(layout.InitRC)
 	res.Settles = !bytes.Equal(bytes.TrimSpace(existing), bytes.TrimSpace(InitRC))
 
@@ -57,7 +46,7 @@ func Install(d *device.Device, binary []byte) (Result, error) {
 		}
 	}()
 
-	// The service holds the binary open, so it cannot be replaced while running.
+	// The running service holds the binary open.
 	if err := prop.Stop(d, layout.Service); err != nil {
 		return res, err
 	}
@@ -91,20 +80,19 @@ func Install(d *device.Device, binary []byte) (Result, error) {
 	}
 	res.Steps = append(res.Steps, Step{What: "default.prop", Note: note})
 
-	// /system/bin and /system/etc are system_file, which is what init expects to exec and read.
-	d.Shell("restorecon " + layout.Binary + " " + layout.InitRC)
+	// /system/bin and /system/etc are labelled system_file.
+	if _, err := d.Shell("restorecon " + layout.Binary + " " + layout.InitRC); err != nil {
+		return res, fmt.Errorf("relabelling %s: %w", layout.Binary, err)
+	}
 
 	return res, nil
 }
 
-// Start runs the service, which is enough to get the panel back when only the binary changed.
 func Start(d *device.Device) error {
 	return prop.Start(d, layout.Service)
 }
 
-// WaitRunning blocks until lanovod is up after a reboot.
-//
-// Not sys.boot_completed: system_server sets that, and zygote is stopped, so it never arrives.
+// system_server sets sys.boot_completed, and zygote is stopped.
 func WaitRunning(ctx context.Context, d *device.Device) error {
 	deadline := time.Now().Add(2 * time.Minute)
 	for time.Now().Before(deadline) {

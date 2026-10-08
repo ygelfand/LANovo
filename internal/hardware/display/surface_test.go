@@ -30,7 +30,7 @@ func newHelper(t *testing.T) *helper {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { os.RemoveAll(dir) })
+	t.Cleanup(func() { _ = os.RemoveAll(dir) })
 	h := &helper{
 		t:      t,
 		path:   filepath.Join(dir, "s"),
@@ -48,7 +48,7 @@ func (h *helper) listen() {
 		h.t.Fatal(err)
 	}
 	h.ln = ln
-	h.t.Cleanup(func() { ln.Close() })
+	h.t.Cleanup(func() { _ = ln.Close() })
 	go h.serve()
 }
 
@@ -83,7 +83,7 @@ func (h *helper) conn(c *net.UnixConn) {
 			send(c, 1, nil, 5, 12, 20)
 		case 2:
 			f, _ := os.CreateTemp(h.t.TempDir(), "ui")
-			f.Truncate(int64(w[3] * w[4] * 4))
+			_ = f.Truncate(int64(w[3] * w[4] * 4))
 			h.files <- f
 			send(c, 2, syscall.UnixRights(int(f.Fd())), w[0], 0, w[3]*4)
 		case 3:
@@ -100,7 +100,7 @@ func send(c *net.UnixConn, op uint32, oob []byte, words ...uint32) {
 	for i, w := range words {
 		binary.LittleEndian.PutUint32(b[8+4*i:], w)
 	}
-	c.WriteMsgUnix(b, oob, nil)
+	_, _, _ = c.WriteMsgUnix(b, oob, nil)
 }
 
 func TestDrawingLandsInTheHelpersBuffer(t *testing.T) {
@@ -118,7 +118,9 @@ func TestDrawingLandsInTheHelpersBuffer(t *testing.T) {
 	p.Set(0, 0, 9, 8, 7)
 	x, y := p.rot.Project(p.fbW, p.fbH, 0, 0)
 	got := make([]byte, 4)
-	file.ReadAt(got, int64(y*p.stride+x*4))
+	if _, err := file.ReadAt(got, int64(y*p.stride+x*4)); err != nil {
+		t.Fatal(err)
+	}
 	if got[0] != 9 || got[1] != 8 || got[2] != 7 || got[3] != 0xff {
 		t.Errorf("helper sees %v", got)
 	}
@@ -155,8 +157,8 @@ func TestLosingTheHelperReconnectsWithTheFrame(t *testing.T) {
 	<-h.files
 	p.Set(1, 1, 50, 60, 70)
 
-	h.ln.Close()
-	(<-h.conns).Close()
+	_ = h.ln.Close()
+	_ = (<-h.conns).Close()
 	h.listen()
 
 	if err := p.Flip(); err != nil {
@@ -169,7 +171,9 @@ func TestLosingTheHelperReconnectsWithTheFrame(t *testing.T) {
 	}
 	x, y := p.rot.Project(p.fbW, p.fbH, 1, 1)
 	got := make([]byte, 3)
-	file.ReadAt(got, int64(y*p.stride+x*4))
+	if _, err := file.ReadAt(got, int64(y*p.stride+x*4)); err != nil {
+		t.Fatal(err)
+	}
 	if got[0] != 50 || got[1] != 60 || got[2] != 70 {
 		t.Errorf("the new buffer holds %v, want what was drawn before", got)
 	}

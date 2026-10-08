@@ -1,11 +1,3 @@
-// Command segment writes the seven segment numeral set's SVG sources.
-//
-// Dev only, run by hand, never on the device. The files it writes are checked in and are what the
-// converter reads; this exists because a seven segment digit is geometry rather than drawing, and
-// eleven hand-written files of the same seven bars would be eleven chances to get a coordinate
-// wrong. Nothing here is a derivative of anybody's typeface.
-//
-//	go run ./internal/tools/numeral/segment
 package main
 
 import (
@@ -16,11 +8,6 @@ import (
 	"strings"
 )
 
-// The design box, and the bars in it.
-//
-// Taller than wide, which is what a digit is. The gap is what keeps two bars meeting at a corner
-// from reading as one bent bar, and is the whole of what makes this look like lamps behind a mask
-// rather than a font.
 const (
 	boxW, boxH = 100, 180
 
@@ -28,22 +15,10 @@ const (
 	half  = thick / 2
 	gap   = 4
 
-	// bearing is the empty margin down each side of the box.
-	//
-	// Cells are laid out edge to edge, so without it the outer bars of two digits meet and a 11
-	// reads as one wide shape. The space belongs in the glyph rather than in the layout: a face
-	// spacing the cells itself would have to know this set is bars, and the next set would want a
-	// different number.
 	bearing = 8
 )
 
-// The seven bars, named the way every datasheet names them:
-//
-//	 aaa
-//	f   b
-//	 ggg
-//	e   c
-//	 ddd
+// Segments a to g, named as every datasheet names them.
 const (
 	segA = 1 << iota
 	segB
@@ -54,7 +29,6 @@ const (
 	segG
 )
 
-// lit is which bars each digit turns on.
 var lit = [10]int{
 	0: segA | segB | segC | segD | segE | segF,
 	1: segB | segC,
@@ -96,26 +70,21 @@ func main() {
 		write(filepath.Join(dir, fmt.Sprintf("%d.svg", d)), paths)
 	}
 
-	// The colon is the one glyph that is not a bar: two lamps the size of a bar's thickness.
 	write(filepath.Join(dir, "colon.svg"), []string{
 		dot(boxW/2, boxH/3),
 		dot(boxW/2, boxH*2/3),
 	})
 }
 
-// The bars' positions. Named rather than inlined so the digit table reads as a datasheet.
 func top() int    { return half }
 func middle() int { return boxH / 2 }
 func bottom() int { return boxH - half }
 func left() int   { return bearing + half }
 func right() int  { return boxW - bearing - half }
 
-// The two halves a vertical bar can occupy, as a pair so it can be handed straight to down.
 func upper() [2]int { return [2]int{top() + gap, middle() - gap} }
 func lower() [2]int { return [2]int{middle() + gap, bottom() - gap} }
 
-// across is a horizontal bar: a rectangle with its ends brought to a point, which is what makes two
-// of them meeting at a corner look mitred rather than overlapped.
 func across(cy int) string {
 	x0, x1 := left()+gap, right()-gap
 
@@ -129,7 +98,6 @@ func across(cy int) string {
 	})
 }
 
-// down is the same bar stood up.
 func down(cx int, span [2]int) string {
 	y0, y1 := span[0], span[1]
 
@@ -143,8 +111,6 @@ func down(cx int, span [2]int) string {
 	})
 }
 
-// dot is one lamp of the colon: a square the thickness of a bar. Square rather than pointed like
-// the bars, because a diamond at this size reads as a speck of dirt rather than as punctuation.
 func dot(cx, cy int) string {
 	return points([][2]int{
 		{cx - half, cy - half},

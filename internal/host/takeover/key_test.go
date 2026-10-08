@@ -8,7 +8,6 @@ import (
 	esphome "github.com/ygelfand/go-esphome-device"
 )
 
-// A key as lanovod writes it: thirty two bytes, base64, with the newline it is written with.
 func generated(t *testing.T) string {
 	t.Helper()
 
@@ -34,8 +33,6 @@ func TestAKeyIsReadTheWayItIsWritten(t *testing.T) {
 	}
 }
 
-// A device that has not written one yet is the usual case for a few seconds after an install, and
-// is not an error to report — it is a reason to wait.
 func TestNothingWrittenYetIsItsOwnAnswer(t *testing.T) {
 	for _, file := range []string{"", "\n", "   \t\n"} {
 		_, err := parseKey([]byte(file))
@@ -45,8 +42,6 @@ func TestNothingWrittenYetIsItsOwnAnswer(t *testing.T) {
 	}
 }
 
-// Anything else is wrong rather than absent, and a key that is nearly right is the dangerous one:
-// it gets copied into Home Assistant and blamed on Home Assistant.
 func TestAKeyThatIsNotOneIsRefused(t *testing.T) {
 	key := generated(t)
 
@@ -74,7 +69,6 @@ func TestAKeyThatIsNotOneIsRefused(t *testing.T) {
 	}
 }
 
-// The error names the file. Somebody looking at it needs to know which one to go and read.
 func TestARefusalSaysWhereTheKeyIs(t *testing.T) {
 	_, err := parseKey([]byte("not a key"))
 	if err == nil {
@@ -85,8 +79,6 @@ func TestARefusalSaysWhereTheKeyIs(t *testing.T) {
 	}
 }
 
-// Rotation has to produce something the device will then read back as its key, or the restart
-// leaves it unable to start at all.
 func TestAGeneratedKeyReadsBack(t *testing.T) {
 	key := generated(t)
 

@@ -26,11 +26,9 @@ const (
 	DefaultBuffer        = schema.DefaultBuffer
 )
 
-var defaultStop = schema.DefaultStop
 var defaultWake = schema.DefaultWake
 var DefaultWakeWord = schema.DefaultWakeWord
 
-// StopWriter is the stop word, which belongs to no slot.
 type StopWriter struct{ st *Store }
 
 func (w StopWriter) Threshold(v float64) error {
@@ -78,8 +76,6 @@ func (w WakeWriter) Recordings(count int) error {
 	return w.word(func(word *WakeWord) { word.Recordings = count })
 }
 
-// word grows the list to reach the slot, so slot 1 can be set on a device where slot 0 never was.
-// The slots invented along the way get the defaults rather than zeros.
 func (w WakeWriter) word(f func(*WakeWord)) error {
 	if w.slot < 0 {
 		return errSlot(w.slot)

@@ -7,11 +7,8 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/hook"
 )
 
-// tapDepth is how many frames a listener may fall behind by. Short on purpose: audio nobody took in
-// time is a moment not heard, and queueing it only moves the problem later in the conversation.
 const tapDepth = 8
 
-// tap is one listener's channel and what it has missed.
 type tap struct {
 	name string
 
@@ -45,18 +42,11 @@ func (t *tap) close() {
 	t.closed = true
 	close(t.ch)
 
-	// A turn lasts seconds, so anything it lost would otherwise go unsaid.
 	if t.dropped > 0 {
 		slog.Warn("listener behind", "who", t.name, "frames", t.dropped)
 	}
 }
 
-// Listen hands out voice-rate frames on a channel of the caller's own, and the function that stops
-// it and closes the channel.
-//
-// The hook runs its listeners on the capture reader, which must not wait: this is where that reader
-// stops being the caller's problem. Sends never block, and the channel is only closed from here, so
-// a frame arriving as the listener goes away is dropped rather than sent to a closed channel.
 func (m *Mics) Listen(name string) (<-chan []int16, func()) {
 	return listen(name, &m.Speech)
 }

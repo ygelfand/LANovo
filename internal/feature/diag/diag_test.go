@@ -17,7 +17,6 @@ func fresh(t *testing.T) *Diag {
 	return Get()
 }
 
-// Every entity has to be built, or the server refuses the lot when one is nil.
 func TestEveryEntityExists(t *testing.T) {
 	for i, e := range fresh(t).Entities() {
 		if e == nil {
@@ -26,7 +25,6 @@ func TestEveryEntityExists(t *testing.T) {
 	}
 }
 
-// Two entities with one object id is a collision Home Assistant resolves by dropping one.
 func TestObjectIDsAreDistinct(t *testing.T) {
 	seen := map[string]bool{}
 
@@ -67,8 +65,6 @@ func TestRestoreTakesTheSavedInterval(t *testing.T) {
 	}
 }
 
-// A reading the device could not take leaves the entity at its last value: a sensor that reports
-// zero for an absent file reads like a measurement.
 func TestSetLeavesUnknownReadingsAlone(t *testing.T) {
 	s := &esphome.Sensor{Base: esphome.Base{ObjectID: "test"}}
 	s.Set(42)
@@ -85,11 +81,6 @@ func TestSetLeavesUnknownReadingsAlone(t *testing.T) {
 	}
 }
 
-// The zones this board actually has, so a rename in the kernel shows up here rather than as a
-// sensor that silently stops reporting.
-//
-// The CPU one is the part's hottest step rather than a single core, which is what throttling
-// follows and reads a few degrees above any one of them.
 func TestThermalZonesAreThisBoards(t *testing.T) {
 	if cpuZone != "deca-cpu-max-step" {
 		t.Errorf("cpu zone is %q", cpuZone)
@@ -99,8 +90,6 @@ func TestThermalZonesAreThisBoards(t *testing.T) {
 	}
 }
 
-// Sampling runs on a device with none of these files present, so it must not panic when every
-// reading is missing.
 func TestSampleOnAMachineWithNothing(t *testing.T) {
 	d := fresh(t)
 	d.Sample()

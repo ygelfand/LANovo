@@ -8,16 +8,14 @@ import (
 	"unsafe"
 )
 
-// The driver's ioctls and the one flag that matters.
 const (
 	iocRDWR = 0x0707
 
-	// mRead is I2C_M_RD: this leg reads rather than writes.
+	// I2C_M_RD.
 	mRead = 0x0001
 )
 
-// msg is struct i2c_msg. The pointer sizes itself per architecture, which is what makes this 12
-// bytes on the device and 16 on a host.
+// struct i2c_msg.
 type msg struct {
 	addr  uint16
 	flags uint16
@@ -25,19 +23,16 @@ type msg struct {
 	buf   *byte
 }
 
-// rdwr is struct i2c_rdwr_ioctl_data.
+// struct i2c_rdwr_ioctl_data.
 type rdwr struct {
 	msgs  *msg
 	nmsgs uint32
 }
 
-// bus is one /dev/i2c-N.
 type bus struct{ f *os.File }
 
-// Open is the bus by its kernel number.
 func Open(n int) (Bus, error) { return OpenPath(fmt.Sprintf("/dev/i2c-%d", n)) }
 
-// OpenPath is the bus at a path.
 func OpenPath(path string) (Bus, error) {
 	f, err := os.OpenFile(path, os.O_RDWR, 0)
 	if err != nil {
@@ -48,8 +43,6 @@ func OpenPath(path string) (Bus, error) {
 
 func (b *bus) Close() error { return b.f.Close() }
 
-// Transfer sends every message as one exchange, so a register read keeps the bus between writing
-// the register and reading the answer.
 func (b *bus) Transfer(msgs ...Msg) error {
 	if len(msgs) == 0 {
 		return nil
@@ -75,7 +68,7 @@ func (b *bus) Transfer(msgs ...Msg) error {
 		uintptr(unsafe.Pointer(&data)),
 	)
 
-	// The kernel wrote through the pointers in out, which Go's collector does not know about.
+	// The kernel writes through the pointers in out.
 	runtime.KeepAlive(msgs)
 	runtime.KeepAlive(out)
 

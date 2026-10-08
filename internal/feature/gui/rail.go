@@ -2,10 +2,11 @@ package gui
 
 import (
 	gogui "github.com/go-gui-org/go-gui/gui"
+	"github.com/ygelfand/libcountertop/pkg/display/widgets"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 )
 
 func (a *App) railScreen(v shell.View) *Screen {

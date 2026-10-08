@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-// fake is a sysfs gpio tree, so exporting and driving a line can be checked without one.
 func fake(t *testing.T) string {
 	t.Helper()
 
@@ -23,8 +22,6 @@ func fake(t *testing.T) string {
 	return dir
 }
 
-// exporting is what the kernel does when something is written to export: the line's directory
-// appears.
 func appear(t *testing.T, dir string, n int) {
 	t.Helper()
 
@@ -67,8 +64,6 @@ func TestExportWritesTheNumber(t *testing.T) {
 	}
 }
 
-// Something else may have had the line first, which is the normal case after a restart, so
-// exporting an exported line is not an error.
 func TestExportingTwiceIsFine(t *testing.T) {
 	dir := fake(t)
 	appear(t, dir, 68)
@@ -121,13 +116,9 @@ func TestSetDirection(t *testing.T) {
 	}
 }
 
-// Output is the whole of what driving something takes, so it has to leave the line exported and
-// pointing out.
 func TestOutput(t *testing.T) {
 	dir := fake(t)
 
-	// The kernel makes the directory appear on export; here it is made first, since the write is
-	// what a test can see.
 	appear(t, dir, 68)
 
 	p, err := Output(68)
@@ -139,7 +130,6 @@ func TestOutput(t *testing.T) {
 	}
 }
 
-// A line the kernel does not have must fail rather than silently doing nothing.
 func TestDrivingALineThatIsNotThere(t *testing.T) {
 	fake(t)
 

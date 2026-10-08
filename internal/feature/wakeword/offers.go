@@ -8,13 +8,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/wake"
 )
 
-// Answer is what the device says when Home Assistant asks what it can hear. The question carries the
-// models Home Assistant hosts in its own custom_wake_words directory, each with the URL to fetch it
-// from, so the answer is that set combined with what is on disk.
-//
-// It is asked on connect and again after every selection change, which is why nothing about the
-// answer is kept: it is worked out when the question arrives. The offers themselves are remembered
-// only because a selection names an id and not a URL.
+// Home Assistant's question carries the models in its custom_wake_words directory, each with a URL.
 func Answer(offered []esphome.ExternalWakeWord) []esphome.WakeWord {
 	lib := wake.Lib()
 

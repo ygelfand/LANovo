@@ -12,7 +12,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/host/device"
 )
 
-// ErrCanceled means the person dismissed a prompt.
 var ErrCanceled = errors.New("canceled")
 
 var (
@@ -24,8 +23,6 @@ var (
 
 func isTerminal() bool { return term.IsTerminal(os.Stdout.Fd()) }
 
-// connect opens the device every command acts on. Every command goes through this, so device
-// selection behaves the same everywhere.
 func connect(ctx context.Context, out io.Writer) (*device.Device, error) {
 	if err := device.Require(); err != nil {
 		return nil, err

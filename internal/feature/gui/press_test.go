@@ -51,7 +51,7 @@ func pressRig(t *testing.T, fired chan string) (*backend.Renderer, frames) {
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan struct{})
 	t.Cleanup(func() { cancel(); <-done })
-	go func() { defer close(done); r.Run(ctx, w) }()
+	go func() { defer close(done); _ = r.Run(ctx, w) }()
 	<-f
 	return r, f
 }

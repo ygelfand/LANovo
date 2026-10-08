@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// fake is a chip that answers from a register map, recording what it was asked.
 type fake struct {
 	regs map[byte][]byte
 	sent [][]Msg
@@ -21,7 +20,6 @@ func (f *fake) Transfer(msgs ...Msg) error {
 		return f.err
 	}
 
-	// Kept by value, since the caller owns the buffers and a read fills them in afterwards.
 	recorded := make([]Msg, len(msgs))
 	for i, m := range msgs {
 		recorded[i] = Msg{Addr: m.Addr, Read: m.Read, Buf: append([]byte(nil), m.Buf...)}
@@ -71,8 +69,6 @@ func TestAtRejectsAddressesThatAreNot7Bit(t *testing.T) {
 	}
 }
 
-// Reading a register is a write then a read in one transfer. Two separate transfers would let
-// something else address the chip in between and read back the wrong register.
 func TestReadIsOneTransferWithARepeatedStart(t *testing.T) {
 	f := newFake()
 	f.regs[0x09] = []byte{0xab, 0xcd}
@@ -135,8 +131,6 @@ func TestWritePutsTheRegisterFirst(t *testing.T) {
 	}
 }
 
-// Both parts on this board hold 16-bit values low byte first, so a swapped order reads as a
-// plausible but wrong number rather than an error.
 func TestU16IsLittleEndian(t *testing.T) {
 	f := newFake()
 	d := device(t, f, 0x51)
@@ -170,8 +164,6 @@ func TestByte(t *testing.T) {
 	}
 }
 
-// A chip that is not there fails the transfer, and that has to reach the caller rather than
-// looking like a register full of zeroes.
 func TestTransferErrorsReachTheCaller(t *testing.T) {
 	f := newFake()
 	f.err = errors.New("no such device")
@@ -189,7 +181,7 @@ func TestTransferErrorsReachTheCaller(t *testing.T) {
 	}
 }
 
-// An empty read is not a transfer: the kernel rejects a message carrying no bytes.
+// The kernel rejects an i2c message carrying no bytes.
 func TestEmptyReadDoesNothing(t *testing.T) {
 	f := newFake()
 	d := device(t, f, 0x51)
@@ -202,8 +194,6 @@ func TestEmptyReadDoesNothing(t *testing.T) {
 	}
 }
 
-// present answers at a set of addresses and refuses everywhere else, which is what a bus with a
-// couple of chips on it looks like.
 type present struct{ at map[uint16]bool }
 
 func (p *present) Close() error { return nil }
@@ -237,8 +227,7 @@ func TestScanFindsOnlyWhatIsThere(t *testing.T) {
 	}
 }
 
-// The reserved addresses below 0x03 and above 0x77 are not probed: a scan that touches them can
-// upset chips that are on the bus.
+// Addresses below 0x03 and above 0x77 are reserved.
 func TestScanStaysInTheAddressableRange(t *testing.T) {
 	bus := &present{at: map[uint16]bool{}}
 	for addr := uint16(0); addr <= 0xff; addr++ {

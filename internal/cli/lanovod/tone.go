@@ -11,8 +11,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
-// fade is how long the tone takes to come up and go down. A square edge on a speaker is a click,
-// and a click is the one thing that would be heard whether or not the tone itself came through.
 const fade = 20 * time.Millisecond
 
 func newToneCmd() *cobra.Command {
@@ -78,13 +76,6 @@ func newToneCmd() *cobra.Command {
 	return c
 }
 
-// play writes the sine a period at a time, which is what the card wants and what keeps the buffer
-// from being written in one lump it has no room for.
-func play(out *alsa.Playback, hz, seconds, level float64) error {
-	return playOn(out, hz, seconds, level, "both")
-}
-
-// channelGains is each channel's share of the tone: both, one side, or both with right inverted.
 func channelGains(which string) ([speaker.Channels]float64, error) {
 	switch which {
 	case "both":

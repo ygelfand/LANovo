@@ -4,21 +4,22 @@ import (
 	"sync"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
+	sharedcard "github.com/ygelfand/libcountertop/pkg/display/mediacard"
+	"github.com/ygelfand/libcountertop/pkg/say"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	sharedcard "github.com/ygelfand/libcountertop/pkg/display/mediacard"
-	"github.com/ygelfand/libcountertop/pkg/say"
 )
-
-type screen = sharedcard.Screen
 
 var cardOnce sync.Once
 var theCard *sharedcard.Card
 
 func card() *sharedcard.Card {
 	cardOnce.Do(func() {
-		theCard = sharedcard.New(sharedcard.Dependencies{Player: Get(), Idle: config.IdleSection, Shell: shell.Get()})
+		theCard = sharedcard.New(
+			sharedcard.Dependencies{Player: Get(), Idle: config.IdleSection, Shell: shell.Get()},
+		)
 	})
 	return theCard
 }
@@ -35,8 +36,6 @@ func onRail() {
 		}})
 }
 
-// transport is whoever the buttons reach: whoever holds the card, or Home Assistant before anything
-// has played.
 func (p *Player) Transport() Controller {
 	if s := p.source(); s != nil {
 		return s
@@ -44,10 +43,6 @@ func (p *Player) Transport() Controller {
 	return homeAssistant{}
 }
 
-// homeAssistant is a url played at this device through the media player entity: a peer of a group,
-// a phone and a cast, claiming the card the same way.
-//
-// It answers only to stopping, since a url has no transport beyond ending it.
 type homeAssistant struct{}
 
 func (homeAssistant) Play()         { Get().stream.Unpause() }
@@ -61,5 +56,4 @@ func (homeAssistant) Label() string { return "" }
 
 func (p *Player) Holder() Source { return p.source() }
 
-// ResetSession drops the media card's completed source session.
 func (p *Player) ResetSession() { p.sourceOwner().ResetSession() }

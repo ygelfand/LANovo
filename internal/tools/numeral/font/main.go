@@ -1,21 +1,3 @@
-// Command font pulls a numeral set's SVG sources straight out of a TTF or OTF.
-//
-// Dev only, run by hand, never on the device. The files it writes are checked in and are what the
-// converter reads.
-//
-//	go run ./internal/tools/numeral/font -set round -in ~/Downloads/Whatever-Bold.ttf
-//
-// Nothing is hand traced. x/image/font/sfnt hands back a glyph's outline as segments, which is the
-// same curve data the SVG wants, so this is a transcription rather than a drawing. The alternative
-// was fonttools as a build dependency; sfnt is already here because the text drawing sits on it.
-//
-// The digits are put in one box and given one advance, which fonts nearly always already do for
-// figures and which this enforces rather than assumes: tabular is the property the whole package
-// exists for, and a face with proportional figures would quietly take it away.
-//
-// Licensing is the caller's problem and a real one. A converted outline is still a derivative, so
-// the source face's licence belongs in svg/<set>/LICENCE beside what came out of it. Only convert
-// what the licence allows.
 package main
 
 import (
@@ -31,10 +13,8 @@ import (
 	"golang.org/x/image/math/fixed"
 )
 
-// The box the digits are normalized into. Tall, and a round number so the path data reads.
 const boxH = 180
 
-// glyphs are the eleven a set has to have: the runes, and what each file is called.
 var glyphs = []struct {
 	r    rune
 	name string
@@ -78,14 +58,9 @@ func main() {
 func emit(f *sfnt.Font, set string, bearing float64) error {
 	var b sfnt.Buffer
 
-	// Everything is measured at one size and scaled from it. The size is large so the rounding to
-	// whole path units is well under a pixel at any size the panel draws.
 	const ppem = 2048
 	at := fixed.I(ppem)
 
-	// The box comes from the digits themselves rather than from the font's metrics. A font's ascent
-	// includes room for accents no numeral uses, and sizing to it leaves the clock sitting in a
-	// band of nothing with no way to tell how much.
 	lo, hi := math.Inf(1), math.Inf(-1)
 	wide := 0.0
 
@@ -105,8 +80,7 @@ func emit(f *sfnt.Font, set string, bearing float64) error {
 			return fmt.Errorf("%q: %w", g.r, err)
 		}
 
-		// Copied, because what comes back points into the buffer and is only good until the next
-		// call. Keeping the slice leaves every glyph holding whichever one was loaded last.
+		// sfnt's LoadGlyph segments are only valid until the next call.
 		outlines[g.r] = append([]sfnt.Segment(nil), segs...)
 
 		adv, err := f.GlyphAdvance(&b, i, at, 0)
@@ -114,8 +88,6 @@ func emit(f *sfnt.Font, set string, bearing float64) error {
 			return fmt.Errorf("%q: %w", g.r, err)
 		}
 
-		// The colon is excluded from both. It is short, so it would shrink the box; it is narrow, so
-		// it would narrow the advance. Neither is what a row of digits is laid out on.
 		if g.r == ':' {
 			continue
 		}
@@ -133,8 +105,6 @@ func emit(f *sfnt.Font, set string, bearing float64) error {
 		return fmt.Errorf("the digits measure nothing")
 	}
 
-	// Scale so the digits fill the box's height, then put the advance in the middle of a box widened
-	// by the bearing, so two digits side by side do not touch.
 	scale := boxH / (hi - lo)
 	boxW := int(math.Round(wide*scale/(1-2*bearing))) | 1
 
@@ -144,9 +114,7 @@ func emit(f *sfnt.Font, set string, bearing float64) error {
 	}
 
 	for _, g := range glyphs {
-		// x is centered on the glyph's own advance so a narrow 1 sits in the middle of its cell
-		// rather than against the left of it.
-		var min, max float64 = math.Inf(1), math.Inf(-1)
+		min, max := math.Inf(1), math.Inf(-1)
 		for _, s := range outlines[g.r] {
 			for _, p := range s.Args[:args(s.Op)] {
 				min = math.Min(min, f26(p.X))
@@ -171,11 +139,7 @@ func emit(f *sfnt.Font, set string, bearing float64) error {
 	return nil
 }
 
-// trace turns a glyph's segments into SVG path data.
-//
-// The Y axis already increases downward in both, so nothing is flipped. Coordinates are rounded to
-// whole units: at this scale that is far under a pixel, and it keeps the checked-in files readable
-// and their diffs meaningful.
+// The Y axis increases downward in both sfnt and SVG.
 func trace(segs []sfnt.Segment, scale, dx, dy float64) string {
 	var b strings.Builder
 
@@ -200,7 +164,6 @@ func trace(segs []sfnt.Segment, scale, dx, dy float64) string {
 	return b.String()
 }
 
-// args is how many of a segment's three points it actually uses.
 func args(op sfnt.SegmentOp) int {
 	switch op {
 	case sfnt.SegmentOpQuadTo:

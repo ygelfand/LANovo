@@ -1,7 +1,3 @@
-// Package logd writes lanovod's log to Android's log daemon, which is where `adb logcat` reads it.
-//
-// Lines are stamped with the uptime rather than the wall clock, because the clock is wrong until
-// something sets it and a device that has just booted may never have been told.
 package logd
 
 import (
@@ -17,12 +13,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/metrics"
 )
 
-// streamDepth is how far a reader of Lines may fall behind before it starts losing the oldest. The
-// daemon still has every one of them.
 const streamDepth = 256
 
-// Handler writes slog records to the daemon, and to a fallback writer so running lanovod by hand from
-// an adb shell still prints something.
 type Handler struct {
 	conn     *conn
 	fallback io.Writer
@@ -36,8 +28,6 @@ type Line struct {
 	Level slog.Level
 	Text  string
 
-	// Dropped is how many lines were lost before this one, so a gap can be reported rather than read
-	// as nothing having happened.
 	Dropped uint64
 }
 
@@ -46,16 +36,10 @@ type stream struct {
 	dropped atomic.Uint64
 }
 
-// One process has one log, the same reason slog has a default. Nothing waits on it: logging happens
-// on whatever goroutine had something to say, including the one feeding audio.
 var out = stream{lines: make(chan Line, streamDepth)}
 
-// Lines is the log from now on, for anything that wants to carry it somewhere else — the API sends
-// it to Home Assistant. With nobody reading it costs one buffer and then nothing.
 func Lines() <-chan Line { return out.lines }
 
-// publish makes room by throwing away the oldest line rather than the newest: a live log is worth
-// more than its history.
 func (s *stream) publish(l Line) {
 	l.Dropped = s.dropped.Swap(0)
 
@@ -74,13 +58,10 @@ func (s *stream) publish(l Line) {
 	select {
 	case s.lines <- l:
 	default:
-		// Someone else took the room in between. Count this line and carry its tally forward.
 		s.dropped.Add(1 + l.Dropped)
 	}
 }
 
-// NewHandler never fails: with no daemon it writes to fallback only, since lanovod must not die for
-// want of logging.
 func NewHandler(tag string, fallback io.Writer) *Handler {
 	h := &Handler{fallback: fallback, mu: &sync.Mutex{}}
 
@@ -164,8 +145,6 @@ func appendAttr(b *strings.Builder, group string, a slog.Attr) {
 	b.WriteString(value(a.Value))
 }
 
-// value keeps numbers and short strings bare, and quotes anything with a space in it so a
-// message with an embedded error stays one readable field.
 func value(v slog.Value) string {
 	s := v.String()
 	if strings.ContainsAny(s, " \t=\"") {

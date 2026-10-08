@@ -14,7 +14,6 @@ func TestSettingAPropertyRewritesItsLine(t *testing.T) {
 	}
 }
 
-// Re-running an install must not report a change it did not make: that is what asks for a reboot.
 func TestSettingAPropertyAlreadySetChangesNothing(t *testing.T) {
 	in := "ro.secure=0\n"
 
@@ -37,8 +36,6 @@ func TestSettingAPropertyThatIsNotThereAppendsIt(t *testing.T) {
 	}
 }
 
-// A file that does not end in a newline would otherwise get the new property joined onto its last
-// line.
 func TestAppendingToAFileWithNoTrailingNewline(t *testing.T) {
 	out, changed := setProp([]byte("ro.debuggable=1"), "ro.secure", "0")
 	if !changed {
@@ -49,7 +46,6 @@ func TestAppendingToAFileWithNoTrailingNewline(t *testing.T) {
 	}
 }
 
-// ro.secure.something is a different property, and rewriting it would leave ro.secure alone.
 func TestALongerKeyWithTheSamePrefixIsNotMistaken(t *testing.T) {
 	in := "ro.secureboot=1\nro.secure=1\n"
 

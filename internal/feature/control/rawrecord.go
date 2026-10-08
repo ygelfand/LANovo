@@ -3,8 +3,9 @@ package control
 import (
 	"context"
 	"fmt"
-	capture "github.com/ygelfand/libcountertop/pkg/audio/capture"
 	"math"
+
+	capture "github.com/ygelfand/libcountertop/pkg/audio/capture"
 
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 )

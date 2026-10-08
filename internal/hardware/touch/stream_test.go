@@ -6,8 +6,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 )
 
-// The decoder and the recognizer are each tested on their own, with contacts made up to suit. They
-// meet nowhere else, so a swipe here is driven from kernel events all the way to a gesture.
 func TestASwipeFromEventsToAGesture(t *testing.T) {
 	w, h := board.Current().PanelHeight, board.Current().PanelWidth
 
@@ -27,8 +25,6 @@ func TestASwipeFromEventsToAGesture(t *testing.T) {
 		}
 	}
 
-	// In from the left of the picture. The panel reports its native portrait, where that is a high
-	// Y counting down.
 	drag(
 		ev(evAbs, absMTTrackingID, 4),
 		ev(evAbs, absMTPositionX, 600),
@@ -85,8 +81,6 @@ func TestATapFromEventsToAGesture(t *testing.T) {
 	}
 }
 
-// Two fingers in two slots, lifted in the order they went down. Each has to come back as its own
-// gesture rather than one matching the other's journey.
 func TestTwoFingersEachGetTheirOwnGesture(t *testing.T) {
 	var d decoder
 	r := NewRecognizer(board.Current().PanelHeight, board.Current().PanelWidth)

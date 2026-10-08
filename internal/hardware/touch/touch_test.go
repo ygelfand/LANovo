@@ -7,7 +7,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 )
 
-// The device's own listing, so a change in the kernel's format is caught rather than assumed.
 const procDevices = `I: Bus=0000 Vendor=0000 Product=0000 Version=0000
 N: Name="qpnp_pon"
 P: Phys=qpnp_pon/input0
@@ -63,7 +62,6 @@ func TestHandlerFor(t *testing.T) {
 	}
 }
 
-// The panel is portrait and mounted landscape, so a touch has to land where Panel.Set drew.
 func TestRotate(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -105,7 +103,6 @@ func TestRotate(t *testing.T) {
 	}
 }
 
-// rotate must land inside what the display calls its screen, or a touch is reported off the edge.
 func TestRotateStaysOnScreen(t *testing.T) {
 	corners := [][2]int{
 		{0, 0},
@@ -143,7 +140,6 @@ func ev(t uint16, code uint16, value int32) rawEvent {
 
 func syn() rawEvent { return rawEvent{Type: evSyn, Code: synReport} }
 
-// feed runs a stream through a decoder and collects everything it reported.
 func feed(d *decoder, events ...rawEvent) []Contact {
 	var got []Contact
 	for _, e := range events {
@@ -194,14 +190,10 @@ func TestTapIsDownThenUp(t *testing.T) {
 		t.Fatalf("got %v, want one up", up)
 	}
 
-	// The id it went down with. A lift reported as -1 matches no journey, so the recognizer drops
-	// every gesture and nothing on the screen ever responds to a finger.
 	if up[0].ID != 7 {
 		t.Errorf("up carries id %d, want the 7 it went down with", up[0].ID)
 	}
 
-	// The position a finger was lifted from is the last one reported, which the kernel does not
-	// repeat.
 	if up[0].X != 959 || up[0].Y != 600 {
 		t.Errorf("up at %d,%d, want 959,600", up[0].X, up[0].Y)
 	}
@@ -218,7 +210,6 @@ func TestDragReportsMoves(t *testing.T) {
 		syn(),
 	)
 
-	// Only the axis that changed, which is all the kernel sends.
 	got := feed(&d, ev(evAbs, absMTPositionY, 300), syn())
 	if len(got) != 1 || got[0].Phase != Move {
 		t.Fatalf("got %v, want one move", got)
@@ -256,14 +247,12 @@ func TestSlotsAreIndependent(t *testing.T) {
 		t.Errorf("slot 0 has id %d and slot 1 has id %d, want 1 and 2", bySlot[0].ID, bySlot[1].ID)
 	}
 
-	// Lifting one leaves the other alone.
 	got = feed(&d, ev(evAbs, absMTSlot, 0), ev(evAbs, absMTTrackingID, released), syn())
 	if len(got) != 1 || got[0].Slot != 0 || got[0].Phase != Up {
 		t.Fatalf("got %v, want slot 0 up", got)
 	}
 }
 
-// A slot the kernel re-uses for a new finger is a new contact, not a jump of the old one.
 func TestReusedSlotIsANewDown(t *testing.T) {
 	var d decoder
 
@@ -288,8 +277,6 @@ func TestReusedSlotIsANewDown(t *testing.T) {
 	}
 }
 
-// An event size that does not match the kernel's struct reads the stream out of step, which looks
-// like a device that works everywhere except the one it ships on.
 func TestEventSizeMatchesTheKernelStruct(t *testing.T) {
 	want := map[string]int{"arm": 16, "386": 16, "amd64": 24, "arm64": 24}[runtime.GOARCH]
 	if want == 0 {

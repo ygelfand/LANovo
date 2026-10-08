@@ -61,11 +61,11 @@ func newMTKAudioCmd() *cobra.Command {
 				}
 				for _, s := range switches {
 					if err := m.SetInt(s, 1); err != nil {
-						m.Close()
+						_ = m.Close()
 						return fmt.Errorf("%s: %w", s, err)
 					}
 				}
-				m.Close()
+				_ = m.Close()
 			}
 
 			if seconds == 0 {

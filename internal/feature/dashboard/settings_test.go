@@ -9,22 +9,12 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// Every setting the dashboard owns, and the three things that have to stay in step: the setter the
-// screen calls, the file, and the entity Home Assistant reads.
-//
-// Wired by hand three times over, and it has drifted three times — a settings row that wrote the
-// file and left the entity saying the old value until the device reconnected. These hold the
-// property rather than the wiring, so a setting added without one of the three fails here.
-//
-// Built directly rather than through Get, which listens to the screen and the accelerometer. The
-// entities are all that is under test.
 func dash() *Dashboard {
 	d := &Dashboard{}
 	d.build()
 	return d
 }
 
-// said is what a select entity is showing.
 func said(t *testing.T, e *esphome.Select) string {
 	t.Helper()
 	return e.Get()
@@ -117,8 +107,6 @@ func TestEverySwitchReachesBothSides(t *testing.T) {
 	}
 }
 
-// The other direction: what Home Assistant sends lands in the file. The entity speaks labels and
-// the setting speaks values, so this is also the decoder between them.
 func TestEveryCommandFromHomeAssistantIsSaved(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 	d := dash()
@@ -145,7 +133,6 @@ func TestEveryCommandFromHomeAssistantIsSaved(t *testing.T) {
 	}
 }
 
-// A label this build does not have changes nothing, rather than saving a value nothing can draw.
 func TestAnUnknownLabelChangesNothing(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 	d := dash()
@@ -158,8 +145,6 @@ func TestAnUnknownLabelChangesNothing(t *testing.T) {
 	}
 }
 
-// Restore is what runs when Home Assistant reconnects, and it has to put every entity back. One
-// left out reads as its zero value on a device that has been set for months.
 func TestRestorePutsEveryEntityBack(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 	d := dash()
@@ -195,8 +180,6 @@ func TestRestorePutsEveryEntityBack(t *testing.T) {
 	}
 }
 
-// Every entity the dashboard offers is one somebody can change. An entity with no command is a
-// readout, and none of these are.
 func TestEveryEntityTakesACommand(t *testing.T) {
 	d := dash()
 

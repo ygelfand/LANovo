@@ -11,12 +11,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/host/takeover"
 )
 
-// resolveName decides what Home Assistant will call the device.
-//
-// An explicit --name wins. Renaming is not free: Home Assistant keys the device on its name, so
-// the old one stays behind with all its entities, which is worth saying rather than doing quietly.
-// Failing that, a name already on the device is kept, and only a device with neither is asked
-// about. Off a terminal there is nobody to ask.
 func resolveName(
 	ctx context.Context,
 	out io.Writer,

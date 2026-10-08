@@ -2,10 +2,8 @@ package mic
 
 import "math"
 
-// Voice is the rate speech recognition works at, and what the wake word models expect.
 const Voice = 16000
 
-// Decimation is how many captured frames make one at the voice rate: 48 kHz to 16 kHz.
 const Decimation = Rate / Voice
 
 const (

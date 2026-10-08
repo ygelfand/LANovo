@@ -1,26 +1,5 @@
-// Package config is everything the device is set to, and the one place that decides it.
-//
-// Reading takes no lock and carries no default:
-//
-//	c := config.Get()
-//	c.Screen.Backlight
-//
-// Writing names the thing being changed, and persists it:
-//
-//	config.Set().Screen().Backlight(70)
-//
-// Each part of the device gets a file here holding its own struct, its defaults and its writer, so
-// a setting and everything about it is in one place. Nothing distinguishes "never set" from "set to
-// the default": loading starts from the defaults and lets the file write over what it mentions.
-//
-// The values the user can choose between are named here too, as closed sets of identifiers with a
-// label — the identifier is written to the file and branched on, the label is what Home Assistant
-// shows. Keeping both here means persistence does not import the subsystem a setting belongs to,
-// and the subsystem does not import persistence. It also means a setting has one home whatever
-// edits it, so a second way in changes nothing about where the value lives.
 package config
 
-// Config is the whole of what the device is set to.
 type Config struct {
 	Device Device `json:"-"`
 	Screen Screen `json:"screen"`
@@ -51,7 +30,6 @@ type Config struct {
 	Weather    Weather    `json:"weather"`
 }
 
-// Defaults is a device nobody has set anything on.
 func Defaults() Config {
 	return Config{
 		Screen: defaultScreen(),
@@ -83,27 +61,18 @@ func Defaults() Config {
 	}
 }
 
-// Device is what lanovod was told at start-up rather than what anyone chose. It is read like
-// everything else, and not written to the file: the next process is told again.
-//
-// Nothing here is readable until boot has called Started, so a component built during init must not
-// reach for it.
 type Device struct {
 	Name  string
 	Addr  string
 	Model string
 }
 
-// Writer is what Set hands back: one method per part of the device, each with its own settings.
-//
-// Nothing here holds a lock. The leaf call does the whole thing — take the lock, change the value,
-// write the file.
 type Writer struct{ st *Store }
 
 func (w Writer) Screen() ScreenWriter         { return ScreenWriter(w) }
 func (w Writer) Clock() ClockWriter           { return ClockWriter(w) }
 func (w Writer) Idle() IdleWriter             { return IdleWriter(w) }
-func (w Writer) Media() MediaWriter           { return MediaWriter{st: w.st} }
+func (w Writer) Media() MediaWriter           { return MediaWriter(w) }
 func (w Writer) Volume() VolumeWriter         { return VolumeWriter(w) }
 func (w Writer) Wake(slot int) WakeWriter     { return WakeWriter{st: w.st, slot: slot} }
 func (w Writer) Stop() StopWriter             { return StopWriter(w) }
@@ -127,11 +96,8 @@ func (w Writer) Update() UpdateWriter         { return UpdateWriter(w) }
 func (w Writer) Home() HomeWriter             { return HomeWriter(w) }
 func (w Writer) Weather() WeatherWriter       { return WeatherWriter(w) }
 
-// Labeled is a setting whose values name themselves. The entity layer binds any of these to a
-// select without knowing which setting it is.
 type Labeled interface{ Label() string }
 
-// Labels is what Home Assistant shows for a set of values.
 func Labels[T Labeled](values []T) []string {
 	out := make([]string, 0, len(values))
 	for _, v := range values {
@@ -140,8 +106,6 @@ func Labels[T Labeled](values []T) []string {
 	return out
 }
 
-// ByLabel resolves what Home Assistant sent back to the value it names. A select speaks labels,
-// everything else speaks values, and this is the one place the two meet.
 func ByLabel[T Labeled](values []T, label string) (T, bool) {
 	for _, v := range values {
 		if v.Label() == label {

@@ -7,9 +7,10 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ygelfand/LANovo/internal/hardware/video"
 	"github.com/ygelfand/libcountertop/pkg/fetch"
 	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube"
+
+	"github.com/ygelfand/LANovo/internal/hardware/video"
 )
 
 func casting() []*cobra.Command {

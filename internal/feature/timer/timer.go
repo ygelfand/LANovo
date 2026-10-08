@@ -1,10 +1,3 @@
-// Package timer is a kitchen timer: Home Assistant keeps the timers, the device counts them down on
-// the screen and rings when one finishes.
-//
-// Home Assistant sends an event when a timer starts, is changed, is cancelled or finishes, and
-// nothing in between — so the countdown here is local arithmetic against a monotonic clock, corrected
-// whenever an event arrives. A finished timer is dropped at that end, so the ringing is entirely this
-// device's to start and to stop.
 package timer
 
 import (
@@ -16,13 +9,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	esphome "github.com/ygelfand/go-esphome-device"
 	"github.com/ygelfand/go-esphome-device/api"
 	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
 	"github.com/ygelfand/libcountertop/pkg/hook"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+
+	"github.com/ygelfand/LANovo/internal/component"
+	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
 func init() {
@@ -30,32 +24,19 @@ func init() {
 }
 
 const (
-	// refresh is how often the countdown is looked at. What is drawn only changes once a second, and
-	// nothing is sent when it has not, so a long timer costs nothing between ticks.
 	refresh = 250 * time.Millisecond
 
-	// ringFor is how long a finished timer rings for if nobody stops it, and ringEvery how often the
-	// tone repeats within that.
 	ringFor   = 15 * time.Minute
 	ringEvery = 2 * time.Second
 
-	// alarmLevel is louder than the tones the device uses for feedback: this one is meant to fetch
-	// somebody from another room.
 	alarmLevel = 0.6
 )
 
-// Timers is every timer Home Assistant has told this device about.
 type Timers struct {
 	Changed hook.Hook[Card]
 
-	// card is the countdown on the panel, taken while something is counting and given back when
-	// nothing is.
-
-	// names is what is counting down, for Home Assistant, which keeps the timers but cannot see
-	// which of them this device is showing.
 	names *esphome.TextSensor
 
-	// woke is how a new timer restarts the redraw, which stops while there is nothing counting down.
 	woke chan struct{}
 
 	mu    sync.Mutex
@@ -64,8 +45,6 @@ type Timers struct {
 	shown string
 }
 
-// timer is one of them. left is what was last known and at is when that was true, so a running timer
-// is left minus however long ago that was.
 type timer struct {
 	name   string
 	total  time.Duration
@@ -110,7 +89,6 @@ func (t *Timers) Name() string { return "timers" }
 
 func (t *Timers) Entities() []esphome.Entity { return []esphome.Entity{t.names} }
 
-// Run redraws the countdown while there is one, and waits to be woken while there is not.
 func (t *Timers) Run(ctx context.Context) error {
 	for {
 		if !t.counting() {
@@ -137,7 +115,6 @@ func (t *Timers) counting() bool {
 	return t.soonest(time.Now()) != nil
 }
 
-// Event is a timer event from Home Assistant.
 func (t *Timers) Event(e esphome.TimerEvent) {
 	slog.Debug(
 		"timer",
@@ -166,8 +143,6 @@ func (t *Timers) Event(e esphome.TimerEvent) {
 	t.publish()
 }
 
-// publish names what is counting down, soonest first. It follows the table rather than the clock, so
-// it does not send Home Assistant anything four times a second.
 func (t *Timers) publish() {
 	t.mu.Lock()
 	now := time.Now()
@@ -191,9 +166,6 @@ func (t *Timers) publish() {
 	t.names.Set(strings.Join(names, ", "))
 }
 
-// Forget drops every timer, for a Home Assistant that has stopped listening: it holds them in memory
-// and comes back without them, so a countdown that outlived the connection is counting down to
-// nothing. Whatever is already ringing carries on, since that no longer depends on Home Assistant.
 func (t *Timers) Forget() {
 	t.mu.Lock()
 	n := len(t.held)
@@ -207,16 +179,12 @@ func (t *Timers) Forget() {
 	t.publish()
 }
 
-// Ringing reports whether a finished timer is sounding, which is one of the things that makes the
-// device audible.
 func (t *Timers) Ringing() bool {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 	return t.stop != nil
 }
 
-// Stop silences a ringing timer and reports whether there was one. The timer itself is Home
-// Assistant's, and it has already dropped it.
 func (t *Timers) Stop() bool {
 	t.mu.Lock()
 	stop := t.stop
@@ -252,8 +220,6 @@ func (t *Timers) forget(id string) {
 	delete(t.held, id)
 }
 
-// finished starts the ringing, or joins a timer that is already ringing: one alarm covers however
-// many of them went off.
 func (t *Timers) finished(e esphome.TimerEvent) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -268,8 +234,6 @@ func (t *Timers) finished(e esphome.TimerEvent) {
 	safe.Go("timer alarm", func() { t.ring(ctx) })
 }
 
-// ring sounds until it is stopped or ringFor is up. Music is ducked rather than suspended: it is one
-// room of what may be a whole house, and the tone is audible over it.
 func (t *Timers) ring(ctx context.Context) {
 	defer func() {
 		t.mu.Lock()
@@ -297,9 +261,6 @@ func (t *Timers) ring(ctx context.Context) {
 	}
 }
 
-// show draws the soonest timer, or takes the card away when there is none. It draws nothing when
-// what it would say has not changed, so the panel is not repainted four times a second for a timer
-// with an hour left.
 func (t *Timers) Now() Card {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -314,8 +275,6 @@ func (t *Timers) now() Card {
 		card.Showing = true
 	}
 
-	// A timer that finished is gone from the table, so the ringing is all that is left of it and it
-	// has to hold the card up by itself.
 	card.Showing = card.Showing || card.Ringing
 	return card
 }
@@ -333,9 +292,6 @@ func (t *Timers) show() {
 	t.Changed.Emit(card)
 }
 
-// soonest is the running timer with the least left. A paused one is shown as nothing rather than as a
-// ring that has stopped moving, because a paused timer is not counting and the light underneath says
-// more.
 func (t *Timers) soonest(now time.Time) *timer {
 	var soon *timer
 	for _, c := range t.held {

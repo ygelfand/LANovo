@@ -6,6 +6,10 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ygelfand/libcountertop/pkg/display/style"
+	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
+	text "github.com/ygelfand/libcountertop/pkg/say"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	"github.com/ygelfand/LANovo/internal/feature/access"
@@ -33,38 +37,15 @@ import (
 	knob "github.com/ygelfand/LANovo/internal/setting"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
-	"github.com/ygelfand/libcountertop/pkg/display/style"
-	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
-	text "github.com/ygelfand/libcountertop/pkg/say"
 )
 
-// Changing a setting from here rather than by tapping it.
-//
-// Every setting on the device can be reached with a finger, and until now that was the only way the
-// harness could reach one: find the row, work out where it landed, tap it. That breaks the moment a
-// page gains a row — twice now a sweep has silently moved a brightness slider or turned the date off
-// because the row it meant to hit had shifted down. A tap is the right way to test the touch
-// handling and the wrong way to arrange the device before testing something else.
-//
-// It goes through the same setters the screen and Home Assistant use, not through the config store,
-// so whatever changes here is saved, redrawn and published exactly as if somebody had tapped it.
-// A harness that wrote the file directly would be testing a path nothing else takes.
-
-// setting is one thing that can be read and changed by name.
 type setting struct {
 	name string
 
-	// field is the config it reads and writes, as a dotted path from Config. It is here so a test
-	// can walk the config and say which settings nothing reaches: a value that exists in the file
-	// and in Home Assistant but nowhere a harness can touch is half wired, and nothing else
-	// notices.
 	field string
 
-	// says is the value as it stands, for reading one back or listing them all.
 	says func(config.Config) string
 
-	// use changes it, reporting what was wrong with the value rather than ignoring it: a harness
-	// that silently did nothing is worse than no harness, because the test still runs.
 	use func(string) error
 }
 
@@ -483,7 +464,6 @@ func settings() []setting {
 			toggle(rtspd.Get().SetEnabled),
 		},
 
-		// Over the cable is where this one is worth having: plug in, turn it on, unplug.
 		{
 			"access.adb",
 			"Access.ADB",
@@ -562,10 +542,6 @@ func cameraRows() []setting {
 	return rows
 }
 
-// set reads or changes a setting.
-//
-// With nothing it lists them, which is how somebody at a terminal finds the name without reading
-// the source, and is also the quickest way to see everything the device is set to at once.
 func set(args []string) (string, error) {
 	all := settings()
 	rows := make([]harness.Setting[config.Config], 0, len(all))
@@ -587,9 +563,7 @@ func language(s string) error {
 	}
 
 	have := make([]string, 0, len(text.Languages()))
-	for _, tag := range text.Languages() {
-		have = append(have, tag)
-	}
+	have = append(have, text.Languages()...)
 	return fmt.Errorf("want one of %s", strings.Join(have, ", "))
 }
 
@@ -645,7 +619,6 @@ func secret(s string) string {
 	return "(set)"
 }
 
-// toggle reads the words people actually type for a switch.
 func toggle(use func(bool)) func(string) error {
 	return func(s string) error {
 		on, ok := knob.Boolean(s)
@@ -657,8 +630,6 @@ func toggle(use func(bool)) func(string) error {
 	}
 }
 
-// number reads a level, refusing one outside the range rather than quietly clamping it: a harness
-// that asked for 150 and got 100 is a test that passed for the wrong reason.
 func number(lo, hi int, use func(int)) func(string) error {
 	return func(s string) error {
 		v, err := strconv.Atoi(s)
@@ -682,7 +653,6 @@ func fpsStep(s string) error {
 	return nil
 }
 
-// paint changes the theme, which is named rather than chosen from a labeled set.
 func paint(s string) error {
 	if strings.EqualFold(s, style.ThemeDefault) {
 		if err := config.Set().Screen().Theme(style.ThemeDefault); err != nil {

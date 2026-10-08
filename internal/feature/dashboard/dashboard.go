@@ -1,11 +1,10 @@
-// Package dashboard is what the screen shows when nothing else is asking.
-//
-// It holds the lowest claim, so anything with something to say covers it. The clock face is what
-// it draws today and is not the only thing it will draw.
 package dashboard
 
 import (
 	"sync"
+
+	esphome "github.com/ygelfand/go-esphome-device"
+	sharedlib "github.com/ygelfand/libcountertop/pkg/display/dashboard"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -17,8 +16,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
-	esphome "github.com/ygelfand/go-esphome-device"
-	sharedlib "github.com/ygelfand/libcountertop/pkg/display/dashboard"
 )
 
 func init() {
@@ -45,7 +42,6 @@ func Get() *Dashboard {
 		shared = &Dashboard{}
 		shared.build()
 
-		// Neither is the clock's own doing, and both change what it should look like.
 		screen.Get().Themed.Listen(func(theme.Theme) { shared.Redraw() })
 		sensors.Get().Turned.Listen(func(display.Orientation) { shared.Redraw() })
 		poster.Get().Changed.Listen(func(int) { shared.Redraw() })
@@ -73,9 +69,6 @@ func state(cfg config.Config) sharedlib.State {
 }
 func (d *Dashboard) Restore(cfg config.Config) { d.controls.Restore(state(cfg)) }
 
-// Ready reports whether the clock has anything worth showing, which is the time being right. The
-// boot screen holds until it does: this device starts in 1970, and a confident wrong time is
-// worse than a logo.
 func (d *Dashboard) Ready() bool {
 	select {
 	case <-clock.Get().Ready():
@@ -88,7 +81,16 @@ func (d *Dashboard) Ready() bool {
 func (d *Dashboard) Redraw() { shell.Get().Redraw() }
 
 func (d *Dashboard) build() {
-	d.controls = sharedlib.NewControls(sharedlib.Dependencies{Preferences: sharedlib.Preferences{Screen: config.ScreenSection, Clock: config.ClockSection}, Display: shell.Get(), DeviceID: component.DeviceScreen})
+	d.controls = sharedlib.NewControls(
+		sharedlib.Dependencies{
+			Preferences: sharedlib.Preferences{
+				Screen: config.ScreenSection,
+				Clock:  config.ClockSection,
+			},
+			Display:  shell.Get(),
+			DeviceID: component.DeviceScreen,
+		},
+	)
 	d.format, d.face, d.place, d.size, d.ink = d.controls.Format, d.controls.Face, d.controls.Position, d.controls.Size, d.controls.Ink
 	d.date = d.controls.Date
 }

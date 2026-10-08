@@ -9,13 +9,10 @@ import (
 	"github.com/ygelfand/LANovo/internal/host/device"
 )
 
-// PermissiveArg is what makes SELinux permissive across reboots.
-//
-// init honors androidboot.selinux on any build that is not `user`, and this firmware is
-// userdebug. setenforce 0 lasts only until the next boot.
+// init honors androidboot.selinux on any build that is not `user`.
 const PermissiveArg = "androidboot.selinux=permissive"
 
-// The Android boot image header, the parts that matter. cmdline is 512 bytes at offset 64.
+// Android boot image header: cmdline is 512 bytes at offset 64.
 const (
 	bootMagic     = "ANDROID!"
 	cmdlineOffset = 64
@@ -23,16 +20,14 @@ const (
 	headerRead    = 4096
 )
 
-// Boot describes one boot partition's command line.
 type Boot struct {
-	Slot       string // "_a" or "_b"
+	Slot       string
 	Partition  string
 	PageSize   uint32
 	Cmdline    string
 	Permissive bool
 }
 
-// ReadBoot reads a boot partition's header.
 func ReadBoot(d *device.Device, slot string) (*Boot, error) {
 	dir, err := ByName(d)
 	if err != nil {
@@ -40,7 +35,7 @@ func ReadBoot(d *device.Device, slot string) (*Boot, error) {
 	}
 	part := dir + "/boot" + slot
 
-	// base64 through the shell: adb's text mode mangles raw bytes.
+	// adb's text mode mangles raw bytes.
 	out, err := d.Shell(
 		fmt.Sprintf("dd if=%s bs=%d count=1 2>/dev/null | base64", part, headerRead),
 	)
@@ -69,7 +64,6 @@ func ReadBoot(d *device.Device, slot string) (*Boot, error) {
 	}, nil
 }
 
-// header reads what matters out of the first page: the page size and the command line.
 func header(head []byte) (pageSize uint32, cmdline string, err error) {
 	if len(head) < cmdlineOffset+cmdlineSize {
 		return 0, "", fmt.Errorf(
@@ -92,11 +86,10 @@ func header(head []byte) (pageSize uint32, cmdline string, err error) {
 	), nil
 }
 
-// permissive is the command line with the argument appended, and an error when it will not fit.
 func permissive(cmdline string) (string, error) {
 	want := cmdline + " " + PermissiveArg
 
-	// The field is NUL terminated, so the string has to be shorter than it.
+	// The cmdline field is NUL terminated.
 	if len(want) >= cmdlineSize {
 		return "", fmt.Errorf(
 			"cmdline needs %d bytes, the field holds %d",
@@ -107,8 +100,7 @@ func permissive(cmdline string) (string, error) {
 	return want, nil
 }
 
-// writeCmdline replaces the command line in a page, leaving every other byte alone. The header's
-// id is a hash over the kernel and ramdisk rather than the cmdline, so it stays valid.
+// The header id hashes the kernel and ramdisk, not the cmdline.
 func writeCmdline(page []byte, want string) error {
 	if len(page) < cmdlineOffset+cmdlineSize {
 		return fmt.Errorf(
@@ -118,9 +110,6 @@ func writeCmdline(page []byte, want string) error {
 		)
 	}
 
-	// The page is read again just before it is written, and this is the one write on the device
-	// that can leave it unable to boot. Checked here rather than at the caller so nothing can
-	// stamp a command line into something that is not a boot image.
 	if !bytes.HasPrefix(page, []byte(bootMagic)) {
 		return fmt.Errorf("page does not start with %q", bootMagic)
 	}
@@ -134,13 +123,6 @@ func writeCmdline(page []byte, want string) error {
 	return nil
 }
 
-// MakePermissive appends the permissive argument to a boot partition's command line.
-//
-// Only the first page is rewritten, and only the cmdline field within it: the kernel, the ramdisk
-// and every size field are untouched. The header's id is a hash over kernel and ramdisk, not the
-// cmdline, so it stays valid.
-//
-// Idempotent — a partition that already has the argument is left alone.
 func MakePermissive(d *device.Device, slot string) (changed bool, err error) {
 	b, err := ReadBoot(d, slot)
 	if err != nil {
@@ -194,7 +176,6 @@ func MakePermissive(d *device.Device, slot string) (changed bool, err error) {
 		return false, fmt.Errorf("writing %s: %w", b.Partition, err)
 	}
 
-	// Read it back rather than trust the write.
 	after, err := ReadBoot(d, slot)
 	if err != nil {
 		return false, err
@@ -205,7 +186,6 @@ func MakePermissive(d *device.Device, slot string) (changed bool, err error) {
 	return true, nil
 }
 
-// Slots is every boot slot on the device.
 func Slots(d *device.Device) ([]string, error) {
 	dir, err := ByName(d)
 	if err != nil {

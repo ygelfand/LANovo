@@ -1,6 +1,3 @@
-// Package parts is everything LANovo puts on /system: what each file is, where it goes, which
-// boards get it, and which service has to restart when it changes. lanovod carries every part but
-// itself, so an update that replaces lanovod brings the rest along.
 package parts
 
 import (
@@ -58,11 +55,8 @@ var (
 		Services: []string{layout.CameraService}, data: camera}
 )
 
-// Carried is every part lanovod holds a copy of.
 func Carried() []Part { return []Part{InitRC, Surface, CamShim, Camera} }
 
-// Ensure rewrites the carried parts this board gets wherever they differ from the copy on /system,
-// restarts what holds them, and reports whether a part init only reads at boot changed.
 func Ensure() (rebootPending bool) {
 	soc := board.Current().SoC
 
@@ -110,22 +104,20 @@ func Ensure() (rebootPending bool) {
 	return rebootPending
 }
 
-// Replace writes data beside path and renames it over, so a process still running the old file
-// keeps its copy. / has to be writable.
 func Replace(path string, data []byte, mode os.FileMode) error {
 	tmp := path + ".new"
 	if err := os.WriteFile(tmp, data, mode); err != nil {
 		return err
 	}
 	if err := os.Chmod(tmp, mode); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return err
 	}
 	if err := CopyLabel(layout.Binary, tmp); err != nil {
 		slog.Warn("labelling failed", "path", tmp, "err", err)
 	}
 	if err := os.Rename(tmp, path); err != nil {
-		os.Remove(tmp)
+		_ = os.Remove(tmp)
 		return fmt.Errorf("parts: replacing %s: %w", path, err)
 	}
 	return nil

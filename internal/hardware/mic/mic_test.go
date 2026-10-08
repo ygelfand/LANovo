@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// bytesOf writes samples the way the card delivers them, little-endian and interleaved.
 func bytesOf(samples ...int16) []byte {
 	b := make([]byte, len(samples)*2)
 	for i, s := range samples {
@@ -34,8 +33,6 @@ func TestSamplesOfNothing(t *testing.T) {
 	}
 }
 
-// The stream is interleaved, so pulling a channel out has to take every other sample from the
-// right offset — an off-by-one here is the other microphone.
 func TestChannel(t *testing.T) {
 	frame := []int16{1, 100, 2, 200, 3, 300}
 
@@ -83,8 +80,6 @@ func TestPeak(t *testing.T) {
 	}
 }
 
-// This is the check that catches the routing trap: a capture that looks like stereo and is one
-// microphone copied. It cost an evening to find the first time.
 func TestIdentical(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -107,7 +102,6 @@ func TestIdentical(t *testing.T) {
 	}
 }
 
-// The gain is digital and the card rejects anything outside its range.
 func TestGainIsClamped(t *testing.T) {
 	m := Get()
 
@@ -129,8 +123,6 @@ func TestGainIsClamped(t *testing.T) {
 	}
 }
 
-// The route has to set the tertiary channel count, which is the control the XML leaves out and
-// the whole reason capture came back mono the first time.
 func TestRouteSetsTheTertiaryChannels(t *testing.T) {
 	var found bool
 	for _, s := range qualcommRoute {
@@ -146,7 +138,6 @@ func TestRouteSetsTheTertiaryChannels(t *testing.T) {
 	}
 }
 
-// Both decimators have to be routed, or one channel is silence.
 func TestRouteSetsBothDecimators(t *testing.T) {
 	want := map[string]string{"DEC1 MUX": "DMIC1", "DEC2 MUX": "DMIC2"}
 

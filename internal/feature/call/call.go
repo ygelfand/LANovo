@@ -3,6 +3,8 @@ package call
 import (
 	"sync"
 
+	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
@@ -13,10 +15,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
-	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
 )
 
-// componentCall binds application configuration restoration to the shared controller.
 type componentCall struct{ *sharedcall.Calls }
 
 func (c *componentCall) Restore(v config.Config) { c.Calls.Restore(v.Call) }
@@ -43,7 +43,11 @@ func Get() *sharedcall.Calls {
 }
 
 func init() {
-	component.Register(component.Network, func() *componentCall { return &componentCall{Get()} }, component.Order(62))
+	component.Register(
+		component.Network,
+		func() *componentCall { return &componentCall{Get()} },
+		component.Order(62),
+	)
 	web.Handle("POST /call/offer", Get().OfferHandler())
 	web.Handle("POST /call/answer", Get().AnswerHandler())
 	web.Handle("POST /call/end", Get().EndHandler())

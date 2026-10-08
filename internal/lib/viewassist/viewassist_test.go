@@ -2,8 +2,6 @@ package viewassist
 
 import "testing"
 
-// A path names a view by its last segment, because the dashboard the views sit under is
-// configurable: a satellite that matched the whole path would stop understanding a renamed one.
 func TestAPathNamesItsView(t *testing.T) {
 	for _, at := range []struct {
 		path string
@@ -28,8 +26,6 @@ func TestAPathNamesItsView(t *testing.T) {
 	}
 }
 
-// Their status icons carry external paths as well as views, so a path that is not a view has to
-// come back as one that is not rather than as a view nobody can draw.
 func TestAPathThatIsNotAViewIsNotOne(t *testing.T) {
 	for _, path := range []string{
 		"", "/", "///",
@@ -43,7 +39,6 @@ func TestAPathThatIsNotAViewIsNotOne(t *testing.T) {
 	}
 }
 
-// Every view's own path has to round-trip, or the satellite cannot say where it is.
 func TestEveryViewsPathNamesItBack(t *testing.T) {
 	for _, v := range Views {
 		got, ok := Navigated(v.Path())
@@ -57,8 +52,6 @@ func TestEveryViewsPathNamesItBack(t *testing.T) {
 	}
 }
 
-// The one view this device cannot draw is the one that is markup, which is the whole reason for
-// drawing the others natively.
 func TestOnlyTheWebpageIsNotDrawable(t *testing.T) {
 	for _, v := range Views {
 		if v.Drawable() == (v == Webpage) {
@@ -70,7 +63,6 @@ func TestOnlyTheWebpageIsNotDrawable(t *testing.T) {
 	}
 }
 
-// Hold exists to stop the idle timer, and cycle is already moving on its own.
 func TestHoldAndCycleDoNotIdle(t *testing.T) {
 	for _, m := range []Mode{Normal, MusicMode, Night, DoNotDisturb} {
 		if !m.Idles() {
@@ -84,7 +76,6 @@ func TestHoldAndCycleDoNotIdle(t *testing.T) {
 	}
 }
 
-// Night is about brightness, not about silence: an alarm at night is the case that matters most.
 func TestOnlyDoNotDisturbRefusesToWake(t *testing.T) {
 	for _, m := range []Mode{Normal, MusicMode, Hold, Cycle, Night} {
 		if !m.Wakes() {
@@ -96,8 +87,6 @@ func TestOnlyDoNotDisturbRefusesToWake(t *testing.T) {
 	}
 }
 
-// A mode this build has not heard of leaves the screen alone rather than putting it in a state
-// nobody asked for.
 func TestAnUnknownModeBehavesLikeNormal(t *testing.T) {
 	m := Mode("something-new")
 
@@ -106,8 +95,6 @@ func TestAnUnknownModeBehavesLikeNormal(t *testing.T) {
 	}
 }
 
-// Command timers are a separate stream: a command firing is something to run rather than something
-// to say, and anything listening for one wants only its own.
 func TestCommandTimersFireTheirOwnEvents(t *testing.T) {
 	if got, want := Event(KindTimer, ExpiredAt), "va_timer_expired"; got != want {
 		t.Errorf("a timer expiring fires %q, want %q", got, want)
@@ -144,7 +131,6 @@ func TestKindsAreKnownAndNothingElseIs(t *testing.T) {
 	}
 }
 
-// The two lists must not overlap, or an action is both ours to answer and somebody else's.
 func TestAnActionIsOursOrItIsNot(t *testing.T) {
 	for _, a := range Answerable {
 		if !Served(a) {

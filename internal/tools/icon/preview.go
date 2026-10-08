@@ -10,10 +10,6 @@ import (
 	"golang.org/x/exp/shiny/iconvg"
 )
 
-// A sheet of what was converted, because the only way to know an icon came out right is to look at
-// it. Rasterised the way the device does: coverage in one color, the palette discarded.
-
-// preview writes every icon side by side, dark on light so a thin one is still visible.
 func preview(icons []icon, path string, size int) error {
 	pad := size / 4
 	sheet := image.NewRGBA(image.Rect(0, 0, len(icons)*(size+pad)+pad, size+pad*2))
@@ -38,7 +34,6 @@ func preview(icons []icon, path string, size int) error {
 			return err
 		}
 
-		// The rasterizer leaves coverage in the alpha, so the ink is drawn through it.
 		at := image.Rect(pad+i*(size+pad), pad, pad+i*(size+pad)+size, pad+size)
 		draw.DrawMask(sheet, at, &image.Uniform{color.RGBA{0x11, 0x11, 0x11, 0xff}},
 			image.Point{}, one, image.Point{}, draw.Over)

@@ -1,4 +1,3 @@
-// Package lanovoctl is the command tree for the host-side CLI.
 package lanovoctl
 
 import (

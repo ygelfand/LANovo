@@ -2,10 +2,11 @@ package control
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/ygelfand/LANovo/internal/feature/call"
-	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 	sharedcmd "github.com/ygelfand/libcountertop/pkg/runtime/control/callcmd"
+
+	"github.com/ygelfand/LANovo/internal/feature/call"
+	"github.com/ygelfand/LANovo/internal/feature/discovery"
 )
 
 func calling() []*cobra.Command {

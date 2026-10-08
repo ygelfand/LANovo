@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// fresh points the config at an empty file for one test.
 func fresh(t *testing.T) string {
 	t.Helper()
 

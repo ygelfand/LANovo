@@ -19,8 +19,6 @@ func TestEdgesRoundTripToTheTouchscreen(t *testing.T) {
 	}
 }
 
-// Added out of order, drawn in order. The rail is learned by position, so where each thing sits
-// cannot depend on which feature happened to be built first.
 func TestTheOrderIsDeclaredNotTheOrderAdded(t *testing.T) {
 	r := &Rail{}
 
@@ -40,8 +38,6 @@ func TestTheOrderIsDeclaredNotTheOrderAdded(t *testing.T) {
 	}
 }
 
-// Two features picking the same number still land the same way every boot, rather than however
-// the import graph came out that build.
 func TestEqualOrdersFallBackToTheName(t *testing.T) {
 	first, second := &Rail{}, &Rail{}
 
@@ -61,7 +57,6 @@ func TestEqualOrdersFallBackToTheName(t *testing.T) {
 	}
 }
 
-// The places on the rail are distinct, or two of them would sort by name and read as arbitrary.
 func TestTheDeclaredPlacesAreDistinct(t *testing.T) {
 	seen := map[int]bool{}
 

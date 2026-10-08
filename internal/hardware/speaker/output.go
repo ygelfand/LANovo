@@ -8,7 +8,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
-// output is the part of the playback path that differs by SoC.
 type output interface {
 	route() []setting
 	stereo() bool
@@ -29,7 +28,6 @@ func (s *Speaker) hw() output {
 	return s.hwOut
 }
 
-// decibels is a gain as attenuation, with silence as negative infinity.
 func decibels(gain float32) float64 {
 	if gain <= 0 {
 		return math.Inf(-1)

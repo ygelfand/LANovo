@@ -1,4 +1,3 @@
-// Package rtspd serves the camera over RTSP: rtsp://device:8554/main and /sub.
 package rtspd
 
 import (
@@ -66,7 +65,6 @@ func (s *Server) build() {
 	s.sw.OnCommand = s.SetEnabled
 }
 
-// SetEnabled starts or stops serving and remembers it.
 func (s *Server) SetEnabled(on bool) {
 	s.sw.Set(on)
 	if err := config.Set().RTSP().Enabled(on); err != nil {
@@ -129,7 +127,7 @@ func (s *Server) stop() {
 	if s.srv == nil {
 		return
 	}
-	s.srv.Close()
+	_ = s.srv.Close()
 	s.srv = nil
 	s.desc.close()
 	s.desc = nil

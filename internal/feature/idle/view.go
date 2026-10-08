@@ -3,13 +3,14 @@ package idle
 import (
 	"time"
 
+	sharedview "github.com/ygelfand/libcountertop/pkg/display/idleview"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard/face"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
-	sharedview "github.com/ygelfand/libcountertop/pkg/display/idleview"
 )
 
 type View = sharedview.View

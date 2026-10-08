@@ -1,7 +1,3 @@
-// Package api presents the display to Home Assistant over the ESPHome native API.
-//
-// It owns no entities. What it serves is whatever the components registered, collected at
-// start-up: their entities, and the handlers that answer without one.
 package api
 
 import (
@@ -20,6 +16,8 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -28,11 +26,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/service"
-	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {
-	// Last: it serves the registry, so nothing should still be coming up when it starts listening.
 	component.Register(component.Network, Get, component.Order(99),
 		component.Supervise(service.Restart(2*time.Second, time.Minute)))
 }
@@ -65,8 +61,6 @@ func Get() *API {
 
 func (a *API) Name() string { return "api" }
 
-// Start builds the server. Not the constructor, because what the server serves is the registry,
-// and the registry is only complete once every package's init has run.
 func (a *API) Start(context.Context) error {
 	psk, err := loadPSK(layout.KeyPath)
 	if err != nil {
@@ -108,7 +102,6 @@ func (a *API) Start(context.Context) error {
 		PSK:    psk,
 		Logger: slog.Default(),
 
-		// Persist a key Home Assistant pushes, or the next connection reverts to the old one.
 		OnSetEncryptionKey: func(k esphome.PSK) error { return writePSK(layout.KeyPath, k) },
 
 		OnSubscribed: func() {
@@ -122,12 +115,6 @@ func (a *API) Start(context.Context) error {
 	return nil
 }
 
-// subDevices groups entities onto pages of their own, since Home Assistant puts every entity a
-// device has on one page and there are more here than anyone wants to read.
-//
-// Which pages there are is component's to say. This puts the device's name in front of each,
-// because Home Assistant shows what it is given verbatim: a bare "Playback" is unreadable in a
-// house with several of these.
 func subDevices(name string) []esphome.Device {
 	pages := component.SubDevices()
 
@@ -178,9 +165,6 @@ func (a *API) Run(ctx context.Context) error {
 	}
 }
 
-// fire puts an event on Home Assistant's bus. Nothing happens before the server is up or while no
-// client is subscribed: an event nobody is listening for is not a failure, and the component that
-// asked for it has nothing useful to do about one.
 func (a *API) fire(e component.Event) {
 	if a.srv == nil {
 		return
@@ -190,8 +174,6 @@ func (a *API) fire(e component.Event) {
 	}
 }
 
-// Reconnect drops every client and serves afresh, which is how a change to what the device says it
-// is reaches Home Assistant.
 func (a *API) Reconnect() {
 	select {
 	case a.reconnect <- struct{}{}:
@@ -199,14 +181,7 @@ func (a *API) Reconnect() {
 	}
 }
 
-// loadPSK reads the device's key, and answers the reserved zero key when there is none.
-//
-// Zero is what unprovisioned means: the transport is still Noise, any client may connect, and
-// Home Assistant then pushes a real key that OnSetEncryptionKey keeps. Nothing has to carry a
-// secret off the device, which is what let the onboarding page go.
-//
-// Only a missing file is a new device. A key that cannot be read is not grounds for falling back
-// to zero — that would hand an adopted device to anyone on the network.
+// ESPHome reserves the all-zero key for an unprovisioned device.
 func loadPSK(path string) (*esphome.PSK, error) {
 	b, err := os.ReadFile(path)
 	switch {
@@ -225,8 +200,6 @@ func loadPSK(path string) (*esphome.PSK, error) {
 	return esphome.Unprovisioned(), nil
 }
 
-// adopted records that Home Assistant has the device, which is what takes the onboarding screen
-// away. Written once: it is the same answer every subscription after the first.
 func adopted() {
 	if config.Get().API.Adopted {
 		return

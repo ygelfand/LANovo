@@ -1,9 +1,10 @@
 package weather
 
 import (
+	esphome "github.com/ygelfand/go-esphome-device"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	esphome "github.com/ygelfand/go-esphome-device"
 )
 
 const entityMost = 128

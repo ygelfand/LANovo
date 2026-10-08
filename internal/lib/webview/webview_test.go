@@ -40,7 +40,9 @@ func solid(w, h int, c color.RGBA) []byte {
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
 	draw.Draw(img, img.Bounds(), &image.Uniform{c}, image.Point{}, draw.Src)
 	var buf bytes.Buffer
-	jpeg.Encode(&buf, img, &jpeg.Options{Quality: 95})
+	if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 95}); err != nil {
+		panic(err)
+	}
 	return buf.Bytes()
 }
 
@@ -159,7 +161,7 @@ func TestASessionPaintsTilesAndSendsTouches(t *testing.T) {
 			return
 		}
 		defer c.Close()
-		c.WriteMessage(
+		_ = c.WriteMessage(
 			websocket.BinaryMessage,
 			frameMsg(
 				1,
@@ -167,7 +169,7 @@ func TestASessionPaintsTilesAndSendsTouches(t *testing.T) {
 				Tile{X: 0, Y: 0, W: 32, H: 32, Data: solid(32, 32, color.RGBA{250, 0, 0, 255})},
 			),
 		)
-		c.WriteMessage(
+		_ = c.WriteMessage(
 			websocket.BinaryMessage,
 			frameMsg(
 				1,
@@ -175,11 +177,11 @@ func TestASessionPaintsTilesAndSendsTouches(t *testing.T) {
 				Tile{X: 32, Y: 16, W: 32, H: 16, Data: solid(32, 16, color.RGBA{0, 0, 250, 255})},
 			),
 		)
-		c.WriteMessage(
+		_ = c.WriteMessage(
 			websocket.BinaryMessage,
 			[]byte{msgCurrentURL, version, 4, 0, 0, 0, 'h', 'o', 'm', 'e'},
 		)
-		c.WriteMessage(
+		_ = c.WriteMessage(
 			websocket.BinaryMessage,
 			[]byte{msgFrameStats, version, 0, 0, 0, 0, 0, 0, 0, 0},
 		)
@@ -276,7 +278,9 @@ func BenchmarkDecodeFullTile(b *testing.B) {
 			}
 		}
 		var buf bytes.Buffer
-		jpeg.Encode(&buf, img, &jpeg.Options{Quality: 85})
+		if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 85}); err != nil {
+			b.Fatal(err)
+		}
 		data := buf.Bytes()
 		canvas := image.NewRGBA(img.Bounds())
 		b.Run(image.Pt(sz[0], sz[1]).String(), func(b *testing.B) {

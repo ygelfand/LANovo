@@ -1,4 +1,3 @@
-// Package visual adapts shared visual renderers to product labels and artwork.
 package visual
 
 import shared "github.com/ygelfand/libcountertop/pkg/display/visual"

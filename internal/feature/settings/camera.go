@@ -3,13 +3,13 @@ package settings
 import (
 	"sync"
 
+	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
 	"github.com/ygelfand/LANovo/internal/feature/rtspd"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/setting"
-	"github.com/ygelfand/LANovo/internal/ui/widget"
-	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
 )
 
 var cameraOnce sync.Once
@@ -37,9 +37,4 @@ func cameraPages() *sharedsettings.CameraPages[livecam.Knobs] {
 func cameraPage() *shell.Page                 { return cameraPages().Page() }
 func sectionPage(g setting.Group) *shell.Page { return cameraPages().Section(g) }
 func choicePage(s livecam.Knob) *shell.Page   { return cameraPages().Choice(s) }
-func cameraRow(s livecam.Knob, k *livecam.Knobs) (widget.Row, func(int)) {
-	return cameraPages().Row(s, k)
-}
-func shown() []setting.Group { return cameraPages().Shown() }
-
-var dimmed = sharedsettings.Dimmed
+func shown() []setting.Group                  { return cameraPages().Shown() }

@@ -9,7 +9,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/i2c"
 )
 
-// chip is a BMA253 answering from a register map.
 type chip struct {
 	regs map[byte]byte
 	err  error
@@ -41,8 +40,6 @@ func (c *chip) Transfer(msgs ...i2c.Msg) error {
 	return nil
 }
 
-// axisCounts writes one axis as the part packs it: a signed 12-bit value in the top of a 16-bit
-// little-endian pair.
 func (c *chip) axis(reg byte, g float64) {
 	raw := int16(math.Round(g*countsPerG)) << 4
 	c.regs[reg] = byte(uint16(raw))
@@ -104,8 +101,6 @@ func TestIdentifyAcceptsTheFamily(t *testing.T) {
 	}
 }
 
-// The 12-bit packing is the thing most easily got wrong, and a sign error reads as the device
-// being upside down.
 func TestReadDecodesSignedTwelveBits(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -183,7 +178,6 @@ func TestTrackerFollowsGravity(t *testing.T) {
 	}
 }
 
-// A device being picked up reads well above 1g, and nothing about that says which way is up.
 func TestTrackerIgnoresMovement(t *testing.T) {
 	tr := NewTracker()
 	tr.Update(Reading{X: 1})
@@ -196,7 +190,6 @@ func TestTrackerIgnoresMovement(t *testing.T) {
 	}
 }
 
-// Lying flat, gravity is on the screen's own axis and the other two say nothing.
 func TestTrackerIgnoresLyingFlat(t *testing.T) {
 	tr := NewTracker()
 	tr.Update(Reading{X: 1})
@@ -209,12 +202,10 @@ func TestTrackerIgnoresLyingFlat(t *testing.T) {
 	}
 }
 
-// The reason hysteresis exists: a device resting near a boundary must not turn back and forth.
 func TestTrackerHoldsNearABoundary(t *testing.T) {
 	tr := NewTracker()
 	tr.Update(Reading{X: 1})
 
-	// Halfway between two rotations, tipped a hair towards the other one.
 	if changed := tr.Update(Reading{X: 0.70, Y: -0.71}); changed {
 		t.Error("a reading on the boundary turned the screen")
 	}
@@ -223,7 +214,6 @@ func TestTrackerHoldsNearABoundary(t *testing.T) {
 	}
 }
 
-// Turned properly, it still has to follow.
 func TestTrackerTurnsWhenCommitted(t *testing.T) {
 	tr := NewTracker()
 	tr.Update(Reading{X: 1})
@@ -236,7 +226,6 @@ func TestTrackerTurnsWhenCommitted(t *testing.T) {
 	}
 }
 
-// Update reports a change only when there is one, so a caller can redraw on the answer.
 func TestTrackerReportsOnlyRealChanges(t *testing.T) {
 	tr := NewTracker()
 

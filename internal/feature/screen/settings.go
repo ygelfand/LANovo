@@ -5,18 +5,13 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/ygelfand/libcountertop/pkg/display/style"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/setting"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
-	"github.com/ygelfand/libcountertop/pkg/display/style"
 )
-
-// The panel's settings as a table, the way internal/feature/livecam has one.
-//
-// A row writes into config.Screen, which is the stored form — so unlike the camera's, where the
-// table describes a capture and something else saves it, saving here is writing the field the row
-// already wrote.
 
 type (
 	Setting = setting.Setting[config.Screen]
@@ -25,8 +20,6 @@ type (
 
 const Panel Group = "Panel"
 
-// Table is what Home Assistant is offered. The panel's own pages are not built from this: a theme
-// is picked off a grid of swatches and a clock face off drawings of it, neither of which is a row.
 var (
 	table *setting.Table[config.Screen]
 	built sync.Once
@@ -146,7 +139,6 @@ func rows() []Setting {
 	}
 }
 
-// A theme and an edge carry their own label, so neither needs a catalogue key of its own.
 func plain(values []string) []setting.Option {
 	out := make([]setting.Option, 0, len(values))
 	for _, v := range values {

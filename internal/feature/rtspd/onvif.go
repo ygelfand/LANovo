@@ -1,6 +1,7 @@
 package rtspd
 
 import (
+	"errors"
 	"log/slog"
 	"net"
 	"net/http"
@@ -24,7 +25,7 @@ func snapshot(w http.ResponseWriter, _ *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "image/jpeg")
-	w.Write(jpeg)
+	_, _ = w.Write(jpeg)
 }
 
 type describer struct {
@@ -62,7 +63,11 @@ func describe() *describer {
 		slog.Warn("onvif is not answering", "port", ONVIFPort, "err", err)
 		return d
 	}
-	go d.http.Serve(ln)
+	go func() {
+		if err := d.http.Serve(ln); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			slog.Warn("onvif stopped serving", "port", ONVIFPort, "err", err)
+		}
+	}()
 
 	d.found = &onvif.Responder{
 		Hardware: "LANovo",
@@ -86,7 +91,7 @@ func (d *describer) close() {
 	if d == nil {
 		return
 	}
-	d.http.Close()
+	_ = d.http.Close()
 	if d.found != nil {
 		d.found.Close()
 	}

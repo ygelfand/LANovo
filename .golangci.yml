@@ -5,7 +5,16 @@ run:
   go: "1.26"
 formatters:
   enable:
+    - gofmt
+    - goimports
     - golines
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/ygelfand/LANovo
+  exclusions:
+    paths:
+      - scratch
 linters:
   enable:
     - errcheck
@@ -22,6 +31,11 @@ linters:
         - (*os.File).Close
         - fmt.Fprintf
         - fmt.Fprintln
+
+  exclusions:
+    rules:
+      - linters: [errcheck]
+        source: "^\\s*defer "
 
 issues:
   max-issues-per-linter: 0

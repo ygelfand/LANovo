@@ -1,9 +1,11 @@
 package wake
 
 import (
-	"github.com/ygelfand/LANovo/internal/layout"
-	shared "github.com/ygelfand/libcountertop/pkg/inference/wake"
 	"sync"
+
+	shared "github.com/ygelfand/libcountertop/pkg/inference/wake"
+
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 type Model = shared.Model

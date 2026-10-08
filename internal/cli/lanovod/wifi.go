@@ -7,12 +7,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/libcountertop/pkg/network/wpa"
+
+	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 )
 
-// scanFor is how long a scan is given. Results arrive over several seconds and the scan reads until
-// the list stops growing, so this only has to be longer than that.
 const scanFor = 20 * time.Second
 
 func newWifiCmd() *cobra.Command {
@@ -78,7 +77,6 @@ func newWifiCmd() *cobra.Command {
 	return cmd
 }
 
-// report is the connection and what is configured, which is what says whether anything worked.
 func report() error {
 	c, err := wifi.Dial()
 	if err != nil {

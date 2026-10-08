@@ -1,4 +1,3 @@
-// Package livecam supplies board-specific configuration to the shared camera-session hub.
 package livecam
 
 import (
@@ -7,12 +6,13 @@ import (
 	"log/slog"
 	"time"
 
+	camerasession "github.com/ygelfand/libcountertop/pkg/camera/session"
+
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/mtkcamera"
-	camerasession "github.com/ygelfand/libcountertop/pkg/camera/session"
 )
 
 const FPS = 30
@@ -27,16 +27,15 @@ type Picture = camerasession.Picture
 type Session = camerasession.Session
 type Size = camerasession.Size
 
-// Sizes is each stream as it is encoded, turned to stand upright.
 func Sizes() []Size { return hub.Sizes() }
 
 func sizesFor(q int) []Size {
 	k := Saved()
 	mw, mh := parseSize(k.MainSize)
-	out := []Size{{mw, mh}}
+	out := []Size{{Width: mw, Height: mh}}
 	if k.SubOn {
 		sw, sh := subFor(k)
-		out = append(out, Size{sw, sh})
+		out = append(out, Size{Width: sw, Height: sh})
 	}
 	if q >= 0 && q%2 == 1 {
 		for i := range out {
@@ -46,7 +45,6 @@ func sizesFor(q int) []Size {
 	return out
 }
 
-// Turn is the quarter turns the helper draws the camera through.
 func Turn() int {
 	if board.Current().SoC == board.MediaTek {
 		return 0
@@ -54,7 +52,6 @@ func Turn() int {
 	return turnFor(int(display.Get().Orientation()))
 }
 
-// mounted is the quarter turns clockwise that stand a Qualcomm board's frame up with the device at 0°.
 const mounted = 3
 
 func turnFor(device int) int {
@@ -99,7 +96,6 @@ func cameraSnapshot() camerasession.Snapshot {
 func Join(at int) (*Session, <-chan mtkcamera.Frame, error) { return hub.Join(at) }
 func Leave(s *Session, frames <-chan mtkcamera.Frame)       { hub.Leave(s, frames) }
 
-// Sessions returns the camera owner used by streaming consumers.
 func Sessions() *camerasession.Hub { return hub }
 
 func RequestKey() error                           { return hub.RequestKey() }

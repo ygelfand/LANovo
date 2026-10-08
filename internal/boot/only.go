@@ -10,16 +10,11 @@ import (
 	"strings"
 )
 
-// instance is the address a running lanovod holds for as long as it lives. Abstract, so there is
-// no file to go stale: the kernel drops the name when the process does.
+// The kernel drops an abstract socket name when its process exits.
 const instance = "@lanovod-instance"
 
-// ExitTaken is what the process exits with when another lanovod already holds the device. Its own
-// code, so init's logs separate this from having fallen over: one is a mistake, the other is a
-// crash, and a service stuck in restarting looks the same either way.
 const ExitTaken = 3
 
-// Taken is another lanovod already running, and which one.
 type Taken struct {
 	Pid  int
 	Name string
@@ -36,26 +31,18 @@ func (t *Taken) Error() string {
 
 func (t *Taken) Unwrap() error { return t.Err }
 
-// Only takes the lock that says this is the only lanovod, and hands back what releases it.
-//
-// The framebuffer is not exclusive — two processes can open it and both draw, which shows up as a
-// screen flicking between two things that are each individually correct. So is the sound card, the
-// touchscreen and the supplicant socket. Nothing below notices; this is where it is caught.
+// The framebuffer, sound card, touchscreen and supplicant socket are not exclusive.
 func Only() (func(), error) {
 	l, err := net.Listen("unix", instance)
 	if err == nil {
-		return func() { l.Close() }, nil
+		return func() { _ = l.Close() }, nil
 	}
 
 	pid, name := holder()
 	return nil, &Taken{Pid: pid, Name: name, Err: err}
 }
 
-// holder is the process holding the instance socket, or zero when it cannot be worked out.
-//
-// The abstract socket carries no pid, so this goes round: /proc/net/unix lists an inode against
-// the name, and whichever process has that inode open is the one holding it. Worth the walk —
-// "another lanovod is running" without saying which one has cost an hour twice.
+// /proc/net/unix lists an abstract socket's inode, not its pid.
 func holder() (pid int, name string) {
 	inode, ok := inodeOf(instance)
 	if !ok {
@@ -81,7 +68,6 @@ func holder() (pid int, name string) {
 	return 0, ""
 }
 
-// inodeOf is the inode /proc/net/unix lists against a socket name.
 func inodeOf(name string) (string, bool) {
 	f, err := os.Open("/proc/net/unix")
 	if err != nil {
@@ -92,13 +78,7 @@ func inodeOf(name string) (string, bool) {
 	return inodeIn(f, name)
 }
 
-// inodeIn reads the table apart from the file, so the parsing can be tested against a real one.
-//
-//	Num       RefCount Protocol Flags    Type St Inode Path
-//	00000000: 00000002 00000000 00010000 0001 01 125021 @lanovod-instance
-//
-// An abstract name is printed with the leading NUL as @, which is how it is written here too. The
-// match is exact: this device also has @lanovod and @lanovod-4943-3 open.
+// /proc/net/unix prints an abstract name's leading NUL as @.
 func inodeIn(r io.Reader, name string) (string, bool) {
 	const (
 		inodeAt = 6
@@ -119,7 +99,6 @@ func inodeIn(r io.Reader, name string) (string, bool) {
 	return "", false
 }
 
-// holds reports whether a process has this socket open.
 func holds(pid int, socket string) bool {
 	dir := "/proc/" + strconv.Itoa(pid) + "/fd"
 
@@ -135,7 +114,6 @@ func holds(pid int, socket string) bool {
 	return false
 }
 
-// comm is what a process calls itself, for saying which one it is.
 func comm(pid int) string {
 	b, err := os.ReadFile("/proc/" + strconv.Itoa(pid) + "/comm")
 	if err != nil {

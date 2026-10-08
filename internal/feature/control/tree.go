@@ -13,16 +13,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
-// What the harness can do, in one place.
-//
-// This was a switch on the first argument with a help string written out beside it by hand, and the
-// two drifted the way they always do — the help is the part nobody remembers to change. Here a
-// command carries its own, so there is one description of it and it cannot go stale.
-//
-// Built per invocation rather than once. Commands hold parsed state, and these arrive down a socket
-// from whoever is poking at the device, not from a process that starts and exits.
-
-// tree is every command the socket takes.
 func (c *Control) tree() *cobra.Command {
 	root := newRoot()
 	root.AddCommand(harness.DeviceCommands(deviceInfo)...)
@@ -48,12 +38,10 @@ func Local(args []string) (string, error) {
 }
 
 var newRoot = harness.NewRoot
-var literal = harness.Literal
 var says = harness.Says
 var group = harness.Group
 var does = harness.Does
 
-// touching is the commands that pretend to be a finger.
 func (c *Control) touching() []*cobra.Command {
 	out := c.inputEngine().Commands()
 	return append(
@@ -69,7 +57,6 @@ func (c *Control) touching() []*cobra.Command {
 	)
 }
 
-// showing is the commands about what is on the panel.
 func (c *Control) showing() []*cobra.Command {
 	return []*cobra.Command{
 		says(&cobra.Command{
@@ -203,7 +190,6 @@ func (c *Control) showing() []*cobra.Command {
 	}
 }
 
-// sounding is the commands about noise.
 func sounding() []*cobra.Command {
 	return []*cobra.Command{
 		does(&cobra.Command{
@@ -219,13 +205,6 @@ func sounding() []*cobra.Command {
 	}
 }
 
-// verbOf names what was asked for, for the guards inside the handlers that still dispatch on their
-// own first argument.
-//
-// Those guards cannot be reached through the tree — cobra turns an unknown subcommand away before a
-// handler sees it, and the tree always supplies a known verb. They stay as a guard against being
-// called some other way, but they no longer list their siblings: a list written out by hand beside
-// the thing it describes is the drift this was all meant to end.
 func verbOf(args []string) string {
 	if len(args) == 0 {
 		return ""

@@ -9,8 +9,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
-// mediatek takes two digital microphones through a TLV320ADC3101 on TDM in, loaded from the OEM
-// app's table. The ADC sends 24-bit samples in 32-bit I2S words.
+// The TLV320ADC3101 sends 24-bit samples in 32-bit I2S words.
 type mediatek struct {
 	chip *board.Chip
 

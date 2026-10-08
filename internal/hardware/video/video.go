@@ -9,10 +9,11 @@ import (
 	"sync/atomic"
 	"time"
 
+	sharedstream "github.com/ygelfand/libcountertop/pkg/media/videostream"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/lib/surface"
-	sharedstream "github.com/ygelfand/libcountertop/pkg/media/videostream"
 )
 
 type Frame = sharedstream.Frame
@@ -157,7 +158,7 @@ func On(ctx context.Context, p Screen, s Stream) (Report, error) {
 			k.Adopt(c, id, want)
 			return
 		}
-		c.VideoClose(id)
+		_ = c.VideoClose(id)
 	}()
 
 	fw, fh := p.Native()
@@ -386,13 +387,17 @@ func (k *controls) update(o display.Orientation) {
 		dirty = union(dirty, b.At)
 	}
 	if dirty.W > 0 && dirty.H > 0 {
-		k.c.Frame(k.layer.ID, 0, []surface.Rect{{X: dirty.X, Y: dirty.Y, W: dirty.W, H: dirty.H}})
+		_ = k.c.Frame(
+			k.layer.ID,
+			0,
+			[]surface.Rect{{X: dirty.X, Y: dirty.Y, W: dirty.W, H: dirty.H}},
+		)
 	}
 }
 
 func (k *controls) close() {
 	if k.layer != nil {
-		k.c.Destroy(k.layer.ID)
+		_ = k.c.Destroy(k.layer.ID)
 	}
 }
 

@@ -5,12 +5,6 @@ import (
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 )
 
-// The commands that have commands of their own.
-//
-// These were a switch inside a switch, which meant the inner verbs were invisible from outside and
-// each one listed its siblings in its own error message. As a tree they list themselves.
-
-// radios is bluetooth and ble, which are separate radios and separate stacks.
 func radios() []*cobra.Command {
 	bt := harness.BluetoothCommand(sink)
 
@@ -24,7 +18,6 @@ func radios() []*cobra.Command {
 	return []*cobra.Command{bt, ble}
 }
 
-// watching is the camera and the player, which are both about what the device can see or is doing.
 func watching() []*cobra.Command {
 	camera := group(
 		"camera",
@@ -57,11 +50,6 @@ func watching() []*cobra.Command {
 	}
 }
 
-// under adapts a handler that still dispatches on its own first argument.
-//
-// The inner switches are left where they are: they carry the parsing and the two-step dances, and
-// moving that here would be a rewrite rather than a reorganisation. This puts the verb back on the
-// front so the handler sees what it always saw, while the tree above is what the outside sees.
 func under(do func([]string) (string, error), verb string) func([]string) (string, error) {
 	return func(args []string) (string, error) {
 		return do(append([]string{verb}, args...))

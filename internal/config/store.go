@@ -1,12 +1,14 @@
 package config
 
 import (
-	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/libcountertop/pkg/settings/schema"
-	"github.com/ygelfand/libcountertop/pkg/settings/storage"
 	"maps"
 	"slices"
 	"sync"
+
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+	"github.com/ygelfand/libcountertop/pkg/settings/storage"
+
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 var once sync.Once

@@ -8,7 +8,6 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// linkUp brings the interface up.
 func linkUp(iface string) error {
 	link, err := net.InterfaceByName(iface)
 	if err != nil {
@@ -24,7 +23,7 @@ func linkUp(iface string) error {
 	}
 	defer conn.Close()
 
-	// Change says which flags Flags is about, so this sets IFF_UP and leaves the rest alone.
+	// Change selects which bits of Flags apply.
 	if err := conn.Link.Set(&rtnetlink.LinkMessage{
 		Family: unix.AF_UNSPEC,
 		Index:  uint32(link.Index),

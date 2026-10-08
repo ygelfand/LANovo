@@ -4,15 +4,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/config"
 	esphome "github.com/ygelfand/go-esphome-device"
+
+	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// The same property every other setting is held to: the setter reaches the file and the entity
-// both, and a command from Home Assistant reaches the file.
-//
-// This one is why the Features page exists. The switch was a Home Assistant entity and nothing
-// else, so a device whose Home Assistant is down could not be set up from its own screen.
 func TestEnablingTellsBothSides(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 	p := Get()
@@ -44,8 +40,6 @@ func TestTheCommandFromHomeAssistantIsSaved(t *testing.T) {
 	}
 }
 
-// Off by default. It opens a port and advertises itself, which is not something a device should
-// start doing because nobody said otherwise.
 func TestItIsOffOnAFreshDevice(t *testing.T) {
 	if config.Defaults().Sendspin.Enabled {
 		t.Error("a device nobody has set up is listening for a server")

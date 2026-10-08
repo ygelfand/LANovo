@@ -9,12 +9,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
-// turn faces the picture a different way without anybody picking the device up.
-//
-// Which way up it is stands behind a lot of the drawing — a face lays out differently, the dock
-// moves, the logo goes to a corner — and until now the only way to see any of that was to reach
-// over and turn it. The accelerometer still wins the moment the device actually moves, so this
-// cannot leave the panel stuck facing a way it is not.
 func turn(args []string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("want mounted|portrait|landscape|left|right|0|90|180|270")
@@ -29,10 +23,6 @@ func turn(args []string) error {
 	return nil
 }
 
-// facing reads an orientation as a name or as the degrees it is.
-//
-// Names because that is how somebody at a terminal thinks about it, and degrees because that is
-// what the display calls them and a harness that could only say the names could not reach 180.
 func facing(s string) (display.Orientation, bool) {
 	switch strings.ToLower(s) {
 	case "mounted":

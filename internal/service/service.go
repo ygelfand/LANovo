@@ -1,4 +1,3 @@
-// Package service exposes the shared device supervisor.
 package service
 
 import shared "github.com/ygelfand/libcountertop/pkg/runtime/service"

@@ -1,4 +1,3 @@
-// Package onvif supplies the product's discovery identity to the shared protocol.
 package onvif
 
 import shared "github.com/ygelfand/libcountertop/pkg/camera/onvif"

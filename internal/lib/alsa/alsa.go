@@ -1,13 +1,3 @@
-// Package alsa captures PCM audio by driving the /dev/snd ioctl interface directly.
-//
-// This exists instead of binding tinyalsa through cgo. The kernel ioctl ABI is stable and
-// the subset a capture-only client needs is small, so the whole thing is a few hundred
-// lines of Go and lanovod stays a static, cgo-free binary — no NDK image, no C toolchain.
-//
-// Several of these structures embed the kernel's unsigned long, so their size — and with it the
-// ioctl number, which encodes that size — depends on the word size. The layouts below derive from
-// it rather than assuming one, because a mismatch is not a subtle bug: the kernel rejects the call
-// outright, or worse, reads the wrong bytes.
 package alsa
 
 import (
@@ -20,14 +10,10 @@ import (
 	"unsafe"
 )
 
-// longSize is the kernel's unsigned long, which is the word size: 8 on arm64, 4 on a 32-bit kernel.
-// The ioctl numbers below encode the size of the struct they carry, so a wrong answer here is not a
-// subtle bug — the kernel rejects every call.
+// The kernel's unsigned long: 8 bytes on arm64, 4 on a 32-bit kernel.
 const longSize = strconv.IntSize / 8
 
-// struct snd_pcm_hw_params: flags, 8 masks of 32 bytes, 21 intervals of 12, six 32-bit scalars,
-// fifo_size as an unsigned long, reserved[64]. Only fifo_size is word sized, so all the offsets
-// hold on either ABI and only the total differs: 604 on 32-bit, 608 here.
+// struct snd_pcm_hw_params: only fifo_size is word sized.
 const (
 	maskOff     = 4
 	maskSize    = 32
@@ -36,10 +22,10 @@ const (
 	rmaskOff    = intervalOff + 21*intervalLen // 512
 	infoOff     = rmaskOff + 8
 
-	hwParamsSize = rmaskOff + 6*4 + longSize + 64 // 608
+	hwParamsSize = rmaskOff + 6*4 + longSize + 64 // 608 on arm64, 604 on 32-bit
 )
 
-// Parameter indices. Masks are 0..2, intervals 8..19.
+// Masks are 0..2, intervals 8..19.
 const (
 	paramAccess    = 0
 	paramFormat    = 1
@@ -61,13 +47,12 @@ const (
 	accessRWInterleaved = 3
 	subformatStd        = 0
 
-	// The formats these codecs accept, by the kernel's own numbering.
 	FormatS16LE   = 2
 	FormatS32LE   = 10
 	FormatS24_3LE = 32
 )
 
-// ioc builds an ioctl request number the same way asm-generic/ioctl.h does.
+// Same encoding as asm-generic/ioctl.h.
 func ioc(dir, typ, nr, size uintptr) uintptr {
 	return dir<<30 | size<<16 | typ<<8 | nr
 }
@@ -84,7 +69,6 @@ type hwParams [hwParamsSize]byte
 
 func (p *hwParams) set(off int, v uint32) { binary.LittleEndian.PutUint32(p[off:], v) }
 
-// init opens every parameter to its full range so the driver can narrow them.
 func (p *hwParams) init() {
 	for i := range p {
 		p[i] = 0
@@ -111,7 +95,7 @@ func (p *hwParams) setMask(param, bit int) {
 	p.set(off+(bit>>5)*4, 1<<uint(bit&31))
 }
 
-// setInterval pins a parameter to one value. Bit 2 of the flags word is "integer".
+// Bit 2 of the flags word is "integer".
 func (p *hwParams) setInterval(param int, v uint32) {
 	off := intervalOff + (param-firstInterval)*intervalLen
 	p.set(off, v)
@@ -119,17 +103,12 @@ func (p *hwParams) setInterval(param int, v uint32) {
 	p.set(off+8, 1<<2)
 }
 
-// interval reads a value back. The ioctl refines what it was given and returns what the hardware will
-// actually do, which is not always what was asked for — and writing in a period the hardware is not
-// using sounds broken rather than merely gappy.
 func (p *hwParams) interval(param int) uint32 {
 	off := intervalOff + (param-firstInterval)*intervalLen
 	return binary.LittleEndian.Uint32(p[off:])
 }
 
-// snd_xferi: a signed long, a pointer and an unsigned long. Every member is word sized, so the struct
-// has to be built from word-sized types — Go's int is the kernel's long on both ABIs. Writing result
-// as int64 lays the pointer out four bytes late on a 32-bit kernel, which reads as EFAULT.
+// struct snd_xferi: a signed long, a pointer and an unsigned long, all word sized.
 type xferi struct {
 	result int
 	buf    uintptr
@@ -147,7 +126,6 @@ type Config struct {
 	Periods    int
 }
 
-// Capture is an open PCM capture stream.
 type Capture struct {
 	f          *os.File
 	cfg        Config
@@ -168,8 +146,6 @@ func ioctlArgless(fd, req uintptr) error {
 	return nil
 }
 
-// Open configures and starts a capture stream. The open is non-blocking so a device someone else
-// holds returns ErrBusy instead of waiting; reads block normally once it is ours.
 func Open(card, device int, cfg Config) (*Capture, error) {
 	path := fmt.Sprintf("/dev/snd/pcmC%dD%dc", card, device)
 	f, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NONBLOCK, 0)
@@ -220,11 +196,8 @@ func Open(card, device int, cfg Config) (*Capture, error) {
 	}, nil
 }
 
-// FrameBytes is the size of one interleaved frame across all channels.
 func (c *Capture) FrameBytes() int { return c.frameBytes }
 
-// Read fills buf with whole frames and returns the number of bytes read. On overrun the
-// stream is re-prepared and restarted, and the call reports how many bytes were lost.
 func (c *Capture) Read(buf []byte) (int, error) {
 	frames := len(buf) / c.frameBytes
 	if frames == 0 {
@@ -262,5 +235,4 @@ func (c *Capture) Close() error {
 	return c.f.Close()
 }
 
-// ErrOverrun means the hardware ring wrapped before we read it; audio was lost.
 var ErrOverrun = fmt.Errorf("alsa: capture overrun")

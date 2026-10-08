@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-// stat writes a /proc/stat with the given first line.
 func stat(t *testing.T, line string) Reader {
 	t.Helper()
 
@@ -20,10 +19,8 @@ func stat(t *testing.T, line string) Reader {
 	return Reader{Root: root}
 }
 
-// The fields are user, nice, system, idle, iowait, irq, softirq, steal. Idle and iowait are the
-// two where the processor had nothing to run.
+// /proc/stat: user, nice, system, idle, iowait, irq, softirq, steal.
 func TestCPUCountsIdleAndIowaitAsDoingNothing(t *testing.T) {
-	// 10 + 0 + 20 busy, 60 + 10 idle: a hundred jiffies, thirty of them working.
 	r := stat(t, "cpu  10 0 20 60 10 0 0 0\ncpu0 5 0 10 30 5 0 0 0\n")
 
 	busy, total := r.CPU()
@@ -38,7 +35,6 @@ func TestCPUCountsIdleAndIowaitAsDoingNothing(t *testing.T) {
 	}
 }
 
-// The first line is every core together; the per core lines after it are not what this reads.
 func TestCPUReadsTheWholeMachineNotTheFirstCore(t *testing.T) {
 	r := stat(t, "cpu  100 0 0 100 0 0 0 0\ncpu0 900 0 0 0 0 0 0 0\n")
 
@@ -52,8 +48,7 @@ func TestCPUReadsTheWholeMachineNotTheFirstCore(t *testing.T) {
 	}
 }
 
-// Newer kernels add guest and guest_nice on the end. Summing whatever is there rather than the
-// eight we know keeps that from quietly changing the denominator.
+// Newer kernels add guest and guest_nice on the end.
 func TestCPUTakesHoweverManyFieldsThereAre(t *testing.T) {
 	r := stat(t, "cpu  10 0 10 80 0 0 0 0 0 0\n")
 

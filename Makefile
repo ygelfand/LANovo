@@ -24,9 +24,6 @@ BUILD_DIR := bin
 ASSET_DIR := internal/host/assets/payload
 
 # lanovod targets the Lenovo Smart Display: APQ8053, Android Things 1.1 on Android 8.1 (API 27).
-# The userspace is 32-bit only — there is no abilist64 — so armv7 is the only target.
-# The framebuffer, ALSA and GPIO paths are pure Go over ioctls, so no cgo and no NDK. Keep it that
-# way unless something genuinely needs C.
 DEVICE_ARCH ?= arm
 DEVICE_ENV := GOOS=linux GOARCH=$(DEVICE_ARCH) GOARM=7 CGO_ENABLED=0
 DEVICE_LDFLAGS := -s -w $(LDFLAGS)
@@ -42,15 +39,11 @@ ifneq ($(DEVICE),)
 ADB := $(ADB) -s $(DEVICE)
 endif
 
-# lanovod lives in /system/bin because a service takes its SELinux domain from the label of the
-# file init execs, and /system/bin is system_file. Since Android 8 init refuses to start a service
-# that would stay in its own domain, so the service definition names a domain outright.
+# init takes a service's SELinux domain from the label of the file it execs; /system/bin is system_file.
 LANOVOD := /system/bin/lanovod
 STATE_DIR := /data/misc/lanovo
 
-# / is the system image on this system-as-root device, and its block device carries a read-only
-# flag that a plain remount does not clear. The slot suffix is resolved by the device's own shell,
-# so this has to stay inside the quoted command rather than being expanded here.
+# / is the system image on this system-as-root device; its block device carries a read-only flag a plain remount does not clear.
 SETRW = blockdev --setrw $$(ls -d /dev/block/bootdevice/by-name /dev/block/platform/bootdevice/by-name 2>/dev/null | head -1)/system$$(getprop ro.boot.slot_suffix)
 
 ##@ Development
@@ -60,7 +53,6 @@ NDK_HOST := $(if $(filter Darwin,$(shell uname -s)),darwin-x86_64,linux-x86_64)
 BOARD ?=
 NATIVE_API = $(shell go run ./cmd/native-target $(BOARD))
 LIBCOUNTERTOP_MODULE := github.com/ygelfand/libcountertop
-# Resolve both Go and native sources from the same selected module (or local go.work).
 LIBCOUNTERTOP_DIR = $(shell go list -m -f '{{.Dir}}' $(LIBCOUNTERTOP_MODULE))
 SURFACE_SRC = $(LIBCOUNTERTOP_DIR)/native/surface
 SURFACE_BIN = $(BUILD_DIR)/lanovo-surface-api$(NATIVE_API)
@@ -112,13 +104,8 @@ push-lanovod: build-lanovod ## Push lanovod to /data/local/tmp for iteration
 	@$(ADB) push $(DEVICE_BIN) $(DEVICE_TMP)/lanovod >/dev/null
 	@$(ADB) shell chmod 755 $(DEVICE_TMP)/lanovod
 
-# TIMEOUT bounds a test run. Go's own default is ten minutes, which is long enough that a deadlock
-# reads as a slow suite and sits there; this fails fast and prints the goroutine stacks instead.
 TIMEOUT ?= 90s
 
-# PKG is what to test. The whole tree by default, one package while working on it:
-#
-#	make test PKG=./internal/feature/a2dp/
 PKG ?= ./...
 
 .PHONY: test
@@ -137,7 +124,11 @@ test-race: ## Run tests with the race detector
 
 .PHONY: fmt
 fmt: ## Format Go source
-	go fmt ./...
+	golangci-lint fmt
+
+.PHONY: fmt-check
+fmt-check: ## Fail when any Go source is unformatted
+	golangci-lint fmt --diff
 
 .PHONY: vet
 vet: ## Run go vet
@@ -161,9 +152,6 @@ check: fmt vet lint test ## Format, vet, lint and test
 
 ##@ Generate
 
-# Dev only. Nothing under internal/tools is imported by the device build: what ships is the checked
-# in output, so a build never needs these, their sources, or a font.
-
 .PHONY: thumbs
 thumbs: device ## Render the visual picker's thumbnails on the device into what the binary embeds
 	$(ADB) shell rm -rf /data/local/tmp/lanovo-thumbs
@@ -176,10 +164,6 @@ numerals: ## Regenerate every numeral set from its SVG sources
 	go run ./internal/tools/numeral/segment
 	go run ./internal/tools/numeral/convert
 
-# assets/logo.png is the artwork and is not shipped; internal/ui/logo*.png are what the binary
-# embeds and are generated from it. Never the other way round.
-# assets/logo_*.png is the artwork and is not shipped; internal/ui/logo*.png are what the binary
-# embeds. Both marks come out the same size so the mark does not move when the theme changes.
 MARK_SIZE ?= 1000x666!
 
 .PHONY: logo

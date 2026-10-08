@@ -1,4 +1,3 @@
-// Package device is adb, as the rest of lanovoctl uses it.
 package device
 
 import (
@@ -14,20 +13,15 @@ import (
 	"github.com/ygelfand/LANovo/internal/android/prop"
 )
 
-// Binary is the adb executable, found on PATH.
 const Binary = "adb"
 
-// rcMarker carries a shell command's exit status back in its output, because `adb shell` returns
-// adb's status, not the command's.
+// `adb shell` returns adb's status, not the command's.
 const rcMarker = "__lanovo_rc="
 
-// ErrUnreachable means nothing is there for adb to drive.
 var ErrUnreachable = errors.New("no device adb can drive")
 
-// PlatformTools is where to get adb, for an error worth reading.
 const PlatformTools = "https://developer.android.com/tools/releases/platform-tools"
 
-// Require reports whether adb is available, and says what to install when it is not.
 func Require() error {
 	if _, err := exec.LookPath(Binary); err != nil {
 		return fmt.Errorf("adb is not on PATH: install Android platform-tools and try again\n"+
@@ -38,12 +32,10 @@ func Require() error {
 	return nil
 }
 
-// Device is one attached display.
 type Device struct {
 	serial string
 }
 
-// Info is a device as `adb devices` lists it.
 type Info struct {
 	Serial string
 	State  string
@@ -57,13 +49,11 @@ func (i Info) String() string {
 	return fmt.Sprintf("%s (%s)", i.Model, i.Serial)
 }
 
-// The adb states worth naming.
 const (
 	StateOnline   = "device"
 	StateRecovery = "recovery"
 )
 
-// List is every online device.
 func List() ([]Info, error) { return list(StateOnline) }
 
 func list(states ...string) ([]Info, error) {
@@ -94,7 +84,6 @@ func list(states ...string) ([]Info, error) {
 	return found, nil
 }
 
-// Connect opens a device by serial, or the only one attached when serial is empty.
 func Connect(serial string) (*Device, error) {
 	if err := Require(); err != nil {
 		return nil, err
@@ -115,10 +104,8 @@ func Connect(serial string) (*Device, error) {
 	return &Device{serial: serial}, nil
 }
 
-// Serial is the device this acts on.
 func (d *Device) Serial() string { return d.serial }
 
-// Shell runs a command and returns its output, failing on a nonzero exit.
 func (d *Device) Shell(cmd string) (string, error) {
 	out, code, err := d.ShellCode(cmd)
 	if err != nil {
@@ -130,7 +117,6 @@ func (d *Device) Shell(cmd string) (string, error) {
 	return out, nil
 }
 
-// ShellCode runs a command and returns its exit status rather than failing on it.
 func (d *Device) ShellCode(cmd string) (string, int, error) {
 	raw, err := d.run(context.Background(), "shell", cmd+"; echo "+rcMarker+"$?")
 	if err != nil {
@@ -152,19 +138,16 @@ func splitRC(raw string) (string, int, error) {
 	return body, code, nil
 }
 
-// Getprop reads one property, empty when it is unset.
 func (d *Device) Getprop(name string) (string, error) {
 	out, err := d.Shell("getprop " + name)
 	return strings.TrimSpace(out), err
 }
 
-// Setprop writes one property.
 func (d *Device) Setprop(name, value string) error {
 	_, err := d.Shell(fmt.Sprintf("setprop %s %s", name, quote(value)))
 	return err
 }
 
-// IsRoot reports whether adbd is running as root, which most of the install needs.
 func (d *Device) IsRoot() (bool, error) {
 	out, _, err := d.ShellCode("id -u")
 	if err != nil {
@@ -173,7 +156,6 @@ func (d *Device) IsRoot() (bool, error) {
 	return strings.TrimSpace(out) == "0", nil
 }
 
-// Root restarts adbd as root. A no-op when already root.
 func (d *Device) Root(ctx context.Context) error {
 	if ok, err := d.IsRoot(); err == nil && ok {
 		return nil
@@ -181,7 +163,6 @@ func (d *Device) Root(ctx context.Context) error {
 	if _, err := d.run(ctx, "root"); err != nil {
 		return err
 	}
-	// adbd goes away and comes back.
 	time.Sleep(time.Second)
 	if _, err := d.run(ctx, "wait-for-device"); err != nil {
 		return err
@@ -197,10 +178,6 @@ func (d *Device) Root(ctx context.Context) error {
 	return nil
 }
 
-// DisableVerity turns dm-verity off, reporting whether the device has to reboot for it to take.
-//
-// What adbd says in its reply, rather than an assumption: one that was already disabled needs no
-// reboot.
 func (d *Device) DisableVerity(ctx context.Context) (reboot bool, err error) {
 	out, err := d.run(ctx, "disable-verity")
 	if err != nil {
@@ -215,12 +192,9 @@ func (d *Device) DisableVerity(ctx context.Context) (reboot bool, err error) {
 		return true, nil
 	}
 
-	// Wording this build does not use. Reboot anyway: the cost is a restart, against an install
-	// onto a read-only /system.
 	return true, nil
 }
 
-// Exists reports whether a path is there.
 func (d *Device) Exists(path string) (bool, error) {
 	_, code, err := d.ShellCode("ls " + quote(path))
 	if err != nil {
@@ -229,13 +203,11 @@ func (d *Device) Exists(path string) (bool, error) {
 	return code == 0, nil
 }
 
-// ReadFile reads a file off the device.
 func (d *Device) ReadFile(path string) ([]byte, error) {
 	out, err := d.Shell("cat " + quote(path))
 	return []byte(out), err
 }
 
-// PushFile copies a local file over and sets its mode.
 func (d *Device) PushFile(local, remote string, mode os.FileMode) error {
 	if _, err := d.run(context.Background(), "push", local, remote); err != nil {
 		return err
@@ -244,13 +216,11 @@ func (d *Device) PushFile(local, remote string, mode os.FileMode) error {
 	return err
 }
 
-// PullFile copies a file back to the host.
 func (d *Device) PullFile(remote, local string) error {
 	_, err := d.run(context.Background(), "pull", remote, local)
 	return err
 }
 
-// WriteFile creates a file on the device from bytes in hand.
 func (d *Device) WriteFile(remote string, data []byte, mode os.FileMode) error {
 	tmp, err := os.CreateTemp("", "lanovo")
 	if err != nil {
@@ -268,7 +238,6 @@ func (d *Device) WriteFile(remote string, data []byte, mode os.FileMode) error {
 	return d.PushFile(tmp.Name(), remote, mode)
 }
 
-// Reboot restarts the device. target is "" for a normal boot, or "bootloader"/"recovery".
 func (d *Device) Reboot(target string) error {
 	args := []string{"reboot"}
 	if target != "" {
@@ -278,7 +247,6 @@ func (d *Device) Reboot(target string) error {
 	return err
 }
 
-// WaitBooted blocks until the device is back and Android says it finished booting.
 func (d *Device) WaitBooted(ctx context.Context) error {
 	if _, err := d.run(ctx, "wait-for-device"); err != nil {
 		return err
@@ -317,5 +285,4 @@ func run(ctx context.Context, args ...string) (string, error) {
 	return string(out), nil
 }
 
-// quote makes a path safe to hand to the device's shell.
 func quote(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'" }

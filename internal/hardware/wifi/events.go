@@ -18,7 +18,6 @@ type State = wpa.StateChange
 type Event = wpa.Event
 
 var state = wpa.ParseState
-var parseEvent = wpa.ParseEvent
 
 type eventSocket struct{ *Control }
 

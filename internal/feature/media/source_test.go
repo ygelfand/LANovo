@@ -4,17 +4,6 @@ import (
 	"testing"
 )
 
-// Who the card belongs to.
-//
-// Four things can be playing — a url Home Assistant sent, a sendspin group, a phone over Bluetooth,
-// something casting — and there is one card and one media entity for all of them. The rule is that
-// the last one to start playing holds the card and goes on holding it once it stops.
-//
-// They are peers. None of them is the special case the others are measured against, which is what
-// these check: whichever plays takes it, whoever has gone takes back only their own.
-
-// peer stands in for any of them: something that plays and says what it is playing. Held by
-// pointer, the way the real ones are, so releasing compares what it is rather than what it holds.
 type peer struct {
 	now  Now
 	kind Kind
@@ -29,14 +18,11 @@ func (p *peer) Now() Now    { return p.now }
 func (p *peer) Kind() Kind  { return p.kind }
 func (*peer) Label() string { return "the kitchen" }
 
-// held is what the card currently reads.
 func held(t *testing.T) Now {
 	t.Helper()
 	return Get().Now()
 }
 
-// The case that was broken: a phone connecting over Bluetooth while a group played took the card,
-// answered with nothing because it was playing nothing, and never gave it back.
 func TestTheLastThingToPlayHoldsTheCard(t *testing.T) {
 	p := Get()
 	t.Cleanup(func() { p.External(nil) })
@@ -60,8 +46,6 @@ func TestTheLastThingToPlayHoldsTheCard(t *testing.T) {
 	}
 }
 
-// Stopping does not give the card up: what was playing a moment ago is still the answer to what
-// this screen is about, and the transport has to keep reaching it.
 func TestStoppingKeepsTheCard(t *testing.T) {
 	p := Get()
 	t.Cleanup(func() { p.External(nil) })
@@ -77,7 +61,6 @@ func TestStoppingKeepsTheCard(t *testing.T) {
 	}
 }
 
-// A source that has gone must not blank whoever took over since.
 func TestReleasingIsOnlyEverYourOwn(t *testing.T) {
 	p := Get()
 	t.Cleanup(func() { p.External(nil) })
@@ -98,9 +81,6 @@ func TestReleasingIsOnlyEverYourOwn(t *testing.T) {
 	}
 }
 
-// Home Assistant is a peer rather than the thing the others are measured against. A url playing
-// takes the card from a group, which is the fault that the arbitration this replaced was written
-// for: the group's old track used to sit on the screen while a url played.
 func TestAUrlTakesTheCardLikeAnythingElse(t *testing.T) {
 	p := Get()
 	t.Cleanup(func() { p.External(nil) })
@@ -116,7 +96,6 @@ func TestAUrlTakesTheCardLikeAnythingElse(t *testing.T) {
 	}
 }
 
-// Before anything has played there is no holder, and the card is whatever the queue says.
 func TestNothingHasPlayedYet(t *testing.T) {
 	p := Get()
 	p.External(nil)

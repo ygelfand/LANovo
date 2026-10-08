@@ -29,8 +29,6 @@ func TestRestoreTakesTheSavedTheme(t *testing.T) {
 	}
 }
 
-// A theme name that is no longer one we have must leave the screen as it is rather than blanking
-// it or falling back to something the user did not choose.
 func TestUnknownThemeIsKept(t *testing.T) {
 	s := fresh(t)
 
@@ -66,8 +64,6 @@ func TestThemedFiresOnChange(t *testing.T) {
 	}
 }
 
-// Whatever is drawing repaints on the hook, so firing for a theme that did not change would
-// repaint the screen for nothing.
 func TestThemedIsQuietWhenNothingChanged(t *testing.T) {
 	s := fresh(t)
 	s.Use("Midnight")
@@ -101,8 +97,6 @@ func TestEntities(t *testing.T) {
 	}
 }
 
-// On automatic the slider is a bias, so setting it must not drive the panel: the next reading is
-// a quarter second away and would take it straight back off whatever was set here.
 func TestSettingTheSliderOnAutomaticOnlyRemembersIt(t *testing.T) {
 	s := fresh(t)
 
@@ -124,7 +118,6 @@ func TestSettingTheSliderOnAutomaticOnlyRemembersIt(t *testing.T) {
 	}
 }
 
-// On manual it is a level, and does.
 func TestSettingTheSliderOnManualDrivesThePanel(t *testing.T) {
 	s := fresh(t)
 
@@ -142,8 +135,6 @@ func TestSettingTheSliderOnManualDrivesThePanel(t *testing.T) {
 	}
 }
 
-// Every edge has to be selectable, or a device mounted so the rail is behind something cannot be
-// fixed from Home Assistant.
 func TestEveryEdgeIsOffered(t *testing.T) {
 	s := fresh(t)
 
@@ -173,7 +164,6 @@ func TestTheDrawerEdgeIsRestored(t *testing.T) {
 	}
 }
 
-// Every theme has to be selectable, or one of them cannot be reached from Home Assistant.
 func TestEveryThemeIsOffered(t *testing.T) {
 	s := fresh(t)
 

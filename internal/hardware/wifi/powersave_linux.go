@@ -11,14 +11,10 @@ import (
 	"golang.org/x/sys/unix"
 )
 
-// The nl80211 family is looked up by name: its id is assigned when the driver registers.
+// The nl80211 family id is assigned when the driver registers.
 const nl80211Family = "nl80211"
 
-// SetPowerSave turns 802.11 power save on or off.
-//
-// Set it before associating: the driver is full MAC and reads it when it joins, so a change on a
-// live association is accepted and ignored. A station the access point thinks is dozing gets no
-// group addressed traffic — no ARP, no mDNS, no router advertisements — while unicast still works.
+// The full MAC driver reads power save when it associates; a change on a live association is ignored.
 func SetPowerSave(iface string, on bool) error {
 	link, err := net.InterfaceByName(iface)
 	if err != nil {

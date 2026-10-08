@@ -5,10 +5,11 @@ import (
 	gogui "github.com/go-gui-org/go-gui/gui"
 	"rsc.io/qr"
 
+	"github.com/ygelfand/libcountertop/pkg/say"
+
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
-	"github.com/ygelfand/libcountertop/pkg/say"
 )
 
 const (

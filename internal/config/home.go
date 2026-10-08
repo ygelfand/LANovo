@@ -1,7 +1,10 @@
 package config
 
-import "github.com/ygelfand/libcountertop/pkg/settings/schema"
-import "maps"
+import (
+	"maps"
+
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+)
 
 type Home = schema.Home
 type HomePick = schema.HomePick

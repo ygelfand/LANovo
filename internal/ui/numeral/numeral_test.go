@@ -7,8 +7,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
-// The contract every set is held to, so a half-converted one cannot land: eleven glyphs, each
-// drawing something, all in one design box.
 func TestEverySetIsWholeAndDrawsSomething(t *testing.T) {
 	for _, set := range Sets {
 		t.Run(set.Name, func(t *testing.T) {
@@ -36,8 +34,6 @@ func TestEverySetIsWholeAndDrawsSomething(t *testing.T) {
 	}
 }
 
-// Tabular is the whole point: the clock cannot shift as the time changes. What that needs is for
-// the width to depend on how many characters there are and not on which ones.
 func TestARunIsTheSameWidthWhateverTheTime(t *testing.T) {
 	for _, set := range Sets {
 		for _, tall := range []int{40, 180, 900} {
@@ -47,8 +43,6 @@ func TestARunIsTheSameWidthWhateverTheTime(t *testing.T) {
 				t.Errorf("%s at %d: measured %d tall", set.Name, tall, h)
 			}
 
-			// Every minute of the day, since a digit that measured differently would only show at
-			// the times it appeared in.
 			for _, said := range []string{"11:11", "12:34", "23:59", "88:88", "09:05"} {
 				if w, _ := set.Measure(said, tall); w != want {
 					t.Errorf("%s at %d: %q measures %d, %q measures %d",
@@ -59,7 +53,6 @@ func TestARunIsTheSameWidthWhateverTheTime(t *testing.T) {
 	}
 }
 
-// The colon takes less room than a digit, or the clock has a hole in the middle of it.
 func TestTheColonIsNarrowerThanADigit(t *testing.T) {
 	for _, set := range Sets {
 		const tall = 180
@@ -80,14 +73,11 @@ func TestTheColonIsNarrowerThanADigit(t *testing.T) {
 	}
 }
 
-// Wide and Tall are each other's inverse, within the rounding of whole pixels. A face bounded by
-// width and one bounded by height have to arrive at the same digit.
 func TestWideAndTallAgree(t *testing.T) {
 	for _, set := range Sets {
 		for tall := 20; tall <= 900; tall += 37 {
 			back := set.Tall(set.Wide(tall))
 
-			// Two integer divisions, so a pixel either way is the floor of what is achievable.
 			if diff := back - tall; diff > 2 || diff < -2 {
 				t.Errorf(
 					"%s: %d tall gives %d wide gives %d tall",
@@ -101,7 +91,6 @@ func TestWideAndTallAgree(t *testing.T) {
 	}
 }
 
-// A run is laid out inside the box it is given and does not spill out of it.
 func TestARunStaysInItsBox(t *testing.T) {
 	palette := theme.Default()
 	edge := theme.Color{R: 255, G: 0, B: 255}
@@ -127,8 +116,6 @@ func TestARunStaysInItsBox(t *testing.T) {
 	}
 }
 
-// Digits next to each other have to stay apart, or 11 reads as one wide shape. Checked down the
-// seam between two cells rather than by eye.
 func TestNeighbouringDigitsDoNotTouch(t *testing.T) {
 	palette := theme.Default()
 
@@ -148,7 +135,6 @@ func TestNeighbouringDigitsDoNotTouch(t *testing.T) {
 	}
 }
 
-// A character the set has no glyph for is skipped, not drawn as something else and not a panic.
 func TestUnknownCharactersAreSkipped(t *testing.T) {
 	palette := theme.Default()
 	set := Default()
@@ -174,7 +160,6 @@ func TestAnUnknownSetIsNotOne(t *testing.T) {
 	}
 }
 
-// draws reports whether one character puts anything on the panel.
 func draws(set Set, text string) bool {
 	palette := theme.Default()
 

@@ -21,8 +21,6 @@ const downloadTimeout = 10 * time.Minute
 
 var installing sync.Mutex
 
-// Install replaces lanovod with the build the manifest offers for this architecture. Nothing goes
-// near /system until the download is whole and its hash checked. The caller restarts into it.
 func Install(ctx context.Context, m Manifest, progress func(float32)) error {
 	if !installing.TryLock() {
 		return fmt.Errorf("update: an install is already running")
@@ -102,8 +100,7 @@ func room(need int64) error {
 	return nil
 }
 
-// swap moves the running binary aside, which a running executable allows where overwriting it does
-// not, and writes the new one in its place.
+// A running executable can be renamed but not overwritten.
 func swap(staged, version string) error {
 	restore, err := parts.Writable()
 	if err != nil {
@@ -120,7 +117,9 @@ func swap(staged, version string) error {
 	}
 	data, err := os.ReadFile(staged)
 	if err != nil {
-		os.Rename(layout.PrevBinary, layout.Binary)
+		if back := os.Rename(layout.PrevBinary, layout.Binary); back != nil {
+			slog.Error("could not put the previous binary back", "err", back)
+		}
 		return err
 	}
 	if err := writeBinary(data); err != nil {
@@ -152,7 +151,6 @@ func writeBinary(data []byte) error {
 	return parts.CopyLabel(layout.PrevBinary, layout.Binary)
 }
 
-// Settle deletes the binary the last update replaced, once the new one is running.
 func Settle() {
 	if _, err := os.Stat(layout.PrevBinary); err != nil {
 		return

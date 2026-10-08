@@ -2,8 +2,6 @@ package config
 
 import "testing"
 
-// None has to be reachable, and it has to be the one somebody finds first: it is what they went
-// looking for at two in the morning.
 func TestNoneIsOfferedFirst(t *testing.T) {
 	got := Chimes()
 
@@ -26,8 +24,6 @@ func TestOnlyNoneIsSilent(t *testing.T) {
 	}
 }
 
-// Home Assistant speaks labels and everything else speaks values, so the round trip has to hold or
-// picking one in Home Assistant saves a different one.
 func TestEveryChimeRoundTripsThroughItsLabel(t *testing.T) {
 	seen := map[string]Chime{}
 
@@ -49,7 +45,6 @@ func TestEveryChimeRoundTripsThroughItsLabel(t *testing.T) {
 	}
 }
 
-// A device nobody has set makes the sound it always made, rather than starting silent.
 func TestADeviceWithNoSettingStillChimes(t *testing.T) {
 	c := Defaults()
 
@@ -61,8 +56,6 @@ func TestADeviceWithNoSettingStillChimes(t *testing.T) {
 	}
 }
 
-// The file is what the device comes back to, and a chime that did not survive a restart would beep
-// again the next morning.
 func TestTheChimeSurvivesARestart(t *testing.T) {
 	path := fresh(t)
 

@@ -31,8 +31,6 @@ func TestWorthSetting(t *testing.T) {
 	}
 }
 
-// With no lease there is nowhere else to ask, and a device with no time is worse than one asking
-// the pool.
 func TestServersFallBackToThePool(t *testing.T) {
 	c := &Clock{ready: make(chan struct{})}
 
@@ -56,7 +54,6 @@ func TestReadyClosesOnce(t *testing.T) {
 	default:
 	}
 
-	// An offset small enough not to touch the clock, which a test may not do anyway.
 	for range 2 {
 		if err := c.accept(time.Millisecond, "test"); err != nil {
 			t.Fatalf("accept: %v", err)
@@ -104,8 +101,6 @@ func TestSyncedFires(t *testing.T) {
 	}
 }
 
-// Home Assistant is asked once per connection, not once per message: every message from a client
-// passes through Handle, and asking on each would be a request per message.
 func TestAskedOncePerConnection(t *testing.T) {
 	c := &Clock{ready: make(chan struct{})}
 	conn := new(esphome.Conn)
@@ -120,8 +115,6 @@ func TestAskedOncePerConnection(t *testing.T) {
 	}
 }
 
-// A client that reconnects is asked afresh. The clock had been asked once for the life of the
-// process, so a device that ran for weeks never took the time from Home Assistant again.
 func TestAskedAgainOnANewConnection(t *testing.T) {
 	c := &Clock{ready: make(chan struct{})}
 
@@ -133,7 +126,6 @@ func TestAskedAgainOnANewConnection(t *testing.T) {
 	}
 }
 
-// Nothing to ask is not something to ask.
 func TestNoConnectionIsNotAsked(t *testing.T) {
 	c := &Clock{ready: make(chan struct{})}
 
@@ -142,9 +134,6 @@ func TestNoConnectionIsNotAsked(t *testing.T) {
 	}
 }
 
-// The clock is set once and then drifts, so a sync that has already succeeded is still worth
-// making. accept is what a round ends in, and it has to keep taking new offsets rather than
-// settling on the first.
 func TestSyncingAgainAfterTheClockIsSet(t *testing.T) {
 	c := &Clock{ready: make(chan struct{})}
 

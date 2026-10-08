@@ -1,12 +1,14 @@
 package ble
 
 import (
+	"sync"
+	"time"
+
+	sharedhci "github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/service"
-	sharedhci "github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
-	"sync"
-	"time"
 )
 
 type Advertisement = sharedhci.Advertisement

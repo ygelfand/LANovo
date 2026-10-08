@@ -3,10 +3,11 @@ package boot
 import (
 	"log/slog"
 
-	"github.com/ygelfand/LANovo/internal/hardware/display"
-	"github.com/ygelfand/LANovo/internal/layout"
 	bootview "github.com/ygelfand/libcountertop/pkg/display/boot"
 	"github.com/ygelfand/libcountertop/pkg/say"
+
+	"github.com/ygelfand/LANovo/internal/hardware/display"
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 func openBootScene(w, h int) *bootview.Scene {

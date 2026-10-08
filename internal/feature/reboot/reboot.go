@@ -1,5 +1,3 @@
-// Package reboot is the one thing Home Assistant can ask for that ends this process for good: a
-// reboot of the device.
 package reboot
 
 import (
@@ -8,16 +6,16 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 )
 
 func init() {
 	component.Register(component.Device, Get, component.Order(90))
 }
 
-// Reboot asks init to bring the whole device back.
 type Reboot struct{ button *esphome.Button }
 
 var (
@@ -47,8 +45,6 @@ func (r *Reboot) build() {
 		},
 		DeviceClass: "restart",
 
-		// On its own goroutine: the press is answered before the device goes away, so Home
-		// Assistant sees the button worked rather than the connection dropping.
 		OnPress: func() {
 			safe.Go("reboot", func() {
 				slog.Warn("rebooting, asked for in Home Assistant")

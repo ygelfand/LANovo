@@ -3,12 +3,11 @@ package clock
 import (
 	"testing"
 
+	tz "github.com/ygelfand/libcountertop/pkg/timezone"
+
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/libcountertop/pkg/timezone"
 )
 
-// The whole point: a zone set here outranks whatever Home Assistant sends, and nothing the server
-// says afterwards takes it back.
 func TestAChosenZoneOutranksTheServer(t *testing.T) {
 	newYork, ok := tz.Named("America/New_York")
 	if !ok {
@@ -24,7 +23,6 @@ func TestAChosenZoneOutranksTheServer(t *testing.T) {
 	}
 }
 
-// With nothing chosen the server decides, which is what almost every device should do.
 func TestWithNothingChosenTheServerDecides(t *testing.T) {
 	const said = "GMT0BST,M3.5.0/1,M10.5.0"
 
@@ -33,8 +31,6 @@ func TestWithNothingChosenTheServerDecides(t *testing.T) {
 	}
 }
 
-// Giving the choice back has to take effect without waiting for the server to say anything again,
-// which is why what it said is remembered even while it is being ignored.
 func TestGivingTheChoiceBackFallsToWhatTheServerSaid(t *testing.T) {
 	const said = "GMT0BST,M3.5.0/1,M10.5.0"
 
@@ -49,8 +45,6 @@ func TestGivingTheChoiceBackFallsToWhatTheServerSaid(t *testing.T) {
 	}
 }
 
-// A name that is no longer offered — a zone dropped from the list, or a config from a later
-// build — must not leave the device on UTC.
 func TestAnUnknownChoiceFallsBackRatherThanBreaking(t *testing.T) {
 	const said = "EST5EDT,M3.2.0,M11.1.0"
 
@@ -59,15 +53,12 @@ func TestAnUnknownChoiceFallsBackRatherThanBreaking(t *testing.T) {
 	}
 }
 
-// Nothing to go on at all is UTC, which is what an empty spec means to tz.Use.
 func TestNothingKnownIsNoZone(t *testing.T) {
 	if got := spec(config.Time{}); got != "" {
 		t.Errorf("with nothing known the device would run on %q", got)
 	}
 }
 
-// The select has to offer every zone plus the way out, and the way out cannot be a zone name or
-// choosing it would be ambiguous.
 func TestTheSelectOffersEverywhereAndTheWayBack(t *testing.T) {
 	c := &Clock{}
 	c.buildZone()

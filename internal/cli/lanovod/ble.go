@@ -124,7 +124,6 @@ func newBleCmd() *cobra.Command {
 	return cmd
 }
 
-// total is how many advertisements were heard in all.
 func total(seen map[uint64]int) int {
 	n := 0
 	for _, count := range seen {

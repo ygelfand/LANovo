@@ -11,7 +11,6 @@ import (
 // Qualcomm's partition links, then MediaTek's.
 var byNameDirs = []string{"/dev/block/bootdevice/by-name", "/dev/block/platform/bootdevice/by-name"}
 
-// ByName is the directory of named partition links on this device.
 func ByName(d *device.Device) (string, error) {
 	for _, dir := range byNameDirs {
 		if _, err := d.Shell("ls -d " + dir); err == nil {
@@ -21,12 +20,7 @@ func ByName(d *device.Device) (string, error) {
 	return "", fmt.Errorf("no partition links in %s", strings.Join(byNameDirs, " or "))
 }
 
-// Writable makes / read-write, and reports how to put it back.
-//
-// Two separate locks. The block device carries a read-only flag, and while it is set
-// `mount -o remount,rw /` reports success and silently does nothing — a write then fails with
-// "Read-only file system". /sys/class/block/*/ro is 0444, so the flag is cleared with the BLKROSET
-// ioctl, which is what blockdev --setrw does.
+// remount,rw succeeds and does nothing while the block device is BLKROSET; sysfs ro is 0444.
 func Writable(d *device.Device) (restore func() error, err error) {
 	slot, err := d.Getprop(prop.SlotSuffix)
 	if err != nil {
@@ -49,8 +43,8 @@ func Writable(d *device.Device) (restore func() error, err error) {
 	}
 
 	return func() error {
-		// sync first: the remount can report busy while writes are outstanding.
-		d.Shell("sync")
+		// The remount can report busy while writes are outstanding.
+		_, _ = d.Shell("sync")
 		if _, err := d.Shell("mount -o remount,ro /"); err != nil {
 			return fmt.Errorf("remounting / read-only: %w", err)
 		}

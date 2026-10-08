@@ -4,15 +4,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/config"
 	esphome "github.com/ygelfand/go-esphome-device"
+
+	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// A setting changed from the screen has to reach Home Assistant, and one changed from Home
-// Assistant has to reach the file. Both go through SetChime, which is the point of it existing.
-//
-// This is the drift that has already happened three times: a settings row that wrote the config and
-// left the entity saying the old value until the device reconnected.
 func TestSettingTheChimeTellsBothSides(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 
@@ -30,7 +26,6 @@ func TestSettingTheChimeTellsBothSides(t *testing.T) {
 	}
 }
 
-// The other direction: what Home Assistant sends lands in the file too.
 func TestTheEntityCommandSavesTheChime(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 
@@ -45,8 +40,6 @@ func TestTheEntityCommandSavesTheChime(t *testing.T) {
 	}
 }
 
-// A label nobody has changes nothing, rather than saving an empty chime that plays silence with no
-// way to tell why.
 func TestAnUnknownChimeIsIgnored(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 

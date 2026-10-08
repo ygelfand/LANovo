@@ -11,8 +11,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/lib/wave"
 )
 
-// somewhere points the store at a directory of this test's own, and sets how many recordings each
-// assistant keeps.
 func somewhere(t *testing.T, keep ...int) *Store {
 	t.Helper()
 
@@ -61,8 +59,6 @@ func has(names []string, name string) bool {
 	return false
 }
 
-// An assistant set to keep two holds the two most recent and lets the rest go, audio and sidecar
-// together. Recordings are the one thing here that grows without bound if nothing sweeps.
 func TestOnlyTheNewestRecordingsAreKept(t *testing.T) {
 	s := somewhere(t, 2)
 
@@ -83,9 +79,6 @@ func TestOnlyTheNewestRecordingsAreKept(t *testing.T) {
 	}
 }
 
-// Two turns of the same second have to order by which came first, and an id cannot say: they are
-// Home Assistant's and sort however they sort. Kept in seconds, the pair ties and the survivor is
-// whichever the tie-break happened to favour rather than the one that was said last.
 func TestTheLastTurnSurvivesEvenWithinASecond(t *testing.T) {
 	s := somewhere(t, 1)
 
@@ -101,7 +94,6 @@ func TestTheLastTurnSurvivesEvenWithinASecond(t *testing.T) {
 	}
 }
 
-// One assistant's limit says nothing about another's.
 func TestEachAssistantIsPrunedAgainstItsOwnLimit(t *testing.T) {
 	s := somewhere(t, 0, 1)
 
@@ -117,8 +109,6 @@ func TestEachAssistantIsPrunedAgainstItsOwnLimit(t *testing.T) {
 	}
 }
 
-// A turn whose sidecar never arrived is a crash caught halfway, and it cannot be pruned by slot
-// because nothing says which slot it was.
 func TestAnOrphanedRecordingIsSweptUp(t *testing.T) {
 	s := somewhere(t, 2)
 
@@ -136,8 +126,6 @@ func TestAnOrphanedRecordingIsSweptUp(t *testing.T) {
 	}
 }
 
-// A turn that gathered no audio is not a recording, and saving it would put a file in the list that
-// plays nothing.
 func TestAnEmptyTurnIsNotSaved(t *testing.T) {
 	s := somewhere(t, 2)
 
@@ -149,8 +137,6 @@ func TestAnEmptyTurnIsNotSaved(t *testing.T) {
 	}
 }
 
-// A pipeline that never closes the run holds the microphone open, and the buffer is not the place to
-// find out how long that lasted.
 func TestATurnStopsGrowingAtTheCap(t *testing.T) {
 	s := somewhere(t, 1)
 
@@ -165,8 +151,6 @@ func TestATurnStopsGrowingAtTheCap(t *testing.T) {
 	}
 }
 
-// The header has to say what the audio is: 16-bit mono at the voice rate, and a data size that
-// matches what follows it. A player reads this and nothing else.
 func TestTheHeaderDescribesTheAudio(t *testing.T) {
 	pcm := make([]byte, 320)
 	got := wave.Mono16(pcm, mic.Voice)

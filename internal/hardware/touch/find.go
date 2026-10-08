@@ -6,11 +6,8 @@ import (
 	"strings"
 )
 
-// devices is where the kernel lists what it has, and which event node each one is behind.
 const devices = "/proc/bus/input/devices"
 
-// Find is the event device a driver is behind. Looked up by name rather than fixed at event1,
-// which is only true as long as nothing else registers first.
 func Find(name string) (string, error) {
 	b, err := os.ReadFile(devices)
 	if err != nil {
@@ -24,8 +21,7 @@ func Find(name string) (string, error) {
 	return "/dev/input/" + handler, nil
 }
 
-// handlerFor reads the blocks the kernel separates with a blank line, each naming a device on an
-// N: line and its handlers on an H: line.
+// /proc/bus/input/devices: blank-line separated blocks, N: names the device, H: its handlers.
 func handlerFor(list, name string) (handler string, ok bool) {
 	want := `N: Name="` + name + `"`
 

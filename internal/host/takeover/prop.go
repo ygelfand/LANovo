@@ -7,17 +7,12 @@ import (
 	"github.com/ygelfand/LANovo/internal/host/device"
 )
 
-// DefaultProp holds the properties init loads before anything runs. It lives on the system
-// partition: / is the system image on this device.
+// / is the system image on this device.
 const DefaultProp = "/default.prop"
 
-// Insecure is ro.secure=0: adbd reads it once at start and stays root, so every session has root
-// without asking for it after each boot.
+// adbd reads ro.secure once at start.
 const Insecure = "ro.secure=0"
 
-// MakeInsecure sets ro.secure=0 in /default.prop and reports whether it had to.
-//
-// / must already be writable. init reads the file once, so this takes effect at the next boot.
 func MakeInsecure(d *device.Device) (changed bool, err error) {
 	cur, err := d.ReadFile(DefaultProp)
 	if err != nil {
@@ -34,7 +29,6 @@ func MakeInsecure(d *device.Device) (changed bool, err error) {
 	return true, nil
 }
 
-// setProp rewrites key's value in a property file, appending the line if the key is not there.
 func setProp(file []byte, key, value string) (out []byte, changed bool) {
 	want := []byte(key + "=" + value)
 	prefix := []byte(key + "=")

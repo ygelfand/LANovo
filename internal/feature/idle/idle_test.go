@@ -1,18 +1,17 @@
 package idle
 
 import (
-	sharedview "github.com/ygelfand/libcountertop/pkg/display/idleview"
 	"slices"
 	"testing"
 	"time"
+
+	sharedview "github.com/ygelfand/libcountertop/pkg/display/idleview"
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 	"github.com/ygelfand/LANovo/internal/ui/visual"
 )
-
-var noon = time.Date(2026, 9, 27, 12, 34, 0, 0, time.UTC)
 
 func TestTwoVisualsSplitTheScreenTheLongWay(t *testing.T) {
 	if got := Areas(1920, 1200, 1); !slices.Equal(got, []ui.Rect{{W: 1920, H: 1200}}) {
@@ -53,13 +52,6 @@ func TestItIsDueOnlyAfterTheWait(t *testing.T) {
 	if !due(time.Minute, 61*time.Second) {
 		t.Error("did not come up after the wait")
 	}
-}
-
-func idled(change func(*config.Idle)) config.Config {
-	cfg := config.Defaults()
-	cfg.Clock.Date = false
-	change(&cfg.Idle)
-	return cfg
 }
 
 func TestTheClockTakesItsColoursFromTheVisualUnderIt(t *testing.T) {

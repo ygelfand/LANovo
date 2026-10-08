@@ -43,7 +43,6 @@ func TestHandleFormatsAttrs(t *testing.T) {
 	}
 }
 
-// An error carrying spaces has to stay one field, or the log is unparseable.
 func TestHandleQuotesValuesWithSpaces(t *testing.T) {
 	var buf bytes.Buffer
 	log := slog.New(&Handler{fallback: &buf, mu: new(sync.Mutex)})

@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// at measures how much of the signal sits at hz, by correlating against a sine and cosine there.
 func at(samples []int16, hz float64) float64 {
 	var re, im float64
 	for i := 0; i < len(samples); i += Channels {
@@ -17,7 +16,6 @@ func at(samples []int16, hz float64) float64 {
 	return math.Hypot(re, im) / n
 }
 
-// voice is a mono tone at the rate a pipeline sends.
 func voice(hz float64, ms int) []int16 {
 	out := make([]int16, VoiceRate*ms/1000)
 	for i := range out {
@@ -30,9 +28,6 @@ func run(r Resampler, mono []int16) []int16 {
 	return r.Run(mono, make([]int16, 0, len(mono)*VoiceUpsample*Channels))
 }
 
-// The reason the filter exists. Stretching 16 kHz to 48 kHz by repeating samples leaves a mirror of
-// the signal at the input rate minus its frequency — for 3 kHz that is 13 kHz, plainly audible as
-// grit. The filter is supposed to put that image far below the tone.
 func TestTheFilterRejectsTheImageThatHoldingLeaves(t *testing.T) {
 	const hz = 3000
 	mono := voice(hz, 200)
@@ -40,7 +35,7 @@ func TestTheFilterRejectsTheImageThatHoldingLeaves(t *testing.T) {
 	held := run(hold{}, mono)
 	filtered := run(newSinc(), mono)
 
-	image := Rate/VoiceUpsample - hz // 13 kHz
+	image := Rate/VoiceUpsample - hz
 
 	heldRatio := at(held, float64(image)) / at(held, hz)
 	sincRatio := at(filtered, float64(image)) / at(filtered, hz)
@@ -57,7 +52,6 @@ func TestTheFilterRejectsTheImageThatHoldingLeaves(t *testing.T) {
 	}
 }
 
-// Whatever the method, the tone itself has to survive it.
 func TestEveryResamplerKeepsTheTone(t *testing.T) {
 	const hz = 1000
 	mono := voice(hz, 200)
@@ -80,8 +74,6 @@ func TestEveryResamplerKeepsTheTone(t *testing.T) {
 	}
 }
 
-// A reply arrives in chunks. Feeding it piecewise has to give the same signal as feeding it whole,
-// or there is a seam at every boundary.
 func TestChunksComeOutTheSameAsOnePiece(t *testing.T) {
 	mono := voice(1000, 100)
 
@@ -108,8 +100,6 @@ func TestChunksComeOutTheSameAsOnePiece(t *testing.T) {
 	}
 }
 
-// Reset is what a barge-in does: the next utterance is unrelated, so none of the last one should
-// bleed into its first samples.
 func TestResetDropsTheTail(t *testing.T) {
 	loud := voice(1000, 50)
 
@@ -131,7 +121,6 @@ func TestResetDropsTheTail(t *testing.T) {
 	}
 }
 
-// Both channels carry the same voice: a reply on one side only reads as a broken speaker.
 func TestVoiceLandsOnBothChannels(t *testing.T) {
 	out := run(newSinc(), voice(1000, 20))
 
@@ -142,7 +131,6 @@ func TestVoiceLandsOnBothChannels(t *testing.T) {
 	}
 }
 
-// An unknown name falls back to the filter rather than to silence or a panic.
 func TestAnUnknownResamplerFallsBackToTheFilter(t *testing.T) {
 	made, settled := NewResampler(Resampling("Bogus"))
 
@@ -154,8 +142,6 @@ func TestAnUnknownResamplerFallsBackToTheFilter(t *testing.T) {
 	}
 }
 
-// The sweep is the signal for comparing the options by ear, so it has to be at the pipeline's rate
-// and quiet at both ends.
 func TestTheSweepIsAVoiceSignalThatDoesNotClick(t *testing.T) {
 	got := VoiceSweep()
 
@@ -175,10 +161,7 @@ func TestTheSweepIsAVoiceSignalThatDoesNotClick(t *testing.T) {
 	}
 }
 
-// What each way of stretching a reply costs, since the whole point of the seam is being able to
-// fall back if the filter is too dear for the part it runs on.
 func BenchmarkResample(b *testing.B) {
-	// A second of speech, which is the order a reply arrives in.
 	mono := voice(1000, 1000)
 
 	for _, r := range Resamplings() {
@@ -193,11 +176,3 @@ func BenchmarkResample(b *testing.B) {
 		})
 	}
 }
-
-// The voice path's level, which folding it into Rational could have moved without anything failing.
-//
-// Each phase sums to the headroom and they all sum to the same thing: a reply comes out at the
-// level it went in, less the headroom, and no phase is louder than its neighbours. The filter this
-// replaced summed to 0.89826, 0.89686 and 0.89826 — 0.03 dB quieter overall and 0.014 dB of ripple
-// between the three, both far under anything audible, which is why this was a fold and not a
-// retune.

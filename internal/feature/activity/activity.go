@@ -1,9 +1,11 @@
 package activity
 
 import (
-	"github.com/ygelfand/LANovo/internal/component"
-	sharedactivity "github.com/ygelfand/libcountertop/pkg/assistant/activity"
 	"sync"
+
+	sharedactivity "github.com/ygelfand/libcountertop/pkg/assistant/activity"
+
+	"github.com/ygelfand/LANovo/internal/component"
 )
 
 func init() { component.Register(component.Device, Get) }

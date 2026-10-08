@@ -6,19 +6,13 @@ import (
 	"strings"
 )
 
-// Reading the d attribute of an svg path.
-//
-// The grammar is looser than it looks. Separators are optional wherever a sign or a decimal point
-// already says a number has ended, so "10-5" is two numbers and "1.5.5" is two more. A command
-// letter may be left out when it repeats, and after a moveto the repeat is a lineto rather than
-// another moveto.
+// SVG path data: separators are optional where a sign or decimal point ends a number.
 
 type scanner struct {
 	s string
 	i int
 }
 
-// skip steps over whitespace and commas, which separate nothing that is not already separated.
 func (p *scanner) skip() {
 	for p.i < len(p.s) {
 		switch p.s[p.i] {
@@ -30,13 +24,11 @@ func (p *scanner) skip() {
 	}
 }
 
-// done reports whether the whole attribute has been read.
 func (p *scanner) done() bool {
 	p.skip()
 	return p.i >= len(p.s)
 }
 
-// command is the next letter, or zero where a number comes next and the last command repeats.
 func (p *scanner) command() byte {
 	p.skip()
 	if p.i >= len(p.s) {
@@ -51,7 +43,6 @@ func (p *scanner) command() byte {
 	return 0
 }
 
-// number reads one, however little punctuation separates it from the last.
 func (p *scanner) number() (float32, error) {
 	p.skip()
 	start := p.i
@@ -72,8 +63,6 @@ func (p *scanner) number() (float32, error) {
 		digits()
 	}
 
-	// An exponent only counts when a sign or a digit follows, or "1e" would swallow the e of a
-	// command that happens to sit next to it.
 	if p.i < len(p.s) && (p.s[p.i] == 'e' || p.s[p.i] == 'E') {
 		at := p.i
 		p.i++
@@ -98,7 +87,6 @@ func (p *scanner) number() (float32, error) {
 	return float32(f), nil
 }
 
-// flag is the one bit an arc uses for its two choices, which may be written without a separator.
 func (p *scanner) flag() (bool, error) {
 	p.skip()
 	if p.i >= len(p.s) {

@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// The camera preview iterated a Get's settings while a slider saved into them, and the runtime killed the process — see #207.
 func TestAWriteLeavesWhatWasReadAlone(t *testing.T) {
 	st, err := Load(filepath.Join(t.TempDir(), "state.json"))
 	if err != nil {

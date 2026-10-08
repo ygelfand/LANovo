@@ -6,8 +6,6 @@ import (
 	"time"
 )
 
-// Nothing is on the panel before anything asks for it, and a harness waiting for the device to
-// come up has to be able to tell that from the boot screen holding it.
 func TestShowingSaysWhatHasThePanel(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -26,7 +24,6 @@ func TestShowingSaysWhatHasThePanel(t *testing.T) {
 		t.Errorf("showing %v, want the boot screen", at)
 	}
 
-	// Which is the thing being waited for: the boot screen letting go.
 	dash := d.Claim(PriorityDashboard)
 	dash.Show(noop)
 	boot.Release()
@@ -36,8 +33,6 @@ func TestShowingSaysWhatHasThePanel(t *testing.T) {
 	}
 }
 
-// A claim with nothing to draw does not have the panel, which is the same rule the render loop
-// follows: a claim is a place in the order, not a picture.
 func TestAClaimWithNothingToDrawIsNotShowing(t *testing.T) {
 	d := NewDriver("/dev/null")
 	d.Claim(PriorityUI)
@@ -47,8 +42,6 @@ func TestAClaimWithNothingToDrawIsNotShowing(t *testing.T) {
 	}
 }
 
-// The screenshot is taken by the render loop, so asking when nothing is rendering has to come back
-// and say so rather than wait for a loop that will never answer.
 func TestAScreenshotWithNothingRenderingGivesUp(t *testing.T) {
 	was := shotWait
 	shotWait = 50 * time.Millisecond

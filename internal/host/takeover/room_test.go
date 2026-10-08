@@ -13,8 +13,6 @@ func TestReadingFreeSpace(t *testing.T) {
 	}
 }
 
-// A device that answered with something else is a device whose free space is unknown, and an
-// install that guesses is the thing this check exists to stop.
 func TestUnreadableFreeSpaceIsAnError(t *testing.T) {
 	for _, in := range []string{
 		"",

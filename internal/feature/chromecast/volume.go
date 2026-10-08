@@ -4,13 +4,13 @@ import (
 	"math"
 	"sync"
 
-	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/libcountertop/pkg/media/cast"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+
+	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/volume"
 )
 
-// loudness is cast as a client of the media volume: it passes on what senders set and reports what the volume is.
 type loudness struct {
 	mu  sync.Mutex
 	svc *cast.Service
@@ -25,7 +25,6 @@ func newLoudness() *loudness {
 	return l
 }
 
-// asked is a sender's volume, arriving under the service's lock, which the volume's listeners report back through.
 func (l *loudness) asked(level float64, muted bool) {
 	want := int(math.Round(level * 100))
 	if muted {
@@ -59,7 +58,6 @@ func (l *loudness) changed(ch volume.Change) {
 	}
 }
 
-// serve points it at the running service, or at none, and tells a new one where the volume is.
 func (l *loudness) serve(svc *cast.Service) {
 	l.mu.Lock()
 	l.svc = svc

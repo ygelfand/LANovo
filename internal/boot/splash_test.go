@@ -6,8 +6,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 )
 
-// summary decides whether the screen is drawn again, so two different states must not summarize
-// the same: one that did would leave the panel showing a stage the device has left.
 func TestSummaryChangesWithProgress(t *testing.T) {
 	looking := []component.Progress{{Name: "wifi", Doing: "looking for the network"}}
 	asking := []component.Progress{{Name: "wifi", Doing: "asking for an address"}}
@@ -17,8 +15,6 @@ func TestSummaryChangesWithProgress(t *testing.T) {
 	}
 }
 
-// Done is what the summary is for. A component finishing has to change it, or the dot beside it
-// never fills in.
 func TestSummaryChangesWhenSomethingFinishes(t *testing.T) {
 	waiting := []component.Progress{{Name: "wifi", Doing: "looking"}}
 	done := []component.Progress{{Name: "wifi", Doing: "looking", Done: true}}
@@ -28,9 +24,6 @@ func TestSummaryChangesWhenSomethingFinishes(t *testing.T) {
 	}
 }
 
-// The panel is written pixel by pixel, so a state that has not changed must not be redrawn. The
-// two lists are built separately on purpose: the summary has to depend on what they say rather
-// than on their being the same slice.
 func TestSummaryIsStableWhileNothingChanges(t *testing.T) {
 	first := []component.Progress{
 		{Name: "wifi", Doing: "looking"},
@@ -46,7 +39,6 @@ func TestSummaryIsStableWhileNothingChanges(t *testing.T) {
 	}
 }
 
-// Everything up summarizes to nothing, which is what the splash prints as the last thing it says.
 func TestSummaryOfEverythingDone(t *testing.T) {
 	all := []component.Progress{
 		{Name: "wifi", Doing: "looking", Done: true},
@@ -61,8 +53,6 @@ func TestSummaryOfEverythingDone(t *testing.T) {
 	}
 }
 
-// The first pass has to draw whatever the state is, including everything already done — the splash
-// starts from a summary no state can produce, so the empty one is not mistaken for "unchanged".
 func TestEverythingDoneIsNotTheStartingSummary(t *testing.T) {
 	const starts = "\x00"
 

@@ -16,7 +16,7 @@ func init() {
 	component.Register(component.Device, Get)
 }
 
-// GainMost is how far the decimators go above unity: the codec's volume tops out at +40 dB.
+// The codec's decimator volume tops out at +40 dB.
 const GainMost = mic.MaxGain - config.DefaultMicGain
 
 type Microphone struct {

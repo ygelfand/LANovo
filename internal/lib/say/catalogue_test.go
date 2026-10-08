@@ -1,16 +1,15 @@
 package say_test
 
 import (
-	say "github.com/ygelfand/libcountertop/pkg/say"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
+
+	say "github.com/ygelfand/libcountertop/pkg/say"
 )
 
-// Each product verifies its literal message references against the shared catalogue.
-// Keys used only by the other product are valid entries in that catalogue.
 var asks = regexp.MustCompile(`\b(?:say|text)\.[TFN]\("([^"]+)"`)
 
 func TestEveryIdentifierTheCodeAsksForExists(t *testing.T) {
@@ -33,8 +32,6 @@ func TestEveryIdentifierTheCodeAsksForExists(t *testing.T) {
 		for _, m := range asks.FindAllSubmatch(body, -1) {
 			id := string(m[1])
 
-			// A literal ending in a dot is the front of an identifier built at the call site, so
-			// what follows cannot be read here. Whoever owns the list checks its own family.
 			if strings.HasSuffix(id, ".") {
 				continue
 			}
@@ -48,7 +45,6 @@ func TestEveryIdentifierTheCodeAsksForExists(t *testing.T) {
 
 }
 
-// root is the top of the tree, three up from this package.
 func root(t *testing.T) string {
 	t.Helper()
 
@@ -59,8 +55,6 @@ func root(t *testing.T) string {
 	return at
 }
 
-// sources is every Go file in the tree, tests included: a test that asks for a string the catalogue
-// lost is as broken as the panel doing it.
 func sources(t *testing.T) []string {
 	t.Helper()
 

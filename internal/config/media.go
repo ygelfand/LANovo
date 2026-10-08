@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+
 	"github.com/ygelfand/libcountertop/pkg/audio/ducking"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )

@@ -7,12 +7,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
-// A run of digits is drawn inside the box it is handed, whichever set and whatever the run.
-//
-// Worth checking before anything adopts this (#132): a face will hand over a rectangle and trust
-// it, and a set that painted outside would leave marks the face never repaints. The colon is the
-// one to watch — it is drawn at a full digit's width centred on a narrower cell, so its box
-// overhangs by design and the claim is that the overhang is empty.
 func TestEverySetStaysInsideTheBoxItIsGiven(t *testing.T) {
 	palette := theme.Default()
 
@@ -20,12 +14,12 @@ func TestEverySetStaysInsideTheBoxItIsGiven(t *testing.T) {
 		"12:34",
 		"00:00",
 		"9:05",
-		":30", // leading colon: its box overhangs to the left
-		"12:", // trailing colon: to the right
-		":",   // nothing but the overhanging cell
+		":30",
+		"12:",
+		":",
 		"1",
-		"88:88", // the widest digits most sets have
-		"11:11", // the narrowest
+		"88:88",
+		"11:11",
 	}
 
 	boxes := []ui.Rect{
@@ -58,7 +52,6 @@ func TestEverySetStaysInsideTheBoxItIsGiven(t *testing.T) {
 	}
 }
 
-// One digit in its own cell, which is what Draw hands each of them.
 func TestEverySetsDigitsStayInsideTheirCell(t *testing.T) {
 	palette := theme.Default()
 
@@ -80,8 +73,6 @@ func TestEverySetsDigitsStayInsideTheirCell(t *testing.T) {
 	}
 }
 
-// Measure says what a run needs, and Draw has to fit in it: a face sizes its box from one and
-// paints with the other, so the two disagreeing is a clock that overruns whatever it was given.
 func TestWhatMeasureSaysHoldsWhatDrawPaints(t *testing.T) {
 	palette := theme.Default()
 

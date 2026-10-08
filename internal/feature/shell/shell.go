@@ -1,9 +1,9 @@
-// Package shell binds the shared screen stack to the product component registry.
 package shell
 
 import (
-	"github.com/ygelfand/LANovo/internal/component"
 	sharedlib "github.com/ygelfand/libcountertop/pkg/display/shell"
+
+	"github.com/ygelfand/LANovo/internal/component"
 )
 
 type View = sharedlib.View

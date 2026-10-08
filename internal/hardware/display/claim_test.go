@@ -4,7 +4,6 @@ import "testing"
 
 func noop(*Panel) error { return nil }
 
-// The highest claim with something to draw wins.
 func TestTopmostTakesThePriority(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -18,8 +17,6 @@ func TestTopmostTakesThePriority(t *testing.T) {
 	}
 }
 
-// Claims are made in whatever order components happen to start, so the tie has to break somewhere.
-// The most recent wins, which is what makes a drawer opened over a notice show the drawer.
 func TestTopmostPrefersTheNewestOfEqualClaims(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -33,23 +30,18 @@ func TestTopmostPrefersTheNewestOfEqualClaims(t *testing.T) {
 	}
 }
 
-// A claim with nothing to draw must not block what is under it. Claim registers on creation, so a
-// component that claims when it starts and draws when it has something would otherwise hold the
-// panel blank in between.
 func TestClaimWithNothingToDrawDoesNotBlock(t *testing.T) {
 	d := NewDriver("/dev/null")
 
 	under := d.Claim(PriorityDashboard)
 	under.Show(noop)
-	d.Claim(PriorityAlert) // created, never drawn
+	d.Claim(PriorityAlert)
 
 	if got := d.topmost(); got != under {
 		t.Error("an empty claim took the panel from the one drawing under it")
 	}
 }
 
-// Clear is documented as giving the surface back without releasing the claim, so what is under it
-// has to come up — otherwise clearing freezes the panel on whatever was last flipped.
 func TestClearFallsThroughToWhatIsUnder(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -65,7 +57,6 @@ func TestClearFallsThroughToWhatIsUnder(t *testing.T) {
 	}
 }
 
-// Releasing removes the claim outright, which is the other way a screen goes away.
 func TestReleaseFallsThroughToWhatIsUnder(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -81,7 +72,6 @@ func TestReleaseFallsThroughToWhatIsUnder(t *testing.T) {
 	}
 }
 
-// Nothing drawing means nothing to render, rather than a claim chosen and then skipped.
 func TestTopmostWithNothingDrawing(t *testing.T) {
 	d := NewDriver("/dev/null")
 	d.Claim(PriorityBoot)
@@ -91,10 +81,6 @@ func TestTopmostWithNothingDrawing(t *testing.T) {
 	}
 }
 
-// Turning is recorded and applied by the render goroutine, not by whoever noticed the device move:
-// the panel's geometry is what drawing reads for every pixel, so writing it from another goroutine
-// races the drawing. With no panel open there is nothing to apply it to, and the rotation still has
-// to be remembered for when one is.
 func TestSetOrientationDoesNotTouchThePanel(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -107,15 +93,11 @@ func TestSetOrientationDoesNotTouchThePanel(t *testing.T) {
 		t.Errorf("the driver is at %v, want %v", got, Rotate180)
 	}
 
-	// render is what applies it, and with no panel it has nothing to do rather than failing.
 	if err := d.render(); err != nil {
 		t.Errorf("render with no panel: %v", err)
 	}
 }
 
-// Nothing about the panel is reported until there is one, and the boot screen asks while the
-// render goroutine is drawing, so what it gets is held by the driver rather than read off the
-// panel.
 func TestStartupBeforeThePanelIsOpen(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -128,9 +110,6 @@ func TestStartupBeforeThePanelIsOpen(t *testing.T) {
 	}
 }
 
-// An overlay draws over what is beneath it, so everything from the covering claim up is drawn,
-// lowest first. Drawing only the top one is what put the onboarding screen back under a volume
-// column: a partial draw landed on whatever the buffer happened to hold.
 func TestStackDrawsTheCoveringClaimAndEverythingAbove(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -150,8 +129,6 @@ func TestStackDrawsTheCoveringClaimAndEverythingAbove(t *testing.T) {
 	}
 }
 
-// Nothing covering means the panel is painted out first. An overlay on its own would otherwise
-// land on the frame before last, which on this panel is a whole other screen.
 func TestStackClearsWhenNothingCovers(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -167,7 +144,6 @@ func TestStackClearsWhenNothingCovers(t *testing.T) {
 	}
 }
 
-// A covering claim above an overlay hides it: the boot screen is meant to hide everything.
 func TestStackStartsAtTheHighestCoveringClaim(t *testing.T) {
 	d := NewDriver("/dev/null")
 
@@ -182,13 +158,12 @@ func TestStackStartsAtTheHighestCoveringClaim(t *testing.T) {
 	}
 }
 
-// Claims with nothing to draw are not in it at all.
 func TestStackSkipsClaimsWithNothingToDraw(t *testing.T) {
 	d := NewDriver("/dev/null")
 
 	under := d.Claim(PriorityDashboard)
 	under.Show(noop)
-	d.Overlay(PriorityNotice) // claimed, never drawn
+	d.Overlay(PriorityNotice)
 
 	stack, _ := d.stack()
 	if len(stack) != 1 || stack[0] != under {
@@ -196,14 +171,12 @@ func TestStackSkipsClaimsWithNothingToDraw(t *testing.T) {
 	}
 }
 
-// Covered decides when the boot screen lets go, so it has to agree with what actually renders: a
-// claim that does not draw is not something to hand the screen over to.
 func TestCoveredAgreesWithTopmost(t *testing.T) {
 	d := NewDriver("/dev/null")
 
 	boot := d.Claim(PriorityBoot)
 	boot.Show(noop)
-	d.Claim(PriorityDashboard) // claimed, nothing to draw yet
+	d.Claim(PriorityDashboard)
 
 	if d.Covered(PriorityBoot) {
 		t.Fatal("Covered says something below is drawing when nothing is")
@@ -220,8 +193,6 @@ func TestCoveredAgreesWithTopmost(t *testing.T) {
 	}
 }
 
-// A partial repaint is only safe when everything showing agrees to one. A claim that has not said
-// what changed cannot know what is under it, so the whole screen is repainted.
 func TestDamageIsAllOrNothing(t *testing.T) {
 	d := NewDriver("")
 
@@ -245,7 +216,6 @@ func TestDamageIsAllOrNothing(t *testing.T) {
 		t.Errorf("damage = %+v, want %+v covering both", got, want)
 	}
 
-	// One claim going back to a whole redraw takes the frame with it.
 	over.Show(func(*Panel) error { return nil })
 
 	stack, _ = d.stack()
@@ -254,9 +224,6 @@ func TestDamageIsAllOrNothing(t *testing.T) {
 	}
 }
 
-// The buffer being drawn into was last drawn two frames ago, so a frame has to repaint what it
-// changed and what the frame before it changed. Otherwise the older change is missing from this
-// buffer and the screen flickers between two versions as the buffers alternate.
 func TestUnionCarriesThePreviousFrame(t *testing.T) {
 	first := Rect{X: 0, Y: 0, W: 10, H: 10}
 	second := Rect{X: 90, Y: 90, W: 10, H: 10}

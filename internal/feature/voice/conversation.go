@@ -3,6 +3,10 @@ package voice
 import (
 	"context"
 
+	esphome "github.com/ygelfand/go-esphome-device"
+	"github.com/ygelfand/libcountertop/pkg/assistant/turn"
+	"github.com/ygelfand/libcountertop/pkg/inference/wakeslots"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/activity"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
@@ -12,13 +16,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
-	esphome "github.com/ygelfand/go-esphome-device"
-	"github.com/ygelfand/libcountertop/pkg/assistant/turn"
-	"github.com/ygelfand/libcountertop/pkg/inference/wakeslots"
 )
 
 type conversation = turn.Conversation
-type phase = turn.Phase
 
 const (
 	phaseIdle      = turn.Idle
@@ -47,16 +47,24 @@ func (s voiceSound) Claim(name string, fn func(context.Context, turn.Speaker) er
 func (s voiceSound) Duck(on bool) { s.Backgrounds().Duck(on) }
 func newConversation(vs *esphome.VoiceSatellite) *conversation {
 	return turn.NewConversation(vs, turn.Dependencies{
-		Source: voiceMic{mic.Get()}, Speaker: voiceSpeaker{speaker.Get()}, Sound: voiceSound{speaker.Sound()},
-		Player: media.Get(), Log: activity.Get(), Recorder: recording.Get(), Models: func() []wake.Model { return wake.Lib().Ours() },
-		HardwareTail: speaker.HardwareTail, Failure: feedback.Failure, Cancelled: feedback.Canceled,
+		Source: voiceMic{
+			mic.Get(),
+		},
+		Speaker:      voiceSpeaker{speaker.Get()},
+		Sound:        voiceSound{speaker.Sound()},
+		Player:       media.Get(),
+		Log:          activity.Get(),
+		Recorder:     recording.Get(),
+		Models:       func() []wake.Model { return wake.Lib().Ours() },
+		HardwareTail: speaker.HardwareTail,
+		Failure:      feedback.Failure,
+		Cancelled:    feedback.Canceled,
 		Words:        turn.Words{Settings: config.WakeSection, Speaker: speaker.Sound()},
 		Muted:        func() (bool, error) { return privacy.Get().MicMuted(), nil },
 		Presentation: &turn.Presentation{Settings: config.WakeSection, Shown: &Shown},
 	})
 }
 
-// wanted retains assistant positions and explicit disables. Only a fresh configuration gets a default.
 func wanted(models []wake.Model, count int) []string {
 	saved := config.Get().Wake.Words
 	var ids []string

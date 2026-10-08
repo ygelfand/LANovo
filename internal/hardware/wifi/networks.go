@@ -2,6 +2,7 @@ package wifi
 
 import (
 	"context"
+
 	"github.com/ygelfand/libcountertop/pkg/network/wpa"
 )
 

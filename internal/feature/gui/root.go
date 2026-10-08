@@ -5,6 +5,8 @@ import (
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
+	"github.com/ygelfand/libcountertop/pkg/display/widgets"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/assistant"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
@@ -13,7 +15,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 )
 
 func (a *App) root(w *gogui.Window) gogui.View {
@@ -120,7 +121,7 @@ func (a *App) dashboard(w *gogui.Window) gogui.View {
 	case ok:
 		layers = append(layers, placed(box, build(w, box, r, ink)))
 	}
-	if wc := cfg.Weather; wc.Dashboard && !(tabbed && drawn) {
+	if wc := cfg.Weather; wc.Dashboard && (!tabbed || !drawn) {
 		top := float32(0)
 		if len(tabs) > 0 {
 			top = float32(strip.Y + strip.H)
@@ -165,5 +166,3 @@ func (a *App) page(w *gogui.Window, p *Screen) gogui.View {
 		},
 	)
 }
-
-func room(w *gogui.Window) []gogui.View { return presentation.Editor.Room(w) }

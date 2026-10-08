@@ -17,7 +17,6 @@ func fresh(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 }
 
-// what the device would put on the wire, read back the way a server reads it.
 func what(t *testing.T, want net.IP) *dhcpv4.DHCPv4 {
 	t.Helper()
 
@@ -28,7 +27,6 @@ func what(t *testing.T, want net.IP) *dhcpv4.DHCPv4 {
 	return msg
 }
 
-// A device that has never had an address asks for nothing in particular, which is a plain DISCOVER.
 func TestAFreshDeviceAsksForNoAddress(t *testing.T) {
 	fresh(t)
 
@@ -54,8 +52,6 @@ func TestARememberedAddressIsAskedFor(t *testing.T) {
 	}
 }
 
-// The hostname and the options worth having go out either way. Asking for an address must not cost
-// the device the rest of what it asks for.
 func TestWhatIsAlwaysAskedFor(t *testing.T) {
 	fresh(t)
 
@@ -71,8 +67,6 @@ func TestWhatIsAlwaysAskedFor(t *testing.T) {
 	}
 }
 
-// The file is editable. Rubbish in it is ignored rather than turned into a malformed option on
-// every request the device ever makes.
 func TestRubbishInTheFileIsIgnored(t *testing.T) {
 	for _, said := range []string{"not an address", "2001:db8::1", "999.1.1.1", " "} {
 		fresh(t)
@@ -86,8 +80,6 @@ func TestRubbishInTheFileIsIgnored(t *testing.T) {
 	}
 }
 
-// What the server granted is what gets remembered, so the next start asks for that rather than
-// whatever was asked for last time.
 func TestTheGrantedAddressIsRemembered(t *testing.T) {
 	fresh(t)
 
@@ -101,11 +93,6 @@ func TestTheGrantedAddressIsRemembered(t *testing.T) {
 	}
 }
 
-// A renewal is the same address every half life for as long as the device is up. Rewriting the
-// settings file each time would be a write every few hours that changes nothing.
-//
-// Checked against the file rather than the value, because the value is the same either way: what is
-// being asserted is that nothing touched the disk.
 func TestRememberingTheSameAddressDoesNotRewriteTheFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.json")
 	config.Use(path)
@@ -118,7 +105,6 @@ func TestRememberingTheSameAddressDoesNotRewriteTheFile(t *testing.T) {
 		t.Fatalf("the first remember wrote nothing: %v", err)
 	}
 
-	// Enough that a second write lands on a different timestamp on any filesystem worth the name.
 	time.Sleep(20 * time.Millisecond)
 	remember(addr)
 
@@ -131,7 +117,6 @@ func TestRememberingTheSameAddressDoesNotRewriteTheFile(t *testing.T) {
 	}
 }
 
-// And a different one does write, or the check above would pass by never writing at all.
 func TestRememberingADifferentAddressWritesTheFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "state.json")
 	config.Use(path)
@@ -158,8 +143,6 @@ func TestRememberingADifferentAddressWritesTheFile(t *testing.T) {
 	}
 }
 
-// An address that could not be parsed back is forgotten rather than kept, so a device that has lost
-// its lease does not keep asking for one it no longer has any claim to.
 func TestRememberingNothingForgets(t *testing.T) {
 	fresh(t)
 

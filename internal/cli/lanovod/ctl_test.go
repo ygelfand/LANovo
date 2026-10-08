@@ -19,8 +19,6 @@ func TestOneCommandIsOneCommand(t *testing.T) {
 	}
 }
 
-// A sequence is written the way somebody types it, with whatever spacing falls out of quoting it
-// for a shell.
 func TestSemicolonsSeparateCommands(t *testing.T) {
 	got, err := sequence(
 		strings.NewReader(""),
@@ -36,8 +34,6 @@ func TestSemicolonsSeparateCommands(t *testing.T) {
 	}
 }
 
-// A trailing semicolon is how a list gets typed, and an empty command would be sent as a blank line
-// the daemon answers ok to, making the count of answers disagree with the count of commands.
 func TestEmptyPartsAreDropped(t *testing.T) {
 	got, err := sequence(strings.NewReader(""), []string{"display size ; ; "})
 	if err != nil {
@@ -48,7 +44,6 @@ func TestEmptyPartsAreDropped(t *testing.T) {
 	}
 }
 
-// A file of commands keeps its comments and its spacing, because it is read by people as well.
 func TestStdinIsACommandToALine(t *testing.T) {
 	in := strings.NewReader(
 		"# open the drawer\ninput swipe 1900 600 1400 600\n\n  device wait 400  \ndisplay shot\n",
@@ -65,8 +60,6 @@ func TestStdinIsACommandToALine(t *testing.T) {
 	}
 }
 
-// Semicolons in a file are already separated by the lines they are on, and a command that contains
-// one — a message body, say — must not be cut in half by it.
 func TestStdinDoesNotSplitOnSemicolons(t *testing.T) {
 	got, err := sequence(
 		strings.NewReader("display message info 5 Hi : there; and again\n"),

@@ -1,13 +1,3 @@
-// Command icon turns Iconify icons into IconVG bytes and writes them out as Go.
-//
-// Dev only, like everything under internal/tools: nothing here is imported by the device build, and
-// what ships is the checked in output. The device never fetches anything.
-//
-//	go run ./internal/tools/icon Bluetooth=fa:bluetooth-b HomeAssistant=mdi:home-assistant
-//
-// A filled monochrome path becomes IconVG, a few hundred bytes that rasterize without parsing xml.
-// Anything else — a stroke, a hollow shape, a second color, a circle that was never a path — is
-// kept as the svg it came as, which the renderer draws either way.
 package main
 
 import (
@@ -25,7 +15,6 @@ import (
 
 const source = "https://api.iconify.design/%s/%s.svg"
 
-// out is where the icons land.
 const out = "internal/ui/mark/mark.go"
 
 type svg struct {
@@ -36,8 +25,6 @@ type svg struct {
 		Stroke string `xml:"stroke,attr"`
 	} `xml:"path"`
 
-	// Anything that is not a path. Named so a refusal can say which, since these need converting
-	// to paths before they can be drawn.
 	Circles []struct{} `xml:"circle"`
 	Rects   []struct{} `xml:"rect"`
 	Lines   []struct{} `xml:"line"`
@@ -79,8 +66,6 @@ func main() {
 	}
 	fmt.Println("wrote", out)
 
-	// A sheet of what was converted, because the only way to know an icon came out right is to
-	// look at it.
 	if at := os.Getenv("ICON_PREVIEW"); at != "" {
 		if err := preview(icons, at, 96); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -90,7 +75,6 @@ func main() {
 	}
 }
 
-// fetch reads one icon and converts it.
 func fetch(from string) ([]byte, error) {
 	set, name, ok := strings.Cut(from, ":")
 	if !ok {
@@ -115,16 +99,6 @@ func fetch(from string) ([]byte, error) {
 	return build(body)
 }
 
-// build turns one svg document into what the device should carry.
-//
-// IconVG where it fits, and the document itself where it does not. IconVG is a few hundred bytes
-// against a kilobyte or two of text, and it rasterizes without parsing xml, so it stays the
-// preferred form — but it holds one channel of coverage, and a stroke, a hollow shape or a second
-// color cannot be said in it at all. Those used to be refused, which is what kept arcticons and the
-// selfhst logos out. The renderer draws either, so the tool now picks rather than rejects.
-//
-// A document that is not an icon is still an error: this falls back for what IconVG cannot say, not
-// for what nothing can read.
 func build(doc []byte) ([]byte, error) {
 	var g svg
 	if err := xml.Unmarshal(doc, &g); err != nil {
@@ -136,8 +110,6 @@ func build(doc []byte) ([]byte, error) {
 
 	switch {
 	case len(g.Circles) > 0, len(g.Rects) > 0, len(g.Lines) > 0:
-		// Shapes that are not paths. IconVG takes paths only, and turning a circle into one here
-		// would be reimplementing what the rasterizer already does.
 		return doc, nil
 	case len(g.Paths) == 0:
 		return nil, fmt.Errorf("has nothing to draw")
@@ -174,17 +146,12 @@ func build(doc []byte) ([]byte, error) {
 	return enc.Bytes()
 }
 
-// vgMagic is what IconVG starts with, which is how write tells which of the two it is holding.
 var vgMagic = []byte{0x89, 'I', 'V', 'G'}
 
-// backquotable makes an svg safe to put in a raw string: those cannot hold a backquote, and there
-// is no escape inside one. A backquote in an icon would be in a title or a description, which is
-// nothing the drawing needs.
 func backquotable(doc []byte) string {
 	return strings.TrimSpace(strings.ReplaceAll(string(doc), "`", "'"))
 }
 
-// viewBox reads the four numbers that say what the drawing's coordinates mean.
 func viewBox(s string) (box, error) {
 	f := strings.FieldsFunc(s, func(r rune) bool { return r == ' ' || r == ',' })
 	if len(f) != 4 {
@@ -206,7 +173,6 @@ func viewBox(s string) (box, error) {
 	return box{x: v[0], y: v[1], w: v[2], h: v[3]}, nil
 }
 
-// write emits the package, one variable per icon.
 func write(icons []icon) error {
 	var b strings.Builder
 
@@ -226,8 +192,6 @@ func write(icons []icon) error {
 	b.WriteString("import \"github.com/ygelfand/LANovo/internal/ui\"\n\n")
 
 	for _, i := range icons {
-		// An SVG is kept as the text it is, not as a list of its bytes: it is readable that way,
-		// and a small fix to a path is an edit rather than a regeneration.
 		if !bytes.HasPrefix(i.bytes, vgMagic) {
 			fmt.Fprintf(&b, "// %s is %s.\nvar %s = ui.Icon(`%s`)\n\n",
 				i.name, i.from, i.name, backquotable(i.bytes))
@@ -247,8 +211,6 @@ func write(icons []icon) error {
 		b.WriteString("\n}\n\n")
 	}
 
-	// Through the formatter, so what lands is what gofmt would have written and the tree stays
-	// clean without anyone running it afterwards.
 	src, err := format.Source([]byte(b.String()))
 	if err != nil {
 		return err

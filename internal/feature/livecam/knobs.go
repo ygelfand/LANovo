@@ -446,7 +446,6 @@ func Table() *setting.Table[Knobs] {
 	return table
 }
 
-// Saved is the defaults with the saved knobs over them.
 func Saved() Knobs {
 	k, bad := Table().Configured(DefaultKnobs(), config.Get().Camera.Settings)
 	for _, err := range bad {
@@ -455,7 +454,6 @@ func Saved() Knobs {
 	return k
 }
 
-// Params is k as the vendor camera's parameters.
 func Params(k Knobs) string {
 	p := []string{
 		"exposure-compensation=" + strconv.Itoa(k.EV),
@@ -488,7 +486,6 @@ func Params(k Knobs) string {
 	return strings.Join(p, ";")
 }
 
-// Set saves one knob and applies it to a running camera.
 func Set(name, value string) error {
 	if err := config.Set().Camera().Set(name, value); err != nil {
 		return err
@@ -500,7 +497,6 @@ func Set(name, value string) error {
 	return nil
 }
 
-// Reset puts every knob back to its default.
 func Reset() error {
 	if err := config.Set().Camera().Clear(); err != nil {
 		return err
@@ -511,7 +507,6 @@ func Reset() error {
 	return nil
 }
 
-// Apply sends the saved knobs to the camera, if it is running.
 func Apply() {
 	if err := hub.SetParams(Params(Saved())); err != nil {
 		slog.Warn("the camera settings could not be applied", "err", err)
@@ -566,5 +561,4 @@ func (*Camera) Entities() []esphome.Entity {
 	return append(controls().Entities(), reset)
 }
 
-// Restore publishes what the knobs are set to, so the entities do not come up empty.
 func (*Camera) Restore(config.Config) { controls().Publish() }

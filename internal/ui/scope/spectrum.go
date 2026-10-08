@@ -7,15 +7,10 @@ import (
 
 func init() { register(Spectrum, bars{}) }
 
-// gap is the space between bars, as a fraction of one bar's width.
 const gap = 0.25
 
 type bars struct{}
 
-// Draw is the spectrum as a bar per band, low frequency on the left, standing up from the bottom.
-//
-// As many bands as fit rather than all of them: a meter along the foot of a clock may be sixty
-// pixels wide, and twenty four bars in sixty pixels is a smear.
 func (bars) Draw(s ui.Surface, in ui.Rect, f Frame, ink theme.Color, _ theme.Theme) {
 	if in.W <= 0 || in.H <= 0 || len(f.Bands) == 0 {
 		return
@@ -27,8 +22,6 @@ func (bars) Draw(s ui.Surface, in ui.Rect, f Frame, ink theme.Color, _ theme.The
 	wide := max(int(step*(1-gap)), 1)
 
 	for i := range show {
-		// Averaged rather than sampled, so dropping bands loses none of them: a peak in a band
-		// that fell between two columns would otherwise vanish.
 		var sum float64
 		from := i * len(f.Bands) / show
 		to := max((i+1)*len(f.Bands)/show, from+1)

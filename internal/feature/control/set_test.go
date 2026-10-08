@@ -7,10 +7,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-// The value readers are exercised against the real settings table; the setters are not, since they
-// reach the dashboard and the panel. What is worth holding here is the parsing, which is where a
-// harness command goes wrong quietly.
-
 func TestChooseTakesTheLabelOrTheStoredName(t *testing.T) {
 	for _, want := range config.Faces() {
 		for _, said := range []string{want.Label(), string(want), strings.ToUpper(string(want))} {
@@ -26,8 +22,6 @@ func TestChooseTakesTheLabelOrTheStoredName(t *testing.T) {
 	}
 }
 
-// A value that is not one of the options has to say so, and say what the options are. A harness
-// that accepted anything would leave a sweep running against a device it never changed.
 func TestChooseRefusesWhatIsNotAnOption(t *testing.T) {
 	var called bool
 	err := choose(config.Faces(), func(config.Face) { called = true })("sundial")
@@ -65,8 +59,6 @@ func TestToggleRefusesAnythingElse(t *testing.T) {
 	}
 }
 
-// Out of range is refused rather than clamped: a harness that asked for 150 and silently got 100
-// is a test that passed for the wrong reason.
 func TestNumberRefusesOutOfRange(t *testing.T) {
 	for _, said := range []string{"-1", "101", "howbright"} {
 		var called bool
@@ -87,7 +79,6 @@ func TestNumberRefusesOutOfRange(t *testing.T) {
 	}
 }
 
-// Every setting has to be readable, or listing them panics on a device somebody is using.
 func TestEverySettingReportsItsValue(t *testing.T) {
 	cfg := config.Defaults()
 
@@ -111,7 +102,6 @@ func TestEverySettingReportsItsValue(t *testing.T) {
 	}
 }
 
-// A name nobody has is an error that points at how to find the right one, rather than silence.
 func TestSetRefusesASettingThatDoesNotExist(t *testing.T) {
 	_, err := set([]string{"clock.colour"})
 
