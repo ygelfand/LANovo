@@ -28,7 +28,7 @@ func Writable() (restore func() error, err error) {
 		return nil, err
 	}
 	if err := syscall.Mount("", "/", "", syscall.MS_REMOUNT, ""); err != nil {
-		setReadOnly(part, true)
+		_ = setReadOnly(part, true)
 		writing.Unlock()
 		return nil, fmt.Errorf("parts: remounting / read-write: %w", err)
 	}

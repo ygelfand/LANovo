@@ -14,30 +14,28 @@ import (
 )
 
 func (c *Control) tree() *cobra.Command {
-	root := newRoot()
-	root.AddCommand(harness.DeviceCommands(deviceInfo)...)
-	root.AddCommand(c.touching()...)
-	root.AddCommand(c.showing()...)
-	root.AddCommand(sounding()...)
-	root.AddCommand(radios()...)
-	root.AddCommand(watching()...)
-	root.AddCommand(casting()...)
-	root.AddCommand(homeAssistant()...)
-	root.AddCommand(calling()...)
-	harness.Organize(root)
-	return root
+	t := harness.NewTree()
+	t.Add(harness.DeviceTask, harness.DeviceCommands(deviceInfo)...)
+	t.Add(harness.DeviceTask, telling()...)
+	t.Add(harness.InputTask, c.touching()...)
+	t.Add(harness.DisplayTask, showing()...)
+	t.Add(harness.AudioTask, sounding()...)
+	t.Add(harness.MediaTask, casting()...)
+	t.Top(settingsCommand(), camera())
+	t.Top(radios()...)
+	t.Top(homeAssistant()...)
+	t.Top(calling()...)
+	return t.Root()
 }
 
 func Local(args []string) (string, error) {
 	return harness.Execute(context.Background(), func() *cobra.Command {
-		root := harness.NewRoot()
-		root.AddCommand(casting()...)
-		harness.Organize(root)
-		return root
+		t := harness.NewTree()
+		t.Add(harness.MediaTask, casting()...)
+		return t.Root()
 	}, args)
 }
 
-var newRoot = harness.NewRoot
 var says = harness.Says
 var group = harness.Group
 var does = harness.Does
@@ -57,18 +55,13 @@ func (c *Control) touching() []*cobra.Command {
 	)
 }
 
-func (c *Control) showing() []*cobra.Command {
+func showing() []*cobra.Command {
 	return []*cobra.Command{
 		says(&cobra.Command{
 			Use:   "shot [PATH]",
 			Short: "Take a screenshot",
 			Args:  cobra.MaximumNArgs(1),
 		}, shot),
-		harness.ContextSays(&cobra.Command{
-			Use:   "record [raw|echo] SECONDS [PATH]",
-			Short: "Record the microphones for a while",
-			Args:  cobra.RangeArgs(1, 3),
-		}, record),
 		{
 			Use:   "size",
 			Short: "Say how big the picture is",
@@ -160,22 +153,21 @@ func (c *Control) showing() []*cobra.Command {
 			},
 		},
 		says(&cobra.Command{
+			Use:   "stack",
+			Short: "The screens on the shell's stack, top first, and which are held up",
+			Args:  cobra.NoArgs,
+		}, stack),
+	}
+}
+
+func telling() []*cobra.Command {
+	return []*cobra.Command{
+		says(&cobra.Command{
 			Use:   "ready [MILLISECONDS]",
 			Short: "Wait until the panel has settled",
 			Args:  cobra.MaximumNArgs(1),
 		}, ready),
-		does(&cobra.Command{
-			Use:   "wait MILLISECONDS",
-			Short: "Do nothing for a while",
-			Args:  cobra.ExactArgs(1),
-		}, pause),
-		says(&cobra.Command{
-			Use:   "settings [NAME [VALUE]]",
-			Short: "Read or change a setting",
-			Long: "With nothing after it, every setting and what it is. With a name, that one.\n" +
-				"With a name and a value, that one changed.",
-			Args: cobra.ArbitraryArgs,
-		}, set),
+		harness.WaitCommand(),
 		says(&cobra.Command{
 			Use:       "log [debug|info|warn|error]",
 			Short:     "Read or change how much goes to logcat, until lanovod restarts",
@@ -190,8 +182,45 @@ func (c *Control) showing() []*cobra.Command {
 	}
 }
 
+func settingsCommand() *cobra.Command {
+	return says(&cobra.Command{
+		Use:   "settings [NAME [VALUE]]",
+		Short: "Read or change a setting",
+		Long: "With nothing after it, every setting and what it is. With a name, that one.\n" +
+			"With a name and a value, that one changed.",
+		Args: cobra.ArbitraryArgs,
+	}, set)
+}
+
+func recording() *cobra.Command {
+	rec := harness.ContextSays(&cobra.Command{
+		Use:   "record SECONDS [PATH]",
+		Short: "Record the levelled 16 kHz stream the wake word hears",
+		Args:  cobra.RangeArgs(1, 2),
+	}, record)
+	rec.AddCommand(
+		harness.ContextSays(&cobra.Command{
+			Use:   "raw SECONDS [PATH]",
+			Short: "Record the capture as read",
+			Args:  cobra.RangeArgs(1, 2),
+		}, recordRaw),
+		harness.ContextSays(&cobra.Command{
+			Use:   "echo SECONDS [PATH]",
+			Short: "Record the microphones, the speaker feed and the cancelled microphones",
+			Args:  cobra.RangeArgs(1, 2),
+		}, recordEcho),
+	)
+	return rec
+}
+
 func sounding() []*cobra.Command {
 	return []*cobra.Command{
+		recording(),
+		says(&cobra.Command{
+			Use:   "player",
+			Short: "What is playing, and on what",
+			Args:  cobra.NoArgs,
+		}, player),
 		does(&cobra.Command{
 			Use:   "volume STREAM LEVEL",
 			Short: "Set a stream's level",

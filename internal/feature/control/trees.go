@@ -18,7 +18,7 @@ func radios() []*cobra.Command {
 	return []*cobra.Command{bt, ble}
 }
 
-func watching() []*cobra.Command {
+func camera() *cobra.Command {
 	camera := group(
 		"camera",
 		"The imaging hardware",
@@ -34,20 +34,7 @@ func watching() []*cobra.Command {
 			Args: cobra.MaximumNArgs(1),
 		}, still),
 	)
-
-	return []*cobra.Command{
-		camera,
-		says(&cobra.Command{
-			Use:   "player",
-			Short: "What is playing, and on what",
-			Args:  cobra.NoArgs,
-		}, player),
-		says(&cobra.Command{
-			Use:   "stack",
-			Short: "The screens on the shell's stack, top first, and which are held up",
-			Args:  cobra.NoArgs,
-		}, stack),
-	}
+	return camera
 }
 
 func under(do func([]string) (string, error), verb string) func([]string) (string, error) {

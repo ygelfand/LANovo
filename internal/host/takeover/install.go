@@ -82,7 +82,7 @@ func Install(d *device.Device, binary []byte) (Result, error) {
 
 	// /system/bin and /system/etc are labelled system_file.
 	if _, err := d.Shell("restorecon " + layout.Binary + " " + layout.InitRC); err != nil {
-		return res, fmt.Errorf("relabelling %s: %w", layout.Binary, err)
+		res.Steps = append(res.Steps, Step{What: "restorecon", Note: err.Error()})
 	}
 
 	return res, nil

@@ -1,13 +1,10 @@
 package control
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"image/png"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
@@ -64,18 +61,4 @@ func composed() (*image.RGBA, error) {
 		img.Set(i%w, i/w, color.RGBA{R: pixels[i*3], G: pixels[i*3+1], B: pixels[i*3+2], A: 0xff})
 	}
 	return img, nil
-}
-
-func pause(args []string) error {
-	if len(args) == 0 {
-		return fmt.Errorf("want milliseconds")
-	}
-
-	ms, err := strconv.Atoi(args[0])
-	if err != nil || ms < 0 {
-		return fmt.Errorf("milliseconds must be a number")
-	}
-
-	time.Sleep(time.Duration(ms) * time.Millisecond)
-	return nil
 }
