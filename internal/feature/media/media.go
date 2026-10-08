@@ -11,7 +11,7 @@ import (
 
 	sharedcard "github.com/ygelfand/libcountertop/pkg/display/mediacard"
 	"github.com/ygelfand/libcountertop/pkg/media/mediaplayer"
-	"github.com/ygelfand/libcountertop/pkg/media/source"
+	"github.com/ygelfand/libcountertop/pkg/media/nowplaying"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
@@ -53,7 +53,7 @@ func Get() *Player {
 		theCard = sharedcard.New(
 			sharedcard.Dependencies{Player: shared, Idle: config.IdleSection, Shell: shell.Get()},
 		)
-		shared.Begun.Listen(func(s source.Source) { theCard.Began(s) })
+		shared.Begun.Listen(func(s nowplaying.Source) { theCard.Began(s) })
 		drawer.Get().Add(theCard.Rail())
 	})
 	return shared

@@ -1,15 +1,15 @@
 package mtkcamera
 
 import (
-	shared "github.com/ygelfand/libcountertop/pkg/camera/helper"
+	"github.com/ygelfand/libcountertop/pkg/camera/camerafeed"
 
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
-type Config = shared.Config
-type Frame = shared.Frame
-type Stream = shared.Stream
+type Config = camerafeed.Config
+type Frame = camerafeed.Frame
+type Stream = camerafeed.Stream
 
-var Timeout = shared.Timeout
+var Timeout = camerafeed.Timeout
 
-func Open(cfg Config) (*Stream, error) { return shared.Open(layout.CameraSocket, cfg) }
+func Open(cfg Config) (*Stream, error) { return camerafeed.Open(layout.CameraSocket, cfg) }

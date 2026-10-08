@@ -1,7 +1,7 @@
 package control
 
 import (
-	sharedsource "github.com/ygelfand/libcountertop/pkg/media/source"
+	"github.com/ygelfand/libcountertop/pkg/media/nowplaying"
 
 	"github.com/ygelfand/LANovo/internal/feature/media"
 )
@@ -9,5 +9,5 @@ import (
 func player(a []string) (string, error) {
 	p := media.Get()
 	name, external := p.Sourced()
-	return sharedsource.Report(p.Now(), name, external, a)
+	return nowplaying.Report(p.Now(), name, external, a)
 }

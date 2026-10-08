@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ygelfand/libcountertop/pkg/camera/helper"
+	"github.com/ygelfand/libcountertop/pkg/camera/camerafeed"
 	"github.com/ygelfand/libcountertop/pkg/camera/live"
 	"github.com/ygelfand/libcountertop/pkg/camera/session"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
@@ -50,7 +50,7 @@ var Get = sync.OnceValue(func() Camera {
 		},
 		Mirror: b.CameraMirror,
 		Turn:   func() int { return turnFor(int(display.Get().Orientation())) },
-		Open:   func(c helper.Config) (session.Transport, error) { return mtkcamera.Open(c) },
+		Open:   func(c camerafeed.Config) (session.Transport, error) { return mtkcamera.Open(c) },
 		Muted:  func() bool { return b.MicMutesCamera && privacy.Get().MicMuted() },
 		Restart: func() error {
 			return prop.Restart(prop.Local, helperService)

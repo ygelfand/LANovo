@@ -39,7 +39,7 @@ func Table() *setting.Table[config.Presence] {
 				Write: func(p *config.Presence, v string) error {
 					on, ok := setting.Boolean(v)
 					if !ok {
-						return Table().Row("wake").Bad(v, "on or off")
+						return Table().MustRow("wake").Bad(v, "on or off")
 					}
 					p.Wake = on
 					return nil
@@ -56,7 +56,7 @@ func Table() *setting.Table[config.Presence] {
 				Max:    config.PresenceRangeMax,
 				Read:   func(p *config.Presence) string { return strconv.Itoa(p.Range) },
 				Write: func(p *config.Presence, v string) error {
-					n, err := Table().Row("range").Number(v)
+					n, err := Table().MustRow("range").Number(v)
 					if err != nil {
 						return err
 					}
@@ -71,7 +71,11 @@ func Table() *setting.Table[config.Presence] {
 
 func SetPresence(name, value string) error {
 	p := config.Get().Presence
-	if err := Table().Row(name).Write(&p, value); err != nil {
+	row, err := Table().Row(name)
+	if err != nil {
+		return err
+	}
+	if err := row.Write(&p, value); err != nil {
 		return err
 	}
 	if err := config.Set().Presence().Set(p); err != nil {

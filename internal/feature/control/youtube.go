@@ -13,6 +13,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/media/playback"
 
 	"github.com/ygelfand/LANovo/internal/board"
+	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
@@ -44,8 +45,9 @@ func ytLive(args []string) (string, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), hold+30*time.Second)
 	defer cancel()
-	return youtube.NewResolver(fetch.Client(30*time.Second), panelTarget).
-		Probe(ctx, args[0], hold, back)
+	r := youtube.NewResolver(fetch.Client(30*time.Second), panelTarget)
+	r.Preferences = chromecast.Preferences
+	return r.Probe(ctx, args[0], hold, back)
 }
 
 func ytFormats(args []string) (string, error) {

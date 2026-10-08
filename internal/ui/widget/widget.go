@@ -1,17 +1,17 @@
 package widget
 
 import (
-	"github.com/ygelfand/libcountertop/pkg/display/model"
+	"github.com/ygelfand/libcountertop/pkg/display/menu"
 )
 
-type Kind = model.Kind
-type Row = model.Row
-type Cell = model.Cell
+type Kind = menu.Kind
+type Row = menu.Row
+type Cell = menu.Cell
 
 const (
-	Plain   = model.Plain
-	Chevron = model.Chevron
-	Toggle  = model.Toggle
-	Slider  = model.Slider
-	Field   = model.Field
+	Plain   = menu.Plain
+	Chevron = menu.Chevron
+	Toggle  = menu.Toggle
+	Slider  = menu.Slider
+	Field   = menu.Field
 )

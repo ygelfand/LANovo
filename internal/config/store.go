@@ -20,7 +20,10 @@ func LoadError() error { store(); return loadErr }
 func Started(d Device) { store().started(d) }
 func Use(path string)  { once.Do(func() {}); shared, loadErr = Load(path) }
 
-type Store struct{ *storage.Store[Config] }
+type Store struct {
+	*storage.Store[Config]
+	shared schema.SharedWriter[Config]
+}
 
 func Load(path string) (*Store, error) {
 	s, err := storage.Load(
@@ -29,14 +32,12 @@ func Load(path string) (*Store, error) {
 		cloneConfig,
 		func(data []byte, c *Config) error { return schema.MigrateNetwork(data, &c.Network) },
 	)
-	return &Store{s}, err
+	shared := schema.NewSections(func() *storage.Store[Config] { return s }, sharedOf).Writer()
+	return &Store{Store: s, shared: shared}, err
 }
-func (s *Store) Set() Writer      { return Writer{st: s} }
+func (s *Store) Set() Writer      { return Writer{SharedWriter: s.shared, st: s} }
 func (s *Store) started(d Device) { s.Runtime(func(c *Config) { c.Device = d }) }
 func cloneConfig(c Config) Config {
-	c.Wake = c.Wake.Clone()
-	c.Cast = c.Cast.Clone()
-	c.Camera = c.Camera.Clone()
-	c.Home = c.Home.Clone()
+	c.Shared = c.Clone()
 	return c
 }

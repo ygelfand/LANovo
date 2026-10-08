@@ -53,8 +53,10 @@ var byHand = map[string]string{
 
 func leaves(t reflect.Type, at string) []string {
 	var out []string
-	for i := range t.NumField() {
-		f := t.Field(i)
+	for _, f := range reflect.VisibleFields(t) {
+		if f.Anonymous {
+			continue
+		}
 		name := at + f.Name
 
 		if f.Type.Kind() == reflect.Struct &&

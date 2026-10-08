@@ -36,9 +36,8 @@ func TestEverySettingIsPersisted(t *testing.T) {
 
 		seen := map[string]string{}
 
-		for i := range at.NumField() {
-			f := at.Field(i)
-			if !f.IsExported() {
+		for _, f := range reflect.VisibleFields(at) {
+			if !f.IsExported() || f.Anonymous {
 				continue
 			}
 
