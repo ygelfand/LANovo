@@ -7,13 +7,15 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
 func init() {
-	component.Register(component.Device, Get, component.Order(60))
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(60))
 }
 
 const (

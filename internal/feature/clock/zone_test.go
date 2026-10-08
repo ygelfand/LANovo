@@ -3,9 +3,8 @@ package clock
 import (
 	"testing"
 
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 	tz "github.com/ygelfand/libcountertop/pkg/timezone"
-
-	"github.com/ygelfand/LANovo/internal/config"
 )
 
 func TestAChosenZoneOutranksTheServer(t *testing.T) {
@@ -14,7 +13,7 @@ func TestAChosenZoneOutranksTheServer(t *testing.T) {
 		t.Fatal("America/New_York is not offered")
 	}
 
-	got := spec(config.Time{
+	got := spec(schema.Time{
 		Home:   "GMT0BST,M3.5.0/1,M10.5.0",
 		Chosen: newYork.Name,
 	})
@@ -26,7 +25,7 @@ func TestAChosenZoneOutranksTheServer(t *testing.T) {
 func TestWithNothingChosenTheServerDecides(t *testing.T) {
 	const said = "GMT0BST,M3.5.0/1,M10.5.0"
 
-	if got := spec(config.Time{Home: said}); got != said {
+	if got := spec(schema.Time{Home: said}); got != said {
 		t.Errorf("the device would run on %q, want the server's %q", got, said)
 	}
 }
@@ -34,7 +33,7 @@ func TestWithNothingChosenTheServerDecides(t *testing.T) {
 func TestGivingTheChoiceBackFallsToWhatTheServerSaid(t *testing.T) {
 	const said = "GMT0BST,M3.5.0/1,M10.5.0"
 
-	was := config.Time{Home: said, Chosen: "Asia/Tokyo"}
+	was := schema.Time{Home: said, Chosen: "Asia/Tokyo"}
 	if got := spec(was); got == said {
 		t.Fatal("the chosen zone was not being used, so this proves nothing")
 	}
@@ -48,13 +47,13 @@ func TestGivingTheChoiceBackFallsToWhatTheServerSaid(t *testing.T) {
 func TestAnUnknownChoiceFallsBackRatherThanBreaking(t *testing.T) {
 	const said = "EST5EDT,M3.2.0,M11.1.0"
 
-	if got := spec(config.Time{Home: said, Chosen: "Nowhere/Special"}); got != said {
+	if got := spec(schema.Time{Home: said, Chosen: "Nowhere/Special"}); got != said {
 		t.Errorf("an unknown choice gave %q, want the server's %q", got, said)
 	}
 }
 
 func TestNothingKnownIsNoZone(t *testing.T) {
-	if got := spec(config.Time{}); got != "" {
+	if got := spec(schema.Time{}); got != "" {
 		t.Errorf("with nothing known the device would run on %q", got)
 	}
 }

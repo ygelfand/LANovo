@@ -3,6 +3,8 @@ package call
 import (
 	"context"
 
+	"github.com/ygelfand/libcountertop/pkg/audio/tone"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
@@ -25,6 +27,6 @@ func (device) Claim(name string, run func(context.Context) error) {
 }
 func (device) Sounding()    { volume.Get().Sounding(config.StreamVoice) }
 func (device) Duck(on bool) { speaker.Sound().Backgrounds().Duck(on) }
-func (device) Chime(level float64, notes ...speaker.Note) {
+func (device) Chime(level float64, notes ...tone.Note) {
 	speaker.Sound().Interject(func(p *speaker.Speaker) { p.Chime(level, notes...) })
 }

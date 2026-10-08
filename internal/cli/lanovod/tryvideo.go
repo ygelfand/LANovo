@@ -8,7 +8,12 @@ import (
 	"os"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/hardware/video"
+	"github.com/ygelfand/libcountertop/pkg/display/geometry"
+	"github.com/ygelfand/libcountertop/pkg/display/video"
+	"github.com/ygelfand/libcountertop/pkg/media/videostream"
+
+	"github.com/ygelfand/LANovo/internal/board"
+	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
 const videoFrame = time.Second / 30
@@ -18,19 +23,19 @@ type fileFrames struct {
 	next  int
 }
 
-func (f *fileFrames) Next(ctx context.Context) (video.Frame, error) {
+func (f *fileFrames) Next(ctx context.Context) (videostream.Frame, error) {
 	if err := ctx.Err(); err != nil {
-		return video.Frame{}, err
+		return videostream.Frame{}, err
 	}
 	if f.next == len(f.units) {
-		return video.Frame{}, io.EOF
+		return videostream.Frame{}, io.EOF
 	}
-	fr := video.Frame{Data: f.units[f.next], At: time.Duration(f.next) * videoFrame}
+	fr := videostream.Frame{Data: f.units[f.next], At: time.Duration(f.next) * videoFrame}
 	f.next++
 	return fr, nil
 }
 
-func wallClock() video.Clock {
+func wallClock() videostream.Clock {
 	var began time.Time
 	return func() (time.Duration, bool) {
 		if began.IsZero() {
@@ -45,12 +50,20 @@ func tryVideo(path string) error {
 	if err != nil {
 		return err
 	}
-	codec, w, h, units := video.Split(data)
+	codec, w, h, units := videostream.Split(data)
 	if len(units) == 0 {
 		return fmt.Errorf("no frames in %s", path)
 	}
 	began := time.Now()
-	rep, err := video.Play(context.Background(), video.Stream{
+	player := video.Player{
+		Helper:         display.Get().Helper(),
+		SecureDecoders: board.Current().SecureDecoders,
+	}
+	under := &videostream.Beneath{
+		Rotation: func() geometry.Orientation { return display.Get().Orientation() },
+		Size:     func() (int, int) { return display.Get().Native() },
+	}
+	rep, err := player.On(context.Background(), under, videostream.Stream{
 		Codec: codec, Width: w, Height: h,
 		Source: &fileFrames{units: units},
 		Clock:  wallClock(),

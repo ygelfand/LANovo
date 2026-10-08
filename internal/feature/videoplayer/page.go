@@ -9,12 +9,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 )
 
-type Page = sharedpage.Page
-type Look = sharedpage.Look
-
-var Watched = sharedpage.Watched
-
-func NewPage(c Controls) *Page {
+func NewPage(c sharedpage.Controls) *sharedpage.Page {
 	return sharedpage.New(
 		c,
 		sharedpage.Dependencies{

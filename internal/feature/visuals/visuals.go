@@ -3,47 +3,50 @@ package visuals
 import (
 	"sync"
 
-	sharedinput "github.com/ygelfand/libcountertop/pkg/display/visualinput"
+	"github.com/ygelfand/libcountertop/pkg/display/visualinput"
+	"github.com/ygelfand/libcountertop/pkg/display/visualview"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
+	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/hardware/display"
+	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
-const LiftMax = sharedinput.LiftMax
-const LabelMost = sharedinput.LabelMost
+const LiftMax = visualinput.LiftMax
 
-type Visuals struct{ *sharedinput.Visuals }
+type Visuals struct{ *visualinput.Visuals }
 
-func init() { component.Register(component.Device, Get, component.Order(60)) }
+func init() { component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(60)) }
 
 var get = sync.OnceValue(func() *Visuals {
-	return newVisuals(
-		func() (<-chan []int16, func()) { return mic.Get().ListenStereo("visuals") },
-		func() bool { return privacy.Get().MicMuted() },
-		speaker.Get().SetTap,
-	)
-})
-
-func Get() *Visuals { return get() }
-
-func newVisuals(
-	listen func() (<-chan []int16, func()),
-	muted func() bool,
-	tap func(speaker.Tap),
-) *Visuals {
-	return &Visuals{sharedinput.New(sharedinput.Options{
+	return &Visuals{visualinput.New(visualinput.Options{
 		Settings:        config.VisualSection,
 		MicRate:         16000,
+		MicChannels:     2,
 		SpeakerRate:     speaker.Rate,
 		SpeakerChannels: speaker.Channels,
 		Lift:            config.Get().Microphone.VisualizerLift,
 		DeviceID:        component.DeviceScreen,
-		Listen:          listen,
-		Muted:           muted,
-		Tap:             func(t sharedinput.Tap) { tap(t) },
+		Listen:          func() (<-chan []int16, func()) { return mic.Get().ListenStereo("visuals") },
+		Muted:           func() bool { return privacy.Get().MicMuted() },
+		Tap:             func(t visualinput.Tap) { speaker.Get().SetTap(t) },
 	})}
-}
+})
+
+func Get() *Visuals { return get() }
+
 func (v *Visuals) Restore(c config.Config) { v.Visuals.Restore(c.Visual) }
+
+func (v *Visuals) View() *visualview.View {
+	return visualview.New(v, visualview.Dependencies{
+		GPU:      gpu.Get(),
+		Display:  display.Get(),
+		Shell:    shell.Get(),
+		Settings: config.VisualSection,
+	})
+}

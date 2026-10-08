@@ -7,8 +7,9 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+
 	"github.com/ygelfand/LANovo/internal/android/prop"
-	"github.com/ygelfand/LANovo/internal/host/device"
 )
 
 func decodeBase64(s string) ([]byte, error) {
@@ -44,7 +45,7 @@ const (
 	WantIoT         = "1.1.0"
 )
 
-func Preflight(d *device.Device) ([]Check, error) {
+func Preflight(d *adb.Device) ([]Check, error) {
 	props := map[string]string{}
 	for _, p := range []string{
 		prop.Model,
@@ -140,7 +141,7 @@ func Preflight(d *device.Device) ([]Check, error) {
 	return checks, nil
 }
 
-func mustSlots(d *device.Device) []string {
+func mustSlots(d *adb.Device) []string {
 	slots, err := Slots(d)
 	if err != nil {
 		return nil
@@ -160,7 +161,7 @@ func Failed(checks []Check, name string) bool {
 }
 
 // /system cannot be written while verity is enforcing.
-func DisableVerity(ctx context.Context, d *device.Device) (rebooted bool, err error) {
+func DisableVerity(ctx context.Context, d *adb.Device) (rebooted bool, err error) {
 	reboot, err := d.DisableVerity(ctx)
 	if err != nil {
 		return false, err

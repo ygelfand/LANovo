@@ -3,17 +3,22 @@ package control
 import (
 	"github.com/spf13/cobra"
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/btcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/cameracmd"
+
+	"github.com/ygelfand/LANovo/internal/feature/a2dp"
+	"github.com/ygelfand/LANovo/internal/feature/vision"
 )
 
 func radios() []*cobra.Command {
-	bt := harness.BluetoothCommand(sink)
+	bt := btcmd.Command(a2dp.Get(), "lanovod")
 
 	ble := group("ble", "The low energy radio", "")
 	ble.AddCommand(says(&cobra.Command{
 		Use:   "sniff [MILLISECONDS]",
 		Short: "Listen for advertisements",
 		Args:  cobra.MaximumNArgs(1),
-	}, under(radio, "sniff")))
+	}, harness.Under(radio, "sniff")))
 
 	return []*cobra.Command{bt, ble}
 }
@@ -32,13 +37,7 @@ func camera() *cobra.Command {
 				"path and not a rehearsal of it. Writes to /data/local/tmp/still.jpg unless told\n" +
 				"somewhere else.",
 			Args: cobra.MaximumNArgs(1),
-		}, still),
+		}, func(args []string) (string, error) { return cameracmd.Still(vision.Get().Still, args) }),
 	)
 	return camera
-}
-
-func under(do func([]string) (string, error), verb string) func([]string) (string, error) {
-	return func(args []string) (string, error) {
-		return do(append([]string{verb}, args...))
-	}
 }

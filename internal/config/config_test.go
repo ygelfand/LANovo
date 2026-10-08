@@ -6,16 +6,18 @@ import (
 	"slices"
 	"sync"
 	"testing"
+
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
 func TestDefaultsAreUsable(t *testing.T) {
 	c := Defaults()
 
-	if c.Screen.Backlight != DefaultBacklight {
-		t.Errorf("backlight defaults to %d, want %d", c.Screen.Backlight, DefaultBacklight)
+	if c.Screen.Backlight != schema.DefaultBacklight {
+		t.Errorf("backlight defaults to %d, want %d", c.Screen.Backlight, schema.DefaultBacklight)
 	}
-	if c.Screen.Mode != DefaultScreenMode {
-		t.Errorf("screen mode defaults to %q, want %q", c.Screen.Mode, DefaultScreenMode)
+	if c.Screen.Mode != schema.DefaultScreenMode {
+		t.Errorf("screen mode defaults to %q, want %q", c.Screen.Mode, schema.DefaultScreenMode)
 	}
 	if c.Diag.Interval != DefaultInterval {
 		t.Errorf("metrics interval defaults to %d, want %d", c.Diag.Interval, DefaultInterval)
@@ -28,8 +30,12 @@ func TestLoadWithNoFile(t *testing.T) {
 		t.Fatalf("Load: %v", err)
 	}
 
-	if got := st.Get(); got.Screen.Backlight != DefaultBacklight {
-		t.Errorf("backlight = %d, want the default %d", got.Screen.Backlight, DefaultBacklight)
+	if got := st.Get(); got.Screen.Backlight != schema.DefaultBacklight {
+		t.Errorf(
+			"backlight = %d, want the default %d",
+			got.Screen.Backlight,
+			schema.DefaultBacklight,
+		)
 	}
 }
 
@@ -73,11 +79,11 @@ func TestWritingOneSettingLeavesTheRest(t *testing.T) {
 	}
 
 	again, _ := Load(path)
-	if got := again.Get(); got.Screen.Backlight != DefaultBacklight {
+	if got := again.Get(); got.Screen.Backlight != schema.DefaultBacklight {
 		t.Errorf(
 			"backlight came back %d, want the default %d",
 			got.Screen.Backlight,
-			DefaultBacklight,
+			schema.DefaultBacklight,
 		)
 	}
 }
@@ -114,7 +120,7 @@ func contains(s, sub string) bool {
 }
 
 func TestLabelsRoundTrip(t *testing.T) {
-	modes := ScreenModes()
+	modes := schema.ScreenModes()
 	labels := Labels(modes)
 
 	if len(labels) != len(modes) {
@@ -134,7 +140,7 @@ func TestLabelsRoundTrip(t *testing.T) {
 }
 
 func TestUnknownLabelIsRejected(t *testing.T) {
-	if _, ok := ByLabel(ScreenModes(), "Nonesuch"); ok {
+	if _, ok := ByLabel(schema.ScreenModes(), "Nonesuch"); ok {
 		t.Error("an unknown label resolved to a mode")
 	}
 }
@@ -154,7 +160,7 @@ func TestConcurrentUpdatesLeaveAReadableFile(t *testing.T) {
 			defer wg.Done()
 			for n := range 25 {
 				level := (i*25 + n) % 101
-				if err := (ScreenWriter{st}).Backlight(level); err != nil {
+				if err := st.Set().Screen().Backlight(level); err != nil {
 					t.Errorf("Backlight: %v", err)
 					return
 				}
@@ -181,7 +187,7 @@ func TestUpdateWritesTheNewestState(t *testing.T) {
 	}
 
 	for _, level := range []int{10, 20, 30, 40, 50} {
-		if err := (ScreenWriter{st}).Backlight(level); err != nil {
+		if err := st.Set().Screen().Backlight(level); err != nil {
 			t.Fatalf("Backlight: %v", err)
 		}
 	}
@@ -208,7 +214,7 @@ func TestAdoptionPersists(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if err := (APIWriter{st}).Adopted(true); err != nil {
+	if err := st.Set().API().Adopted(true); err != nil {
 		t.Fatalf("Adopted: %v", err)
 	}
 
@@ -223,7 +229,7 @@ func TestAdoptionPersists(t *testing.T) {
 
 func TestLabelsAreDistinct(t *testing.T) {
 	seen := map[string]bool{}
-	for _, label := range Labels(ScreenModes()) {
+	for _, label := range Labels(schema.ScreenModes()) {
 		if seen[label] {
 			t.Errorf("two screen modes are labeled %q", label)
 		}

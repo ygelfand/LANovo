@@ -6,8 +6,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
+
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
 func mixer(args []string) (string, error) {

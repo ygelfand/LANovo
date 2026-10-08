@@ -5,11 +5,12 @@ import (
 	"testing"
 
 	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-func heard(t *testing.T, chime config.Chime) *[][]Note {
+func heard(t *testing.T, chime schema.Chime) *[][]Note {
 	t.Helper()
 
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
@@ -35,7 +36,7 @@ var occasions = map[string]func(){
 }
 
 func TestNoneSilencesEveryOccasion(t *testing.T) {
-	played := heard(t, config.ChimeNone)
+	played := heard(t, schema.ChimeNone)
 
 	for name, occasion := range occasions {
 		occasion()
@@ -47,7 +48,7 @@ func TestNoneSilencesEveryOccasion(t *testing.T) {
 }
 
 func TestEveryOccasionSoundsWhenChimesAreOn(t *testing.T) {
-	played := heard(t, config.ChimeChirp)
+	played := heard(t, schema.ChimeChirp)
 
 	for name, occasion := range occasions {
 		*played = nil
@@ -64,8 +65,8 @@ func TestEveryOccasionSoundsWhenChimesAreOn(t *testing.T) {
 }
 
 func TestTheAcknowledgementFollowsTheSetting(t *testing.T) {
-	for _, chime := range config.Chimes() {
-		if chime == config.ChimeNone {
+	for _, chime := range schema.Chimes() {
+		if chime == schema.ChimeNone {
 			continue
 		}
 
@@ -93,8 +94,8 @@ func TestTheMeaningfulTonesIgnoreTheSetting(t *testing.T) {
 	for name, occasion := range fixed {
 		var first []Note
 
-		for _, chime := range config.Chimes() {
-			if chime == config.ChimeNone {
+		for _, chime := range schema.Chimes() {
+			if chime == schema.ChimeNone {
 				continue
 			}
 

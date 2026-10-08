@@ -2,116 +2,24 @@ package activity
 
 import (
 	"testing"
-	"time"
+
+	"github.com/ygelfand/libcountertop/pkg/assistant/activity"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 )
 
-func caught(t *testing.T) *[]component.Event {
-	t.Helper()
-
-	var got []component.Event
-	cancel := component.Fire.Listen(func(e component.Event) { got = append(got, e) })
+func TestAnEndedTurnIsFiredToHomeAssistant(t *testing.T) {
+	var got []sharedcomponent.Event
+	cancel := component.Fire.Listen(func(e sharedcomponent.Event) { got = append(got, e) })
 	t.Cleanup(cancel)
 
-	return &got
-}
+	Get().Begin(1, "hey jarvis").Ends(activity.Completed)
 
-func TestAFailedTurnReportsNoPhaseItNeverReached(t *testing.T) {
-	got := caught(t)
-
-	turn := Get().Begin(1, "hey jarvis")
-	time.Sleep(2 * time.Millisecond)
-	turn.Listening()
-	time.Sleep(2 * time.Millisecond)
-	turn.Heard("what time is it")
-	time.Sleep(2 * time.Millisecond)
-	turn.Ends(Failed)
-
-	if len(*got) != 1 {
-		t.Fatalf("fired %d events, want 1", len(*got))
+	if len(got) != 1 || got[0].Name != TurnEvent {
+		t.Fatalf("fired %v, want one %s", got, TurnEvent)
 	}
-
-	data := (*got)[0].Data
-	for _, key := range []string{"listen_ms", "think_ms"} {
-		if data[key] == "" {
-			t.Errorf("%s missing, and the turn reached that phase", key)
-		}
-	}
-	if data["speak_ms"] != "" {
-		t.Errorf("speak_ms is %q, and the turn never replied", data["speak_ms"])
-	}
-	if data["reply"] != "" {
-		t.Errorf("reply is %q, and there was none", data["reply"])
-	}
-	if data["outcome"] != string(Failed) {
-		t.Errorf("outcome is %q, want %q", data["outcome"], Failed)
-	}
-	if data["heard"] != "what time is it" {
-		t.Errorf("heard is %q", data["heard"])
-	}
-}
-
-func TestAWholeTurnReportsEveryPhase(t *testing.T) {
-	got := caught(t)
-
-	turn := Get().Begin(2, "alexa")
-	for _, step := range []func(){
-		turn.Listening,
-		func() { turn.Heard("play something") },
-		func() { turn.Replying("playing") },
-	} {
-		time.Sleep(2 * time.Millisecond)
-		step()
-	}
-	time.Sleep(2 * time.Millisecond)
-	turn.Ends(Completed)
-
-	data := (*got)[0].Data
-	for _, key := range []string{"listen_ms", "think_ms", "speak_ms"} {
-		if data[key] == "" {
-			t.Errorf("%s missing", key)
-		}
-	}
-	if data["slot"] != "2" {
-		t.Errorf("slot is %q, want 2", data["slot"])
-	}
-	if data["id"] == "" {
-		t.Error("no id, so nothing could ask for the recording")
-	}
-	if data["version"] != Version {
-		t.Errorf("version is %q, want %q", data["version"], Version)
-	}
-}
-
-func TestEndingTwiceFiresOnce(t *testing.T) {
-	got := caught(t)
-
-	turn := Get().Begin(1, "hey jarvis")
-	turn.Ends(Completed)
-	turn.Ends(Timeout)
-
-	if len(*got) != 1 {
-		t.Fatalf("fired %d events, want 1", len(*got))
-	}
-	if (*got)[0].Data["outcome"] != string(Completed) {
-		t.Errorf("outcome is %q, want the first one", (*got)[0].Data["outcome"])
-	}
-}
-
-func TestNoTurnIsSafeToMark(t *testing.T) {
-	got := caught(t)
-
-	var turn *Turn
-	turn.Listening()
-	turn.Heard("nothing")
-	turn.Replying("nothing")
-	turn.Ends(Cancelled)
-
-	if turn.ID() != "" {
-		t.Errorf("id is %q, want empty", turn.ID())
-	}
-	if len(*got) != 0 {
-		t.Errorf("fired %d events, want none", len(*got))
+	if got[0].Data["outcome"] != string(activity.Completed) {
+		t.Errorf("outcome is %q, want %q", got[0].Data["outcome"], activity.Completed)
 	}
 }

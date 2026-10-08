@@ -1,6 +1,10 @@
 package config
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+)
 
 func TestSnapshotOwnsEveryMutableSettingsCollection(t *testing.T) {
 	s, err := Load(t.TempDir() + "/state.json")
@@ -8,12 +12,12 @@ func TestSnapshotOwnsEveryMutableSettingsCollection(t *testing.T) {
 		t.Fatal(err)
 	}
 	if err = s.Update(func(c *Config) {
-		c.Wake.Words = []WakeWord{{ID: "word"}}
+		c.Wake.Words = []schema.WakeWord{{ID: "word"}}
 		c.Cast.YouTube.Skip = []string{"sponsor"}
 		c.Camera.Settings = map[string]string{"scene": "auto"}
 		c.Home.Control = map[string]bool{"x": true}
 		c.Home.Group = map[string]int{"x": 2}
-		c.Home.Picks = map[string]HomePick{
+		c.Home.Picks = map[string]schema.HomePick{
 			"x": {Labels: []string{"label"}, Areas: []string{"area"}, Entities: []string{"entity"}},
 		}
 	}); err != nil {

@@ -2,6 +2,7 @@ package control
 
 import (
 	"bufio"
+	"context"
 	"net"
 	"strings"
 	"testing"
@@ -16,7 +17,7 @@ func spoken(t *testing.T, line string) string {
 	ours, theirs := net.Pipe()
 	t.Cleanup(func() { ours.Close(); theirs.Close() })
 
-	go (&Control{}).serve(theirs)
+	go harness.Serve(context.Background(), theirs, harness.Executes(build("").tree))
 
 	if err := ours.SetDeadline(time.Now().Add(2 * time.Second)); err != nil {
 		t.Fatal(err)

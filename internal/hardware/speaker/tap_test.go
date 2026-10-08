@@ -13,10 +13,11 @@ func TestTheTapHearsTheMixAtTheVolume(t *testing.T) {
 	}{{1, 1000}, {0.5, 500}, {0, 0}} {
 		s := &Speaker{}
 		s.SetVolume(tc.volume)
-		s.pending = make([]int16, period*Channels)
-		for i := range s.pending {
-			s.pending[i] = 1000
+		queued := make([]int16, period*Channels)
+		for i := range queued {
+			queued[i] = 1000
 		}
+		s.queue.Push(queued)
 
 		c := &caught{}
 		s.SetTap(c)

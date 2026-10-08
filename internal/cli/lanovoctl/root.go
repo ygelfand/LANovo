@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/colorprofile"
 	"github.com/spf13/cobra"
+	"github.com/ygelfand/libcountertop/pkg/host/prompt"
 )
 
 var serial string
@@ -30,7 +31,7 @@ func newRoot() *cobra.Command {
 
 func Execute() {
 	root := newRoot()
-	if !isTerminal() {
+	if !prompt.IsTerminal() {
 		root.SetOut(colorprofile.NewWriter(os.Stdout, os.Environ()))
 		root.SetErr(colorprofile.NewWriter(os.Stderr, os.Environ()))
 	}

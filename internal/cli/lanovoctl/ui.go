@@ -2,17 +2,12 @@ package lanovoctl
 
 import (
 	"context"
-	"errors"
 	"io"
-	"os"
 
 	"charm.land/lipgloss/v2"
-	"github.com/charmbracelet/x/term"
-
-	"github.com/ygelfand/LANovo/internal/host/device"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+	"github.com/ygelfand/libcountertop/pkg/host/prompt"
 )
-
-var ErrCanceled = errors.New("canceled")
 
 var (
 	styleTitle  = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("39"))
@@ -21,18 +16,16 @@ var (
 	styleDetail = lipgloss.NewStyle().Foreground(lipgloss.Color("244"))
 )
 
-func isTerminal() bool { return term.IsTerminal(os.Stdout.Fd()) }
-
-func connect(ctx context.Context, out io.Writer) (*device.Device, error) {
-	if err := device.Require(); err != nil {
+func connect(ctx context.Context, out io.Writer) (*adb.Device, error) {
+	if err := adb.Require(); err != nil {
 		return nil, err
 	}
 
-	target, err := resolveSerial(ctx, out, serial)
+	target, err := prompt.Serial(ctx, out, serial, adb.List, "")
 	if err != nil {
 		return nil, err
 	}
-	return device.Connect(target)
+	return adb.Attach(target)
 }
 
 func mark(ok bool) string {

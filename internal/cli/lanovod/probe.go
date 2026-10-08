@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/ygelfand/LANovo/internal/feature/dhcp"
+	"github.com/ygelfand/libcountertop/pkg/network/dhcp"
 )
 
 func newProbeCmd() *cobra.Command {

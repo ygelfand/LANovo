@@ -13,15 +13,16 @@ import (
 	"unsafe"
 
 	"github.com/ygelfand/libcountertop/pkg/hook"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/LANovo/internal/service"
 )
 
 func init() {
-	component.Register(component.Hardware, Get, component.Order(10),
-		component.Supervise(service.Restart(time.Second, 30*time.Second)))
+	component.Register(sharedcomponent.Hardware, Get, sharedcomponent.Order(10),
+		sharedcomponent.Supervise(service.Restart(time.Second, 30*time.Second)))
 }
 
 type Controller struct {
@@ -50,22 +51,22 @@ func All() []Button {
 	return out
 }
 
-func (c *Controller) Startup() component.Progress {
+func (c *Controller) Startup() sharedcomponent.Progress {
 	c.mu.Lock()
 	w := c.watch
 	c.mu.Unlock()
 
 	if w == nil {
-		return component.Progress{Doing: "taking the buttons"}
+		return sharedcomponent.Progress{Doing: "taking the buttons"}
 	}
 
 	if missing := len(lines()) - len(w.files); missing > 0 {
-		return component.Progress{
+		return sharedcomponent.Progress{
 			Done:  true,
 			Doing: fmt.Sprintf("%d of %d, the rest could not be read", len(w.files), len(lines())),
 		}
 	}
-	return component.Progress{Done: true}
+	return sharedcomponent.Progress{Done: true}
 }
 
 func (c *Controller) Start(context.Context) error {

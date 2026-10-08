@@ -6,6 +6,8 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
@@ -13,7 +15,7 @@ import (
 )
 
 func init() {
-	component.Register(component.Device, Get)
+	component.Register(sharedcomponent.Device, Get)
 }
 
 // The codec's decimator volume tops out at +40 dB.

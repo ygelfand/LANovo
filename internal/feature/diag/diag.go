@@ -8,18 +8,23 @@ import (
 	"time"
 
 	esphome "github.com/ygelfand/go-esphome-device"
+
+	sharedwake "github.com/ygelfand/libcountertop/pkg/inference/wake"
 	netaddress "github.com/ygelfand/libcountertop/pkg/network/address"
 	"github.com/ygelfand/libcountertop/pkg/runtime/collector"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/system/metrics"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/hardware/metrics"
+	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
+	"github.com/ygelfand/LANovo/internal/lib/wake"
 )
 
 func init() {
-	component.Register(component.Network, Get, component.Order(90))
+	component.Register(sharedcomponent.Network, Get, sharedcomponent.Order(90))
 }
 
 // deca-cpu-max-step is the SoC's hottest-core reading; throttling follows it.
@@ -38,6 +43,8 @@ type Diag struct {
 	memory      *esphome.Sensor
 	free        *esphome.Sensor
 	uptime      *esphome.Sensor
+
+	cache *sharedwake.CacheEntities
 
 	signal *esphome.Sensor
 	rxRate *esphome.Sensor
@@ -71,6 +78,7 @@ var (
 func Get() *Diag {
 	once.Do(func() {
 		shared = &Diag{wake: make(chan struct{}, 1)}
+		shared.cache = wake.Lib().CacheEntities(inUse)
 		shared.hardware()
 		shared.radio()
 		shared.identity()
@@ -84,7 +92,7 @@ func Get() *Diag {
 func (d *Diag) Name() string { return "diagnostics" }
 
 func (d *Diag) Entities() []esphome.Entity {
-	return []esphome.Entity{
+	return append(d.cache.Entities(), []esphome.Entity{
 		d.temperature,
 		d.gpuTemp,
 		d.cores,
@@ -101,10 +109,17 @@ func (d *Diag) Entities() []esphome.Entity {
 		d.network,
 		d.version,
 		d.interval,
-	}
+	}...)
 }
 
-func (d *Diag) Restore(c config.Config) { d.interval.Set(float32(c.Diag.Interval)) }
+func (d *Diag) Measure() { d.cache.Measure() }
+
+func inUse() []string { return config.Get().Wake.IDs(wakeword.Slots) }
+
+func (d *Diag) Restore(c config.Config) {
+	d.Measure()
+	d.interval.Set(float32(c.Diag.Interval))
+}
 
 func (d *Diag) hardware() {
 	temp := func(id, name string) *esphome.Sensor {
@@ -305,7 +320,7 @@ func (d *Diag) measure() {
 		d.free.Set(float32(free / (1024 * 1024)))
 	}
 
-	d.uptime.Set(float32(metrics.Uptime()))
+	d.uptime.Set(float32(metrics.Reader{}.Uptime().Value))
 }
 
 func (d *Diag) busy(r metrics.Reader) {

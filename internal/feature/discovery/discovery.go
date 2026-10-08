@@ -4,8 +4,10 @@ import (
 	"strings"
 	"sync"
 
+	shareddashboard "github.com/ygelfand/libcountertop/pkg/display/dashboard"
 	shared "github.com/ygelfand/libcountertop/pkg/network/discovery"
 	sharedpeer "github.com/ygelfand/libcountertop/pkg/network/peer"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/say"
 
 	"github.com/ygelfand/LANovo/internal/board"
@@ -56,9 +58,11 @@ var get = sync.OnceValue(func() *shared.Discovery {
 
 func Get() *shared.Discovery { return get() }
 func init() {
-	component.Register(component.Network, Get, component.Order(60))
-	dashboard.AddTabs(
+	component.Register(sharedcomponent.Network, Get, sharedcomponent.Order(60))
+	dashboard.Tabs().Add(
 		100,
-		func() []dashboard.Tab { return []dashboard.Tab{{Kind: TabKind, Key: TabKind, Name: say.T("call.tab")}} },
+		func() []shareddashboard.Tab {
+			return []shareddashboard.Tab{{Kind: TabKind, Key: TabKind, Name: say.T("call.tab")}}
+		},
 	)
 }

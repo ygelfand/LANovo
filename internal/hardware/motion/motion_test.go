@@ -5,7 +5,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/hardware/display"
+	"github.com/ygelfand/libcountertop/pkg/display/geometry"
+
 	"github.com/ygelfand/LANovo/internal/hardware/i2c"
 )
 
@@ -158,12 +159,12 @@ func TestTrackerFollowsGravity(t *testing.T) {
 	tests := []struct {
 		name    string
 		reading Reading
-		want    display.Orientation
+		want    geometry.Orientation
 	}{
-		{"stood as it ships", Reading{X: 1}, display.Rotate90},
-		{"turned to portrait", Reading{Y: -1}, display.Rotate0},
-		{"turned the other way", Reading{X: -1}, display.Rotate270},
-		{"upside down", Reading{Y: 1}, display.Rotate180},
+		{"stood as it ships", Reading{X: 1}, geometry.Rotate90},
+		{"turned to portrait", Reading{Y: -1}, geometry.Rotate0},
+		{"turned the other way", Reading{X: -1}, geometry.Rotate270},
+		{"upside down", Reading{Y: 1}, geometry.Rotate180},
 	}
 
 	for _, tt := range tests {
@@ -185,8 +186,8 @@ func TestTrackerIgnoresMovement(t *testing.T) {
 	if changed := tr.Update(Reading{Y: 3}); changed {
 		t.Error("a reading taken mid-movement turned the screen")
 	}
-	if got := tr.Orientation(); got != display.Rotate90 {
-		t.Errorf("orientation = %v, want it held at %v", got, display.Rotate90)
+	if got := tr.Orientation(); got != geometry.Rotate90 {
+		t.Errorf("orientation = %v, want it held at %v", got, geometry.Rotate90)
 	}
 }
 
@@ -197,8 +198,8 @@ func TestTrackerIgnoresLyingFlat(t *testing.T) {
 	if changed := tr.Update(Reading{Z: 1}); changed {
 		t.Error("a device lying flat turned the screen")
 	}
-	if got := tr.Orientation(); got != display.Rotate90 {
-		t.Errorf("orientation = %v, want it held at %v", got, display.Rotate90)
+	if got := tr.Orientation(); got != geometry.Rotate90 {
+		t.Errorf("orientation = %v, want it held at %v", got, geometry.Rotate90)
 	}
 }
 
@@ -209,8 +210,8 @@ func TestTrackerHoldsNearABoundary(t *testing.T) {
 	if changed := tr.Update(Reading{X: 0.70, Y: -0.71}); changed {
 		t.Error("a reading on the boundary turned the screen")
 	}
-	if got := tr.Orientation(); got != display.Rotate90 {
-		t.Errorf("orientation = %v, want it held at %v", got, display.Rotate90)
+	if got := tr.Orientation(); got != geometry.Rotate90 {
+		t.Errorf("orientation = %v, want it held at %v", got, geometry.Rotate90)
 	}
 }
 
@@ -221,8 +222,8 @@ func TestTrackerTurnsWhenCommitted(t *testing.T) {
 	if changed := tr.Update(Reading{Y: -1}); !changed {
 		t.Fatal("a device turned to portrait did not follow")
 	}
-	if got := tr.Orientation(); got != display.Rotate0 {
-		t.Errorf("orientation = %v, want %v", got, display.Rotate0)
+	if got := tr.Orientation(); got != geometry.Rotate0 {
+		t.Errorf("orientation = %v, want %v", got, geometry.Rotate0)
 	}
 }
 

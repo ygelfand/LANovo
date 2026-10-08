@@ -6,14 +6,14 @@ import (
 	"strings"
 
 	esphome "github.com/ygelfand/go-esphome-device"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
 
-	"github.com/ygelfand/LANovo/internal/host/device"
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 var ErrNoKey = errors.New("the device has no encryption key")
 
-func Key(d *device.Device) (string, error) {
+func Key(d *adb.Device) (string, error) {
 	b, err := d.ReadFile(layout.KeyPath)
 	if err != nil {
 		return "", ErrNoKey
@@ -33,7 +33,7 @@ func parseKey(b []byte) (string, error) {
 	return key, nil
 }
 
-func RotateKey(d *device.Device) (string, error) {
+func RotateKey(d *adb.Device) (string, error) {
 	k, err := esphome.GeneratePSK()
 	if err != nil {
 		return "", fmt.Errorf("generating a key: %w", err)

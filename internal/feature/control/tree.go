@@ -5,12 +5,18 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
-	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 
+	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/callcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
+
+	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	panel "github.com/ygelfand/LANovo/internal/feature/settings"
+	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
+	"github.com/ygelfand/LANovo/internal/logging"
 )
 
 func (c *Control) tree() *cobra.Command {
@@ -156,7 +162,7 @@ func showing() []*cobra.Command {
 			Use:   "stack",
 			Short: "The screens on the shell's stack, top first, and which are held up",
 			Args:  cobra.NoArgs,
-		}, stack),
+		}, func([]string) (string, error) { return screencmd.Stack(shell.Get()), nil }),
 	}
 }
 
@@ -173,12 +179,12 @@ func telling() []*cobra.Command {
 			Short:     "Read or change how much goes to logcat, until lanovod restarts",
 			Args:      cobra.MaximumNArgs(1),
 			ValidArgs: []string{"debug", "info", "warn", "error"},
-		}, logLevel),
+		}, func(args []string) (string, error) { return harness.LogLevel(&logging.Log.Level, args) }),
 		says(&cobra.Command{
 			Use:   "peers",
 			Short: "Other devices on the network",
 			Args:  cobra.NoArgs,
-		}, peers),
+		}, func([]string) (string, error) { return callcmd.Peers(discovery.Get().Peers()), nil }),
 	}
 }
 

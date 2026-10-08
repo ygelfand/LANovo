@@ -3,9 +3,11 @@ package settings
 import (
 	"sync"
 
-	"github.com/ygelfand/libcountertop/pkg/say"
-
 	gogui "github.com/go-gui-org/go-gui/gui"
+
+	shareddrawer "github.com/ygelfand/libcountertop/pkg/display/drawer"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/say"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -14,7 +16,7 @@ import (
 )
 
 func init() {
-	component.Register(component.Device, Get, component.Order(36))
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(36))
 }
 
 type Settings struct{}
@@ -30,9 +32,9 @@ func Get() *Settings {
 
 		say.Use(config.Get().Screen.Language)
 
-		drawer.Get().Add(drawer.Entry{
+		drawer.Get().Add(shareddrawer.Entry{
 			Name:  func() string { return say.T("settings.title") },
-			Order: drawer.OrderSettings,
+			Order: shareddrawer.OrderSettings,
 			Glyph: func() string { return gogui.IconGear },
 			Open:  Open,
 		})

@@ -7,16 +7,18 @@ import (
 	"time"
 
 	esphome "github.com/ygelfand/go-esphome-device"
+
 	"github.com/ygelfand/libcountertop/pkg/hook"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 	zonepolicy "github.com/ygelfand/libcountertop/pkg/settings/timezone"
 
 	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/LANovo/internal/service"
 )
 
 func init() {
-	component.Register(component.Network, Get, component.Order(20),
-		component.Supervise(service.Restart(5*time.Second, time.Minute)))
+	component.Register(sharedcomponent.Network, Get, sharedcomponent.Order(20),
+		sharedcomponent.Supervise(service.Restart(5*time.Second, time.Minute)))
 }
 
 const (

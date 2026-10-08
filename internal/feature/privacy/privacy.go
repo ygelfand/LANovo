@@ -6,7 +6,9 @@ import (
 	"sync"
 
 	esphome "github.com/ygelfand/go-esphome-device"
+
 	"github.com/ygelfand/libcountertop/pkg/hook"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
@@ -14,7 +16,7 @@ import (
 )
 
 func init() {
-	component.Register(component.Device, Get, component.Order(15))
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(15))
 }
 
 type Privacy struct {

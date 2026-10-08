@@ -7,10 +7,13 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/ygelfand/libcountertop/pkg/display/video"
 	"github.com/ygelfand/libcountertop/pkg/fetch"
 	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube"
+	"github.com/ygelfand/libcountertop/pkg/media/playback"
 
-	"github.com/ygelfand/LANovo/internal/hardware/video"
+	"github.com/ygelfand/LANovo/internal/board"
+	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
 func casting() []*cobra.Command {
@@ -41,12 +44,16 @@ func ytLive(args []string) (string, error) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), hold+30*time.Second)
 	defer cancel()
-	return youtube.NewResolver(fetch.Client(30*time.Second), video.Target).
+	return youtube.NewResolver(fetch.Client(30*time.Second), panelTarget).
 		Probe(ctx, args[0], hold, back)
 }
 
 func ytFormats(args []string) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	return youtube.NewResolver(fetch.Client(30*time.Second), video.Target).Formats(ctx, args[0])
+	return youtube.NewResolver(fetch.Client(30*time.Second), panelTarget).Formats(ctx, args[0])
+}
+
+func panelTarget() playback.Target {
+	return video.Target(display.Get(), board.Current().MaxFPS)
 }

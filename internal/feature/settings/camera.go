@@ -3,38 +3,37 @@ package settings
 import (
 	"sync"
 
+	"github.com/ygelfand/libcountertop/pkg/camera/live"
+	sharedpreview "github.com/ygelfand/libcountertop/pkg/display/camerapreview"
 	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
+	sharedshell "github.com/ygelfand/libcountertop/pkg/display/shell"
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
 	"github.com/ygelfand/LANovo/internal/feature/rtspd"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/setting"
+	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
-var cameraOnce sync.Once
-var cameraSettings *sharedsettings.CameraPages[livecam.Knobs]
-
-func cameraPages() *sharedsettings.CameraPages[livecam.Knobs] {
-	cameraOnce.Do(func() {
-		cameraSettings = sharedsettings.NewCameraPages(
-			sharedsettings.CameraOptions[livecam.Knobs]{
-				Table:     livecam.Table,
-				Read:      livecam.Saved,
-				Save:      livecam.Set,
-				Reset:     livecam.Reset,
-				Stream:    func() bool { return config.Get().RTSP.Enabled },
-				SetStream: rtspd.Get().SetEnabled,
-				Push:      shell.Get().Push,
-				Redraw:    shell.Get().Redraw,
-				Preview:   camWant,
-				Wrap:      camPage,
-			},
-		)
+var cameraPages = sync.OnceValue(func() *sharedsettings.CameraPages[live.Knobs] {
+	cam := livecam.Get()
+	preview := sharedpreview.New(sharedpreview.Dependencies{
+		Shell:   shell.Get(),
+		Camera:  cam.Sessions(),
+		Display: display.Get(),
 	})
-	return cameraSettings
-}
-func cameraPage() *shell.Page                 { return cameraPages().Page() }
-func sectionPage(g setting.Group) *shell.Page { return cameraPages().Section(g) }
-func choicePage(s livecam.Knob) *shell.Page   { return cameraPages().Choice(s) }
-func shown() []setting.Group                  { return cameraPages().Shown() }
+	return sharedsettings.NewCameraPages(sharedsettings.CameraOptions[live.Knobs]{
+		Table:     cam.Table,
+		Read:      cam.Saved,
+		Save:      cam.Set,
+		Reset:     cam.Reset,
+		Stream:    func() bool { return config.Get().RTSP.Enabled },
+		SetStream: rtspd.Get().SetEnabled,
+		Push:      shell.Get().Push,
+		Redraw:    shell.Get().Redraw,
+		Preview:   preview.Want,
+		Wrap:      preview.Page,
+	})
+})
+
+func cameraPage() *sharedshell.Page { return cameraPages().Page() }

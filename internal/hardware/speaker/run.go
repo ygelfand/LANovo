@@ -7,7 +7,8 @@ import (
 	"math"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/lib/alsa"
+	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
+	"github.com/ygelfand/libcountertop/pkg/audio/mix"
 )
 
 func (s *Speaker) Run(ctx context.Context) error {
@@ -31,7 +32,7 @@ func (s *Speaker) Run(ctx context.Context) error {
 			continue
 		}
 
-		if _, err := out.Write(buf); err != nil {
+		if err := mix.Send(ctx, out, buf, &s.xruns); err != nil {
 			if ctx.Err() != nil {
 				return nil
 			}
@@ -47,11 +48,7 @@ func (s *Speaker) Run(ctx context.Context) error {
 	}
 }
 
-type Source interface {
-	Render(at uint64, out []int16)
-}
-
-func (s *Speaker) Attach(src Source) {
+func (s *Speaker) Attach(src mix.Source) {
 	s.srcMu.Lock()
 	defer s.srcMu.Unlock()
 	s.src = src
@@ -123,17 +120,17 @@ func (s *Speaker) fill(buf []byte) {
 				sum += int32(placed[i])
 			}
 			if tap != nil {
-				s.tapBuf[i] = clamp(int32(float32(sum) * gain))
+				s.tapBuf[i] = mix.Clamp(int32(float32(sum) * gain))
 			}
 			sums[c] = sum
 			both += sum
 		}
 
-		s.mono[f] = clamp(int32(float32(both) / Channels * gain))
+		s.mono[f] = mix.Clamp(int32(float32(both) / Channels * gain))
 		for c := range Channels {
-			v := clamp(int32(float32(both) / Channels * out))
+			v := mix.Clamp(int32(float32(both) / Channels * out))
 			if stereo {
-				v = clamp(int32(float32(sums[c]) * out))
+				v = mix.Clamp(int32(float32(sums[c]) * out))
 			}
 			binary.LittleEndian.PutUint16(buf[(f*Channels+c)*2:], uint16(v))
 			heard := float64(v) * float64(gain/out)

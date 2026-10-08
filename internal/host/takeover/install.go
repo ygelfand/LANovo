@@ -7,8 +7,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+
 	"github.com/ygelfand/LANovo/internal/android/prop"
-	"github.com/ygelfand/LANovo/internal/host/device"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/parts"
 )
@@ -26,7 +27,7 @@ type Result struct {
 	Settles bool
 }
 
-func Install(d *device.Device, binary []byte) (Result, error) {
+func Install(d *adb.Device, binary []byte) (Result, error) {
 	var res Result
 
 	if len(binary) == 0 {
@@ -88,12 +89,12 @@ func Install(d *device.Device, binary []byte) (Result, error) {
 	return res, nil
 }
 
-func Start(d *device.Device) error {
+func Start(d *adb.Device) error {
 	return prop.Start(d, layout.Service)
 }
 
 // system_server sets sys.boot_completed, and zygote is stopped.
-func WaitRunning(ctx context.Context, d *device.Device) error {
+func WaitRunning(ctx context.Context, d *adb.Device) error {
 	deadline := time.Now().Add(2 * time.Minute)
 	for time.Now().Before(deadline) {
 		if ctx.Err() != nil {

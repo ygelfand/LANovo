@@ -70,14 +70,14 @@ func leaves(t reflect.Type, at string) []string {
 func TestEverySettingIsReachedOrAccountedFor(t *testing.T) {
 	reached := map[string]string{}
 	for _, s := range settings() {
-		if s.field == "" {
-			t.Errorf("%s does not say which setting it changes", s.name)
+		if s.Field == "" {
+			t.Errorf("%s does not say which setting it changes", s.Name)
 			continue
 		}
-		if was, twice := reached[s.field]; twice && !manyRows[s.field] {
-			t.Errorf("%s is changed by both %s and %s", s.field, was, s.name)
+		if was, twice := reached[s.Field]; twice && !manyRows[s.Field] {
+			t.Errorf("%s is changed by both %s and %s", s.Field, was, s.Name)
 		}
-		reached[s.field] = s.name
+		reached[s.Field] = s.Name
 	}
 
 	var missing []string
@@ -101,8 +101,8 @@ func TestEverySettingNamesARealField(t *testing.T) {
 	all := leaves(reflect.TypeOf(config.Config{}), "")
 
 	for _, s := range settings() {
-		if s.field != "" && !slices.Contains(all, s.field) {
-			t.Errorf("%s changes %s, which is not in the config", s.name, s.field)
+		if s.Field != "" && !slices.Contains(all, s.Field) {
+			t.Errorf("%s changes %s, which is not in the config", s.Name, s.Field)
 		}
 	}
 	for field := range byHand {

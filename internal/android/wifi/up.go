@@ -5,7 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/host/device"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
@@ -17,7 +18,7 @@ const (
 	config = "ctrl_interface=" + sockets + "\nupdate_config=1\nbgscan=\"" + layout.WifiBgscan + "\"\n"
 )
 
-func Up(d *device.Device) error {
+func Up(d *adb.Device) error {
 	if err := loadDriver(d); err != nil {
 		return err
 	}
@@ -28,7 +29,7 @@ func Up(d *device.Device) error {
 }
 
 // Writing fwpath calls kickstart_driver(): driver init and firmware download over SDIO.
-func loadDriver(d *device.Device) error {
+func loadDriver(d *adb.Device) error {
 	if out, _ := d.Shell(
 		"ls /sys/class/net/" + iface + " 2>/dev/null",
 	); strings.TrimSpace(
@@ -54,8 +55,8 @@ func loadDriver(d *device.Device) error {
 	return fmt.Errorf("wifi: %s did not appear after loading the driver", iface)
 }
 
-func startSupplicant(d *device.Device) error {
-	if _, err := (shell{d}).Cmd("ping"); err == nil {
+func startSupplicant(d *adb.Device) error {
+	if On(d).Answering() {
 		return nil
 	}
 
@@ -88,7 +89,7 @@ func startSupplicant(d *device.Device) error {
 	}
 
 	for range 20 {
-		if _, err := (shell{d}).Cmd("ping"); err == nil {
+		if On(d).Answering() {
 			return nil
 		}
 		time.Sleep(250 * time.Millisecond)
@@ -97,7 +98,7 @@ func startSupplicant(d *device.Device) error {
 }
 
 // init reads InitRC only at boot.
-func start(d *device.Device) error {
+func start(d *adb.Device) error {
 	if known, _ := d.Shell(
 		"getprop init.svc." + layout.SupplicantService,
 	); strings.TrimSpace(

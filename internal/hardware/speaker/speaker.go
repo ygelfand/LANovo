@@ -9,9 +9,13 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
+	"github.com/ygelfand/libcountertop/pkg/audio/mix"
+	"github.com/ygelfand/libcountertop/pkg/audio/upsample"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/runtime/service"
+
 	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/LANovo/internal/lib/alsa"
-	"github.com/ygelfand/LANovo/internal/service"
 )
 
 // MultiMedia1 is card 0 device 0, playback and capture both.
@@ -37,27 +41,27 @@ type Speaker struct {
 	hwOnce     sync.Once
 	hwOut      output
 	hardVolume atomic.Bool
-	amp        atomic.Pointer[component.Progress]
+	amp        atomic.Pointer[sharedcomponent.Progress]
 
-	qmu     sync.Mutex
-	pending []int16
+	queue mix.Queue
 
 	level atomic.Uint32
 
 	deaf      atomic.Uint64
 	splices   atomic.Uint64
 	underruns atomic.Uint64
+	xruns     atomic.Uint64
 
 	fed bool
 
 	srcMu   sync.Mutex
-	src     Source
+	src     mix.Source
 	srcBuf  []int16
 	written atomic.Uint64
 
 	voiceMu sync.Mutex
-	voice   Resampler
-	using   Resampling
+	voice   upsample.Resampler
+	using   upsample.Kind
 
 	tap    atomic.Pointer[tapTo]
 	tapBuf []int16
@@ -77,11 +81,9 @@ func (s *Speaker) Sounding() bool {
 	return at != 0 && time.Since(time.Unix(0, at)) < soundingHold
 }
 
-type Tap interface{ Offer(mix []int16) }
+type tapTo struct{ mix.Tap }
 
-type tapTo struct{ Tap }
-
-func (s *Speaker) SetTap(t Tap) {
+func (s *Speaker) SetTap(t mix.Tap) {
 	if t == nil {
 		s.tap.Store(nil)
 		return
@@ -90,8 +92,8 @@ func (s *Speaker) SetTap(t Tap) {
 }
 
 func init() {
-	component.Register(component.Hardware, Get, component.Order(55),
-		component.Supervise(service.Restart(2*time.Second, time.Minute)))
+	component.Register(sharedcomponent.Hardware, Get, sharedcomponent.Order(55),
+		sharedcomponent.Supervise(service.Restart(2*time.Second, time.Minute)))
 }
 
 var (
@@ -108,17 +110,17 @@ func (s *Speaker) Start(context.Context) error {
 		return nil
 	}
 	if err := s.Open(); err != nil {
-		s.amp.Store(&component.Progress{Failed: true, Doing: err.Error()})
+		s.amp.Store(&sharedcomponent.Progress{Failed: true, Doing: err.Error()})
 		return err
 	}
 
-	s.amp.Store(&component.Progress{Doing: "loading"})
+	s.amp.Store(&sharedcomponent.Progress{Doing: "loading"})
 	if err := s.Enable(true); err != nil {
 		slog.Warn("enabling the amplifiers failed", "err", err)
-		s.amp.Store(&component.Progress{Failed: true, Doing: err.Error()})
+		s.amp.Store(&sharedcomponent.Progress{Failed: true, Doing: err.Error()})
 		return nil
 	}
-	s.amp.Store(&component.Progress{Done: true})
+	s.amp.Store(&sharedcomponent.Progress{Done: true})
 	return nil
 }
 

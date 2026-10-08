@@ -8,10 +8,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/display/ui"
+	"github.com/ygelfand/libcountertop/pkg/display/visual"
+
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
-	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/LANovo/internal/ui/visual"
 )
 
 func gltime(args []string) (string, error) {

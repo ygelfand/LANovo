@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
 func TestEverySettingIsPersisted(t *testing.T) {
@@ -95,7 +97,7 @@ func TestDefaultsSurviveBeingWrittenAndReadBack(t *testing.T) {
 		t.Fatalf("Load: %v", err)
 	}
 
-	if err := st.Set().Screen().Backlight(DefaultBacklight); err != nil {
+	if err := st.Set().Screen().Backlight(schema.DefaultBacklight); err != nil {
 		t.Fatalf("Backlight: %v", err)
 	}
 

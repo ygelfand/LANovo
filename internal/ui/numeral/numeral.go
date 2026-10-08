@@ -1,8 +1,8 @@
 package numeral
 
 import (
-	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/display/theme"
+	"github.com/ygelfand/libcountertop/pkg/display/ui"
 )
 
 type Set struct {

@@ -8,13 +8,15 @@ import (
 	"strings"
 	"time"
 
+	bootview "github.com/ygelfand/libcountertop/pkg/display/boot"
 	"github.com/ygelfand/libcountertop/pkg/display/style"
+	"github.com/ygelfand/libcountertop/pkg/display/theme"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 	"github.com/ygelfand/LANovo/internal/ui/reveal"
-	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 
 func bootFrame(args []string) (string, error) {
@@ -25,7 +27,7 @@ func bootFrame(args []string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("seconds %q: %w", args[1], err)
 	}
-	m := reveal.Moment{At: time.Duration(secs * float64(time.Second))}
+	m := bootview.Moment{At: time.Duration(secs * float64(time.Second))}
 	nums := []*float64{&m.Trace, &m.Header, &m.Ready}
 	w, h := board.Current().PanelWidth, board.Current().PanelHeight
 	s := config.Get().Screen
@@ -66,7 +68,7 @@ func bootFrame(args []string) (string, error) {
 		if err := rv.Shade(l, i == 0, w, h, m); err != nil {
 			return "", err
 		}
-		time.Sleep(thumbStep)
+		time.Sleep(screencmd.ThumbStep)
 	}
 	img, err := l.Read()
 	if err != nil {

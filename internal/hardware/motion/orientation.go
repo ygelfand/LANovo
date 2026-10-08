@@ -3,6 +3,8 @@ package motion
 import (
 	"math"
 
+	"github.com/ygelfand/libcountertop/pkg/display/geometry"
+
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
@@ -15,13 +17,13 @@ const (
 )
 
 type Tracker struct {
-	rot   display.Orientation
+	rot   geometry.Orientation
 	known bool
 }
 
 func NewTracker() *Tracker { return &Tracker{rot: display.Mounted()} }
 
-func (t *Tracker) Orientation() display.Orientation { return t.rot }
+func (t *Tracker) Orientation() geometry.Orientation { return t.rot }
 
 func (t *Tracker) Update(r Reading) (changed bool) {
 	if math.Abs(r.Magnitude()-1) > still {
@@ -45,12 +47,12 @@ func (t *Tracker) Update(r Reading) (changed bool) {
 	return true
 }
 
-func rotationFor(r Reading) display.Orientation {
+func rotationFor(r Reading) geometry.Orientation {
 	best := display.Mounted()
 	var strongest float64
 
-	for _, rot := range []display.Orientation{
-		display.Rotate0, display.Rotate90, display.Rotate180, display.Rotate270,
+	for _, rot := range []geometry.Orientation{
+		geometry.Rotate0, geometry.Rotate90, geometry.Rotate180, geometry.Rotate270,
 	} {
 		if g := gravity(r, rot); g > strongest {
 			best, strongest = rot, g
@@ -59,20 +61,20 @@ func rotationFor(r Reading) display.Orientation {
 	return best
 }
 
-func gravity(r Reading, rot display.Orientation) float64 {
+func gravity(r Reading, rot geometry.Orientation) float64 {
 	switch rot {
-	case display.Rotate0:
+	case geometry.Rotate0:
 		return -r.Y
-	case display.Rotate90:
+	case geometry.Rotate90:
 		return r.X
-	case display.Rotate180:
+	case geometry.Rotate180:
 		return r.Y
-	case display.Rotate270:
+	case geometry.Rotate270:
 		return -r.X
 	}
 	return 0
 }
 
-func lead(r Reading, want, have display.Orientation) float64 {
+func lead(r Reading, want, have geometry.Orientation) float64 {
 	return gravity(r, want) - gravity(r, have)
 }

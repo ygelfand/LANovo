@@ -2,6 +2,7 @@ package clock
 
 import (
 	esphome "github.com/ygelfand/go-esphome-device"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 	zonepolicy "github.com/ygelfand/libcountertop/pkg/settings/timezone"
 
 	"github.com/ygelfand/LANovo/internal/config"
@@ -17,7 +18,7 @@ var label = zonepolicy.Label
 func (c *Clock) buildZone() {
 	c.zonePolicy = zonepolicy.NewPolicy(
 		zonepolicy.PolicyOptions{
-			Read:   func() config.Time { return config.Get().Time },
+			Read:   func() schema.Time { return config.Get().Time },
 			Home:   func(s string) error { return config.Set().Time().Home(s) },
 			Chosen: func(s string) error { return config.Set().Time().Chosen(s) },
 		},

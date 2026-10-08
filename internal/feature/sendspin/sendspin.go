@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	sharedplayer "github.com/ygelfand/libcountertop/pkg/media/sendspin"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -31,8 +32,8 @@ var get = sync.OnceValue(func() *sharedplayer.Player {
 func Get() *sharedplayer.Player { return get() }
 func init() {
 	component.Register(
-		component.Device,
+		sharedcomponent.Device,
 		func() *componentPlayer { return &componentPlayer{Get()} },
-		component.Order(26),
+		sharedcomponent.Order(26),
 	)
 }

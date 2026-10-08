@@ -8,6 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
+
 	"github.com/ygelfand/LANovo/internal/hardware/ble"
 )
 
@@ -73,7 +75,7 @@ func newBleCmd() *cobra.Command {
 				defer done()
 
 				seen := map[uint64]int{}
-				err = ble.Scan(ctx, ble.Reader(ctx, p), active, func(a ble.Advertisement) {
+				err = hci.Scan(ctx, hci.Reader(ctx, p), active, func(a hci.Advertisement) {
 					if seen[a.Addr()] == 0 {
 						fmt.Printf("%x  %4d dBm  % x\n", a.Address, a.RSSI, a.Data)
 					}
@@ -93,7 +95,7 @@ func newBleCmd() *cobra.Command {
 			}
 			fmt.Printf("radio on, changed=%v\n", changed)
 
-			p, err := ble.Open(ble.TTY)
+			p, err := hci.Open(ble.TTY)
 			if err != nil {
 				return err
 			}
@@ -103,7 +105,7 @@ func newBleCmd() *cobra.Command {
 				return err
 			}
 
-			v, err := ble.Ask(p)
+			v, err := hci.Ask(p)
 			if err != nil {
 				return fmt.Errorf("reading the version: %w", err)
 			}

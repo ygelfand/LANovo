@@ -4,6 +4,7 @@ import (
 	"log/slog"
 
 	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
+	sharedshell "github.com/ygelfand/libcountertop/pkg/display/shell"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
@@ -11,11 +12,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/update"
 )
 
-func powerPage() *shell.Page {
+func powerPage() *sharedshell.Page {
 	return sharedsettings.PowerPage(shell.Get().Push, restartService, rebootDevice)
 }
-
-var confirmPage = sharedsettings.ConfirmPage
 
 func restartService() { update.Restart("asked for on the panel") }
 

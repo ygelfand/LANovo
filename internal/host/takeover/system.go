@@ -4,14 +4,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+
 	"github.com/ygelfand/LANovo/internal/android/prop"
-	"github.com/ygelfand/LANovo/internal/host/device"
 )
 
 // Qualcomm's partition links, then MediaTek's.
 var byNameDirs = []string{"/dev/block/bootdevice/by-name", "/dev/block/platform/bootdevice/by-name"}
 
-func ByName(d *device.Device) (string, error) {
+func ByName(d *adb.Device) (string, error) {
 	for _, dir := range byNameDirs {
 		if _, err := d.Shell("ls -d " + dir); err == nil {
 			return dir, nil
@@ -21,7 +22,7 @@ func ByName(d *device.Device) (string, error) {
 }
 
 // remount,rw succeeds and does nothing while the block device is BLKROSET; sysfs ro is 0444.
-func Writable(d *device.Device) (restore func() error, err error) {
+func Writable(d *adb.Device) (restore func() error, err error) {
 	slot, err := d.Getprop(prop.SlotSuffix)
 	if err != nil {
 		return nil, err
@@ -53,7 +54,7 @@ func Writable(d *device.Device) (restore func() error, err error) {
 	}, nil
 }
 
-func isWritable(d *device.Device) (bool, error) {
+func isWritable(d *adb.Device) (bool, error) {
 	out, err := d.Shell("grep -E ' / ' /proc/mounts")
 	if err != nil {
 		return false, err

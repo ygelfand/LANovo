@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	sharedha "github.com/ygelfand/libcountertop/pkg/homeassistant"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -14,4 +15,5 @@ var get = sync.OnceValue(func() *sharedha.Controller {
 })
 
 func Get() *sharedha.Controller { return get() }
-func init()                     { component.Register(component.Device, Get, component.Order(5)) }
+
+func init() { component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(5)) }

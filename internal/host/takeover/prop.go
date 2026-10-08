@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/ygelfand/LANovo/internal/host/device"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
 )
 
 // / is the system image on this device.
@@ -13,7 +13,7 @@ const DefaultProp = "/default.prop"
 // adbd reads ro.secure once at start.
 const Insecure = "ro.secure=0"
 
-func MakeInsecure(d *device.Device) (changed bool, err error) {
+func MakeInsecure(d *adb.Device) (changed bool, err error) {
 	cur, err := d.ReadFile(DefaultProp)
 	if err != nil {
 		return false, fmt.Errorf("reading %s: %w", DefaultProp, err)

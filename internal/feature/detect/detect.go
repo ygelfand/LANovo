@@ -1,34 +1,35 @@
 package detect
 
 import (
-	"context"
-	"log/slog"
 	"sync"
 	"time"
 
-	sharedengine "github.com/ygelfand/libcountertop/pkg/inference/detect"
+	esphome "github.com/ygelfand/go-esphome-device"
 
-	"github.com/ygelfand/LANovo/internal/layout"
+	"github.com/ygelfand/libcountertop/pkg/inference/detect"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/call"
+	"github.com/ygelfand/LANovo/internal/feature/diag"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/voice"
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
+	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
-	"github.com/ygelfand/LANovo/internal/service"
 )
 
 func init() {
-	component.Register(component.Device, Get, component.Order(40),
-		component.Supervise(service.Restart(time.Second, 30*time.Second)))
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(40),
+		sharedcomponent.Supervise(service.Restart(time.Second, 30*time.Second)))
 }
 
 type Detect struct {
-	engine *Engine
-	stop   *sharedengine.StopWord
+	*detect.Engine
+	stop *detect.StopWord
 }
 
 var (
@@ -42,23 +43,29 @@ func Get() *Detect {
 }
 
 func newDetect() *Detect {
-	e := New(StopSlot + 1)
+	queue := detect.NewQueue(8)
+	e := detect.New(detect.StopSlot+1, queue)
 
 	e.Threshold = func(slot int) float64 {
-		if slot == StopSlot {
+		if slot == detect.StopSlot {
 			return config.Get().Wake.Stop.Threshold
 		}
 		return wakeword.Threshold(slot)
 	}
+	e.OnDetect = func(slot int) {
+		if slot == detect.StopSlot {
+			voice.Get().Interrupt()
+			return
+		}
+		voice.Get().Start(slot)
+	}
 
-	d := &Detect{engine: e}
-	d.stop = sharedengine.NewStopWord(e, sharedengine.StopOptions{
+	d := &Detect{Engine: e}
+	d.stop = detect.NewStopWord(e, detect.StopOptions{
 		Directory: layout.StateDir, DeviceID: component.DeviceMicrophone,
 		Read: func() float64 { return config.Get().Wake.Stop.Threshold },
 		Save: func(v float64) error { return config.Set().Stop().Threshold(v) },
 	})
-
-	e.OnDetect = d.fired
 
 	e.Load = func() error {
 		turn := voice.Get()
@@ -67,70 +74,23 @@ func newDetect() *Detect {
 		return nil
 	}
 
-	voice.Get().OnWakeWord(d.load)
+	voice.Get().OnWakeWord(d.load, diag.Get().Measure)
 
 	mic.Get().Speech.Listen(func(f mic.Frame) {
 		if privacy.Get().MicMuted() || call.Get().PausesWake() {
 			return
 		}
-		e.Feed(f.Samples)
+		queue.Feed(f.Samples)
 	})
 
-	ours := wake.Lib().Ours()
-	slog.Info("wake words installed", "count", len(ours),
-		"openwakeword", len(wake.OfKind(ours, wake.KindOpenWakeWord)),
-		"microwakeword", len(wake.OfKind(ours, wake.KindMicroWakeWord)))
-
+	detect.LogInstalled(wake.Lib().Ours())
 	return d
 }
 
-func (d *Detect) Name() string { return "wake" }
-
-func (d *Detect) Start(ctx context.Context) error { return d.engine.Start(ctx) }
-
-func (d *Detect) Run(ctx context.Context) error { return d.engine.Run(ctx) }
-
-func (d *Detect) Close() error { return d.engine.Close() }
-
-func (d *Detect) fired(slot int) {
-	if slot == StopSlot {
-		voice.Get().Interrupt()
-		return
-	}
-	voice.Get().Start(slot)
-}
+func (d *Detect) Entities() []esphome.Entity { return []esphome.Entity{d.stop.Entity} }
+func (d *Detect) Restore(c config.Config)    { d.stop.Restore(c.Wake.Stop.Threshold) }
 
 func (d *Detect) load(ids []string) []string {
-	models := wake.Lib().Ensure(ids)
-
-	accepted := make([]string, 0, wakeword.Slots)
-	for slot := range wakeword.Slots {
-		if slot >= len(ids) || ids[slot] == "" {
-			d.engine.Clear(slot)
-			accepted = append(accepted, "")
-			continue
-		}
-
-		m, ok := wake.Find(models, ids[slot])
-		if !ok {
-			slog.Warn("a chosen wake word is not on the device", "slot", slot+1, "id", ids[slot])
-			d.engine.Clear(slot)
-			accepted = append(accepted, "")
-			continue
-		}
-
-		if err := d.engine.Use(slot, m); err != nil {
-			slog.Error("loading a wake word failed", "slot", slot+1, "id", m.ID, "err", err)
-			d.engine.Clear(slot)
-			accepted = append(accepted, "")
-			continue
-		}
-		accepted = append(accepted, m.ID)
-	}
-
-	if gone, freed := wake.Lib().Purge(accepted); gone > 0 {
-		slog.Info("wake words dropped", "count", gone, "freed", freed)
-	}
-
+	accepted, _ := detect.Choose(d.Engine, wake.Lib().Ensure(ids), ids, wakeword.Slots)
 	return accepted
 }

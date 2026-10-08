@@ -1,121 +1,152 @@
 package livecam
 
 import (
-	"errors"
 	"fmt"
-	"log/slog"
-	"time"
+	"sync"
 
-	camerasession "github.com/ygelfand/libcountertop/pkg/camera/session"
+	"github.com/ygelfand/libcountertop/pkg/camera/helper"
+	"github.com/ygelfand/libcountertop/pkg/camera/live"
+	"github.com/ygelfand/libcountertop/pkg/camera/session"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/board"
+	"github.com/ygelfand/LANovo/internal/component"
+	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/mtkcamera"
 )
 
-const FPS = 30
-const Wait = 2 * time.Second
-const Settle = 2 * time.Second
-
-var ErrNoStill = camerasession.ErrNoStill
-var ErrMuted = camerasession.ErrMuted
-var ErrRestarted = errors.New("livecam: the panel turned or the streams changed")
-
-type Picture = camerasession.Picture
-type Session = camerasession.Session
-type Size = camerasession.Size
-
-func Sizes() []Size { return hub.Sizes() }
-
-func sizesFor(q int) []Size {
-	k := Saved()
-	mw, mh := parseSize(k.MainSize)
-	out := []Size{{Width: mw, Height: mh}}
-	if k.SubOn {
-		sw, sh := subFor(k)
-		out = append(out, Size{Width: sw, Height: sh})
-	}
-	if q >= 0 && q%2 == 1 {
-		for i := range out {
-			out[i].Width, out[i].Height = out[i].Height, out[i].Width
-		}
-	}
-	return out
+func init() {
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(36))
 }
 
-func Turn() int {
-	if board.Current().SoC == board.MediaTek {
-		return 0
-	}
-	return turnFor(int(display.Get().Orientation()))
-}
+type Camera struct{ *live.Camera }
 
-const mounted = 3
+func (c Camera) Restore(config.Config) { c.Publish() }
+
+const (
+	mounted       = 3
+	helperService = "lanovo_camera"
+)
+
+var (
+	qualcommMain = []string{"1600x1200", "1280x960", "1024x768", "800x600", "640x480"}
+	mediatekMain = []string{"1280x720", "864x480", "640x480"}
+	subWidths    = []int{960, 768, 640, 480, 320}
+)
+
+var Get = sync.OnceValue(func() Camera {
+	b := board.Current()
+	o := live.Options{
+		Vendor: qualcomm,
+		Streams: live.Streams{
+			Main:        qualcommMain,
+			MainDefault: fmt.Sprintf("%dx%d", b.CameraWidth, b.CameraHeight),
+			Sub:         subWidths,
+			SubDefault:  b.SubWidth,
+		},
+		Mirror: b.CameraMirror,
+		Turn:   func() int { return turnFor(int(display.Get().Orientation())) },
+		Open:   func(c helper.Config) (session.Transport, error) { return mtkcamera.Open(c) },
+		Muted:  func() bool { return b.MicMutesCamera && privacy.Get().MicMuted() },
+		Restart: func() error {
+			return prop.Restart(prop.Local, helperService)
+		},
+		Saved:  func() schema.Camera { return config.Get().Camera },
+		Writer: func() schema.CameraWriter { return config.Set().Camera() },
+		Device: component.DeviceCamera,
+	}
+	if b.SoC == board.MediaTek {
+		o.Vendor = mediatek
+		o.Streams.Main = mediatekMain
+		o.Turn = func() int { return 0 }
+	}
+	return Camera{live.New(o)}
+})
 
 func turnFor(device int) int {
 	return (mounted - ((device/90)%4+4)%4 + 8) % 4
 }
 
-const Keyframe = 2
-
-func Bitrate(w, h int) int { return bitrateFor(Saved(), w, h) }
-
-var hub = camerasession.New(camerasession.Options{
-	Snapshot:     cameraSnapshot,
-	Open:         func(c mtkcamera.Config) (camerasession.Transport, error) { return mtkcamera.Open(c) },
-	Muted:        muted,
-	Recover:      revive,
-	RestartError: ErrRestarted,
-	Wait:         Wait,
-	Settle:       Settle,
-})
-
-func cameraSnapshot() camerasession.Snapshot {
-	q := Turn()
-	k := Saved()
-	sizes := sizesFor(q)
-	cfg := mtkcamera.Config{
-		Width:    sizes[0].Width,
-		Height:   sizes[0].Height,
-		FPS:      FPS,
-		Bitrate:  bitrateFor(k, sizes[0].Width, sizes[0].Height),
-		Keyframe: k.Keyframe,
-		Params:   Params(k),
-		Turn:     q,
-		Mirror:   board.Current().CameraMirror,
-	}
-	if len(sizes) > 1 {
-		cfg.SubWidth = sizes[1].Width
-		cfg.SubHeight = sizes[1].Height
-		cfg.SubBitrate = bitrateFor(k, sizes[1].Width, sizes[1].Height)
-	}
-	return camerasession.Snapshot{Config: cfg, Key: fmt.Sprintf("%d:%s", q, shapeOf(k))}
-}
-func Join(at int) (*Session, <-chan mtkcamera.Frame, error) { return hub.Join(at) }
-func Leave(s *Session, frames <-chan mtkcamera.Frame)       { hub.Leave(s, frames) }
-
-func Sessions() *camerasession.Hub { return hub }
-
-func RequestKey() error                           { return hub.RequestKey() }
-func Still(within time.Duration) (Picture, error) { return hub.Still(within) }
-
-func muted() bool { return board.Current().MicMutesCamera && privacy.Get().MicMuted() }
-
-const reviveEvery = 30 * time.Second
-
-var revived time.Time
-
-func revive(cause error) {
-	if time.Since(revived) < reviveEvery {
-		return
-	}
-	revived = time.Now()
-	slog.Warn("restarting the camera helper", "err", cause)
-	if err := prop.Restart(prop.Local, helperService); err != nil {
-		slog.Error("restarting the camera helper failed", "err", err)
-	}
+var qualcomm = live.Vendor{
+	EVMin: -12,
+	EVMax: 12,
+	Scenes: []string{
+		"auto",
+		"landscape",
+		"snow",
+		"beach",
+		"sunset",
+		"night",
+		"portrait",
+		"sports",
+		"steadyphoto",
+		"candlelight",
+		"fireworks",
+		"party",
+		"night-portrait",
+		"theatre",
+		"action",
+		"hdr",
+	},
+	Balances: []string{
+		"auto",
+		"incandescent",
+		"fluorescent",
+		"warm-fluorescent",
+		"daylight",
+		"cloudy-daylight",
+		"twilight",
+		"shade",
+	},
+	Effects: []string{
+		"none",
+		"mono",
+		"negative",
+		"solarize",
+		"sepia",
+		"posterize",
+		"whiteboard",
+		"blackboard",
+		"aqua",
+	},
+	Sliders: true,
+	Noises:  []string{"off", "fast", "high_quality", "minimal"},
+	Rates:   []int{15, 20, 24, 30},
 }
 
-const helperService = "lanovo_camera"
+var mediatek = live.Vendor{
+	EVMin: -1,
+	EVMax: 1,
+	Scenes: []string{
+		"auto",
+		"portrait",
+		"landscape",
+		"night",
+		"night-portrait",
+		"theatre",
+		"beach",
+		"snow",
+		"sunset",
+		"steadyphoto",
+		"sports",
+		"party",
+		"candlelight",
+	},
+	Balances: []string{
+		"auto",
+		"incandescent",
+		"fluorescent",
+		"daylight",
+		"cloudy-daylight",
+		"twilight",
+		"shade",
+	},
+	Effects: []string{"none", "mono", "negative", "sepia", "aqua", "whiteboard", "blackboard"},
+	ISOs:    []string{"auto", "100", "200", "400", "800", "1600"},
+	Levels:  true,
+	Rates:   []int{15, 20, 30},
+}

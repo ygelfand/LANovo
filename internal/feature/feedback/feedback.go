@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -29,8 +30,9 @@ var get = sync.OnceValue(func() *Feedback {
 	}
 })
 
-func Get() *Feedback     { return get() }
-func init()              { component.Register(component.Device, Get, component.Order(15)) }
+func Get() *Feedback { return get() }
+
+func init()              { component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(15)) }
 func sound(notes []Note) { Get().Sound(notes) }
 
 func Failure() { sound(sharedtone.ToneTrouble) }

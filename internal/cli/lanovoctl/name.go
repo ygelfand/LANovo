@@ -6,15 +6,16 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+	"github.com/ygelfand/libcountertop/pkg/host/prompt"
 
-	"github.com/ygelfand/LANovo/internal/host/device"
 	"github.com/ygelfand/LANovo/internal/host/takeover"
 )
 
 func resolveName(
 	ctx context.Context,
 	out io.Writer,
-	d *device.Device,
+	d *adb.Device,
 	flag string,
 ) (string, error) {
 	existing, err := takeover.ReadName(d)
@@ -33,7 +34,7 @@ func resolveName(
 	if existing != "" {
 		return existing, nil
 	}
-	if !isTerminal() {
+	if !prompt.IsTerminal() {
 		return "", fmt.Errorf("%w: pass --name to name this device", takeover.ErrNoName)
 	}
 
@@ -41,7 +42,7 @@ func resolveName(
 		"Home Assistant keys the device on its name, so changing it later creates a new one."))
 
 	for {
-		name, err := line(ctx, out, "Name this device", takeover.SuggestName(d), false)
+		name, err := prompt.Line(ctx, out, "Name this device", takeover.SuggestName(d), false)
 		if err != nil {
 			return "", err
 		}

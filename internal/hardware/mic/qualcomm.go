@@ -3,7 +3,7 @@ package mic
 import (
 	"fmt"
 
-	"github.com/ygelfand/LANovo/internal/lib/alsa"
+	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
 )
 
 // The HAL sets TERT_MI2S_TX Channels in code; mixer_paths_openq624_fep.xml leaves capture mono.

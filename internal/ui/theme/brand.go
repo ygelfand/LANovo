@@ -1,17 +1,19 @@
 package theme
 
+import sharedtheme "github.com/ygelfand/libcountertop/pkg/display/theme"
+
 var (
-	Blue  = rgb(0x0080f0)
-	Navy  = rgb(0x101f2e)
-	Paper = rgb(0xf7f9fb)
+	Blue  = sharedtheme.RGB(0x0080f0)
+	Navy  = sharedtheme.RGB(0x101f2e)
+	Paper = sharedtheme.RGB(0xf7f9fb)
 
-	Slate = rgb(0x6b7b8c)
+	Slate = sharedtheme.RGB(0x6b7b8c)
 
-	Mist = rgb(0xe4ebf2)
+	Mist = sharedtheme.RGB(0xe4ebf2)
 )
 
-func Brand() Theme {
-	return Theme{
+func Brand() sharedtheme.Theme {
+	return sharedtheme.Theme{
 		Name: "LANovo",
 		Dark: false,
 
@@ -22,10 +24,10 @@ func Brand() Theme {
 		Muted: Slate,
 
 		Accent:  Blue,
-		Accent2: rgb(0x39a0ff),
+		Accent2: sharedtheme.RGB(0x39a0ff),
 
-		Success: rgb(0x2e9e57),
-		Warning: rgb(0xb8791a),
-		Danger:  rgb(0xd13b3b),
+		Success: sharedtheme.RGB(0x2e9e57),
+		Warning: sharedtheme.RGB(0xb8791a),
+		Danger:  sharedtheme.RGB(0xd13b3b),
 	}
 }

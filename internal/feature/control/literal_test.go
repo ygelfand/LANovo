@@ -1,11 +1,13 @@
 package control
 
 import (
+	"context"
 	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
+	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 
 	"github.com/ygelfand/LANovo/internal/config"
 )
@@ -20,13 +22,17 @@ func TestEveryCommandTakesItsArgumentsAsWritten(t *testing.T) {
 			walk(sub)
 		}
 	}
-	walk(build().tree())
+	walk(build("").tree())
 }
 
 func TestANegativeValueReachesTheCommand(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 
-	_, err := build().run([]string{"device", "wait", "-1"})
+	_, err := harness.Execute(
+		context.Background(),
+		build("").tree,
+		[]string{"device", "wait", "-1"},
+	)
 	if err != nil && strings.Contains(err.Error(), "flag") {
 		t.Errorf("-1 was read as a flag: %v", err)
 	}

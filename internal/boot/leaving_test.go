@@ -5,7 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ygelfand/LANovo/internal/ui"
+	"github.com/ygelfand/libcountertop/pkg/display/ui"
+
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
 

@@ -11,17 +11,18 @@ import (
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/libcountertop/pkg/audio/noise"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/service"
 )
 
 func init() {
-	component.Register(component.Device, Get, component.Order(36),
-		component.Supervise(service.Restart(5*time.Second, time.Minute)))
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(36),
+		sharedcomponent.Supervise(service.Restart(5*time.Second, time.Minute)))
 }
 
 const off = "Off"

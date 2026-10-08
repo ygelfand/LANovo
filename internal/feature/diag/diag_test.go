@@ -6,8 +6,9 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	"github.com/ygelfand/libcountertop/pkg/system/metrics"
+
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/hardware/metrics"
 )
 
 func fresh(t *testing.T) *Diag {
@@ -48,6 +49,8 @@ func objectID(e esphome.Entity) string {
 	case *esphome.TextSensor:
 		return v.ObjectID
 	case *esphome.Number:
+		return v.ObjectID
+	case *esphome.Button:
 		return v.ObjectID
 	}
 	return ""

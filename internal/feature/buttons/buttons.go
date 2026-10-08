@@ -4,13 +4,15 @@ import (
 	"log/slog"
 	"sync"
 
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/buttons"
 )
 
 func init() {
-	component.Register(component.Device, Get, component.Order(10))
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(10))
 }
 
 type Buttons struct{}

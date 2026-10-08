@@ -1,8 +1,6 @@
 package config
 
 import (
-	"maps"
-	"slices"
 	"sync"
 
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
@@ -36,14 +34,9 @@ func Load(path string) (*Store, error) {
 func (s *Store) Set() Writer      { return Writer{st: s} }
 func (s *Store) started(d Device) { s.Runtime(func(c *Config) { c.Device = d }) }
 func cloneConfig(c Config) Config {
-	c.Wake.Words = slices.Clone(c.Wake.Words)
-	c.Cast.YouTube.Skip = slices.Clone(c.Cast.YouTube.Skip)
-	c.Camera.Settings = maps.Clone(c.Camera.Settings)
-	c.Home.Control = maps.Clone(c.Home.Control)
-	c.Home.Group = maps.Clone(c.Home.Group)
-	c.Home.Picks = maps.Clone(c.Home.Picks)
-	for key, p := range c.Home.Picks {
-		c.Home.Picks[key] = p.Clone()
-	}
+	c.Wake = c.Wake.Clone()
+	c.Cast = c.Cast.Clone()
+	c.Camera = c.Camera.Clone()
+	c.Home = c.Home.Clone()
 	return c
 }

@@ -5,23 +5,25 @@ import (
 	"fmt"
 	"log/slog"
 	"sync"
+	"sync/atomic"
 	"time"
 
-	"sync/atomic"
-
 	"github.com/ygelfand/libcountertop/pkg/audio/aec"
+	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
+	"github.com/ygelfand/libcountertop/pkg/audio/capture"
+	"github.com/ygelfand/libcountertop/pkg/audio/level"
 	"github.com/ygelfand/libcountertop/pkg/hook"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/lib/alsa"
-	"github.com/ygelfand/LANovo/internal/service"
 )
 
 func init() {
-	component.Register(component.Hardware, Get, component.Order(50),
-		component.Supervise(service.Restart(2*time.Second, time.Minute)))
+	component.Register(sharedcomponent.Hardware, Get, sharedcomponent.Order(50),
+		sharedcomponent.Supervise(service.Restart(2*time.Second, time.Minute)))
 }
 
 const (
@@ -51,7 +53,8 @@ type Mics struct {
 
 	Echo hook.Hook[EchoFrame]
 
-	history history
+	*capture.History
+	*level.Leveler
 
 	hwOnce sync.Once
 	hwIn   input
@@ -63,11 +66,10 @@ type Mics struct {
 
 	err error
 
-	leveling atomic.Bool
-	leveler  *leveler
-
-	cancel   *canceller
+	cancel   *aec.Canceller
 	adapting atomic.Bool
+	refDown  Downsampler
+	refBuf   []int16
 
 	pre          [2]*aec.Preprocessor
 	denoising    atomic.Bool
@@ -83,11 +85,18 @@ func Get() *Mics {
 	once.Do(func() {
 		cfg := config.Get().Microphone
 		shared = &Mics{
-			gain:    min(max(cfg.Gain, MinGain), MaxGain),
-			leveler: newLeveler(),
-			cancel:  newCanceller(),
+			History: capture.NewHistory(Voice, time.Second),
+			Leveler: level.New(level.Config{
+				Rate:          Voice,
+				Frame:         VoiceSamples,
+				ReferenceGain: config.DefaultMicGain,
+				Gain:          cfg.Gain,
+				Sensitivity:   cfg.Sensitivity,
+				Leveling:      cfg.Leveling,
+			}),
+			gain:   min(max(cfg.Gain, MinGain), MaxGain),
+			cancel: newCanceller(),
 		}
-		shared.leveling.Store(cfg.Leveling)
 		shared.pre = newPreprocessors(shared.cancel)
 		shared.denoising.Store(cfg.Denoise)
 		shared.adapting.Store(true)
@@ -182,21 +191,21 @@ func (m *Mics) Close() error {
 	return nil
 }
 
-func (m *Mics) Startup() component.Progress {
+func (m *Mics) Startup() sharedcomponent.Progress {
 	m.mu.Lock()
 	open, err := m.capture != nil, m.err
 	m.mu.Unlock()
 
 	switch {
 	case open:
-		return component.Progress{
+		return sharedcomponent.Progress{
 			Done:  true,
 			Doing: fmt.Sprintf("%d kHz, %d channels", Rate/1000, Channels),
 		}
 	case err != nil:
-		return component.Progress{Failed: true, Doing: err.Error()}
+		return sharedcomponent.Progress{Failed: true, Doing: err.Error()}
 	}
-	return component.Progress{Doing: "taking the microphones"}
+	return sharedcomponent.Progress{Doing: "taking the microphones"}
 }
 
 func (m *Mics) Gain() int {
@@ -212,8 +221,8 @@ func (m *Mics) SetGain(gain int) error {
 	m.gain = gain
 	mixer := m.mixer
 	m.mu.Unlock()
-	if m.leveler != nil {
-		m.leveler.atGain(gain)
+	if m.Leveler != nil {
+		m.SetInputGain(gain)
 	}
 
 	if mixer == nil {
@@ -286,14 +295,10 @@ func (m *Mics) Run(ctx context.Context) error {
 
 		speech := mono(left, right)
 
-		m.leveler.atPlayback(sounding)
-		if m.leveling.Load() {
-			m.leveler.apply(speech)
-		} else {
-			m.leveler.observe(speech)
-		}
+		m.SetPlayback(sounding)
+		m.Process(speech)
 
-		m.history.add(speech)
+		m.Add(speech)
 		m.Speech.Emit(Frame{Samples: speech, At: at})
 	}
 }

@@ -7,7 +7,7 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
-	"github.com/ygelfand/LANovo/internal/hardware/metrics"
+	"github.com/ygelfand/libcountertop/pkg/system/metrics"
 )
 
 func at(t *testing.T, line string) metrics.Reader {

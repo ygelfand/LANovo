@@ -1,8 +1,9 @@
 package mic
 
 import (
+	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
+
 	"github.com/ygelfand/LANovo/internal/board"
-	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
 const (

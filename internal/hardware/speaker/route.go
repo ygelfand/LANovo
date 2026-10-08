@@ -3,7 +3,7 @@ package speaker
 import (
 	"fmt"
 
-	"github.com/ygelfand/LANovo/internal/lib/alsa"
+	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
 )
 
 type setting struct {

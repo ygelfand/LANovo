@@ -4,9 +4,11 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/ygelfand/libcountertop/pkg/inference/wake"
+	"github.com/ygelfand/libcountertop/pkg/inference/wakeslots"
+
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
-	"github.com/ygelfand/LANovo/internal/lib/wake"
 )
 
 func models(ids ...string) []wake.Model {
@@ -28,7 +30,7 @@ func TestNothingChosenPreselectsTheDefault(t *testing.T) {
 		"the default is not installed": {[]string{"hey_jarvis"}, "hey_jarvis"},
 		"nothing installed":            {nil, ""},
 	} {
-		got := chosen(wanted(models(tc.installed...), wakeword.Slots))
+		got := wakeslots.Advertised(wanted(models(tc.installed...), wakeword.Slots))
 
 		switch {
 		case tc.want == "":
@@ -51,7 +53,7 @@ func TestAnEmptySlotIsAGapRatherThanAShift(t *testing.T) {
 	if !slices.Equal(got, []string{"", "hey_jarvis"}) {
 		t.Errorf("slots are %v, want the word left in the slot that names it", got)
 	}
-	if adv := chosen(got); !slices.Equal(adv, []string{"hey_jarvis"}) {
+	if adv := wakeslots.Advertised(got); !slices.Equal(adv, []string{"hey_jarvis"}) {
 		t.Errorf("advertised %v, want the gap taken out", adv)
 	}
 }
@@ -62,7 +64,7 @@ func TestASlotNamingAMissingModelIsEmpty(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if got := chosen(wanted(models("hey_jarvis"), wakeword.Slots)); len(got) != 0 {
+	if got := wakeslots.Advertised(wanted(models("hey_jarvis"), wakeword.Slots)); len(got) != 0 {
 		t.Errorf("advertised %v for a model that is not on the device", got)
 	}
 }

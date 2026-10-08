@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ygelfand/LANovo/internal/host/device"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
 )
 
 // init honors androidboot.selinux on any build that is not `user`.
@@ -28,7 +28,7 @@ type Boot struct {
 	Permissive bool
 }
 
-func ReadBoot(d *device.Device, slot string) (*Boot, error) {
+func ReadBoot(d *adb.Device, slot string) (*Boot, error) {
 	dir, err := ByName(d)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func writeCmdline(page []byte, want string) error {
 	return nil
 }
 
-func MakePermissive(d *device.Device, slot string) (changed bool, err error) {
+func MakePermissive(d *adb.Device, slot string) (changed bool, err error) {
 	b, err := ReadBoot(d, slot)
 	if err != nil {
 		return false, err
@@ -186,7 +186,7 @@ func MakePermissive(d *device.Device, slot string) (changed bool, err error) {
 	return true, nil
 }
 
-func Slots(d *device.Device) ([]string, error) {
+func Slots(d *adb.Device) ([]string, error) {
 	dir, err := ByName(d)
 	if err != nil {
 		return nil, err

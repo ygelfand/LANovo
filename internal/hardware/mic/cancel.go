@@ -12,11 +12,6 @@ import (
 )
 
 const (
-	cancelTaps = 1024
-	speexFrame = 64
-
-	echoSuppressActive = -40
-
 	lead       = Rate / 500
 	estimates  = 64
 	relock     = Rate / 1000
@@ -60,83 +55,13 @@ func (a *align) start(first uint64) (uint64, bool) {
 	return uint64(at), true
 }
 
-type canceller struct {
-	left, right *aec.MDF
-	ref         Downsampler
-	refBuf      []int16
-
-	active     bool
-	best, last [2]float64
-	refE, micE float64
-	blocks     int
-	since      time.Time
-}
-
-func newCanceller() *canceller {
-	l, err := aec.NewMDF(speexFrame, cancelTaps, Voice)
+func newCanceller() *aec.Canceller {
+	c, err := aec.NewCanceller(Channels, aec.Taps, Voice)
 	if err != nil {
 		slog.Error("echo cancellation unavailable", "err", err)
 		return nil
 	}
-	r, err := aec.NewMDF(speexFrame, cancelTaps, Voice)
-	if err != nil {
-		slog.Error("echo cancellation unavailable", "err", err)
-		return nil
-	}
-	return &canceller{left: l, right: r}
-}
-
-func (c *canceller) begin(ref, left, right []int16, adapting bool) {
-	if !c.active {
-		c.active, c.since = true, time.Now()
-		slog.Debug("echo cancellation running", "engine", "speex", "taps", cancelTaps)
-	}
-	c.left.SetAdapting(adapting)
-	c.right.SetAdapting(adapting)
-	c.refE += power(ref)
-	c.micE += (power(left) + power(right)) / 2
-	c.blocks++
-}
-
-func (c *canceller) end() {
-	for i, f := range []*aec.MDF{c.left, c.right} {
-		c.last[i] = f.ERLE()
-		c.best[i] = max(c.best[i], c.last[i])
-	}
-}
-
-func (c *canceller) idle() {
-	if !c.active {
-		return
-	}
-	slog.Debug("echo cancellation idle",
-		"best_db", []float64{round1(c.best[0]), round1(c.best[1])},
-		"last_db", []float64{round1(c.last[0]), round1(c.last[1])},
-		"ref_dbfs", meanDBFS(c.refE, c.blocks), "mic_dbfs", meanDBFS(c.micE, c.blocks),
-		"seconds", round1(time.Since(c.since).Seconds()))
-	c.active = false
-	c.best, c.last = [2]float64{}, [2]float64{}
-	c.refE, c.micE, c.blocks = 0, 0, 0
-}
-
-func round1(v float64) float64 { return math.Round(v*10) / 10 }
-
-func meanDBFS(energy float64, blocks int) float64 {
-	if blocks == 0 || energy <= 0 {
-		return -120
-	}
-	return round1(10 * math.Log10(energy/float64(blocks)/(32768*32768)))
-}
-
-func power(s []int16) float64 {
-	if len(s) == 0 {
-		return 0
-	}
-	var sum float64
-	for _, v := range s {
-		sum += float64(v) * float64(v)
-	}
-	return sum / float64(len(s))
+	return c
 }
 
 func interleave(left, right []int16) []int16 {
@@ -172,36 +97,35 @@ func (m *Mics) reference(a *align, first uint64, frames int, sounding bool) []in
 		return nil
 	}
 	if !sounding {
-		c.idle()
+		c.Idle()
 		return nil
 	}
 	from, ok := a.start(first)
 	if !ok {
 		return nil
 	}
-	if cap(c.refBuf) < frames {
-		c.refBuf = make([]int16, frames)
+	if cap(m.refBuf) < frames {
+		m.refBuf = make([]int16, frames)
 	}
-	c.refBuf = c.refBuf[:frames]
-	if !speaker.Get().Echo(from, c.refBuf) {
+	m.refBuf = m.refBuf[:frames]
+	if !speaker.Get().Echo(from, m.refBuf) {
 		return nil
 	}
-	return c.ref.Of(c.refBuf)
+	return m.refDown.Of(m.refBuf)
 }
 
-func newPreprocessors(c *canceller) [2]*aec.Preprocessor {
+func newPreprocessors(c *aec.Canceller) [2]*aec.Preprocessor {
 	var out [2]*aec.Preprocessor
 	for i := range out {
 		var echo *aec.MDF
 		if c != nil {
-			echo = []*aec.MDF{c.left, c.right}[i]
+			echo = c.Filter(i)
 		}
-		p, err := aec.NewPreprocessor(speexFrame, Voice, echo)
+		p, err := aec.NewSuppressor(Voice, echo)
 		if err != nil {
 			slog.Error("noise suppression unavailable", "err", err)
 			return [2]*aec.Preprocessor{}
 		}
-		p.EchoSuppressActive = echoSuppressActive
 		out[i] = p
 	}
 	return out
@@ -210,8 +134,8 @@ func newPreprocessors(c *canceller) [2]*aec.Preprocessor {
 func (m *Mics) clean(left, right, ref []int16) ([]int16, []int16, bool) {
 	c := m.cancel
 	n := len(left)
-	cancel := c != nil && ref != nil && len(ref) == n && len(right) == n && n%speexFrame == 0
-	denoising := m.denoising.Load() && m.pre[0] != nil && n%speexFrame == 0 && len(right) == n
+	cancel := c != nil && ref != nil && len(ref) == n && len(right) == n && n%aec.Block == 0
+	denoising := m.denoising.Load() && m.pre[0] != nil && n%aec.Block == 0 && len(right) == n
 	switch {
 	case denoising && !m.wasDenoising:
 		m.pre = newPreprocessors(c)
@@ -222,42 +146,34 @@ func (m *Mics) clean(left, right, ref []int16) ([]int16, []int16, bool) {
 	if !cancel && !denoising {
 		return left, right, false
 	}
-	if cancel {
-		c.begin(ref, left, right, m.adapting.Load())
-	}
-	in := [2][]int16{left, right}
-	out := [2][]int16{slices.Clone(left), slices.Clone(right)}
-	mdf := [2]*aec.MDF{}
-	if c != nil {
-		mdf = [2]*aec.MDF{c.left, c.right}
-	}
-	for k := 0; k+speexFrame <= n; k += speexFrame {
-		for side := range 2 {
-			chunk := out[side][k : k+speexFrame]
-			if cancel {
-				got, err := mdf[side].Process(in[side][k:k+speexFrame], ref[k:k+speexFrame])
-				if err != nil {
-					slog.Error("echo cancellation failed", "err", err)
-					return left, right, false
-				}
-				copy(chunk, got)
+	out := [][]int16{slices.Clone(left), slices.Clone(right)}
+	if !cancel {
+		for side, p := range m.pre {
+			p.SetEcho(nil)
+			if err := p.Run(out[side]); err != nil {
+				slog.Error("noise suppression failed", "err", err)
 			}
-			if denoising {
-				if cancel {
-					m.pre[side].SetEcho(mdf[side])
-				} else {
-					m.pre[side].SetEcho(nil)
-				}
-				if err := m.pre[side].Run(chunk); err != nil {
-					slog.Error("noise suppression failed", "err", err)
-				}
+		}
+		return out[0], out[1], false
+	}
+
+	c.SetAdapting(m.adapting.Load())
+	var after func(int, []int16)
+	if denoising {
+		for side, p := range m.pre {
+			p.SetEcho(c.Filter(side))
+		}
+		after = func(side int, block []int16) {
+			if err := m.pre[side].Run(block); err != nil {
+				slog.Error("noise suppression failed", "err", err)
 			}
 		}
 	}
-	if cancel {
-		c.end()
+	if err := c.Process(ref, [][]int16{left, right}, out, after); err != nil {
+		slog.Error("echo cancellation failed", "err", err)
+		return left, right, false
 	}
-	return out[0], out[1], cancel
+	return out[0], out[1], true
 }
 
 func (m *Mics) SetDenoising(on bool) { m.denoising.Store(on) }

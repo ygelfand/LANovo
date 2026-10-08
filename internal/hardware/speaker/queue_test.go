@@ -1,53 +1,14 @@
 package speaker
 
 import (
-	"math"
 	"testing"
 
 	"github.com/ygelfand/LANovo/internal/board"
 )
 
-func TestMixSumsIntoWhatIsQueued(t *testing.T) {
-	into := []int16{100, 200, 300}
-
-	if got := mix(into, []int16{10, 20, 30}); got[0] != 110 || got[1] != 220 || got[2] != 330 {
-		t.Errorf("mixed to %v, want [110 220 330]", got)
-	}
-}
-
-func TestMixExtendsPastTheQueue(t *testing.T) {
-	got := mix([]int16{100}, []int16{10, 20, 30})
-
-	if len(got) != 3 {
-		t.Fatalf("mixed to %d samples, want 3", len(got))
-	}
-	if got[0] != 110 || got[1] != 20 || got[2] != 30 {
-		t.Errorf("mixed to %v, want [110 20 30]", got)
-	}
-}
-
-func TestMixClampsInsteadOfWrapping(t *testing.T) {
-	got := mix([]int16{math.MaxInt16}, []int16{math.MaxInt16})
-	if got[0] != math.MaxInt16 {
-		t.Errorf("mixed to %d, want %d", got[0], math.MaxInt16)
-	}
-
-	got = mix([]int16{math.MinInt16}, []int16{math.MinInt16})
-	if got[0] != math.MinInt16 {
-		t.Errorf("mixed to %d, want %d", got[0], math.MinInt16)
-	}
-}
-
-func TestMixIntoNothing(t *testing.T) {
-	got := mix(nil, []int16{1, 2})
-	if len(got) != 2 || got[0] != 1 || got[1] != 2 {
-		t.Errorf("mixed to %v, want [1 2]", got)
-	}
-}
-
 func TestAPartFilledBufferCountsAsASplice(t *testing.T) {
 	s := &Speaker{}
-	s.pending = make([]int16, period)
+	s.queue.Push(make([]int16, period))
 
 	buf := make([]byte, period*Channels*Bits/8)
 	s.fill(buf)
@@ -59,7 +20,7 @@ func TestAPartFilledBufferCountsAsASplice(t *testing.T) {
 
 func TestAFullBufferIsNotASplice(t *testing.T) {
 	s := &Speaker{}
-	s.pending = make([]int16, period*Channels)
+	s.queue.Push(make([]int16, period*Channels))
 
 	buf := make([]byte, period*Channels*Bits/8)
 	s.fill(buf)
@@ -78,7 +39,7 @@ func TestSilenceIsOnlyAnUnderrunAfterAudio(t *testing.T) {
 		t.Errorf("an idle speaker reported %d underruns", underruns)
 	}
 
-	s.pending = make([]int16, period*Channels)
+	s.queue.Push(make([]int16, period*Channels))
 	s.fill(buf)
 	s.fill(buf)
 
@@ -101,7 +62,7 @@ func TestAudioWithNoCardIsDroppedRatherThanQueued(t *testing.T) {
 
 func TestVolumeScalesWhatIsAlreadyQueued(t *testing.T) {
 	s := &Speaker{}
-	s.pending = []int16{1000, 1000}
+	s.queue.Push([]int16{1000, 1000})
 	s.SetVolume(0.5)
 
 	buf := make([]byte, period*Channels*Bits/8)
@@ -120,7 +81,7 @@ func TestAHardwareVolumeLeavesTheSamplesAndScalesOnlyTheEchoReference(t *testing
 	defer board.Set(board.Blueberry)
 
 	s := &Speaker{}
-	s.pending = []int16{1000, 600}
+	s.queue.Push([]int16{1000, 600})
 	s.SetVolume(0.5)
 
 	buf := make([]byte, period*Channels*Bits/8)
@@ -149,57 +110,5 @@ func TestSilenceIsALevel(t *testing.T) {
 
 	if got := s.Volume(); got != 0 {
 		t.Errorf("volume is %v after being set to nought, want 0", got)
-	}
-}
-
-func TestARestIsSilenceOfTheRightLength(t *testing.T) {
-	got := tone(Note{Freq: 0, Ms: 10}, 1)
-
-	if want := Rate * 10 / 1000 * Channels; len(got) != want {
-		t.Fatalf("a rest is %d samples, want %d", len(got), want)
-	}
-	for i, v := range got {
-		if v != 0 {
-			t.Fatalf("a rest has %d at sample %d", v, i)
-		}
-	}
-}
-
-func TestAToneIsOnBothChannels(t *testing.T) {
-	got := tone(Note{Freq: 440, Ms: 50}, 1)
-
-	var heard bool
-	for i := 0; i+1 < len(got); i += Channels {
-		if got[i] != got[i+1] {
-			t.Fatalf("channels differ at frame %d: %d and %d", i/Channels, got[i], got[i+1])
-		}
-		if got[i] != 0 {
-			heard = true
-		}
-	}
-	if !heard {
-		t.Error("the tone is silent")
-	}
-}
-
-func TestAToneRampsInAndOut(t *testing.T) {
-	got := tone(Note{Freq: 440, Ms: 100}, 1)
-
-	var peak int16
-	for _, v := range got {
-		if v > peak {
-			peak = v
-		}
-	}
-	if peak == 0 {
-		t.Fatal("the tone is silent")
-	}
-
-	quiet := peak / 100
-	if first := got[0]; first > quiet || first < -quiet {
-		t.Errorf("the tone starts at %d, which is not quiet against a peak of %d", first, peak)
-	}
-	if last := got[len(got)-1]; last > quiet || last < -quiet {
-		t.Errorf("the tone ends at %d, which is not quiet against a peak of %d", last, peak)
 	}
 }

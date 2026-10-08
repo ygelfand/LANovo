@@ -4,9 +4,10 @@ import (
 	"errors"
 	"sync"
 
+	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/mtkaudio"
-	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
 // The TLV320ADC3101 sends 24-bit samples in 32-bit I2S words.

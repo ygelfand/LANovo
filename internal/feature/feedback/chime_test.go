@@ -6,6 +6,8 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
@@ -14,7 +16,7 @@ func TestSettingTheChimeTellsBothSides(t *testing.T) {
 
 	f := Get()
 
-	for _, want := range config.Chimes() {
+	for _, want := range schema.Chimes() {
 		f.SetChime(want)
 
 		if got := config.Get().Feedback.Chime; got != want {
@@ -31,7 +33,7 @@ func TestTheEntityCommandSavesTheChime(t *testing.T) {
 
 	f := Get()
 
-	for _, want := range config.Chimes() {
+	for _, want := range schema.Chimes() {
 		f.Entities()[0].(*esphome.Select).OnCommand(want.Label())
 
 		if got := config.Get().Feedback.Chime; got != want {
@@ -44,11 +46,11 @@ func TestAnUnknownChimeIsIgnored(t *testing.T) {
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
 
 	f := Get()
-	f.SetChime(config.DefaultChime)
+	f.SetChime(schema.DefaultChime)
 
 	f.Entities()[0].(*esphome.Select).OnCommand("Foghorn")
 
-	if got := config.Get().Feedback.Chime; got != config.DefaultChime {
+	if got := config.Get().Feedback.Chime; got != schema.DefaultChime {
 		t.Errorf("an unknown chime left the setting on %q", got)
 	}
 }

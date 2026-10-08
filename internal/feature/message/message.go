@@ -4,14 +4,16 @@ import (
 	"sync"
 
 	shared "github.com/ygelfand/libcountertop/pkg/display/message"
+	"github.com/ygelfand/libcountertop/pkg/input/touch"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
-	"github.com/ygelfand/LANovo/internal/hardware/touch"
+	hwtouch "github.com/ygelfand/LANovo/internal/hardware/touch"
 )
 
 var get = sync.OnceValue(func() *shared.Messages {
 	m := shared.New()
-	touch.Get().Contacts.Listen(func(c touch.Contact) {
+	hwtouch.Get().Contacts.Listen(func(c touch.Contact) {
 		if c.Phase == touch.Down {
 			m.Dismiss(c.ID)
 		}
@@ -20,4 +22,5 @@ var get = sync.OnceValue(func() *shared.Messages {
 })
 
 func Get() *shared.Messages { return get() }
-func init()                 { component.Register(component.Device, Get, component.Order(40)) }
+
+func init() { component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(40)) }

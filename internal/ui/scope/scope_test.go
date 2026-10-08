@@ -4,8 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/display/theme"
+	"github.com/ygelfand/libcountertop/pkg/display/ui"
 )
 
 var blank = theme.Color{R: 0x11, G: 0x11, B: 0x11}

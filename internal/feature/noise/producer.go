@@ -1,8 +1,12 @@
 package noise
 
-import "github.com/ygelfand/LANovo/internal/hardware/speaker"
+import (
+	"github.com/ygelfand/libcountertop/pkg/audio/background"
 
-var _ speaker.Producer = (*Machine)(nil)
+	"github.com/ygelfand/LANovo/internal/hardware/speaker"
+)
+
+var _ background.Producer = (*Machine)(nil)
 
 func (m *Machine) Stand(down bool) {
 	m.mu.Lock()

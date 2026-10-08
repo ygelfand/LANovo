@@ -5,6 +5,7 @@ import (
 
 	"github.com/ygelfand/libcountertop/pkg/fetch"
 	"github.com/ygelfand/libcountertop/pkg/network/policy"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -12,7 +13,7 @@ import (
 
 func init() {
 	fetch.UseAsDefault()
-	component.Register(component.Network, Get, component.Order(5))
+	component.Register(sharedcomponent.Network, Get, sharedcomponent.Order(5))
 }
 
 type Network struct{ *policy.Policy }

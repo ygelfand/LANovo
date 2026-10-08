@@ -2,10 +2,11 @@ package speaker
 
 import (
 	"log/slog"
-	"math"
 
-	"github.com/ygelfand/libcountertop/pkg/audio/analysis"
+	"github.com/ygelfand/libcountertop/pkg/audio/upsample"
 )
+
+const VoiceRate = upsample.VoiceRate
 
 func (s *Speaker) Play(samples []int16) {
 	if !s.open() {
@@ -14,54 +15,39 @@ func (s *Speaker) Play(samples []int16) {
 		}
 		return
 	}
-
-	s.qmu.Lock()
-	s.pending = append(s.pending, samples...)
-	s.qmu.Unlock()
+	s.queue.Push(samples)
 }
 
-func (s *Speaker) Take() []int16 {
-	s.qmu.Lock()
-	defer s.qmu.Unlock()
+func (s *Speaker) Take() []int16 { return s.queue.Take() }
 
-	pending := s.pending
-	s.pending = nil
-	return pending
-}
-
-func (s *Speaker) Adjust(rewrite func([]int16)) {
-	s.qmu.Lock()
-	defer s.qmu.Unlock()
-
-	rewrite(s.pending)
-}
+func (s *Speaker) Adjust(rewrite func([]int16)) { s.queue.Adjust(rewrite) }
 
 // The codec only takes 48 kHz stereo.
 func (s *Speaker) PlayVoice(mono []int16) {
 	s.voiceMu.Lock()
 	if s.voice == nil {
-		s.voice, s.using = NewResampler(ResampleSinc)
+		s.voice, s.using = upsample.New(upsample.Sinc, Rate)
 	}
-	out := s.voice.Run(mono, make([]int16, 0, len(mono)*VoiceUpsample*Channels))
+	out := s.voice.Run(mono, make([]int16, 0, len(mono)*Rate/VoiceRate*Channels))
 	s.voiceMu.Unlock()
 
 	s.Play(out)
 }
 
-func (s *Speaker) SetResampling(r Resampling) Resampling {
+func (s *Speaker) SetResampling(k upsample.Kind) upsample.Kind {
 	s.voiceMu.Lock()
 	defer s.voiceMu.Unlock()
 
-	s.voice, s.using = NewResampler(r)
+	s.voice, s.using = upsample.New(k, Rate)
 	return s.using
 }
 
-func (s *Speaker) Resampling() Resampling {
+func (s *Speaker) Resampling() upsample.Kind {
 	s.voiceMu.Lock()
 	defer s.voiceMu.Unlock()
 
 	if s.voice == nil {
-		return ResampleSinc
+		return upsample.Sinc
 	}
 	return s.using
 }
@@ -77,9 +63,7 @@ func (s *Speaker) Clipped() uint64 {
 }
 
 func (s *Speaker) Drain() {
-	s.qmu.Lock()
-	s.pending = nil
-	s.qmu.Unlock()
+	s.queue.Clear()
 
 	s.voiceMu.Lock()
 	if s.voice != nil {
@@ -88,57 +72,14 @@ func (s *Speaker) Drain() {
 	s.voiceMu.Unlock()
 }
 
-func (s *Speaker) Queued() int {
-	s.qmu.Lock()
-	defer s.qmu.Unlock()
-
-	return len(s.pending) / Channels
-}
+func (s *Speaker) Queued() int { return s.queue.Len() / Channels }
 
 func (s *Speaker) Overlay(samples []int16) {
 	if !s.open() {
 		s.Play(samples)
 		return
 	}
-
-	s.qmu.Lock()
-	defer s.qmu.Unlock()
-
-	s.pending = mix(s.pending, samples)
+	s.queue.Overlay(samples)
 }
 
-func (s *Speaker) take() []int16 {
-	s.qmu.Lock()
-	defer s.qmu.Unlock()
-
-	n := min(len(s.pending), period*Channels)
-	chunk := s.pending[:n]
-
-	s.pending = s.pending[n:]
-	if len(s.pending) == 0 {
-		s.pending = nil
-	}
-	return chunk
-}
-
-func mix(into, add []int16) []int16 {
-	for i, v := range add {
-		if i >= len(into) {
-			return append(into, add[i:]...)
-		}
-		into[i] = clamp(int32(into[i]) + int32(v))
-	}
-	return into
-}
-
-func clamp(v int32) int16 {
-	switch {
-	case v > math.MaxInt16:
-		return math.MaxInt16
-	case v < math.MinInt16:
-		return math.MinInt16
-	}
-	return int16(v)
-}
-
-var Scale = analysis.Scale
+func (s *Speaker) take() []int16 { return s.queue.Next(period * Channels) }

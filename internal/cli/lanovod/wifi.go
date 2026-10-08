@@ -39,7 +39,7 @@ func newWifiCmd() *cobra.Command {
 				within, stop := context.WithTimeout(ctx, scanFor)
 				defer stop()
 
-				found, err := wifi.Scan(within)
+				found, err := wifi.Get().Scan(within)
 				if err != nil {
 					return err
 				}
@@ -50,7 +50,7 @@ func newWifiCmd() *cobra.Command {
 
 			switch {
 			case forget != "":
-				if err := wifi.Forget(forget); err != nil {
+				if err := wifi.Get().Forget(forget); err != nil {
 					return err
 				}
 				fmt.Printf("forgot %q\n", forget)
@@ -59,7 +59,7 @@ func newWifiCmd() *cobra.Command {
 				within, stop := context.WithTimeout(ctx, wpa.Settle+10*time.Second)
 				defer stop()
 
-				if err := wifi.Join(within, join, passphrase); err != nil {
+				if err := wifi.Get().Join(within, join, passphrase); err != nil {
 					return err
 				}
 				fmt.Printf("joined %q\n", join)
@@ -78,7 +78,7 @@ func newWifiCmd() *cobra.Command {
 }
 
 func report() error {
-	c, err := wifi.Dial()
+	c, err := wifi.Get().Dial()
 	if err != nil {
 		return err
 	}
@@ -90,7 +90,7 @@ func report() error {
 	}
 	fmt.Printf("%s on %s\n", status["wpa_state"], status["ssid"])
 
-	known, err := wifi.Networks()
+	known, err := wifi.Get().Networks()
 	if err != nil {
 		return err
 	}

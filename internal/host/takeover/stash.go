@@ -4,7 +4,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/ygelfand/LANovo/internal/host/device"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
@@ -27,7 +28,7 @@ func moves(listing string) []move {
 	return out
 }
 
-func Stash(d *device.Device) ([]Step, error) {
+func Stash(d *adb.Device) ([]Step, error) {
 	listing, _ := d.Shell("ls -d " + strings.Join(Stashed, "/* ") + "/* 2>/dev/null")
 	todo := moves(listing)
 	if len(todo) == 0 {

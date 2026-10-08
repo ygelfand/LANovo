@@ -5,8 +5,10 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/ygelfand/libcountertop/pkg/say"
+	setting "github.com/ygelfand/libcountertop/pkg/settings"
+
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/setting"
 )
 
 type Setting = setting.Setting[config.Presence]
@@ -62,7 +64,7 @@ func Table() *setting.Table[config.Presence] {
 					return nil
 				},
 			},
-		})
+		}, setting.Messages{Text: say.T, Missing: say.Missing})
 	})
 	return table
 }

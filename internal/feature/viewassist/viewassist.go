@@ -6,7 +6,9 @@ import (
 	"sync"
 
 	esphome "github.com/ygelfand/go-esphome-device"
+
 	sharedmessage "github.com/ygelfand/libcountertop/pkg/display/message"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/message"
@@ -14,7 +16,7 @@ import (
 )
 
 func init() {
-	component.Register(component.Device, Get, component.Order(70))
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(70))
 }
 
 type Satellite struct {

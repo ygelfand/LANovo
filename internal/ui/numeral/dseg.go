@@ -4,7 +4,7 @@
 
 package numeral
 
-import "github.com/ygelfand/LANovo/internal/ui"
+import "github.com/ygelfand/libcountertop/pkg/display/ui"
 
 var dseg = Set{
 	Name: "DSEG",

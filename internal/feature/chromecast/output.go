@@ -3,22 +3,21 @@ package chromecast
 import (
 	"context"
 
+	"github.com/ygelfand/libcountertop/pkg/display/geometry"
+	"github.com/ygelfand/libcountertop/pkg/display/video"
 	"github.com/ygelfand/libcountertop/pkg/media/castoutput"
 	"github.com/ygelfand/libcountertop/pkg/media/pcm"
+	"github.com/ygelfand/libcountertop/pkg/media/videostream"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/videoplayer"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
-	"github.com/ygelfand/LANovo/internal/hardware/video"
 )
 
-const Queued = castoutput.Queued
-
-type output = castoutput.Output
-
-func newOutput() *output {
+func newOutput() *castoutput.Output {
 	a := speaker.Sound().Backgrounds()
 	return castoutput.New(
 		castoutput.Options{
@@ -30,14 +29,18 @@ func newOutput() *output {
 			Took:     func(p pcm.Producer) { a.Took(p) },
 			Gave:     func(p pcm.Producer) { a.Gave(p) },
 			NewPage:  videoplayer.NewPage,
-			NewUnder: func() *video.Beneath {
-				return &video.Beneath{
-					Rotation: func() display.Orientation { return display.Get().Orientation() },
+			NewUnder: func() *videostream.Beneath {
+				return &videostream.Beneath{
+					Rotation: func() geometry.Orientation { return display.Get().Orientation() },
 					Size:     func() (int, int) { return display.Get().Native() },
 				}
 			},
-			Video: func(ctx context.Context, b *video.Beneath, s video.Stream) (video.Report, error) {
-				return video.On(ctx, b, s)
+			Video: func(ctx context.Context, b *videostream.Beneath, s videostream.Stream) (videostream.Report, error) {
+				player := video.Player{
+					Helper:         display.Get().Helper(),
+					SecureDecoders: board.Current().SecureDecoders,
+				}
+				return player.On(ctx, b, s)
 			},
 		},
 	)

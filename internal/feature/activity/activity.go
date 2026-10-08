@@ -3,19 +3,22 @@ package activity
 import (
 	"sync"
 
-	sharedactivity "github.com/ygelfand/libcountertop/pkg/assistant/activity"
+	"github.com/ygelfand/libcountertop/pkg/assistant/activity"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 )
 
-func init() { component.Register(component.Device, Get) }
+func init() { component.Register(sharedcomponent.Device, Get) }
 
-type Log = sharedactivity.Log
+const TurnEvent = "esphome.echolocal_turn"
 
-var get = sync.OnceValue(func() *Log {
-	return sharedactivity.New(sharedactivity.Options{
-		Emit: func(fields map[string]string) { component.Fire.Emit(component.Event{Name: TurnEvent, Data: fields}) },
+var get = sync.OnceValue(func() *activity.Log {
+	return activity.New(activity.Options{
+		Emit: func(fields map[string]string) {
+			component.Fire.Emit(sharedcomponent.Event{Name: TurnEvent, Data: fields})
+		},
 	})
 })
 
-func Get() *Log { return get() }
+func Get() *activity.Log { return get() }

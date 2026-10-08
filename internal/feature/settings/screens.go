@@ -2,8 +2,11 @@ package settings
 
 import (
 	gogui "github.com/go-gui-org/go-gui/gui"
+
 	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
 	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
+	sharedshell "github.com/ygelfand/libcountertop/pkg/display/shell"
+	sharedvisual "github.com/ygelfand/libcountertop/pkg/display/visual"
 	"github.com/ygelfand/libcountertop/pkg/say"
 
 	"github.com/ygelfand/LANovo/internal/board"
@@ -23,7 +26,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/ui/visual"
 )
 
-func root() *shell.Page {
+func root() *sharedshell.Page {
 	return sharedsettings.RootPage(sharedsettings.RootDependencies{
 		Network:      wifi.Get(),
 		Screen:       config.ScreenSection,
@@ -33,33 +36,23 @@ func root() *shell.Page {
 		Shell:        shell.Get(),
 		Version:      layout.Version,
 		Volume:       sharedvolume.For(volume.Get(), config.StreamMedia),
-		NetworkPage:  func() shell.View { return networkPage() },
-		FeaturesPage: func() shell.View { return featuresPage() },
-		VolumePage:   func() shell.View { return volume.Page() },
-		AboutPage:    func() shell.View { return aboutPage() },
+		NetworkPage:  func() sharedshell.View { return networkPage() },
+		FeaturesPage: func() sharedshell.View { return featuresPage() },
+		VolumePage:   func() sharedshell.View { return volume.Page() },
+		AboutPage:    func() sharedshell.View { return aboutPage() },
 		Sections: func() []sharedsettings.Section {
 			return []sharedsettings.Section{
 				{
 					Label: "settings.camera",
 					Glyph: gogui.IconCamera,
-					Page:  func() shell.View { return cameraPage() },
+					Page:  func() sharedshell.View { return cameraPage() },
 				},
 			}
 		},
 	})
 }
 
-var fpsIndex = sharedsettings.FpsIndex
-
-var fpsLevel = sharedsettings.FpsLevel
-
-var fpsSnap = sharedsettings.FpsSnap
-
-var seedOf = sharedsettings.SeedOf
-
-var seedLevel = sharedsettings.SeedLevel
-
-func sensorsPage() *shell.Page {
+func sensorsPage() *sharedshell.Page {
 	return sharedsettings.PresencePage(
 		sensors.Table,
 		func() config.Presence { return config.Get().Presence },
@@ -67,8 +60,8 @@ func sensorsPage() *shell.Page {
 	)
 }
 
-func visualPage() *shell.Page {
-	return visualPicker(say.T("debug.visuals"), "", nil, nil, func(k visual.Kind) {
+func visualPage() *sharedshell.Page {
+	return visualPicker(say.T("debug.visuals"), "", nil, nil, func(k sharedvisual.Kind) {
 		visuals.Get().SetKind(k)
 		shell.Get().Push(visuals.Get().View())
 	})
@@ -78,9 +71,9 @@ func visualPicker(
 	title, empty string,
 	none func(),
 	chosen func() string,
-	pick func(visual.Kind),
-) *shell.Page {
-	return sharedsettings.VisualPicker(title, empty, none, chosen, pick, visual.ThumbnailFit)
+	pick func(sharedvisual.Kind),
+) *sharedshell.Page {
+	return sharedsettings.VisualPicker(title, empty, none, chosen, pick, visual.Thumbs().Fit)
 }
 
 func uiSize() string {
@@ -90,7 +83,7 @@ func uiSize() string {
 	return board.Current().UISize
 }
 
-func networkPage() *shell.Page {
+func networkPage() *sharedshell.Page {
 	return sharedsettings.NetworkPage(func() sharedsettings.NetworkState {
 		c := sharedsettings.NetworkState{
 			SSID:    wifi.Get().Network(),
@@ -106,24 +99,24 @@ func networkPage() *shell.Page {
 	}, network.Get().SetVerify)
 }
 
-func callsPage() *shell.Page { return callPages().Calls() }
+func callsPage() *sharedshell.Page { return callPages().Calls() }
 
-func castPage() *shell.Page { return servicePages().Cast() }
+func castPage() *sharedshell.Page { return servicePages().Cast() }
 
-func featuresPage() *shell.Page {
+func featuresPage() *sharedshell.Page {
 	return sharedsettings.FeaturesPage(func() []sharedsettings.Feature {
 		c := config.Get()
 		return []sharedsettings.Feature{
 			{Key: "features.sendspin", On: c.Sendspin.Enabled, Set: sendspin.Get().SetEnabled},
-			{Key: "features.cast", Page: func() shell.View { return castPage() }},
-			{Key: "call.settings", Page: func() shell.View { return callsPage() }},
+			{Key: "features.cast", Page: func() sharedshell.View { return castPage() }},
+			{Key: "call.settings", Page: func() sharedshell.View { return callsPage() }},
 			{Key: "features.proxy", On: c.Bluetooth.Proxy, Set: bluetooth.Get().SetProxy},
 			{Key: "features.speaker", On: c.Bluetooth.Speaker, Set: a2dp.Get().SetEnabled},
 		}
 	}, shell.Get().Push)
 }
 
-func aboutPage() *shell.Page {
+func aboutPage() *sharedshell.Page {
 	return sharedsettings.AboutPage(func() sharedsettings.About {
 		return sharedsettings.About{
 			Name:    config.Get().Device.Name,
@@ -141,12 +134,3 @@ func address() string {
 	}
 	return l.Address.IP.String()
 }
-
-const (
-	leastSure = 50
-	mostSure  = 99
-)
-
-var sensitivity = sharedsettings.Sensitivity
-
-func setThreshold(slot int) func(int) { return assistantPages().Threshold(slot) }

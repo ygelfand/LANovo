@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -34,7 +35,7 @@ func Get() *sharedcall.Calls {
 			Privacy:  privacy.Get(),
 			Media:    media.Get(),
 			Sound:    device{},
-			Camera:   sharedcall.NewCamera(livecam.Sessions()),
+			Camera:   sharedcall.NewCamera(livecam.Get().Sessions()),
 			Display:  display.Get(),
 			Messages: message.Get(),
 		})
@@ -44,9 +45,9 @@ func Get() *sharedcall.Calls {
 
 func init() {
 	component.Register(
-		component.Network,
+		sharedcomponent.Network,
 		func() *componentCall { return &componentCall{Get()} },
-		component.Order(62),
+		sharedcomponent.Order(62),
 	)
 	web.Handle("POST /call/offer", Get().OfferHandler())
 	web.Handle("POST /call/answer", Get().AnswerHandler())

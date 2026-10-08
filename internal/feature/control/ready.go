@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/display/panel"
+
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
@@ -25,7 +27,7 @@ func ready(args []string) (string, error) {
 	}
 
 	deadline := time.Now().Add(wait)
-	for display.Get().Held(display.PriorityBoot) {
+	for display.Get().Held(panel.PriorityBoot) {
 		if time.Now().After(deadline) {
 			return "", fmt.Errorf("still starting after %s", wait)
 		}

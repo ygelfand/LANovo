@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/gpio"
 	"github.com/ygelfand/LANovo/internal/hardware/qcomaudio"
 	"github.com/ygelfand/LANovo/internal/layout"
-	"github.com/ygelfand/LANovo/internal/lib/alsa"
 )
 
 var qualcommRoute = []setting{

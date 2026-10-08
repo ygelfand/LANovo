@@ -8,8 +8,10 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+	"github.com/ygelfand/libcountertop/pkg/host/prompt"
+	"github.com/ygelfand/libcountertop/pkg/host/wifisetup"
 
-	"github.com/ygelfand/LANovo/internal/host/device"
 	"github.com/ygelfand/LANovo/internal/host/takeover"
 )
 
@@ -41,15 +43,15 @@ func newInstallCmd() *cobra.Command {
 			}
 			ctx, out := cmd.Context(), cmd.OutOrStdout()
 
-			if yes || !isTerminal() {
+			if yes || !prompt.IsTerminal() {
 				fmt.Fprintf(out, "%s\n", styleTitle.Render("Installing on "+d.Serial()))
 			} else {
-				ok, err := confirmDefaultYes(ctx, out, "Install on "+d.Serial()+"?")
+				ok, err := prompt.ConfirmDefaultYes(ctx, out, "Install on "+d.Serial()+"?")
 				if err != nil {
 					return err
 				}
 				if !ok {
-					return ErrCanceled
+					return prompt.ErrCanceled
 				}
 			}
 
@@ -234,7 +236,12 @@ func newInstallCmd() *cobra.Command {
 				settles = false
 			}
 
-			if err := ensureWifi(ctx, out, d, ssid, password, wps); err != nil {
+			if err := ensureWifi(
+				ctx,
+				out,
+				d,
+				wifisetup.Request{SSID: ssid, Password: password, WPS: wps},
+			); err != nil {
 				return err
 			}
 
@@ -277,7 +284,7 @@ func rebootChoiceOf(yes, no bool) rebootChoice {
 func finish(
 	ctx context.Context,
 	out io.Writer,
-	d *device.Device,
+	d *adb.Device,
 	settles bool,
 	choice rebootChoice,
 	genKey bool,
@@ -293,17 +300,17 @@ func finish(
 	}
 
 	if choice == rebootAsk {
-		if !isTerminal() {
+		if !prompt.IsTerminal() {
 			fmt.Fprintf(out, "%s\n", styleDetail.Render(
 				"some of this only takes effect on the next boot; pass --reboot to do it here"))
 			return nil
 		}
-		yes, err := confirm(
+		yes, err := prompt.Confirm(
 			ctx,
 			out,
 			"Reboot now? Some of this only takes effect on the next boot.",
 		)
-		if err != nil && !errors.Is(err, ErrCanceled) {
+		if err != nil && !errors.Is(err, prompt.ErrCanceled) {
 			return err
 		}
 		if !yes {

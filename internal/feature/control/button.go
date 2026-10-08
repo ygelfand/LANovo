@@ -1,10 +1,11 @@
 package control
 
 import (
+	"github.com/ygelfand/libcountertop/pkg/input/touch"
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 
 	"github.com/ygelfand/LANovo/internal/hardware/buttons"
-	"github.com/ygelfand/LANovo/internal/hardware/touch"
+	hwtouch "github.com/ygelfand/LANovo/internal/hardware/touch"
 )
 
 func (c *Control) inputEngine() *harness.Input {
@@ -30,8 +31,8 @@ func newInput() *harness.Input {
 		return nil
 	}
 	options.Deliver = func(c harness.Contact) {
-		touch.Get().
-			Deliver(touch.Contact{ID: c.ID, X: c.X, Y: c.Y, Phase: touch.Phase(c.Phase), At: c.At})
+		hwtouch.Get().
+			Feed(touch.Contact{ID: c.ID, X: c.X, Y: c.Y, Phase: touch.Phase(c.Phase), At: c.At})
 	}
 	return harness.NewInput(options)
 }

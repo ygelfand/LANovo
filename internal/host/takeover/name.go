@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ygelfand/LANovo/internal/host/device"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 var ErrNoName = errors.New("no device name")
 
-func ReadName(d *device.Device) (string, error) {
+func ReadName(d *adb.Device) (string, error) {
 	have, err := d.Exists(layout.NamePath)
 	if err != nil || !have {
 		return "", err
@@ -24,7 +25,7 @@ func ReadName(d *device.Device) (string, error) {
 	return strings.TrimSpace(string(b)), nil
 }
 
-func WriteName(d *device.Device, name string) error {
+func WriteName(d *adb.Device, name string) error {
 	if err := ValidName(name); err != nil {
 		return err
 	}
@@ -34,7 +35,7 @@ func WriteName(d *device.Device, name string) error {
 	return d.WriteFile(layout.NamePath, []byte(name+"\n"), 0o644)
 }
 
-func SuggestName(d *device.Device) string {
+func SuggestName(d *adb.Device) string {
 	out, err := d.Shell("cat " + layout.MACPath)
 	if err != nil {
 		return layout.DefaultName

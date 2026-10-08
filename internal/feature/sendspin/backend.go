@@ -2,6 +2,7 @@ package sendspin
 
 import (
 	core "github.com/ygelfand/libcountertop/pkg/audio/sendspin"
+	"github.com/ygelfand/libcountertop/pkg/audio/sound"
 	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
 	sharedplayer "github.com/ygelfand/libcountertop/pkg/media/sendspin"
 
@@ -28,7 +29,7 @@ func newOutput() *core.Output {
 		),
 		Media:        media.Get(),
 		Settings:     config.MediaSection,
-		HardwareTail: speaker.HardwareTail,
+		HardwareTail: sound.HardwareTail,
 	})
 }
 

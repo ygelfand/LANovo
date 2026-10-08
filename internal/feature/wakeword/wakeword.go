@@ -1,42 +1,26 @@
 package wakeword
 
 import (
-	"fmt"
-	"log/slog"
 	"sync"
 
-	esphome "github.com/ygelfand/go-esphome-device"
-	sharedtone "github.com/ygelfand/libcountertop/pkg/audio/tone"
+	"github.com/ygelfand/libcountertop/pkg/assistant/wakesettings"
 	"github.com/ygelfand/libcountertop/pkg/hook"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
 func init() {
-	component.Register(component.Device, Get, component.Order(20))
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(20))
 }
 
 const Slots = component.Assistants
 
 var Requested hook.Hook[int]
 
-type WakeWord struct {
-	slots []slot
-}
-
-type slot struct {
-	wake *esphome.Button
-
-	threshold *esphome.Number
-	tone      *esphome.Select
-	delivery  *esphome.Select
-	buffer    *esphome.Number
-	followUp  *esphome.Number
-	maxListen *esphome.Number
-	maxThink  *esphome.Number
-}
+type WakeWord struct{ *wakesettings.Settings }
 
 var (
 	once   sync.Once
@@ -45,184 +29,16 @@ var (
 
 func Get() *WakeWord {
 	once.Do(func() {
-		shared = &WakeWord{}
-		for i := range Slots {
-			shared.slots = append(shared.slots, newSlot(i))
-		}
+		shared = &WakeWord{wakesettings.New(wakesettings.Options{
+			Slots:    Slots,
+			DeviceID: component.AssistantDevice,
+			Write:    func(slot int) schema.WakeWriter { return config.Set().Wake(slot) },
+			Wake:     Requested.Emit,
+		})}
 	})
 	return shared
 }
 
-func newSlot(n int) slot {
-	on := component.AssistantDevice(n)
+func (w *WakeWord) Restore(c config.Config) { w.Settings.Restore(c.Wake.Slots(Slots)) }
 
-	s := slot{
-		wake: &esphome.Button{
-			Base: esphome.Base{
-				ObjectID: fmt.Sprintf("wake_assistant_%d", n+1),
-				Name:     "Wake",
-				Icon:     "mdi:account-voice",
-			},
-			OnPress: func() { Requested.Emit(n) },
-		},
-		threshold: &esphome.Number{
-			Base: esphome.Base{
-				ObjectID: fmt.Sprintf("wake_threshold_%d", n+1),
-				Name:     "Wake word sensitivity",
-				Icon:     "mdi:tune",
-				Category: esphome.CategoryConfig,
-			},
-			Min: 0.5, Max: 0.99, Step: 0.01,
-			Mode: esphome.NumberBox,
-		},
-		tone: &esphome.Select{
-			Base: esphome.Base{
-				ObjectID: fmt.Sprintf("wake_tone_%d", n+1),
-				Name:     "Wake word tone",
-				Icon:     "mdi:music-note",
-				Category: esphome.CategoryConfig,
-			},
-			Options: config.Labels(config.Chimes()),
-		},
-		delivery: &esphome.Select{
-			Base: esphome.Base{
-				ObjectID: fmt.Sprintf("reply_delivery_%d", n+1),
-				Name:     "Reply delivery",
-				Icon:     "mdi:download-network",
-				Category: esphome.CategoryConfig,
-			},
-			Options: config.Labels(config.Deliveries()),
-		},
-		buffer: &esphome.Number{
-			Base: esphome.Base{
-				ObjectID: fmt.Sprintf("reply_buffer_%d", n+1),
-				Name:     "Reply buffer",
-				Icon:     "mdi:buffer",
-				Category: esphome.CategoryConfig,
-			},
-			Min: 0, Max: 3000, Step: 50, Unit: "ms",
-			Mode: esphome.NumberBox,
-		},
-		followUp: &esphome.Number{
-			Base: esphome.Base{
-				ObjectID: fmt.Sprintf("follow_up_%d", n+1),
-				Name:     "Follow-up time",
-				Icon:     "mdi:comment-question-outline",
-				Category: esphome.CategoryConfig,
-			},
-			Min: 0, Max: 30, Step: 1, Unit: "s",
-			Mode: esphome.NumberBox,
-		},
-		maxListen: &esphome.Number{
-			Base: esphome.Base{
-				ObjectID: fmt.Sprintf("max_listen_%d", n+1),
-				Name:     "Max listening time",
-				Icon:     "mdi:timer-outline",
-				Category: esphome.CategoryConfig,
-			},
-			Min: 5, Max: 60, Step: 1, Unit: "s",
-			Mode: esphome.NumberBox,
-		},
-		maxThink: &esphome.Number{
-			Base: esphome.Base{
-				ObjectID: fmt.Sprintf("max_think_%d", n+1),
-				Name:     "Max thinking time",
-				Icon:     "mdi:timer-sand",
-				Category: esphome.CategoryConfig,
-			},
-			Min: 5, Max: 300, Step: 5, Unit: "s",
-			Mode: esphome.NumberBox,
-		},
-	}
-
-	for _, b := range []*esphome.Base{
-		&s.wake.Base, &s.threshold.Base, &s.tone.Base, &s.delivery.Base,
-		&s.buffer.Base, &s.followUp.Base, &s.maxListen.Base, &s.maxThink.Base,
-	} {
-		b.DeviceID = on
-	}
-
-	s.threshold.OnCommand = func(v float32) {
-		s.threshold.Set(v)
-		if err := config.Set().Wake(n).Threshold(float64(v)); err != nil {
-			slog.Error("saving the wake threshold failed", "slot", n+1, "err", err)
-		}
-		slog.Info("wake sensitivity", "slot", n+1, "cutoff", v)
-	}
-	s.tone.OnCommand = func(label string) {
-		tone, ok := config.ByLabel(config.Chimes(), label)
-		if !ok {
-			slog.Warn("unknown wake tone", "slot", n+1, "value", label)
-			return
-		}
-		s.tone.Set(tone.Label())
-		if err := config.Set().Wake(n).Tone(tone); err != nil {
-			slog.Error("saving the wake tone failed", "slot", n+1, "err", err)
-		}
-	}
-	s.delivery.OnCommand = func(label string) {
-		how, ok := config.ByLabel(config.Deliveries(), label)
-		if !ok {
-			slog.Warn("unknown reply delivery", "slot", n+1, "value", label)
-			return
-		}
-		s.delivery.Set(how.Label())
-		if err := config.Set().Wake(n).Delivery(how); err != nil {
-			slog.Error("saving the reply delivery failed", "slot", n+1, "err", err)
-		}
-		slog.Info("reply delivery", "slot", n+1, "using", how)
-	}
-	s.buffer.OnCommand = func(v float32) {
-		s.buffer.Set(v)
-		if err := config.Set().Wake(n).Buffer(int(v)); err != nil {
-			slog.Error("saving the reply buffer failed", "slot", n+1, "err", err)
-		}
-	}
-	s.followUp.OnCommand = func(v float32) {
-		s.followUp.Set(v)
-		if err := config.Set().Wake(n).FollowUp(int(v)); err != nil {
-			slog.Error("saving the follow-up time failed", "slot", n+1, "err", err)
-		}
-	}
-	s.maxListen.OnCommand = func(v float32) {
-		s.maxListen.Set(v)
-		if err := config.Set().Wake(n).MaxListen(int(v)); err != nil {
-			slog.Error("saving the listening limit failed", "slot", n+1, "err", err)
-		}
-	}
-	s.maxThink.OnCommand = func(v float32) {
-		s.maxThink.Set(v)
-		if err := config.Set().Wake(n).MaxThink(int(v)); err != nil {
-			slog.Error("saving the thinking limit failed", "slot", n+1, "err", err)
-		}
-	}
-	return s
-}
-
-func (w *WakeWord) Name() string { return "wake word settings" }
-
-func (w *WakeWord) Entities() []esphome.Entity {
-	var ents []esphome.Entity
-	for _, s := range w.slots {
-		ents = append(ents, s.wake, s.threshold, s.tone, s.delivery,
-			s.buffer, s.followUp, s.maxListen, s.maxThink)
-	}
-	return ents
-}
-
-func (w *WakeWord) Restore(c config.Config) {
-	for i, s := range w.slots {
-		saved := c.Wake.Slot(i)
-
-		s.threshold.Set(float32(saved.Threshold))
-		s.tone.Set(saved.Tone.Label())
-		s.delivery.Set(saved.Delivery.Label())
-		s.buffer.Set(float32(saved.Buffer))
-		s.followUp.Set(float32(saved.FollowUp))
-		s.maxListen.Set(float32(saved.MaxListen))
-		s.maxThink.Set(float32(saved.MaxThink))
-	}
-	slog.Info("restored", "what", "wake word settings", "slots", len(w.slots))
-}
-
-func Chime(slot int) { speaker.Sound().Chime(sharedtone.Wake(saved(slot).Tone)) }
+func Threshold(slot int) float64 { return config.Get().Wake.Slot(slot).Threshold }

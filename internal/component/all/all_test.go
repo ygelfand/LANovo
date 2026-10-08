@@ -95,18 +95,29 @@ func TestOnlyOneComponentHoldsTheVoiceSatellite(t *testing.T) {
 
 	var who []string
 	for _, c := range component.Default().All() {
-		at := reflect.Indirect(reflect.ValueOf(c))
-		if at.Kind() != reflect.Struct {
-			continue
-		}
-		for i := range at.NumField() {
-			if at.Type().Field(i).Type == want {
-				who = append(who, c.Name())
-			}
+		if holds(reflect.ValueOf(c), want) {
+			who = append(who, c.Name())
 		}
 	}
 
 	if len(who) != 1 {
 		t.Errorf("%d components hold a voice satellite: %v", len(who), who)
 	}
+}
+
+func holds(v reflect.Value, want reflect.Type) bool {
+	at := reflect.Indirect(v)
+	if at.Kind() != reflect.Struct {
+		return false
+	}
+	for i := range at.NumField() {
+		f := at.Type().Field(i)
+		if f.Type == want {
+			return true
+		}
+		if f.Anonymous && holds(at.Field(i), want) {
+			return true
+		}
+	}
+	return false
 }

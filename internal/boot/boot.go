@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
+	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/component"
@@ -18,7 +19,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/parts"
-	"github.com/ygelfand/LANovo/internal/service"
 	"github.com/ygelfand/LANovo/internal/update"
 )
 

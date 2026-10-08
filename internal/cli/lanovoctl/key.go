@@ -7,8 +7,9 @@ import (
 	"io"
 
 	"github.com/spf13/cobra"
+	"github.com/ygelfand/libcountertop/pkg/host/adb"
+	"github.com/ygelfand/libcountertop/pkg/host/prompt"
 
-	"github.com/ygelfand/LANovo/internal/host/device"
 	"github.com/ygelfand/LANovo/internal/host/takeover"
 )
 
@@ -32,8 +33,8 @@ func newKeyCmd() *cobra.Command {
 			ctx, out := cmd.Context(), cmd.OutOrStdout()
 
 			if rotate {
-				if isTerminal() {
-					ok, err := confirm(
+				if prompt.IsTerminal() {
+					ok, err := prompt.Confirm(
 						ctx,
 						out,
 						"Replace the key? Home Assistant will stop connecting until it is given the new one.",
@@ -42,7 +43,7 @@ func newKeyCmd() *cobra.Command {
 						return err
 					}
 					if !ok {
-						return ErrCanceled
+						return prompt.ErrCanceled
 					}
 				}
 
@@ -77,7 +78,7 @@ func showKey(out io.Writer, key string) {
 	)
 }
 
-func reportKey(ctx context.Context, out io.Writer, d *device.Device, generate bool) {
+func reportKey(ctx context.Context, out io.Writer, d *adb.Device, generate bool) {
 	key, err := takeover.Key(d)
 
 	if generate && errors.Is(err, takeover.ErrNoKey) {

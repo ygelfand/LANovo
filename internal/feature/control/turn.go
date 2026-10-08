@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ygelfand/libcountertop/pkg/display/geometry"
+
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
@@ -23,18 +25,18 @@ func turn(args []string) error {
 	return nil
 }
 
-func facing(s string) (display.Orientation, bool) {
+func facing(s string) (geometry.Orientation, bool) {
 	switch strings.ToLower(s) {
 	case "mounted":
 		return display.Mounted(), true
 	case "portrait", "up":
-		return display.Rotate0, true
+		return geometry.Rotate0, true
 	case "landscape", "right":
-		return display.Rotate90, true
+		return geometry.Rotate90, true
 	case "down", "upside":
-		return display.Rotate180, true
+		return geometry.Rotate180, true
 	case "left":
-		return display.Rotate270, true
+		return geometry.Rotate270, true
 	}
 
 	deg, err := strconv.Atoi(s)
@@ -42,9 +44,9 @@ func facing(s string) (display.Orientation, bool) {
 		return 0, false
 	}
 
-	switch display.Orientation(deg) {
-	case display.Rotate0, display.Rotate90, display.Rotate180, display.Rotate270:
-		return display.Orientation(deg), true
+	switch geometry.Orientation(deg) {
+	case geometry.Rotate0, geometry.Rotate90, geometry.Rotate180, geometry.Rotate270:
+		return geometry.Orientation(deg), true
 	}
 	return 0, false
 }

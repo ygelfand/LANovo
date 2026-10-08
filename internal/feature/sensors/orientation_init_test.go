@@ -3,6 +3,8 @@ package sensors
 import (
 	"testing"
 
+	"github.com/ygelfand/libcountertop/pkg/display/geometry"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
@@ -14,10 +16,10 @@ func TestMountedOrientationResolvesAfterEarlyConstruction(t *testing.T) {
 	s := Get()
 	board.Set(board.Ivy)
 	s.resetMounted()
-	if got := display.Get().Orientation(); got != display.Rotate270 {
+	if got := display.Get().Orientation(); got != geometry.Rotate270 {
 		t.Fatalf("Ivy inherited constructor orientation: %v", got)
 	}
-	if got := s.Orientation(); got != display.Rotate270 {
+	if got := s.Orientation(); got != geometry.Rotate270 {
 		t.Fatalf("orientation tracker inherited constructor orientation: %v", got)
 	}
 }

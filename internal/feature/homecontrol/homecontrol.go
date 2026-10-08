@@ -3,7 +3,9 @@ package homecontrol
 import (
 	"sync"
 
+	shareddashboard "github.com/ygelfand/libcountertop/pkg/display/dashboard"
 	sharedhome "github.com/ygelfand/libcountertop/pkg/homeassistant/homecontrol"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -26,15 +28,6 @@ var get = sync.OnceValue(func() *sharedhome.Engine {
 
 func Get() *sharedhome.Engine { return get() }
 func init() {
-	component.Register(component.Device, Get, component.Order(6))
-	dashboard.AddTabs(10, func() []dashboard.Tab {
-		var out []dashboard.Tab
-		for _, tab := range Get().Dash().Tabs() {
-			out = append(
-				out,
-				dashboard.Tab{Kind: sharedhome.TabKind, Key: tab.Key, Name: tab.Name()},
-			)
-		}
-		return out
-	})
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(6))
+	dashboard.Tabs().Add(10, func() []shareddashboard.Tab { return Get().DashboardTabs() })
 }

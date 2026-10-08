@@ -3,8 +3,8 @@ package numeral
 import (
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/ui"
-	"github.com/ygelfand/LANovo/internal/ui/theme"
+	"github.com/ygelfand/libcountertop/pkg/display/theme"
+	"github.com/ygelfand/libcountertop/pkg/display/ui"
 )
 
 func TestEverySetIsWholeAndDrawsSomething(t *testing.T) {
