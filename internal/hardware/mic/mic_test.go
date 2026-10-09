@@ -111,8 +111,8 @@ func TestGainIsClamped(t *testing.T) {
 		{-50, MinGain},
 		{0, MinGain},
 		{84, 84},
-		{124, MaxGain},
-		{9999, MaxGain},
+		{124, MaxGain - m.lift},
+		{9999, MaxGain - m.lift},
 	} {
 		if err := m.SetGain(tt.in); err != nil {
 			t.Fatalf("SetGain(%d): %v", tt.in, err)

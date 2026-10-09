@@ -16,6 +16,7 @@ import (
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -63,6 +64,7 @@ type Mics struct {
 	capture *alsa.Capture
 	mixer   *alsa.Mixer
 	gain    int
+	lift    int
 
 	err error
 
@@ -84,17 +86,19 @@ var (
 func Get() *Mics {
 	once.Do(func() {
 		cfg := config.Get().Microphone
+		lift := board.Current().MicLift()
 		shared = &Mics{
 			History: capture.NewHistory(Voice, time.Second),
 			Leveler: level.New(level.Config{
 				Rate:          Voice,
 				Frame:         VoiceSamples,
 				ReferenceGain: config.DefaultMicGain,
-				Gain:          cfg.Gain,
+				Gain:          cfg.Gain + lift,
 				Sensitivity:   cfg.Sensitivity,
 				Leveling:      cfg.Leveling,
 			}),
-			gain:   min(max(cfg.Gain, MinGain), MaxGain),
+			lift:   lift,
+			gain:   min(max(cfg.Gain, MinGain), MaxGain-lift),
 			cancel: newCanceller(),
 		}
 		shared.pre = newPreprocessors(shared.cancel)
@@ -129,7 +133,7 @@ func (m *Mics) open(context.Context) error {
 	}
 
 	m.mu.Lock()
-	gain := m.gain
+	gain := m.gain + m.lift
 	m.mu.Unlock()
 
 	if err := hw.gain(mixer, gain); err != nil {
@@ -215,20 +219,20 @@ func (m *Mics) Gain() int {
 }
 
 func (m *Mics) SetGain(gain int) error {
-	gain = min(max(gain, MinGain), MaxGain)
+	gain = min(max(gain, MinGain), MaxGain-m.lift)
 
 	m.mu.Lock()
 	m.gain = gain
 	mixer := m.mixer
 	m.mu.Unlock()
 	if m.Leveler != nil {
-		m.SetInputGain(gain)
+		m.SetInputGain(gain + m.lift)
 	}
 
 	if mixer == nil {
 		return nil
 	}
-	return m.hw().gain(mixer, gain)
+	return m.hw().gain(mixer, gain+m.lift)
 }
 
 func (m *Mics) Run(ctx context.Context) error {

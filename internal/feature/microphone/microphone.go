@@ -11,6 +11,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/say"
 	setting "github.com/ygelfand/libcountertop/pkg/settings"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
@@ -20,8 +21,7 @@ func init() {
 	component.Register(sharedcomponent.Device, Get)
 }
 
-// The codec's decimator volume tops out at +40 dB.
-const GainMost = mic.MaxGain - config.DefaultMicGain
+func gainMost() int { return mic.MaxGain - config.DefaultMicGain - board.Current().MicLift() }
 
 const (
 	SensitivityLeast = 4
@@ -61,15 +61,15 @@ func Table() *setting.Table[config.Microphone] {
 			Group: Group,
 			Icon:  "mdi:volume-plus",
 			Kind:  setting.Number,
-			Max:   GainMost,
+			Max:   gainMost(),
 			Unit:  "dB",
 			Read: func(m *config.Microphone) string {
 				return strconv.Itoa(m.Gain - config.DefaultMicGain)
 			},
 			Write: func(m *config.Microphone, v string) error {
 				n, err := strconv.Atoi(v)
-				if err != nil || n < 0 || n > GainMost {
-					return fmt.Errorf("gain takes 0 to %d dB, not %q", GainMost, v)
+				if err != nil || n < 0 || n > gainMost() {
+					return fmt.Errorf("gain takes 0 to %d dB, not %q", gainMost(), v)
 				}
 				m.Gain = config.DefaultMicGain + n
 				return nil

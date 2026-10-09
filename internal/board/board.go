@@ -53,6 +53,9 @@ type Board struct {
 
 	AmpPins []int
 
+	// dBFS for 94 dB SPL at the vendor gain, from the OEM app's CastAudioMicSensitivity.
+	MicSensitivity int
+
 	Stereo bool
 
 	SecureDecoders map[string]string
@@ -136,3 +139,5 @@ func detect() {
 	}
 	current.CompareAndSwap(nil, &b)
 }
+
+func (b Board) MicLift() int { return Ivy.MicSensitivity - b.MicSensitivity }
