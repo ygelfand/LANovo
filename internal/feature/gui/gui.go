@@ -22,6 +22,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/firmware"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
+	"github.com/ygelfand/LANovo/internal/feature/idle"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
@@ -89,6 +90,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		Tabs:      dashboard.Tabs(),
 		Home:      homecontrol.Get(),
 		HomeHA:    homeassistant.Get(),
+		Saver:     idle.Get(),
 		Tessera: tesseraview.New(tesseraview.Dependencies{
 			UI:      look,
 			Screens: tessera.Get(),
@@ -99,12 +101,12 @@ var Get = sync.OnceValue(func() *screens.App {
 		}),
 		Forecast: weather.Get(),
 
-		WeatherPage: func() shell.View { return settings.WeatherPage() },
-		Player:      media.Get(),
-		PlayerPage:  media.Page,
-		MediaVolume: sharedvolume.For(volume.Get(), config.StreamMedia),
-		Volume:      volume.Get(),
-		Streams:     config.Streams(),
+		WeatherEntities: func() shell.View { return settings.WeatherEntities() },
+		Player:          media.Get(),
+		PlayerPage:      media.Page,
+		MediaVolume:     sharedvolume.For(volume.Get(), config.StreamMedia),
+		Volume:          volume.Get(),
+		Streams:         config.Streams(),
 
 		Upgrade: func() widgets.Upgrade {
 			up := firmware.Get().Upgrade()

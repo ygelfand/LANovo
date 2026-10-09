@@ -16,12 +16,12 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 
 	"github.com/ygelfand/LANovo/internal/board"
+	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 )
 
 const (
 	DefaultThumbs = "/data/local/tmp/lanovo-thumbs"
-	thumbLabel    = "LANOVO"
 	beatEvery     = 500 * time.Millisecond
 )
 
@@ -50,7 +50,7 @@ func thumbs(args []string) (string, error) {
 				sh.w,
 				sh.h,
 				screencmd.ThumbFrames,
-				thumbLabel,
+				config.Defaults().Visual.Label,
 			)
 			if err != nil {
 				return "", fmt.Errorf("%s %dx%d: %w", k, sh.w, sh.h, err)
@@ -86,7 +86,14 @@ func render(args []string) (string, error) {
 			return "", err
 		}
 	}
-	img, err := screencmd.Render(gpu.Get(), visual.Kind(args[0]), w, h, frames, thumbLabel)
+	img, err := screencmd.Render(
+		gpu.Get(),
+		visual.Kind(args[0]),
+		w,
+		h,
+		frames,
+		config.Defaults().Visual.Label,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -126,7 +133,7 @@ func clip(args []string) (string, error) {
 	v := visual.New(visual.Kind(args[0]))
 	step := time.Second / time.Duration(fps)
 	frames := seconds * fps
-	x := visual.Input{Dt: step, Label: thumbLabel}
+	x := visual.Input{Dt: step, Label: config.Defaults().Visual.Label}
 	for i := range screencmd.ThumbFrames + frames {
 		x.Now = time.Duration(i+1) * step
 		x.Mic, x.Speaker = beat(x.Now), beat(x.Now+step/2)

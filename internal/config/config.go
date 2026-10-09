@@ -2,6 +2,8 @@ package config
 
 import (
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 type Config struct {
@@ -16,7 +18,7 @@ type Config struct {
 }
 
 func Defaults() Config {
-	return Config{
+	c := Config{
 		Shared:     schema.DefaultShared(),
 		Volume:     defaultVolume(),
 		Microphone: defaultMicrophone(),
@@ -24,6 +26,8 @@ func Defaults() Config {
 		Access:     defaultAccess(),
 		Presence:   defaultPresence(),
 	}
+	c.Visual.Label = layout.Manufacturer
+	return c
 }
 
 type Device struct {
