@@ -5,6 +5,8 @@ import (
 	"log/slog"
 	"sync"
 
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	sharedmessage "github.com/ygelfand/libcountertop/pkg/display/message"
@@ -79,7 +81,7 @@ func (s *Satellite) SetState(said viewassist.State) {
 	message.Get().Show(sharedmessage.Message{
 		Title: said.Title,
 		Body:  said.Message,
-		Tone:  sharedmessage.ToneInfo,
+		Tone:  schema.ToneInfo,
 	}, sharedmessage.Hold(0))
 }
 

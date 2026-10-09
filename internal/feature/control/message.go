@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+
 	sharedmessage "github.com/ygelfand/libcountertop/pkg/display/message"
 
 	"github.com/ygelfand/LANovo/internal/feature/message"
@@ -16,8 +18,8 @@ func say(args []string) error {
 		return fmt.Errorf("want TONE SECONDS TITLE : BODY")
 	}
 
-	tone := sharedmessage.Tone(args[0])
-	if !slices.Contains(sharedmessage.Tones(), tone) {
+	tone := schema.Tone(args[0])
+	if !slices.Contains(schema.Tones(), tone) {
 		return fmt.Errorf("no such tone %q, want one of %s", args[0], tones())
 	}
 
@@ -48,8 +50,8 @@ func split(args []string) (title, body string) {
 func join(words []string) string { return strings.TrimSpace(strings.Join(words, " ")) }
 
 func tones() string {
-	out := make([]string, 0, len(sharedmessage.Tones()))
-	for _, t := range sharedmessage.Tones() {
+	out := make([]string, 0, len(schema.Tones()))
+	for _, t := range schema.Tones() {
 		out = append(out, string(t))
 	}
 	return strings.Join(out, ", ")

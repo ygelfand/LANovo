@@ -5,6 +5,7 @@ import (
 	sharedshell "github.com/ygelfand/libcountertop/pkg/display/shell"
 
 	"github.com/ygelfand/LANovo/internal/feature/access"
+	"github.com/ygelfand/LANovo/internal/feature/alerts"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
@@ -34,6 +35,8 @@ func basicPages() *sharedsettings.BasicPages {
 			Home:        homecontrol.Get(),
 			HA:          homeassistant.Get(),
 			Marks:       modeMarks(),
+			Alerts:      alerts.Get(),
+			Previews:    previewKit(),
 			PowerPage:   func() sharedshell.View { return powerPage() },
 			VisualPage:  func() sharedshell.View { return visualPage() },
 		},

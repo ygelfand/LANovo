@@ -13,6 +13,7 @@ func lookPages() *sharedsettings.LookPages {
 			Preferences: preferences(),
 			Shell:       shell.Get(),
 			Thumbnail:   visual.Thumbs().Fit,
+			Previews:    previewKit(),
 		},
 	)
 }

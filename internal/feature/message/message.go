@@ -9,6 +9,7 @@ import (
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/component"
+	"github.com/ygelfand/LANovo/internal/feature/alerts"
 	hwtouch "github.com/ygelfand/LANovo/internal/hardware/touch"
 )
 
@@ -19,6 +20,7 @@ var get = sync.OnceValue(func() *shared.Messages {
 			m.Dismiss(c.ID, image.Pt(c.X, c.Y))
 		}
 	})
+	m.SoundWith(alerts.Get())
 	return m
 })
 

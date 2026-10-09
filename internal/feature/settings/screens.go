@@ -73,7 +73,7 @@ func visualPicker(
 	chosen func() string,
 	pick func(sharedvisual.Kind),
 ) *sharedshell.Page {
-	return sharedsettings.VisualPicker(title, empty, none, chosen, pick, visual.Thumbs().Fit)
+	return sharedsettings.VisualPicker(title, empty, none, chosen, pick, visual.Thumbs().Fit, previewKit())
 }
 
 func uiSize() string {

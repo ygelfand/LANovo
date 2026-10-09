@@ -12,5 +12,6 @@ var clocks = sharedpages.NewClockPages(
 		Preferences: preferences(),
 		Shell:       shell.Get(),
 		Controller:  dashboard.Get(),
+		Previews:    previewKit(),
 	},
 )

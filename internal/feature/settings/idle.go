@@ -25,6 +25,7 @@ func idlePages() *sharedpages.IdlePages {
 			Weather:      weather.Get(),
 			SaverWeather: weather.Get().Saver(),
 			Thumbnail:    visual.Thumbs().Fit,
+			Previews:     previewKit(),
 		},
 	)
 }

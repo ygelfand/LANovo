@@ -32,7 +32,7 @@ func TestSavedKeysKeepTheirLayout(t *testing.T) {
 	want := []string{
 		"api", "bluetooth", "call", "camera", "cast", "clock", "diag", "feedback", "home", "idle",
 		"media", "microphone", "network", "poster", "rtsp", "screen", "sendspin", "time", "update",
-		"visual", "volume", "wake", "weather", "access", "presence",
+		"visual", "volume", "wake", "weather", "access", "presence", "alerts",
 	}
 	slices.Sort(want)
 	got := make([]string, 0, len(top))

@@ -17,6 +17,12 @@ var manyRows = map[string]string{
 }
 
 var inTables = map[string]string{
+	"Alerts.Info":               "alerts.info",
+	"Alerts.Success":            "alerts.success",
+	"Alerts.Warning":            "alerts.warning",
+	"Alerts.Alert":              "alerts.alert",
+	"Alerts.Timer":              "alerts.timer",
+	"Alerts.RingFor":            "alerts.ring_for",
 	"Media.DuckDB":              "media.duck",
 	"Poster.Enabled":            "poster.on",
 	"Poster.Every":              "poster.every",
