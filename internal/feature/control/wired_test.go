@@ -95,6 +95,7 @@ var inTables = map[string]string{
 	"Home.Return":               "home.tessera.home_after_idle",
 	"Home.Wide":                 "home.tessera.landscape",
 	"Home.Tall":                 "home.tessera.portrait",
+	"Home.Saver":                "home.tessera.screensaver",
 }
 
 var byHand = map[string]string{

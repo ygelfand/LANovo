@@ -8,11 +8,15 @@ import (
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 	shared "github.com/ygelfand/libcountertop/pkg/tessera"
+	tesseraview "github.com/ygelfand/libcountertop/pkg/tessera/widgets"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
+	"github.com/ygelfand/LANovo/internal/feature/idle"
+	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
@@ -23,6 +27,12 @@ func init() { component.Register(sharedcomponent.Network, Get, sharedcomponent.O
 
 var get = sync.OnceValue(func() *shared.Set {
 	home := homecontrol.Get()
+	alert, unalert := tesseraview.Alerter(message.Get())
+	front := func() {
+		shell.Get().Close()
+		idle.Get().Wake()
+		dashboard.Tabs().Clock()
+	}
 	screen := func(f shared.Facing, device uint32, file string, on func() bool) *shared.Screen {
 		return shared.New(shared.Options{
 			Facing:   f,
@@ -34,6 +44,9 @@ var get = sync.OnceValue(func() *shared.Set {
 			Name:     func() string { return config.Get().Device.Name },
 			Speaking: on,
 			Keep:     filepath.Join(layout.TesseraDir, file),
+			Alert:    alert,
+			Unalert:  unalert,
+			Front:    front,
 		})
 	}
 	var set *shared.Set
