@@ -18,9 +18,9 @@ func (f *Feedback) Restore(config.Config) { f.Feedback.Restore() }
 
 type output struct{}
 
-func (output) Chime(notes []sharedtone.Note) { play(notes) }
+func (output) Chime(s config.Stream, notes []sharedtone.Note) { play(s, notes) }
 
-var play = func(notes []Note) { speaker.Sound().Chime(notes) }
+var play = func(s config.Stream, notes []Note) { speaker.Sound().Chime(s, notes) }
 
 type Note = sharedtone.Note
 
@@ -39,7 +39,7 @@ func Failure() { sound(sharedtone.ToneTrouble) }
 
 func Canceled() { sound(sharedtone.ToneCancel) }
 
-func Volume() { sound(sharedtone.Wake(config.Get().Feedback.Chime)) }
+func Preview(s config.Stream) { Get().Preview(s) }
 
 func Muted() { sound(sharedtone.ToneMute) }
 

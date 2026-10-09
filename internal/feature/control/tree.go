@@ -15,6 +15,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	panel "github.com/ygelfand/LANovo/internal/feature/settings"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/timer"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/logging"
 )
@@ -143,12 +144,7 @@ func showing() []*cobra.Command {
 				return nil
 			},
 		},
-		{
-			Use:   "timer SECONDS [NAME] | timer ring | timer cancel",
-			Short: "Count a timer down on the panel, ring it, or cancel it",
-			Args:  cobra.MinimumNArgs(1),
-			RunE:  countdown,
-		},
+		screencmd.Timer(timer.Get),
 		{
 			Use:   "clear",
 			Short: "Take the message away again",

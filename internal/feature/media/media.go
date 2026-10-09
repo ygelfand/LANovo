@@ -54,6 +54,7 @@ func Get() *Player {
 			sharedcard.Dependencies{Player: shared, Idle: config.IdleSection, Shell: shell.Get()},
 		)
 		shared.Begun.Listen(func(s nowplaying.Source) { theCard.Began(s) })
+		volume.Get().Watch(config.StreamMedia, func(int) { shared.Changed() })
 		drawer.Get().Add(theCard.Rail())
 	})
 	return shared
@@ -95,12 +96,7 @@ func (p *Player) Open() { card().Open() }
 func (p *Player) refresh() {
 	mp := p.Entity()
 	mp.SetVolume(float32(volume.Get().Level(config.StreamMedia)) / 100)
-
-	if mp.Muted() {
-		speaker.Get().SetVolume(0)
-	} else {
-		volume.Get().Sounding(config.StreamMedia)
-	}
+	mp.SetMuted(volume.Get().Muted(config.StreamMedia))
 
 	if Showing() {
 		shell.Get().Redraw()
@@ -118,4 +114,4 @@ func (mediaVolume) StepVolume(delta int) {
 	v.Set(config.StreamMedia, v.Level(config.StreamMedia)+delta*volume.Step)
 }
 
-func (mediaVolume) Mute(bool) {}
+func (mediaVolume) Mute(on bool) { volume.Get().Mute(config.StreamMedia, on) }

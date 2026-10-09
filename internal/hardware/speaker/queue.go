@@ -4,23 +4,26 @@ import (
 	"log/slog"
 
 	"github.com/ygelfand/libcountertop/pkg/audio/upsample"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
 const VoiceRate = upsample.VoiceRate
 
-func (s *Speaker) Play(samples []int16) {
+func (s *Speaker) Play(samples []int16) { s.PlayStream(schema.StreamMedia, samples) }
+
+func (s *Speaker) PlayStream(stream schema.Stream, samples []int16) {
 	if !s.open() {
 		if n := s.deaf.Add(1); n == 1 || n%100 == 0 {
 			slog.Warn("audio dropped, no playback device", "times", n)
 		}
 		return
 	}
-	s.queue.Push(samples)
+	s.bus.Push(stream, samples)
 }
 
-func (s *Speaker) Take() []int16 { return s.queue.Take() }
+func (s *Speaker) Take() []int16 { return s.bus.Take(schema.StreamMedia) }
 
-func (s *Speaker) Adjust(rewrite func([]int16)) { s.queue.Adjust(rewrite) }
+func (s *Speaker) Adjust(rewrite func([]int16)) { s.bus.Adjust(schema.StreamMedia, rewrite) }
 
 // The codec only takes 48 kHz stereo.
 func (s *Speaker) PlayVoice(mono []int16) {
@@ -31,7 +34,7 @@ func (s *Speaker) PlayVoice(mono []int16) {
 	out := s.voice.Run(mono, make([]int16, 0, len(mono)*Rate/VoiceRate*Channels))
 	s.voiceMu.Unlock()
 
-	s.Play(out)
+	s.PlayStream(schema.StreamVoice, out)
 }
 
 func (s *Speaker) SetResampling(k upsample.Kind) upsample.Kind {
@@ -63,7 +66,7 @@ func (s *Speaker) Clipped() uint64 {
 }
 
 func (s *Speaker) Drain() {
-	s.queue.Clear()
+	s.bus.Clear()
 
 	s.voiceMu.Lock()
 	if s.voice != nil {
@@ -72,14 +75,12 @@ func (s *Speaker) Drain() {
 	s.voiceMu.Unlock()
 }
 
-func (s *Speaker) Queued() int { return s.queue.Len() / Channels }
+func (s *Speaker) Queued() int { return s.bus.Len() / Channels }
 
-func (s *Speaker) Overlay(samples []int16) {
+func (s *Speaker) Overlay(stream schema.Stream, samples []int16) {
 	if !s.open() {
-		s.Play(samples)
+		s.PlayStream(stream, samples)
 		return
 	}
-	s.queue.Overlay(samples)
+	s.bus.Overlay(stream, samples)
 }
-
-func (s *Speaker) take() []int16 { return s.queue.Next(period * Channels) }

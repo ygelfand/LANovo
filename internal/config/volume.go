@@ -5,6 +5,7 @@ import (
 )
 
 type Volume struct {
+	Main     int `json:"main"`
 	Media    int `json:"media"`
 	Alerts   int `json:"alerts"`
 	Voice    int `json:"voice"`
@@ -12,14 +13,16 @@ type Volume struct {
 }
 
 const (
-	DefaultMediaVolume    = 40
-	DefaultAlertsVolume   = 60
-	DefaultVoiceVolume    = 50
-	DefaultFeedbackVolume = 30
+	DefaultMainVolume     = 40
+	DefaultMediaVolume    = 100
+	DefaultAlertsVolume   = 100
+	DefaultVoiceVolume    = 100
+	DefaultFeedbackVolume = 100
 )
 
 func defaultVolume() Volume {
 	return Volume{
+		Main:     DefaultMainVolume,
 		Media:    DefaultMediaVolume,
 		Alerts:   DefaultAlertsVolume,
 		Voice:    DefaultVoiceVolume,
@@ -29,6 +32,8 @@ func defaultVolume() Volume {
 
 func (v Volume) Level(s Stream) int {
 	switch s {
+	case StreamMain:
+		return v.Main
 	case StreamAlerts:
 		return v.Alerts
 	case StreamVoice:
@@ -50,7 +55,7 @@ const (
 )
 
 func Streams() []Stream {
-	return []Stream{StreamMedia, StreamAlerts, StreamVoice, StreamFeedback}
+	return []Stream{StreamMain, StreamMedia, StreamVoice, StreamAlerts, StreamFeedback}
 }
 
 type VolumeWriter struct{ st *Store }
@@ -58,6 +63,8 @@ type VolumeWriter struct{ st *Store }
 func (w VolumeWriter) Level(s Stream, v int) error {
 	return w.st.Update(func(c *Config) {
 		switch s {
+		case StreamMain:
+			c.Volume.Main = v
 		case StreamAlerts:
 			c.Volume.Alerts = v
 		case StreamVoice:

@@ -38,6 +38,7 @@ var inTables = map[string]string{
 	"Screen.Size":               "screen.size",
 	"Screen.Drawer":             "screen.drawer",
 	"Screen.Alert":              "screen.alert",
+	"Screen.Timer":              "screen.timer",
 	"Screen.Keyboard":           "screen.keyboard",
 	"Screen.Language":           "screen.language",
 	"Screen.Marks":              "screen.marks",
@@ -111,7 +112,8 @@ var byHand = map[string]string{
 	"Device.Addr":  "the same",
 	"Device.Model": "the same, read from the hardware",
 
-	"Volume.Media":    "the volume command sets these, by stream",
+	"Volume.Main":     "the volume command sets these, by stream",
+	"Volume.Media":    "the volume command",
 	"Volume.Alerts":   "the volume command",
 	"Volume.Voice":    "the volume command",
 	"Volume.Feedback": "the volume command",

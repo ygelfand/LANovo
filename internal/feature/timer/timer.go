@@ -6,6 +6,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/assistant/timer"
 	"github.com/ygelfand/libcountertop/pkg/audio/tone"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -26,7 +27,7 @@ var get = sync.OnceValue(func() *timer.Timers {
 		},
 		Chime: func() {
 			speaker.Sound().
-				Interject(func(p *speaker.Speaker) { p.Chime(alarmLevel, tone.ToneTimer...) })
+				Interject(func(p *speaker.Speaker) { p.Chime(schema.StreamAlerts, alarmLevel, tone.ToneTimer...) })
 		},
 	})
 })

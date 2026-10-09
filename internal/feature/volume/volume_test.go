@@ -6,7 +6,10 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
+
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
 func fresh(t *testing.T) *Volume {
@@ -147,7 +150,7 @@ func TestSetPersists(t *testing.T) {
 func TestEveryStreamHasAnEntity(t *testing.T) {
 	v := fresh(t)
 	for _, stream := range config.Streams() {
-		number := v.numbers[stream]
+		number := v.Number(stream)
 		found := false
 		for _, entity := range v.Entities() {
 			if entity == number {
@@ -169,5 +172,49 @@ func TestDuckingIsASeparateSavedPlaybackSetting(t *testing.T) {
 	n.OnCommand(-20)
 	if got := config.Get().Media.DuckDB; got != -20 {
 		t.Fatal(got)
+	}
+}
+
+func TestMainDrivesTheSpeakerAndTheStreamsKeepTheirOwn(t *testing.T) {
+	v := fresh(t)
+
+	v.Set(config.StreamMain, 50)
+	v.Set(config.StreamVoice, 80)
+
+	if got, want := speaker.Get().Volume(), sharedvolume.Gain(50); got != want {
+		t.Errorf("main put the speaker at %v, want %v", got, want)
+	}
+	if got := v.Level(config.StreamMedia); got != config.Defaults().Volume.Media {
+		t.Errorf("media moved to %d", got)
+	}
+}
+
+func TestMuteLeavesTheSavedLevelAndOtherStreams(t *testing.T) {
+	v := fresh(t)
+	v.Set(config.StreamMedia, 35)
+
+	v.Mute(config.StreamMedia, true)
+	if !v.Muted(config.StreamMedia) || v.Muted(config.StreamVoice) {
+		t.Error("mute reached the wrong stream")
+	}
+	if v.Level(config.StreamMedia) != 35 || config.Get().Volume.Media != 35 {
+		t.Errorf(
+			"muting moved media to %d, saved %d",
+			v.Level(config.StreamMedia),
+			config.Get().Volume.Media,
+		)
+	}
+
+	v.Mute(config.StreamMedia, false)
+	if v.Muted(config.StreamMedia) || v.Level(config.StreamMedia) != 35 {
+		t.Errorf("unmuted at %d", v.Level(config.StreamMedia))
+	}
+}
+
+func TestTheButtonsTargetMainWithNothingPicked(t *testing.T) {
+	v := fresh(t)
+	v.Dismiss()
+	if got := v.Target(); got != config.StreamMain {
+		t.Errorf("buttons target %s, want main", got)
 	}
 }

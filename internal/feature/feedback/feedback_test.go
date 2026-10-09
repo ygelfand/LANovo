@@ -11,6 +11,10 @@ import (
 )
 
 func heard(t *testing.T, chime schema.Chime) *[][]Note {
+	return heardOn(t, chime, nil)
+}
+
+func heardOn(t *testing.T, chime schema.Chime, streams *[]config.Stream) *[][]Note {
 	t.Helper()
 
 	config.Use(filepath.Join(t.TempDir(), "state.json"))
@@ -21,7 +25,12 @@ func heard(t *testing.T, chime schema.Chime) *[][]Note {
 	var played [][]Note
 
 	was := play
-	play = func(notes []Note) { played = append(played, notes) }
+	play = func(s config.Stream, notes []Note) {
+		played = append(played, notes)
+		if streams != nil {
+			*streams = append(*streams, s)
+		}
+	}
 	t.Cleanup(func() { play = was })
 
 	return &played
@@ -30,7 +39,7 @@ func heard(t *testing.T, chime schema.Chime) *[][]Note {
 var occasions = map[string]func(){
 	"failure":  Failure,
 	"canceled": Canceled,
-	"volume":   Volume,
+	"volume":   func() { Preview(config.StreamMedia) },
 	"muted":    Muted,
 	"unmuted":  Unmuted,
 }
@@ -72,7 +81,7 @@ func TestTheAcknowledgementFollowsTheSetting(t *testing.T) {
 
 		played := heard(t, chime)
 
-		Volume()
+		Preview(config.StreamMedia)
 		if len(*played) != 1 {
 			t.Errorf("%v played %d times, want once", chime, len(*played))
 			continue
@@ -113,6 +122,25 @@ func TestTheMeaningfulTonesIgnoreTheSetting(t *testing.T) {
 			if len((*played)[0]) != len(first) {
 				t.Errorf("%s changed shape under %v", name, chime)
 			}
+		}
+	}
+}
+
+func TestAPreviewPlaysOnTheStreamItPreviews(t *testing.T) {
+	var streams []config.Stream
+	heardOn(t, schema.ChimeDing, &streams)
+
+	Preview(config.StreamAlerts)
+	Preview(config.StreamMain)
+	Failure()
+
+	want := []config.Stream{config.StreamAlerts, config.StreamFeedback, config.StreamFeedback}
+	if len(streams) != len(want) {
+		t.Fatalf("played on %v, want %v", streams, want)
+	}
+	for i := range want {
+		if streams[i] != want[i] {
+			t.Errorf("sound %d on %s, want %s", i, streams[i], want[i])
 		}
 	}
 }

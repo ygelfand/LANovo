@@ -43,7 +43,8 @@ type Speaker struct {
 	hardVolume atomic.Bool
 	amp        atomic.Pointer[sharedcomponent.Progress]
 
-	queue mix.Queue
+	bus mix.Bus
+	sum []int32
 
 	level atomic.Uint32
 
@@ -54,9 +55,6 @@ type Speaker struct {
 
 	fed bool
 
-	srcMu   sync.Mutex
-	src     mix.Source
-	srcBuf  []int16
 	written atomic.Uint64
 
 	voiceMu sync.Mutex

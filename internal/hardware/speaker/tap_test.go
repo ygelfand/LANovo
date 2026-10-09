@@ -1,6 +1,10 @@
 package speaker
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+)
 
 type caught struct{ got []int16 }
 
@@ -17,7 +21,7 @@ func TestTheTapHearsTheMixAtTheVolume(t *testing.T) {
 		for i := range queued {
 			queued[i] = 1000
 		}
-		s.queue.Push(queued)
+		s.bus.Push(schema.StreamMedia, queued)
 
 		c := &caught{}
 		s.SetTap(c)

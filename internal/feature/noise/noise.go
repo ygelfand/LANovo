@@ -16,7 +16,6 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
@@ -128,7 +127,6 @@ func (m *Machine) sound() {
 	}
 
 	speaker.Sound().Backgrounds().Took(m)
-	volume.Get().Sounding(config.StreamMedia)
 	slog.Info("sound machine", "playing", chosen)
 }
 

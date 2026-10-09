@@ -1,7 +1,6 @@
 package volume
 
 import (
-	"log/slog"
 	"sync"
 
 	esphome "github.com/ygelfand/go-esphome-device"
@@ -21,19 +20,15 @@ func init() {
 	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(20))
 }
 
-const Step = sharedvolume.Step
+const (
+	Step      = sharedvolume.Step
+	MainSteps = 100 / Step
+)
 
 type Change = sharedvolume.Change
 
 type Volume struct {
-	entities *sharedvolume.Entities
-	Changed  sharedvolume.Changes
-
-	mu      sync.Mutex
-	levels  map[config.Stream]int
-	numbers map[config.Stream]*esphome.Number
-
-	sounding config.Stream
+	*sharedvolume.Mixer
 
 	card *sharedview.Card
 	duck *sharedvolume.Ducking
@@ -47,12 +42,18 @@ var (
 func Get() *Volume {
 	once.Do(func() {
 		shared = &Volume{
-			levels:   map[config.Stream]int{},
-			numbers:  map[config.Stream]*esphome.Number{},
-			sounding: config.StreamMedia,
+			Mixer: sharedvolume.NewMixer(sharedvolume.MixerOptions{
+				Output:  speaker.Get(),
+				Streams: config.Streams(),
+				Save: func(s config.Stream, level int) error {
+					return config.Set().Volume().Level(s, level)
+				},
+				Device: component.DevicePlayback,
+			}),
+			card: sharedview.NewCard(shell.Get()),
+			duck: sharedvolume.NewDucking(config.MediaSection, component.DevicePlayback),
 		}
-		shared.card = sharedview.NewCard(shell.Get())
-		shared.build()
+		component.Settings.Add(shared.duck)
 	})
 	return shared
 }
@@ -60,43 +61,30 @@ func Get() *Volume {
 func (v *Volume) Name() string { return "volume" }
 
 func (v *Volume) Entities() []esphome.Entity {
-	return append(v.entities.Entities(), v.duck.Entities()...)
+	return append(v.Mixer.Entities(), v.duck.Entities()...)
 }
 
 func (v *Volume) Restore(c config.Config) {
 	v.duck.PublishFrom(c.Media)
-	for _, s := range config.Streams() {
-		v.hold(s, c.Volume.Level(s))
-	}
-}
-
-func (v *Volume) Level(s config.Stream) int {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return v.levels[s]
+	v.Mixer.Restore(c.Volume.Level)
 }
 
 func (v *Volume) Set(s config.Stream, level int) {
-	level = sharedvolume.Clamp(level)
-	if v.Level(s) == level {
+	if v.Level(s) == sharedvolume.Clamp(level) {
 		return
 	}
-	v.hold(s, level)
+	v.Mixer.Set(s, level)
 
 	if showing(s) {
 		v.card.Stir()
 	} else {
 		v.card.Show(s)
 	}
-
-	if err := config.Set().Volume().Level(s, level); err != nil {
-		slog.Error("saving a volume failed", "stream", s, "err", err)
-	}
 }
 
 func (v *Volume) Adjust(s config.Stream, steps int) {
 	v.Set(s, v.Level(s)+steps*Step)
-	feedback.Volume()
+	feedback.Preview(s)
 
 	if showing(s) {
 		shell.Get().Redraw()
@@ -107,49 +95,5 @@ func (v *Volume) Target() config.Stream {
 	if s, ok := v.card.Selected(); ok {
 		return s
 	}
-	return v.Sounds()
-}
-
-func (v *Volume) Sounds() config.Stream {
-	v.mu.Lock()
-	defer v.mu.Unlock()
-	return v.sounding
-}
-
-func (v *Volume) Sounding(s config.Stream) {
-	v.mu.Lock()
-	v.sounding = s
-	level := v.levels[s]
-	v.mu.Unlock()
-
-	speaker.Get().SetVolume(speaker.Gain(level))
-}
-
-func (v *Volume) hold(s config.Stream, level int) {
-	level = sharedvolume.Clamp(level)
-
-	v.mu.Lock()
-	v.levels[s] = level
-	number := v.numbers[s]
-	live := v.sounding == s
-	v.mu.Unlock()
-
-	if live {
-		speaker.Get().SetVolume(speaker.Gain(level))
-	}
-
-	number.Set(float32(level))
-	v.Changed.Emit(Change{Stream: s, Level: level})
-}
-
-func (v *Volume) build() {
-	streams := config.Streams()
-	v.entities = sharedvolume.NewEntities(v, streams, component.DevicePlayback)
-	v.numbers = v.entities.Numbers
-	v.duck = sharedvolume.NewDucking(config.MediaSection, component.DevicePlayback)
-	component.Settings.Add(v.duck)
-}
-
-func (v *Volume) Watch(stream config.Stream, changed func(int)) func() {
-	return v.Changed.Watch(stream, changed)
+	return config.StreamMain
 }

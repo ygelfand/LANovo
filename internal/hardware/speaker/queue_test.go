@@ -3,12 +3,15 @@ package speaker
 import (
 	"testing"
 
+	"github.com/ygelfand/libcountertop/pkg/audio/volume"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
+
 	"github.com/ygelfand/LANovo/internal/board"
 )
 
 func TestAPartFilledBufferCountsAsASplice(t *testing.T) {
 	s := &Speaker{}
-	s.queue.Push(make([]int16, period))
+	s.bus.Push(schema.StreamMedia, make([]int16, period))
 
 	buf := make([]byte, period*Channels*Bits/8)
 	s.fill(buf)
@@ -20,7 +23,7 @@ func TestAPartFilledBufferCountsAsASplice(t *testing.T) {
 
 func TestAFullBufferIsNotASplice(t *testing.T) {
 	s := &Speaker{}
-	s.queue.Push(make([]int16, period*Channels))
+	s.bus.Push(schema.StreamMedia, make([]int16, period*Channels))
 
 	buf := make([]byte, period*Channels*Bits/8)
 	s.fill(buf)
@@ -39,7 +42,7 @@ func TestSilenceIsOnlyAnUnderrunAfterAudio(t *testing.T) {
 		t.Errorf("an idle speaker reported %d underruns", underruns)
 	}
 
-	s.queue.Push(make([]int16, period*Channels))
+	s.bus.Push(schema.StreamMedia, make([]int16, period*Channels))
 	s.fill(buf)
 	s.fill(buf)
 
@@ -62,7 +65,7 @@ func TestAudioWithNoCardIsDroppedRatherThanQueued(t *testing.T) {
 
 func TestVolumeScalesWhatIsAlreadyQueued(t *testing.T) {
 	s := &Speaker{}
-	s.queue.Push([]int16{1000, 1000})
+	s.bus.Push(schema.StreamMedia, []int16{1000, 1000})
 	s.SetVolume(0.5)
 
 	buf := make([]byte, period*Channels*Bits/8)
@@ -81,7 +84,7 @@ func TestAHardwareVolumeLeavesTheSamplesAndScalesOnlyTheEchoReference(t *testing
 	defer board.Set(board.Blueberry)
 
 	s := &Speaker{}
-	s.queue.Push([]int16{1000, 600})
+	s.bus.Push(schema.StreamMedia, []int16{1000, 600})
 	s.SetVolume(0.5)
 
 	buf := make([]byte, period*Channels*Bits/8)
@@ -110,5 +113,28 @@ func TestSilenceIsALevel(t *testing.T) {
 
 	if got := s.Volume(); got != 0 {
 		t.Errorf("volume is %v after being set to nought, want 0", got)
+	}
+}
+
+func TestEachStreamPlaysAtItsOwnLevelUnderMain(t *testing.T) {
+	s := &Speaker{}
+	s.SetLevel(schema.StreamMain, 100)
+	s.SetLevel(schema.StreamMedia, 60)
+	s.bus.Push(schema.StreamMedia, []int16{10000, 10000})
+	s.bus.Push(schema.StreamFeedback, []int16{1000, 1000})
+	s.Mute(schema.StreamFeedback, true)
+
+	buf := make([]byte, period*Channels*Bits/8)
+	s.fill(buf)
+
+	want := int16(float32(10000) * volume.Gain(60))
+	if got := int16(uint16(buf[0]) | uint16(buf[1])<<8); got != want {
+		t.Errorf("played %d, want media alone at %d", got, want)
+	}
+	if !s.Muted(schema.StreamFeedback) || s.Muted(schema.StreamMedia) {
+		t.Error("mute reached the wrong stream")
+	}
+	if got := s.Volume(); got != 1 {
+		t.Errorf("main put the volume at %v, want 1", got)
 	}
 }

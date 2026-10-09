@@ -9,6 +9,8 @@ import (
 
 	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
 	"github.com/ygelfand/libcountertop/pkg/audio/mix"
+	"github.com/ygelfand/libcountertop/pkg/audio/volume"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
 func (s *Speaker) Run(ctx context.Context) error {
@@ -48,47 +50,25 @@ func (s *Speaker) Run(ctx context.Context) error {
 	}
 }
 
-func (s *Speaker) Attach(src mix.Source) {
-	s.srcMu.Lock()
-	defer s.srcMu.Unlock()
-	s.src = src
-}
+func (s *Speaker) Attach(src mix.Source) { s.bus.Attach(src) }
 
 func (s *Speaker) Written() uint64 { return s.written.Load() }
 
-func (s *Speaker) render() []int16 {
-	s.srcMu.Lock()
-	src := s.src
-	s.srcMu.Unlock()
-
-	if src == nil {
-		return nil
-	}
-
-	want := period * Channels
-	if cap(s.srcBuf) < want {
-		s.srcBuf = make([]int16, want)
-	}
-	s.srcBuf = s.srcBuf[:want]
-	clear(s.srcBuf)
-
-	src.Render(s.written.Load(), s.srcBuf)
-	return s.srcBuf
-}
-
 func (s *Speaker) fill(buf []byte) {
-	chunk := s.take()
 	want := period * Channels
-
-	placed := s.render()
+	if cap(s.sum) < want {
+		s.sum = make([]int32, want)
+	}
+	mixed := s.sum[:want]
+	queued, rendered := s.bus.Next(s.written.Load(), mixed)
 
 	switch {
-	case len(chunk) > 0 && len(chunk) < want:
+	case queued > 0 && queued < want:
 		s.splices.Add(1)
-	case len(chunk) == 0 && s.fed:
+	case queued == 0 && s.fed:
 		s.underruns.Add(1)
 	}
-	s.fed = len(chunk) > 0 || len(placed) > 0
+	s.fed = queued > 0 || rendered
 
 	tap := s.tap.Load()
 	if tap != nil && cap(s.tapBuf) < want {
@@ -112,13 +92,7 @@ func (s *Speaker) fill(buf []byte) {
 		var both int32
 		for c := range Channels {
 			i := f*Channels + c
-			var sum int32
-			if i < len(chunk) {
-				sum += int32(chunk[i])
-			}
-			if i < len(placed) {
-				sum += int32(placed[i])
-			}
+			sum := mixed[i]
 			if tap != nil {
 				s.tapBuf[i] = mix.Clamp(int32(float32(sum) * gain))
 			}
@@ -174,33 +148,17 @@ func (s *Speaker) Volume() float32 {
 	return math.Float32frombits(s.level.Load())
 }
 
-// MEDIA_VOLUME_CURVE from /system/etc/volume_tables.xml: index against attenuation in millibels.
-var curve = []struct{ at, mB int }{
-	{1, -5800}, {20, -4000}, {60, -1700}, {100, 0},
+func (s *Speaker) SetLevel(stream schema.Stream, percent int) {
+	if stream == schema.StreamMain {
+		s.SetVolume(volume.Gain(percent))
+		return
+	}
+	s.bus.SetGain(stream, volume.Gain(percent))
 }
 
-func Gain(percent int) float32 {
-	percent = min(max(percent, 0), 100)
-	if percent == 0 {
-		return 0
-	}
+func (s *Speaker) Mute(stream schema.Stream, on bool) { s.bus.Mute(stream, on) }
 
-	mB := float64(curve[0].mB)
-	for i := 1; i < len(curve); i++ {
-		lo, hi := curve[i-1], curve[i]
-		if percent > hi.at {
-			continue
-		}
-		if percent <= lo.at {
-			break
-		}
-
-		across := float64(percent-lo.at) / float64(hi.at-lo.at)
-		mB = float64(lo.mB) + across*float64(hi.mB-lo.mB)
-		break
-	}
-	return float32(math.Pow(10, mB/2000))
-}
+func (s *Speaker) Muted(stream schema.Stream) bool { return s.bus.Muted(stream) }
 
 func (s *Speaker) Stats() (queued int, splices, underruns, dropped uint64) {
 	return s.Queued(), s.splices.Load(), s.underruns.Load(), s.deaf.Load()
