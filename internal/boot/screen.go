@@ -8,8 +8,6 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/style"
 	"github.com/ygelfand/libcountertop/pkg/display/theme"
 	sharedui "github.com/ygelfand/libcountertop/pkg/display/ui"
-	"github.com/ygelfand/libcountertop/pkg/runtime/component"
-	"github.com/ygelfand/libcountertop/pkg/runtime/startup"
 	"github.com/ygelfand/libcountertop/pkg/say"
 
 	"github.com/ygelfand/LANovo/internal/config"
@@ -25,10 +23,6 @@ const (
 func Leaving() string { return say.T("boot.leaving") }
 
 func DrawLogo(p *panel.Panel) error { return drawLogo(sharedui.Of(p)) }
-
-func DrawBoot(p *panel.Panel, progress []component.Progress) error {
-	return drawBoot(sharedui.Of(p), progress)
-}
 
 func chosen() theme.Theme {
 	s := config.Get().Screen
@@ -90,9 +84,3 @@ func drawLogo(s sharedui.Surface) error {
 func drawVersion(s sharedui.Surface, palette theme.Theme) {
 	bootview.Version(s, palette, layout.Version)
 }
-func drawBoot(s sharedui.Surface, progress []component.Progress) error {
-	bootview.Raster(s, chosen(), progress, layout.Version, say.T("boot.skip"))
-	return nil
-}
-func Settled(progress []component.Progress) bool { return startup.Settled(progress) }
-func Skip(w, h int) sharedui.Rect                { return bootview.Skip(w, h) }

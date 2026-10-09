@@ -39,7 +39,6 @@ func startSplash(ctx context.Context) {
 			Version:  layout.Version,
 			Progress: func() []startup.Progress { return component.Default().Progress() },
 			Ready:    handOver,
-			Raster:   DrawBoot,
 			Blank: func(p *panel.Panel) error {
 				ui.Fill(ui.Of(p), chosen().Background)
 				return nil

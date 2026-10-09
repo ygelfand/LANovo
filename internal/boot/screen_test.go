@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/ygelfand/libcountertop/pkg/display/ui"
-	"github.com/ygelfand/libcountertop/pkg/runtime/component"
 
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
@@ -17,20 +16,12 @@ var sizes = []struct {
 	{"portrait", 1200, 1920},
 }
 
-func coming() []component.Progress {
-	return []component.Progress{
-		{Name: "wifi", Doing: "looking for the network"},
-		{Name: "dhcp", Doing: "asking for an address", Done: true},
-	}
-}
-
 func TestEveryScreenShowsTheVersion(t *testing.T) {
 	for _, tc := range []struct {
 		name string
 		draw func(ui.Surface) error
 	}{
 		{"logo", drawLogo},
-		{"progress", func(s ui.Surface) error { return drawBoot(s, coming()) }},
 		{"leaving", drawLeaving},
 	} {
 		plain := ui.NewImage(1920, 1200, theme.Brand().Surface)

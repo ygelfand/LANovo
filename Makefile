@@ -159,11 +159,6 @@ thumbs: device ## Render the visual picker's thumbnails on the device into what 
 	rm -f $(CURDIR)/internal/ui/visual/thumbs/*.jpg
 	$(ADB) pull /data/local/tmp/lanovo-thumbs/. $(CURDIR)/internal/ui/visual/thumbs/
 
-.PHONY: numerals
-numerals: ## Regenerate every numeral set from its SVG sources
-	go run ./internal/tools/numeral/segment
-	go run ./internal/tools/numeral/convert
-
 MARK_SIZE ?= 1000x666!
 
 .PHONY: logo
@@ -171,15 +166,6 @@ logo: ## Rescale the light and dark marks from assets/ into what the binary embe
 	magick assets/logo_light.png -resize $(MARK_SIZE) -colors 256 internal/ui/logo_light.png
 	magick assets/logo_dark.png -resize $(MARK_SIZE) -colors 256 internal/ui/logo_dark.png
 
-.PHONY: numeral-font
-numeral-font: ## Trace a numeral set out of a font (make numeral-font SET=round FONT=Some-Bold.ttf)
-	@test -n "$(SET)" || { echo "SET is required, e.g. SET=round"; exit 2; }
-	@test -n "$(FONT)" || { echo "FONT is required, e.g. FONT=~/Downloads/Some-Bold.ttf"; exit 2; }
-	go run ./internal/tools/numeral/font -set $(SET) -in $(FONT)
-	go run ./internal/tools/numeral/convert $(SET)
-	@echo
-	@echo "Put the licence in internal/ui/numeral/svg/$(SET)/LICENCE,"
-	@echo "then add $(SET) to internal/ui/numeral/sets.go to offer it."
 
 ##@ Device (lanovod)
 
