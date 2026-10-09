@@ -38,6 +38,7 @@ var get = sync.OnceValue(func() *nativeapi.Server {
 	})
 	component.Reconnect.Listen(func(struct{}) { s.Reconnect() })
 	component.Fire.Listen(s.Fire)
+	component.Settings.Add(s.Controls())
 	return s
 })
 

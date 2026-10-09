@@ -9,6 +9,7 @@ import (
 	sharedshell "github.com/ygelfand/libcountertop/pkg/display/shell"
 	"github.com/ygelfand/libcountertop/pkg/display/theme"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -41,7 +42,9 @@ func Get() *Dashboard {
 			DeviceID: component.DeviceScreen,
 		})}
 
+		component.Settings.Add(shared.Settings())
 		screen.Get().Themed.Listen(func(theme.Theme) { shared.Redraw() })
+		screen.Get().Restyled.Listen(func(schema.Screen) { shared.Redraw() })
 		sensors.Get().Turned.Listen(func(geometry.Orientation) { shared.Redraw() })
 		poster.Get().Changed.Listen(func(int) { shared.Redraw() })
 		shell.Get().Changed.Listen(func(c sharedshell.Change) {
@@ -56,7 +59,7 @@ func Get() *Dashboard {
 func (d *Dashboard) Name() string { return "dashboard" }
 
 func (d *Dashboard) Restore(cfg config.Config) {
-	d.Controls.Restore(sharedlib.StateOf(cfg.Screen, cfg.Clock))
+	d.Controls.Restore(cfg.Screen, cfg.Clock)
 }
 
 func (d *Dashboard) Ready() bool {

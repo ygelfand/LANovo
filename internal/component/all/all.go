@@ -38,6 +38,7 @@ import (
 	_ "github.com/ygelfand/LANovo/internal/feature/sensors"
 	_ "github.com/ygelfand/LANovo/internal/feature/settings"
 	_ "github.com/ygelfand/LANovo/internal/feature/states"
+	_ "github.com/ygelfand/LANovo/internal/feature/tessera"
 	_ "github.com/ygelfand/LANovo/internal/feature/timer"
 	_ "github.com/ygelfand/LANovo/internal/feature/viewassist"
 	_ "github.com/ygelfand/LANovo/internal/feature/vision"

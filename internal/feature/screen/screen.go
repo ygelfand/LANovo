@@ -19,12 +19,14 @@ func init() {
 type Screen struct{ *libscreen.Screen }
 
 var get = sync.OnceValue(func() *Screen {
-	return &Screen{libscreen.New(libscreen.Options{
+	s := &Screen{libscreen.New(libscreen.Options{
 		Settings:  config.ScreenSection,
 		DeviceID:  component.DeviceScreen,
 		Backlight: func(level int) error { return display.Get().Brightness(level) },
 		UISize:    func() string { return board.Current().UISize },
 	})}
+	component.Settings.Add(s.Settings())
+	return s
 })
 
 func Get() *Screen { return get() }

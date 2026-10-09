@@ -18,7 +18,7 @@ type Proxy struct{ *sharedproxy.Proxy }
 func init() { component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(40)) }
 
 var get = sync.OnceValue(func() *Proxy {
-	return &Proxy{sharedproxy.New(sharedproxy.Dependencies{
+	p := &Proxy{sharedproxy.New(sharedproxy.Dependencies{
 		Radio:     ble.Get(),
 		Settings:  config.BluetoothSection,
 		Reconnect: func() { component.Reconnect.Emit(struct{}{}) },
@@ -27,6 +27,8 @@ var get = sync.OnceValue(func() *Proxy {
 			return sharedproxy.BeaconAdvertisement(sharedproxy.BeaconMinor(mac))
 		},
 	})}
+	component.Settings.Add(p.Controls())
+	return p
 })
 
 func Get() *Proxy                      { return get() }

@@ -1,6 +1,7 @@
 package access
 
 import (
+	"fmt"
 	"log/slog"
 	"strconv"
 	"sync"
@@ -8,6 +9,8 @@ import (
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/say"
+	setting "github.com/ygelfand/libcountertop/pkg/settings"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/component"
@@ -25,7 +28,11 @@ const (
 	service = "adbd"
 )
 
-type Access struct{ adb *esphome.Switch }
+const Group setting.Group = "Access"
+
+type Access struct {
+	knobs *setting.Controls[config.Access]
+}
 
 var (
 	once   sync.Once
@@ -35,56 +42,82 @@ var (
 func Get() *Access {
 	once.Do(func() {
 		shared = &Access{}
-		shared.build()
+		shared.knobs = &setting.Controls[config.Access]{
+			Table: Table(),
+			Read:  func() config.Access { return config.Get().Access },
+			Save:  shared.store,
+		}
+		component.Settings.Add(shared.knobs)
 	})
 	return shared
 }
 
+func Table() *setting.Table[config.Access] {
+	return setting.NewTable("access", []setting.Group{Group}, []setting.Setting[config.Access]{
+		setting.Flag(
+			setting.Setting[config.Access]{
+				Name:  "adb",
+				Group: Group,
+				ID:    "adb_over_network",
+				Icon:  "mdi:console-network",
+			},
+			func(c *config.Access) *bool { return &c.ADB },
+		),
+	}, setting.Messages{Text: say.T, Missing: say.Missing})
+}
+
 func (a *Access) Name() string { return "access" }
 
-func (a *Access) Entities() []esphome.Entity { return []esphome.Entity{a.adb} }
+func (a *Access) Entities() []esphome.Entity { return a.knobs.Entities() }
 
 // The adb TCP port property is volatile; a reboot clears it.
 func (a *Access) Restore(cfg config.Config) {
+	a.knobs.PublishFrom(cfg.Access)
 	if !cfg.Access.ADB {
 		return
 	}
 
 	if at, err := prop.Local.Getprop(port); err == nil && at == strconv.Itoa(config.ADBPort) {
-		a.adb.Set(true)
 		slog.Info("adb is already on the network", "port", config.ADBPort)
 		return
 	}
-	a.apply(true)
-}
-
-func (a *Access) ADB() bool { return a.adb.Get() }
-
-func (a *Access) SetADB(on bool) {
-	a.apply(on)
-
-	if err := config.Set().Access().ADB(on); err != nil {
-		slog.Error("saving a setting failed", "setting", a.adb.ObjectID, "err", err)
+	if err := apply(true); err != nil {
+		slog.Error("adb over the network", "err", err)
 	}
 }
 
+func (a *Access) ADB() bool { return config.Get().Access.ADB }
+
+func (a *Access) SetADB(on bool) {
+	if err := a.knobs.Change("adb", setting.OnOff(on)); err != nil {
+		slog.Error("saving a setting failed", "setting", "access.adb", "err", err)
+	}
+}
+
+func (a *Access) store(s setting.Setting[config.Access], v string) error {
+	at := config.Get().Access
+	if err := s.Write(&at, v); err != nil {
+		return err
+	}
+	if err := apply(at.ADB); err != nil {
+		return err
+	}
+	return setting.Store(config.AccessSection, s, v)
+}
+
 // adbd reads the property only at start.
-func (a *Access) apply(on bool) {
+func apply(on bool) error {
 	value := off
 	if on {
 		value = strconv.Itoa(config.ADBPort)
 	}
 
 	if err := prop.Local.Setprop(port, value); err != nil {
-		slog.Error("adb over the network", "setting", port, "err", err)
-		return
+		return fmt.Errorf("setting %s: %w", port, err)
 	}
 	if err := prop.Restart(prop.Local, service); err != nil {
-		slog.Error("adb over the network", "restarting", service, "err", err)
-		return
+		return fmt.Errorf("restarting %s: %w", service, err)
 	}
-
-	a.adb.Set(on)
 
 	if on {
 		slog.Warn(
@@ -95,17 +128,5 @@ func (a *Access) apply(on bool) {
 	} else {
 		slog.Info("adb is back to the cable only")
 	}
-}
-
-func (a *Access) build() {
-	a.adb = &esphome.Switch{
-		Base: esphome.Base{
-			ObjectID: "adb_over_network",
-			Name:     "ADB over network",
-			Icon:     "mdi:console-network",
-			Category: esphome.CategoryConfig,
-		},
-	}
-
-	a.adb.OnCommand = a.SetADB
+	return nil
 }

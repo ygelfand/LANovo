@@ -15,6 +15,14 @@ const (
 	DeviceAssistant
 )
 
+const (
+	DeviceDashboard uint32 = 16 + iota
+	DeviceLandscape
+	DevicePortrait
+)
+
+var Sometimes = map[uint32]bool{DeviceDashboard: true, DeviceLandscape: true, DevicePortrait: true}
+
 // Home Assistant's interface offers two wake word slots.
 const Assistants = 2
 
@@ -32,6 +40,9 @@ func SubDevices() []SubDevice {
 		{ID: DeviceMicrophone, Name: "microphone"},
 		{ID: DevicePlayback, Name: "playback"},
 		{ID: DeviceCamera, Name: "camera"},
+		{ID: DeviceDashboard, Name: "dashboard"},
+		{ID: DeviceLandscape, Name: "landscape"},
+		{ID: DevicePortrait, Name: "portrait"},
 	}
 
 	for slot := range Assistants {

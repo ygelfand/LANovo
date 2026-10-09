@@ -9,9 +9,11 @@ import (
 
 	"github.com/ygelfand/libcountertop/pkg/hook"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
+	"github.com/ygelfand/LANovo/internal/feature/screen"
 	"github.com/ygelfand/LANovo/internal/hardware/buttons"
 )
 
@@ -37,6 +39,7 @@ func Get() *Privacy {
 		shared.build()
 
 		buttons.Get().Events.Listen(shared.on)
+		screen.Get().Restyled.Listen(func(schema.Screen) { shared.show() })
 	})
 	return shared
 }

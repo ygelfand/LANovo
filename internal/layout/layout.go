@@ -57,6 +57,8 @@ const (
 
 	CastAuthorityPath = StateDir + "/cast-authority.json"
 
+	TesseraDir = StateDir
+
 	CastAppDir = StateDir + "/cast"
 
 	// init sends stderr to /dev/null.
@@ -119,7 +121,6 @@ const (
 	GPIOMicMute     = 86
 	GPIOCameraCover = 87
 	GPIORotateMic   = 117
-	GPIOAmpEnable   = 68
 )
 
 // Stopping zygote takes the sparrow OEM app, which holds the buttons and I2C2.

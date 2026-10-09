@@ -24,18 +24,20 @@ type Visuals struct{ *visualinput.Visuals }
 func init() { component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(60)) }
 
 var get = sync.OnceValue(func() *Visuals {
-	return &Visuals{visualinput.New(visualinput.Options{
+	v := &Visuals{visualinput.New(visualinput.Options{
 		Settings:        config.VisualSection,
 		MicRate:         16000,
 		MicChannels:     2,
 		SpeakerRate:     speaker.Rate,
 		SpeakerChannels: speaker.Channels,
-		Lift:            config.Get().Microphone.VisualizerLift,
+		Lift:            config.LiftSection,
 		DeviceID:        component.DeviceScreen,
 		Listen:          func() (<-chan []int16, func()) { return mic.Get().ListenStereo("visuals") },
 		Muted:           func() bool { return privacy.Get().MicMuted() },
 		Tap:             func(t visualinput.Tap) { speaker.Get().SetTap(t) },
 	})}
+	component.Settings.Add(v.Settings())
+	return v
 })
 
 func Get() *Visuals { return get() }

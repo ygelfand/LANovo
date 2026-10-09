@@ -13,6 +13,7 @@ import (
 
 type mediatek struct {
 	chip *board.Chip
+	both bool
 
 	mu     sync.Mutex
 	tables mtkaudio.Tables
@@ -20,11 +21,11 @@ type mediatek struct {
 	dB     float64
 }
 
-func newMediatek(b board.Board) *mediatek { return &mediatek{chip: b.Amp} }
+func newMediatek(b board.Board) *mediatek { return &mediatek{chip: b.Amp, both: b.Stereo} }
 
 func (m *mediatek) route() []setting { return nil }
 
-func (m *mediatek) stereo() bool { return true }
+func (m *mediatek) stereo() bool { return m.both }
 
 func (m *mediatek) pipeline() time.Duration { return 4 * time.Millisecond }
 

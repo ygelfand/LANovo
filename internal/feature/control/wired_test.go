@@ -1,6 +1,7 @@
 package control
 
 import (
+	"maps"
 	"reflect"
 	"slices"
 	"strings"
@@ -9,10 +10,91 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-var manyRows = map[string]bool{
-	"Camera.Settings": true,
-	"Home.Control":    true,
-	"Home.Group":      true,
+var manyRows = map[string]string{
+	"Camera.Settings": "camera.",
+	"Home.Control":    "home.control.",
+	"Home.Group":      "home.group.",
+}
+
+var inTables = map[string]string{
+	"Media.DuckDB":              "media.duck",
+	"Poster.Enabled":            "poster.on",
+	"Poster.Every":              "poster.every",
+	"Poster.Server":             "poster.server",
+	"Poster.Key":                "poster.key",
+	"Poster.Albums":             "poster.albums",
+	"Poster.Tags":               "poster.tags",
+	"Cast.Receiver":             "cast.receiver",
+	"Cast.YouTube.Skip":         "cast.youtube.skip",
+	"Cast.YouTube.LiveDelay":    "cast.youtube.livedelay",
+	"Cast.YouTube.OnDemand":     "cast.youtube.lounge",
+	"Cast.Prime.Persist":        "cast.prime.persist",
+	"Cast.Prime.SkipIntro":      "cast.prime.skipintro",
+	"Sendspin.Enabled":          "sendspin.on",
+	"Screen.Backlight":          "screen.backlight",
+	"Screen.Mode":               "screen.auto",
+	"Screen.Theme":              "screen.theme",
+	"Screen.Style":              "screen.style",
+	"Screen.Size":               "screen.size",
+	"Screen.Drawer":             "screen.drawer",
+	"Screen.Keyboard":           "screen.keyboard",
+	"Screen.Language":           "screen.language",
+	"Screen.Marks":              "screen.marks",
+	"Screen.Hours":              "clock.hours",
+	"Clock.Face":                "clock.face",
+	"Clock.Position":            "clock.position",
+	"Clock.Size":                "clock.size",
+	"Clock.Ink":                 "clock.color",
+	"Clock.Date":                "clock.date",
+	"Idle.After":                "idle.after",
+	"Idle.Media":                "idle.media",
+	"Idle.Face":                 "idle.face",
+	"Idle.Position":             "idle.position",
+	"Idle.Align":                "idle.align",
+	"Idle.Size":                 "idle.size",
+	"Idle.First.Kind":           "idle.visual1",
+	"Idle.First.Source":         "idle.visual1.source",
+	"Idle.Second.Kind":          "idle.visual2",
+	"Idle.Second.Source":        "idle.visual2.source",
+	"Visual.Kind":               "visual.kind",
+	"Visual.MaxFPS":             "visual.fps",
+	"Visual.Seed":               "visual.seed",
+	"Visual.Label":              "visual.label",
+	"Microphone.VisualizerLift": "visual.lift",
+	"Weather.Entity":            "weather.entity",
+	"Weather.Look":              "weather.look",
+	"Weather.Dashboard":         "weather.dashboard",
+	"Weather.Idle":              "weather.idle",
+	"Weather.Animate":           "weather.animate",
+	"Weather.Themed":            "weather.themed",
+	"Weather.Position":          "weather.position",
+	"Weather.Align":             "weather.align",
+	"Weather.Size":              "weather.size",
+	"Network.Verify":            "network.verify",
+	"Microphone.Gain":           "microphone.gain",
+	"Microphone.Leveling":       "microphone.leveling",
+	"Microphone.Denoise":        "microphone.denoise",
+	"Microphone.Sensitivity":    "microphone.sensitivity",
+	"Call.Incoming":             "call.incoming",
+	"Call.AutoAnswer":           "call.auto_answer",
+	"Call.PauseWake":            "call.pause_wake",
+	"Call.AutoVideo":            "call.auto_video",
+	"Call.Stream":               "call.stream",
+	"Bluetooth.Proxy":           "bluetooth.proxy",
+	"Bluetooth.Speaker":         "bluetooth.speaker",
+	"API.Adopted":               "api.adopted",
+	"RTSP.Enabled":              "rtsp.enabled",
+	"Access.ADB":                "access.adb",
+	"Presence.Wake":             "presence.wake",
+	"Presence.Range":            "presence.range",
+	"Home.Enabled":              "home.enabled",
+	"Home.Combine":              "home.combine",
+	"Home.Mode":                 "home.mode",
+	"Home.Tessera.Columns":      "home.tessera.columns",
+	"Home.Tessera.Rows":         "home.tessera.rows",
+	"Home.Return":               "home.tessera.home_after_idle",
+	"Home.Wide":                 "home.tessera.landscape",
+	"Home.Tall":                 "home.tessera.portrait",
 }
 
 var byHand = map[string]string{
@@ -28,8 +110,6 @@ var byHand = map[string]string{
 	"Wake.Words":          "Home Assistant's, by slot, through the satellite",
 	"Wake.Stop.Threshold": "an entity on the microphone page; a harness that changed it would be turning detection off under whatever else it was testing",
 
-	"API.Adopted": "written once when Home Assistant first subscribes",
-
 	"Poster.Last": "the picture last shown, written by the poster itself",
 
 	"Home.Picks": "Home control's entity pickers, keyed by selection",
@@ -39,7 +119,6 @@ var byHand = map[string]string{
 
 	"Network.Address": "read back from the lease, not chosen",
 
-	"Screen.Drawer":       "not wired yet",
 	"Screen.Volume":       "not wired yet",
 	"Feedback.Chime":      "not wired yet",
 	"Diag.Interval":       "not wired yet",
@@ -71,12 +150,23 @@ func leaves(t reflect.Type, at string) []string {
 
 func TestEverySettingIsReachedOrAccountedFor(t *testing.T) {
 	reached := map[string]string{}
+	for field, name := range inTables {
+		reached[field] = name
+	}
+	for field, prefix := range manyRows {
+		reached[field] = prefix
+	}
 	for _, s := range settings() {
 		if s.Field == "" {
-			t.Errorf("%s does not say which setting it changes", s.Name)
+			if !slices.Contains(slices.Collect(maps.Values(inTables)), s.Name) &&
+				!slices.ContainsFunc(slices.Collect(maps.Values(manyRows)), func(p string) bool {
+					return strings.HasPrefix(s.Name, p)
+				}) {
+				t.Errorf("%s does not say which setting it changes", s.Name)
+			}
 			continue
 		}
-		if was, twice := reached[s.Field]; twice && !manyRows[s.Field] {
+		if was, twice := reached[s.Field]; twice && manyRows[s.Field] == "" {
 			t.Errorf("%s is changed by both %s and %s", s.Field, was, s.Name)
 		}
 		reached[s.Field] = s.Name
@@ -110,6 +200,11 @@ func TestEverySettingNamesARealField(t *testing.T) {
 	for field := range byHand {
 		if !slices.Contains(all, field) {
 			t.Errorf("byHand lists %s, which is not in the config", field)
+		}
+	}
+	for field := range inTables {
+		if !slices.Contains(all, field) {
+			t.Errorf("inTables lists %s, which is not in the config", field)
 		}
 	}
 }

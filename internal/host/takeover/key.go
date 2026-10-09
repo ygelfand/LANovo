@@ -14,6 +14,13 @@ import (
 var ErrNoKey = errors.New("the device has no encryption key")
 
 func Key(d *adb.Device) (string, error) {
+	have, err := d.Exists(layout.KeyPath)
+	if err != nil {
+		return "", err
+	}
+	if !have {
+		return "", ErrNoKey
+	}
 	b, err := d.ReadFile(layout.KeyPath)
 	if err != nil {
 		return "", ErrNoKey

@@ -18,7 +18,11 @@ func init() {
 
 type Network struct{ *policy.Policy }
 
-var get = sync.OnceValue(func() *Network { return &Network{policy.New(config.NetworkSection)} })
+var get = sync.OnceValue(func() *Network {
+	n := &Network{policy.New(config.NetworkSection)}
+	component.Settings.Add(n.Settings())
+	return n
+})
 
 func Get() *Network                          { return get() }
 func (n *Network) Restore(cfg config.Config) { n.Policy.Restore(cfg.Network.Verify) }

@@ -2,6 +2,8 @@ package board
 
 import (
 	"fmt"
+	"os"
+	"sync"
 	"sync/atomic"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
@@ -14,6 +16,11 @@ const (
 	MediaTek SoC = "mediatek"
 )
 
+type Tessera struct {
+	Board         string
+	Columns, Rows int
+}
+
 type Board struct {
 	NativeAPI int
 
@@ -22,6 +29,7 @@ type Board struct {
 	SoC   SoC
 
 	PanelWidth, PanelHeight int
+	Diagonal                float64
 
 	Motion bool
 
@@ -29,7 +37,11 @@ type Board struct {
 
 	CameraMirror bool
 
+	CameraTurn int
+
 	UISize string
+
+	Tessera Tessera
 
 	Mounted int
 
@@ -38,6 +50,10 @@ type Board struct {
 	Buttons []Button
 
 	Amp, MicADC *Chip
+
+	AmpPins []int
+
+	Stereo bool
 
 	SecureDecoders map[string]string
 
@@ -67,34 +83,56 @@ func register(b Board) { boards = append(boards, b) }
 
 func All() []Board { return append([]Board(nil), boards...) }
 
-func ByModel(model string) (Board, bool) {
+func ByName(name string) (Board, bool) {
 	for _, b := range boards {
-		if b.Model == model {
+		if b.Name == name {
 			return b, true
 		}
 	}
 	return Board{}, false
 }
 
-func Detect(s prop.Store) (Board, error) {
-	model, err := s.Getprop(prop.Model)
+func Resolve(s prop.Store, r Reader) (Board, error) {
+	if name, err := s.Getprop(prop.Board); err == nil && name != "" {
+		b, ok := ByName(name)
+		if !ok {
+			return Board{}, fmt.Errorf("board: %s=%q is not a board", prop.Board, name)
+		}
+		return b, nil
+	}
+	f, err := Read(r)
 	if err != nil {
 		return Board{}, err
 	}
-	b, ok := ByModel(model)
-	if !ok {
-		return Board{}, fmt.Errorf("board: no board for model %q", model)
-	}
-	return b, nil
+	return Detect(f)
 }
 
-var current atomic.Pointer[Board]
+type files struct{}
+
+func (files) ReadFile(path string) ([]byte, error) { return os.ReadFile(path) }
+
+var (
+	current   atomic.Pointer[Board]
+	detection sync.Once
+	detectErr error
+)
 
 func Set(b Board) { current.Store(&b) }
 
 func Current() Board {
-	if b := current.Load(); b != nil {
-		return *b
+	detection.Do(detect)
+	return *current.Load()
+}
+
+func Detected() error {
+	detection.Do(detect)
+	return detectErr
+}
+
+func detect() {
+	b, err := Resolve(prop.Local, files{})
+	if err != nil {
+		b, detectErr = Blueberry, err
 	}
-	return Blueberry
+	current.CompareAndSwap(nil, &b)
 }

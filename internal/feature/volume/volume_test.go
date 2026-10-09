@@ -4,6 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	esphome "github.com/ygelfand/go-esphome-device"
+
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
@@ -160,10 +162,11 @@ func TestEveryStreamHasAnEntity(t *testing.T) {
 
 func TestDuckingIsASeparateSavedPlaybackSetting(t *testing.T) {
 	v := fresh(t)
-	if v.duck == nil || v.duck.ObjectID != "media_duck_level" {
+	n, ok := v.duck.Entity("duck").(*esphome.Number)
+	if !ok || n.ObjectID != "media_duck_level" {
 		t.Fatal("no ducking control")
 	}
-	v.duck.OnCommand(-20)
+	n.OnCommand(-20)
 	if got := config.Get().Media.DuckDB; got != -20 {
 		t.Fatal(got)
 	}

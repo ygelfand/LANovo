@@ -42,19 +42,3 @@ func (w MicrophoneWriter) VisualizerLift(db int) error {
 }
 
 type MicrophoneWriter struct{ st *Store }
-
-func (w MicrophoneWriter) Gain(v int) error {
-	return w.st.Update(func(c *Config) { c.Microphone.Gain = v })
-}
-
-func (w MicrophoneWriter) Sensitivity(db int) error {
-	return w.st.Update(func(c *Config) { c.Microphone.Sensitivity = db })
-}
-
-func (w MicrophoneWriter) Denoise(on bool) error {
-	return w.st.Update(func(c *Config) { c.Microphone.Denoise = on })
-}
-
-func (w MicrophoneWriter) Leveling(on bool) error {
-	return w.st.Update(func(c *Config) { c.Microphone.Leveling = on })
-}

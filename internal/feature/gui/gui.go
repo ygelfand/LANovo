@@ -9,6 +9,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/shell"
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	tesseraview "github.com/ygelfand/libcountertop/pkg/tessera/widgets"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
@@ -29,6 +30,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/feature/settings"
 	featureshell "github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/tessera"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/feature/weather"
@@ -52,6 +54,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		Voice: sharedvolume.For(volume.Get(), config.StreamVoice),
 		Video: board.Current().CameraWidth > 0,
 	})
+	drawer.Get().Add(calls.Rail())
 	return screens.New(screens.Options{
 		Name:       "lanovo",
 		UISize:     board.Current().UISize,
@@ -86,7 +89,15 @@ var Get = sync.OnceValue(func() *screens.App {
 		Tabs:      dashboard.Tabs(),
 		Home:      homecontrol.Get(),
 		HomeHA:    homeassistant.Get(),
-		Forecast:  weather.Get(),
+		Tessera: tesseraview.New(tesseraview.Dependencies{
+			UI:      look,
+			Screens: tessera.Get(),
+			Perform: homeassistant.Get().Perform,
+
+			HomeAfterIdle: homecontrol.Get().ReturnHome,
+			Logo:          lanovoui.Logo(),
+		}),
+		Forecast: weather.Get(),
 
 		WeatherPage: func() shell.View { return settings.WeatherPage() },
 		Player:      media.Get(),
@@ -109,9 +120,6 @@ var Get = sync.OnceValue(func() *screens.App {
 			screens.On(&web.Get().Offered),
 		},
 
-		Boards: map[string]screens.Board{
-			discovery.TabKind: {Glyph: callview.Glyph, Draw: calls.Board},
-		},
 		Views: []func(shell.View) *screens.Screen{calls.Screen},
 	})
 })

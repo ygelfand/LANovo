@@ -35,7 +35,13 @@ func build() *sharedspeaker.Sink {
 		Ducking:          config.MediaSection,
 	})
 }
-func Get() *sharedspeaker.Sink { once.Do(func() { shared = build() }); return shared }
+func Get() *sharedspeaker.Sink {
+	once.Do(func() {
+		shared = build()
+		component.Settings.Add(shared.Controls())
+	})
+	return shared
+}
 func init() {
 	component.Register(
 		sharedcomponent.Device,

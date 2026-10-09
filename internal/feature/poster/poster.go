@@ -17,7 +17,7 @@ type componentPoster struct{ *sharedposter.Poster }
 func (p *componentPoster) Restore(c config.Config) { p.Poster.Restore(c.Poster) }
 
 var get = sync.OnceValue(func() *sharedposter.Poster {
-	return sharedposter.New(
+	p := sharedposter.New(
 		sharedposter.Dependencies{
 			Settings: config.PosterSection,
 			Touch:    hwtouch.Get(),
@@ -25,6 +25,8 @@ var get = sync.OnceValue(func() *sharedposter.Poster {
 			DeviceID: component.DeviceScreen,
 		},
 	)
+	component.Settings.Add(p.Settings())
+	return p
 })
 
 func Get() *sharedposter.Poster { return get() }

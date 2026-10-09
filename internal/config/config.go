@@ -40,7 +40,6 @@ type Writer struct {
 func (w Writer) Volume() VolumeWriter         { return VolumeWriter{st: w.st} }
 func (w Writer) Microphone() MicrophoneWriter { return MicrophoneWriter{st: w.st} }
 func (w Writer) Diag() DiagWriter             { return DiagWriter{st: w.st} }
-func (w Writer) Access() AccessWriter         { return AccessWriter{st: w.st} }
 func (w Writer) Presence() PresenceWriter     { return PresenceWriter{st: w.st} }
 
 type Labeled interface{ Label() string }

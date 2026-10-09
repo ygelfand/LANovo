@@ -68,7 +68,7 @@ func TestEverySubDeviceHasSomethingOnIt(t *testing.T) {
 	}
 
 	for _, d := range component.SubDevices() {
-		if count[d.ID] == 0 {
+		if count[d.ID] == 0 && !component.Sometimes[d.ID] {
 			t.Errorf("%s (%d) is advertised with no entities on it", d.Name, d.ID)
 		}
 	}

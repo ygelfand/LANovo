@@ -69,6 +69,7 @@ func Get() *Sensors {
 	once.Do(func() {
 		shared = &Sensors{tracker: motion.NewTracker(), auto: brightness.NewAuto(leastLux)}
 		shared.build()
+		component.Settings.Add(controls())
 	})
 	return shared
 }

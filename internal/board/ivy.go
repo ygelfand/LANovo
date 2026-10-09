@@ -15,6 +15,8 @@ var Ivy = Board{
 	CameraMirror: true,
 	Mounted:      270,
 	UISize:       "compact",
+	Diagonal:     6.94,
+	Tessera:      Tessera{Board: "jc1060p470", Columns: 6, Rows: 4},
 	Touch:        "fts_ts",
 	Buttons: []Button{
 		{"volume up", 429, true},
@@ -23,6 +25,7 @@ var Ivy = Board{
 		{"camera shutter", 496, false},
 	},
 	Amp:    &Chip{Bus: 1, Addr: 0x2d, Enable: 397},
+	Stereo: true,
 	MicADC: &Chip{Bus: 1, Addr: 0x1b, Enable: 494, Reset: 406},
 	MaxFPS: 60,
 	SecureDecoders: map[string]string{

@@ -14,6 +14,7 @@ const (
 
 const (
 	Model         = "ro.oem.product.model"
+	Board         = "ro.lanovo.board"
 	BootCompleted = "sys.boot_completed"
 	VerityMode    = "ro.boot.veritymode"
 	SlotSuffix    = "ro.boot.slot_suffix"

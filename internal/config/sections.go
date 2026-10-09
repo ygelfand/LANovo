@@ -26,4 +26,19 @@ var (
 	IdleSection      = sections.Idle
 	VisualSection    = sections.Visual
 	WeatherSection   = sections.Weather
+
+	LiftSection = storage.Bind(
+		func() *storage.Store[Config] { return store().Store },
+		func(c *Config) *int { return &c.Microphone.VisualizerLift },
+	)
+
+	MicrophoneSection = storage.Bind(
+		func() *storage.Store[Config] { return store().Store },
+		func(c *Config) *Microphone { return &c.Microphone },
+	)
+
+	AccessSection = storage.Bind(
+		func() *storage.Store[Config] { return store().Store },
+		func(c *Config) *Access { return &c.Access },
+	)
 )

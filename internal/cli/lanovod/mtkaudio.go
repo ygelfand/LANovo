@@ -11,7 +11,6 @@ import (
 
 	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
 
-	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/mtkaudio"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -42,9 +41,6 @@ func newMTKAudioCmd() *cobra.Command {
 		SilenceUsage: true,
 		RunE: func(*cobra.Command, []string) error {
 			b := board.Current()
-			if det, err := board.Detect(prop.Local); err == nil {
-				b = det
-			}
 			if b.SoC != board.MediaTek || b.Amp == nil {
 				return errors.New("this board has no MediaTek amplifier driven from userspace")
 			}

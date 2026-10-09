@@ -10,6 +10,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/host/adb"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/parts"
 )
@@ -27,7 +28,7 @@ type Result struct {
 	Settles bool
 }
 
-func Install(d *adb.Device, binary []byte) (Result, error) {
+func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 	var res Result
 
 	if len(binary) == 0 {
@@ -69,9 +70,14 @@ func Install(d *adb.Device, binary []byte) (Result, error) {
 		)
 	}
 
-	secured, err := MakeInsecure(d)
+	secured, err := MakeInsecure(d, b.Name)
 	if err != nil {
 		return res, err
+	}
+	if now, err := d.Getprop(prop.Board); err == nil && now == "" {
+		if err := d.Setprop(prop.Board, b.Name); err != nil {
+			return res, err
+		}
 	}
 	res.Settles = res.Settles || secured
 

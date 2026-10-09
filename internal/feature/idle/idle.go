@@ -64,6 +64,7 @@ func Get() *Idle {
 					web.Get().Offering() == ""
 			},
 		})}
+		component.Settings.Add(shared.Settings())
 		sensors.Get().Arrived.Listen(func(near bool) {
 			if near && config.Get().Presence.Wake {
 				shared.Wake()

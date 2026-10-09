@@ -11,10 +11,14 @@ var Amber = Board{
 	CameraHeight: Blueberry.CameraHeight,
 	SubWidth:     Blueberry.SubWidth,
 	SubHeight:    Blueberry.SubHeight,
+	CameraTurn:   Blueberry.CameraTurn,
 	Motion:       true,
 	Mounted:      90,
+	Diagonal:     8,
+	Tessera:      Tessera{Board: "jc8012p4a1", Columns: 6, Rows: 4},
 	Touch:        "goodix-ts",
 	Buttons:      Blueberry.Buttons,
+	AmpPins:      Blueberry.AmpPins,
 }
 
 func init() { register(Amber) }

@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github.com/ygelfand/libcountertop/pkg/host/adb"
+
+	"github.com/ygelfand/LANovo/internal/android/prop"
 )
 
 // / is the system image on this device.
@@ -13,14 +15,15 @@ const DefaultProp = "/default.prop"
 // adbd reads ro.secure once at start.
 const Insecure = "ro.secure=0"
 
-func MakeInsecure(d *adb.Device) (changed bool, err error) {
+func MakeInsecure(d *adb.Device, boardName string) (changed bool, err error) {
 	cur, err := d.ReadFile(DefaultProp)
 	if err != nil {
 		return false, fmt.Errorf("reading %s: %w", DefaultProp, err)
 	}
 
 	next, changed := setProp(cur, "ro.secure", "0")
-	if !changed {
+	next, named := setProp(next, prop.Board, boardName)
+	if !changed && !named {
 		return false, nil
 	}
 	if err := d.WriteFile(DefaultProp, next, 0o600); err != nil {

@@ -247,7 +247,7 @@ func TestSponsorBlockSkipsSponsorsUntilEmptied(t *testing.T) {
 		t.Errorf("default %v", got)
 	}
 
-	if err := st.Set().Cast().Skip(nil); err != nil {
+	if err := st.Update(func(c *Config) { c.Cast.YouTube.Skip = []string{} }); err != nil {
 		t.Fatal(err)
 	}
 	again, err := Load(path)
@@ -258,7 +258,7 @@ func TestSponsorBlockSkipsSponsorsUntilEmptied(t *testing.T) {
 		t.Errorf("emptied came back %v", got)
 	}
 
-	if err := again.Set().Cast().Receiver(true); err != nil {
+	if err := again.Update(func(c *Config) { c.Cast.Receiver = true }); err != nil {
 		t.Fatal(err)
 	}
 	if got := again.Get().Cast.YouTube.Skip; len(got) != 0 {

@@ -24,6 +24,7 @@ func basicPages() *sharedsettings.BasicPages {
 			Visuals:      visuals.Get(),
 			Privacy:      privacy.Get(),
 			Access:       access.Get(),
+			Shutter:      privacy.Get(),
 			Zone:         clock.Get(),
 			Dashboard:    dashboard.Get(),
 			Clocks:       clocks,

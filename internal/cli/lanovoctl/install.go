@@ -119,6 +119,12 @@ func newInstallCmd() *cobra.Command {
 				}
 			}
 
+			detected, err := takeover.DetectBoard(d)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(out, "  %-18s %s\n", "board", styleDone.Render(detected.Name))
+
 			chosen, err := resolveName(ctx, out, d, name)
 			if err != nil {
 				return err
@@ -198,7 +204,7 @@ func newInstallCmd() *cobra.Command {
 			}
 			fmt.Fprintf(out, "  %-18s %s\n", room.Name, styleDetail.Render(room.Got))
 
-			res, err := takeover.Install(d, payload)
+			res, err := takeover.Install(d, payload, detected)
 			for _, s := range res.Steps {
 				fmt.Fprintf(out, "  %-18s %s\n", s.What, styleDetail.Render(s.Note))
 			}

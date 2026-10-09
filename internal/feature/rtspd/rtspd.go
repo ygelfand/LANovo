@@ -11,6 +11,8 @@ import (
 	camerartspd "github.com/ygelfand/libcountertop/pkg/camera/rtspd"
 	"github.com/ygelfand/libcountertop/pkg/media/rtsp"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	setting "github.com/ygelfand/libcountertop/pkg/settings"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/component"
@@ -30,8 +32,8 @@ func init() {
 }
 
 type Server struct {
-	sw  *esphome.Switch
-	srv *camerartspd.Server
+	knobs *setting.Controls[schema.RTSP]
+	srv   *camerartspd.Server
 }
 
 var (
@@ -81,33 +83,38 @@ func describe() onvif.Config {
 
 func (s *Server) Name() string { return "rtsp" }
 
-func (s *Server) Entities() []esphome.Entity { return []esphome.Entity{s.sw} }
+func (s *Server) Entities() []esphome.Entity { return s.knobs.Entities() }
 
 func (s *Server) Restore(cfg config.Config) {
-	s.sw.Set(cfg.RTSP.Enabled)
+	s.knobs.PublishFrom(cfg.RTSP)
 	if cfg.RTSP.Enabled {
 		s.srv.Start()
 	}
 }
 
 func (s *Server) build() {
-	s.sw = &esphome.Switch{
-		Base: esphome.Base{ObjectID: "rtsp", Name: "RTSP server", Icon: "mdi:cctv",
-			Category: esphome.CategoryConfig, DeviceID: component.DeviceCamera},
-	}
-	s.sw.OnCommand = s.SetEnabled
+	s.knobs = camerartspd.Controls(
+		component.DeviceCamera,
+		func() schema.RTSP { return config.Get().RTSP },
+		s.enable,
+	)
+	component.Settings.Add(s.knobs)
 }
 
 func (s *Server) SetEnabled(on bool) {
-	s.sw.Set(on)
-	if err := config.Set().RTSP().Enabled(on); err != nil {
-		slog.Error("saving a setting failed", "setting", s.sw.ObjectID, "err", err)
+	if err := s.knobs.Change("enabled", setting.OnOff(on)); err != nil {
+		slog.Error("saving a setting failed", "setting", "rtsp.enabled", "err", err)
 	}
+}
+
+func (s *Server) enable(on bool) error {
+	err := config.Set().RTSP().Enabled(on)
 	if on {
 		s.srv.Start()
 	} else {
 		s.srv.Stop()
 	}
+	return err
 }
 
 func (s *Server) reload() {

@@ -4,23 +4,18 @@ import (
 	"strings"
 	"sync"
 
-	shareddashboard "github.com/ygelfand/libcountertop/pkg/display/dashboard"
 	shared "github.com/ygelfand/libcountertop/pkg/network/discovery"
 	sharedpeer "github.com/ygelfand/libcountertop/pkg/network/peer"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
-	"github.com/ygelfand/libcountertop/pkg/say"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
 )
-
-const TabKind = "call"
 
 type identity struct{}
 
@@ -59,10 +54,4 @@ var get = sync.OnceValue(func() *shared.Discovery {
 func Get() *shared.Discovery { return get() }
 func init() {
 	component.Register(sharedcomponent.Network, Get, sharedcomponent.Order(60))
-	dashboard.Tabs().Add(
-		100,
-		func() []shareddashboard.Tab {
-			return []shareddashboard.Tab{{Kind: TabKind, Key: TabKind, Name: say.T("call.tab")}}
-		},
-	)
 }

@@ -12,7 +12,6 @@ import (
 
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 
-	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/boot"
 	"github.com/ygelfand/LANovo/internal/layout"
@@ -36,10 +35,10 @@ func newRunCmd() *cobra.Command {
 			closeLog := openLog()
 			defer closeLog()
 
-			if b, err := board.Detect(prop.Local); err != nil {
+			if err := board.Detected(); err != nil {
 				slog.Warn("unknown board", "err", err, "using", board.Current().Name)
 			} else {
-				board.Set(b)
+				b := board.Current()
 				slog.Info("board", "name", b.Name, "model", b.Model, "soc", b.SoC)
 			}
 

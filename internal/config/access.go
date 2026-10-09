@@ -8,9 +8,3 @@ type Access struct {
 const ADBPort = 5555
 
 func defaultAccess() Access { return Access{} }
-
-type AccessWriter struct{ st *Store }
-
-func (w AccessWriter) ADB(v bool) error {
-	return w.st.Update(func(c *Config) { c.Access.ADB = v })
-}

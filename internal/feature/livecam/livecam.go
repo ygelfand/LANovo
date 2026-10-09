@@ -28,7 +28,6 @@ type Camera struct{ *live.Camera }
 func (c Camera) Restore(config.Config) { c.Publish() }
 
 const (
-	mounted       = 3
 	helperService = "lanovo_camera"
 )
 
@@ -49,7 +48,7 @@ var Get = sync.OnceValue(func() Camera {
 			SubDefault:  b.SubWidth,
 		},
 		Mirror: b.CameraMirror,
-		Turn:   func() int { return turnFor(int(display.Get().Orientation())) },
+		Turn:   func() int { return turnFor(b.CameraTurn, int(display.Get().Orientation())) },
 		Open:   func(c camerafeed.Config) (session.Transport, error) { return mtkcamera.Open(c) },
 		Muted:  func() bool { return b.MicMutesCamera && privacy.Get().MicMuted() },
 		Restart: func() error {
@@ -64,10 +63,12 @@ var Get = sync.OnceValue(func() Camera {
 		o.Streams.Main = mediatekMain
 		o.Turn = func() int { return 0 }
 	}
-	return Camera{live.New(o)}
+	c := Camera{live.New(o)}
+	component.Settings.Add(c.Controls())
+	return c
 })
 
-func turnFor(device int) int {
+func turnFor(mounted, device int) int {
 	return (mounted - ((device/90)%4+4)%4 + 8) % 4
 }
 

@@ -36,7 +36,7 @@ type Volume struct {
 	sounding config.Stream
 
 	card *sharedview.Card
-	duck *esphome.Number
+	duck *sharedvolume.Ducking
 }
 
 var (
@@ -59,10 +59,12 @@ func Get() *Volume {
 
 func (v *Volume) Name() string { return "volume" }
 
-func (v *Volume) Entities() []esphome.Entity { return v.entities.Entities() }
+func (v *Volume) Entities() []esphome.Entity {
+	return append(v.entities.Entities(), v.duck.Entities()...)
+}
 
 func (v *Volume) Restore(c config.Config) {
-	v.duck.Set(float32(c.Media.DuckDB))
+	v.duck.PublishFrom(c.Media)
 	for _, s := range config.Streams() {
 		v.hold(s, c.Volume.Level(s))
 	}
@@ -140,13 +142,12 @@ func (v *Volume) hold(s config.Stream, level int) {
 	v.Changed.Emit(Change{Stream: s, Level: level})
 }
 
-func (v *Volume) SetDuckDB(db float64) error { return v.entities.SetDuckDB(db) }
-
 func (v *Volume) build() {
 	streams := config.Streams()
-	v.entities = sharedvolume.NewEntities(v, streams, config.MediaSection, component.DevicePlayback)
+	v.entities = sharedvolume.NewEntities(v, streams, component.DevicePlayback)
 	v.numbers = v.entities.Numbers
-	v.duck = v.entities.Duck
+	v.duck = sharedvolume.NewDucking(config.MediaSection, component.DevicePlayback)
+	component.Settings.Add(v.duck)
 }
 
 func (v *Volume) Watch(stream config.Stream, changed func(int)) func() {

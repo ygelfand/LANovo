@@ -1,16 +1,18 @@
 package microphone
 
 import (
-	"log/slog"
+	"fmt"
+	"strconv"
 	"sync"
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/say"
+	setting "github.com/ygelfand/libcountertop/pkg/settings"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 )
 
@@ -21,10 +23,17 @@ func init() {
 // The codec's decimator volume tops out at +40 dB.
 const GainMost = mic.MaxGain - config.DefaultMicGain
 
+const (
+	SensitivityLeast = 4
+	SensitivityMost  = 20
+)
+
+const Group setting.Group = "Microphone"
+
+type Setting = setting.Setting[config.Microphone]
+
 type Microphone struct {
-	gain        *esphome.Number
-	sensitivity *esphome.Number
-	lift        *esphome.Number
+	knobs *setting.Controls[config.Microphone]
 }
 
 var (
@@ -33,104 +42,84 @@ var (
 )
 
 func Get() *Microphone {
-	once.Do(func() { shared = build() })
+	once.Do(func() {
+		shared = &Microphone{knobs: &setting.Controls[config.Microphone]{
+			Table:  Table(),
+			Device: component.DeviceMicrophone,
+			Read:   func() config.Microphone { return config.Get().Microphone },
+			Save:   store,
+		}}
+		component.Settings.Add(shared.knobs)
+	})
 	return shared
 }
 
-func build() *Microphone {
-	m := &Microphone{
-		gain: &esphome.Number{
-			Base: esphome.Base{
-				ObjectID: "microphone_gain",
-				Name:     "Microphone gain",
-				Icon:     "mdi:volume-plus",
-				Category: esphome.CategoryConfig,
+func Table() *setting.Table[config.Microphone] {
+	return setting.NewTable("microphone", []setting.Group{Group}, []Setting{
+		{
+			Name:  "gain",
+			Group: Group,
+			Icon:  "mdi:volume-plus",
+			Kind:  setting.Number,
+			Max:   GainMost,
+			Unit:  "dB",
+			Read: func(m *config.Microphone) string {
+				return strconv.Itoa(m.Gain - config.DefaultMicGain)
 			},
-			Min: 0, Max: GainMost, Step: 1, Unit: "dB",
-			Mode: esphome.NumberBox,
-		},
-		sensitivity: &esphome.Number{
-			Base: esphome.Base{
-				ObjectID: "microphone_sensitivity",
-				Name:     "Room sensitivity",
-				Icon:     "mdi:motion-sensor",
-				Category: esphome.CategoryConfig,
+			Write: func(m *config.Microphone, v string) error {
+				n, err := strconv.Atoi(v)
+				if err != nil || n < 0 || n > GainMost {
+					return fmt.Errorf("gain takes 0 to %d dB, not %q", GainMost, v)
+				}
+				m.Gain = config.DefaultMicGain + n
+				return nil
 			},
-			Min: 4, Max: 20, Step: 1, Unit: "dB",
-			Mode: esphome.NumberBox,
 		},
-	}
-	m.lift = &esphome.Number{
-		Base: esphome.Base{
-			ObjectID: "visualizer_lift",
-			Name:     "Visualizer lift",
-			Icon:     "mdi:equalizer",
-			Category: esphome.CategoryConfig,
-		},
-		Min: 0, Max: visuals.LiftMax, Step: 1, Unit: "dB",
-		Mode: esphome.NumberBox,
-	}
-	for _, b := range []*esphome.Base{&m.gain.Base, &m.sensitivity.Base, &m.lift.Base} {
-		b.DeviceID = component.DeviceMicrophone
-	}
+		setting.Flag(
+			Setting{Name: "leveling", Group: Group, Icon: "mdi:signal-variant"},
+			func(m *config.Microphone) *bool { return &m.Leveling },
+		),
+		setting.Flag(
+			Setting{Name: "denoise", Group: Group, Icon: "mdi:waveform"},
+			func(m *config.Microphone) *bool { return &m.Denoise },
+		),
+		setting.Count(
+			Setting{
+				Name:  "sensitivity",
+				Group: Group,
+				Icon:  "mdi:motion-sensor",
+				Min:   SensitivityLeast,
+				Max:   SensitivityMost,
+				Unit:  "dB",
+			},
+			func(m *config.Microphone) *int { return &m.Sensitivity },
+		),
+	}, setting.Messages{Text: say.T, Missing: say.Missing})
+}
 
-	cfg := config.Get().Microphone
-	m.gain.Set(float32(cfg.Gain - config.DefaultMicGain))
-	m.sensitivity.Set(float32(cfg.Sensitivity))
-	m.lift.Set(float32(cfg.VisualizerLift))
-	m.lift.OnCommand = func(v float32) { m.SetLift(int(v)) }
+var applies = map[string]func(config.Microphone) error{
+	"gain": func(m config.Microphone) error { return mic.Get().SetGain(m.Gain) },
+	"leveling": func(m config.Microphone) error {
+		mic.Get().SetLeveling(m.Leveling)
+		return nil
+	},
+	"denoise": func(m config.Microphone) error {
+		mic.Get().SetDenoising(m.Denoise)
+		return nil
+	},
+	"sensitivity": func(m config.Microphone) error {
+		mic.Get().SetSensitivity(m.Sensitivity)
+		return nil
+	},
+}
 
-	m.gain.OnCommand = func(v float32) { m.SetGain(int(v)) }
-	m.sensitivity.OnCommand = func(v float32) { m.SetSensitivity(int(v)) }
-	return m
+func store(s Setting, v string) error {
+	if err := setting.Store(config.MicrophoneSection, s, v); err != nil {
+		return err
+	}
+	return applies[s.Name](config.Get().Microphone)
 }
 
 func (m *Microphone) Name() string { return "microphone settings" }
 
-func (m *Microphone) Entities() []esphome.Entity {
-	return []esphome.Entity{m.gain, m.sensitivity, m.lift}
-}
-
-func (m *Microphone) SetLift(db int) {
-	db = min(max(db, 0), visuals.LiftMax)
-	m.lift.Set(float32(db))
-	visuals.Get().SetLift(db)
-	if err := config.Set().Microphone().VisualizerLift(db); err != nil {
-		slog.Error("saving the visualizer lift failed", "err", err)
-	}
-}
-
-func (m *Microphone) SetGain(db int) {
-	db = min(max(db, 0), GainMost)
-	m.gain.Set(float32(db))
-	if err := mic.Get().SetGain(config.DefaultMicGain + db); err != nil {
-		slog.Error("setting the microphone gain failed", "err", err)
-	}
-	if err := config.Set().Microphone().Gain(config.DefaultMicGain + db); err != nil {
-		slog.Error("saving the microphone gain failed", "err", err)
-	}
-	slog.Info("microphone gain", "db", db)
-}
-
-func (m *Microphone) SetLeveling(on bool) {
-	mic.Get().SetLeveling(on)
-	if err := config.Set().Microphone().Leveling(on); err != nil {
-		slog.Error("saving the microphone leveling failed", "err", err)
-	}
-}
-
-func (m *Microphone) SetDenoising(on bool) {
-	mic.Get().SetDenoising(on)
-	if err := config.Set().Microphone().Denoise(on); err != nil {
-		slog.Error("saving the noise suppression failed", "err", err)
-	}
-}
-
-func (m *Microphone) SetSensitivity(db int) {
-	db = min(max(db, 4), 20)
-	m.sensitivity.Set(float32(db))
-	mic.Get().SetSensitivity(db)
-	if err := config.Set().Microphone().Sensitivity(db); err != nil {
-		slog.Error("saving the room sensitivity failed", "err", err)
-	}
-}
+func (m *Microphone) Entities() []esphome.Entity { return m.knobs.Entities() }

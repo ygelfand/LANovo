@@ -3,7 +3,10 @@ package privacy
 import (
 	"log/slog"
 
+	setting "github.com/ygelfand/libcountertop/pkg/settings"
+
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/screen"
 )
 
 type Marks struct {
@@ -23,9 +26,7 @@ func (p *Privacy) Current() Marks {
 func (p *Privacy) show() { p.Changed.Emit(p.Current()) }
 
 func (p *Privacy) SetMarks(on bool) {
-	if err := config.Set().Screen().Marks(on); err != nil {
+	if err := screen.Get().Set("marks", setting.OnOff(on)); err != nil {
 		slog.Error("saving the privacy marks setting failed", "err", err)
-		return
 	}
-	p.show()
 }

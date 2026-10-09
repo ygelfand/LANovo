@@ -39,6 +39,7 @@ func Get() *sharedcall.Calls {
 			Display:  display.Get(),
 			Messages: message.Get(),
 		})
+		component.Settings.Add(shared.Controls())
 	})
 	return shared
 }
