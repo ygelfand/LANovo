@@ -49,6 +49,7 @@ func Get() *Player {
 			DuckDB:   func() float64 { return config.Get().Media.DuckDB },
 			Volume:   mediaVolume{},
 			Changed:  shared.refresh,
+			Device:   component.DevicePlayback,
 		})
 		theCard = sharedcard.New(
 			sharedcard.Dependencies{Player: shared, Idle: config.IdleSection, Shell: shell.Get()},
@@ -62,7 +63,9 @@ func Get() *Player {
 
 func (p *Player) Name() string { return "media player" }
 
-func (p *Player) Entities() []esphome.Entity { return []esphome.Entity{p.Entity()} }
+func (p *Player) Entities() []esphome.Entity {
+	return append([]esphome.Entity{p.Entity()}, p.Track()...)
+}
 
 func (p *Player) Restore(config.Config) { p.Changed() }
 
