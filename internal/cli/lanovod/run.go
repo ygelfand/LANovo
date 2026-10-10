@@ -17,10 +17,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
-var (
-	profile      bool
-	tryVideoFile string
-)
+var tryVideoFile string
 
 func newRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -40,10 +37,6 @@ func newRunCmd() *cobra.Command {
 			} else {
 				b := board.Current()
 				slog.Info("board", "name", b.Name, "model", b.Model, "soc", b.SoC)
-			}
-
-			if profile {
-				startPprof()
 			}
 
 			if tryVideoFile != "" {
@@ -85,7 +78,6 @@ func newRunCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVar(&profile, "profile", false, "open the profiler on "+pprofAddr)
 	cmd.Flags().StringVar(&tryVideoFile, "try-video", "",
 		"play an H.264 (Annex-B with AUDs) or IVF file on the video pipe, 15s after start")
 	return cmd
