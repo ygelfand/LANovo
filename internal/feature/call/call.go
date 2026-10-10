@@ -3,6 +3,8 @@ package call
 import (
 	"sync"
 
+	"github.com/ygelfand/libcountertop/pkg/display/callvideo"
+	"github.com/ygelfand/libcountertop/pkg/display/callview"
 	sharedcall "github.com/ygelfand/libcountertop/pkg/media/call"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
@@ -31,12 +33,14 @@ func Get() *sharedcall.Calls {
 			Settings: config.CallSection,
 			Peers:    discovery.Get(),
 			Port:     web.Port,
-			Shell:    shell.Get(),
 			Privacy:  privacy.Get(),
 			Media:    media.Get(),
 			Sound:    device{},
-			Camera:   sharedcall.NewCamera(livecam.Get().Sessions()),
-			Display:  display.Get(),
+			Stage:    callview.NewStage(shell.Get()),
+			Video: callvideo.New(callvideo.Dependencies{
+				Display: display.Get(),
+				Camera:  callvideo.NewCamera(livecam.Get().Sessions()),
+			}),
 			Messages: message.Get(),
 		})
 		component.Settings.Add(shared.Controls())

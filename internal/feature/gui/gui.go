@@ -50,6 +50,7 @@ var Get = sync.OnceValue(func() *screens.App {
 	look := widgets.NewUI(config.ScreenSection)
 	calls := callview.New(callview.Options{
 		UI:    look,
+		Shell: featureshell.Get(),
 		Calls: call.Get(),
 		Peers: discovery.Get(),
 		Voice: sharedvolume.For(volume.Get(), config.StreamVoice),

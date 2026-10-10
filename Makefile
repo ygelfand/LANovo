@@ -19,6 +19,7 @@ LDFLAGS := -X '$(BUILDVARS).Version=$(VERSION)' \
 
 comma := ,
 TAGS ?=
+PACK ?=
 
 BUILD_DIR := bin
 ASSET_DIR := internal/host/assets/payload
@@ -71,12 +72,13 @@ build-lanovoctl: ## Build the host CLI into ./bin
 	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovoctl ./cmd/lanovoctl
 
 .PHONY: build-lanovod
-build-lanovod: build-surface build-camshim build-camera ## Cross-compile lanovod for the display, carrying its native parts
+build-lanovod: build-surface build-camshim build-camera ## Cross-compile lanovod for the display, carrying its native parts (PACK=upx to compress it)
 	@mkdir -p $(BUILD_DIR) $(PARTS_DIR)
 	cp $(SURFACE_BIN) $(PARTS_DIR)/lanovo-surface
 	cp $(CAMSHIM_BIN) $(PARTS_DIR)/liblanovo-camshim.so
 	cp $(CAMERA_BIN) $(PARTS_DIR)/lanovo-camera
 	$(DEVICE_ENV) go build -tags "payload$(if $(TAGS),$(comma)$(TAGS))" -ldflags "$(DEVICE_LDFLAGS)" -o $(DEVICE_BIN) ./cmd/lanovod
+	$(if $(PACK),$(PACK) -q $(DEVICE_BIN))
 
 # go list may know the version before its source archive has been downloaded.
 .PHONY: countertop-native-source
@@ -251,7 +253,8 @@ manifest: build-lanovod ## Write the manifest a device fetches to find this buil
 release-dev: ## Publish this working tree to the dev channel, without pushing anything
 	@command -v gh >/dev/null || { echo "needs the gh CLI: brew install gh"; exit 1; }
 	@command -v goreleaser >/dev/null || { echo "needs goreleaser: brew install goreleaser"; exit 1; }
-	VERSION=$(VERSION) goreleaser release --snapshot --clean
+	@command -v upx >/dev/null || { echo "needs upx: brew install upx"; exit 1; }
+	VERSION=$(VERSION) PACK=upx goreleaser release --snapshot --clean
 	@for f in dist/lanovoctl_*/lanovoctl dist/lanovoctl_*/lanovoctl.exe; do \
 		[ -f "$$f" ] || continue; \
 		d=$$(basename $$(dirname $$f)); \
