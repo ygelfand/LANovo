@@ -44,7 +44,7 @@ jobs:
       - name: build without the assembly
         run: make build-lanovod TAGS=noasm
 
-      - uses: golangci/golangci-lint-action@v8
+      - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.12.2
           install-only: true
