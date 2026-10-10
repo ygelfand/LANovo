@@ -55,6 +55,8 @@ const (
 
 	CastCredentialsPath = StateDir + "/cast-credentials.json"
 
+	CastBundlePath = StateDir + "/cast-bundle.json"
+
 	CastAuthorityPath = StateDir + "/cast-authority.json"
 
 	TesseraDir = StateDir
@@ -69,6 +71,8 @@ const (
 	ModelDir = StateDir + "/models"
 
 	RecordingDir = StateDir + "/recordings"
+
+	ToneDir = StateDir + "/tones"
 )
 
 const DefaultName = "Smart Display"

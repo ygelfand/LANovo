@@ -10,17 +10,23 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/tones"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
 func init() { component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(30)) }
 
 var get = sync.OnceValue(func() *shared.Alerts {
-	a := shared.New(config.AlertsSection, component.DevicePlayback, func(notes []tone.Note) {
-		speaker.Sound().
-			Interject(func(p *speaker.Speaker) { p.Chime(schema.StreamAlerts, shared.Level, notes...) })
-	})
+	a := shared.New(
+		config.AlertsSection,
+		component.DevicePlayback,
+		tones.Get(),
+		func(s tone.Sound) {
+			speaker.Sound().Sound(schema.StreamAlerts, shared.Level, s)
+		},
+	)
 	component.Settings.Add(a.Controls)
+	tones.Get().Changed.Listen(func(struct{}) { a.Refresh() })
 	return a
 })
 

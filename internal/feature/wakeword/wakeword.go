@@ -10,6 +10,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/tones"
 )
 
 func init() {
@@ -34,7 +35,11 @@ func Get() *WakeWord {
 			DeviceID: component.AssistantDevice,
 			Write:    func(slot int) schema.WakeWriter { return config.Set().Wake(slot) },
 			Wake:     Requested.Emit,
+			Tones:    tones.Get().Choices,
 		})}
+		tones.Get().Changed.Listen(func(struct{}) {
+			shared.Refresh(config.Get().Wake.Slots(Slots))
+		})
 	})
 	return shared
 }

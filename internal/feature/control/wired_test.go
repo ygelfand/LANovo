@@ -143,6 +143,7 @@ var byHand = map[string]string{
 	"Time.Home":           "not wired yet",
 	"Time.Chosen":         "not wired yet",
 	"Cast.Oracle":         "Home Assistant's text entity",
+	"Cast.Bundle":         "Home Assistant's text entity",
 	"Cast.YouTube.Device": "made on first use, never chosen",
 	"Cast.YouTube.Music":  "issued by YouTube on first use",
 	"Cast.YouTube.Video":  "issued by YouTube on first use",

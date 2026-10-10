@@ -57,6 +57,7 @@ func build() *castreceiver.Receiver {
 			Address:         func() string { return config.Get().Network.Address },
 			Timezone:        func() string { return config.Get().Time.Chosen },
 			CredentialsPath: layout.CastCredentialsPath,
+			BundlePath:      layout.CastBundlePath,
 			AuthorityPath:   layout.CastAuthorityPath,
 			AppDir:          layout.CastAppDir,
 			Synced: func(do func()) func() {

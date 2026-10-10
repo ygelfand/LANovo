@@ -32,8 +32,8 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/tfriedel6/canvas v0.12.1 // indirect
 	github.com/tphakala/go-aac v0.7.0 // indirect
-	github.com/ygelfand/go-esphome-device v0.0.12
-	github.com/ygelfand/libcountertop v0.1.1-0.20261010130504-70ddcc83f760
+	github.com/ygelfand/go-esphome-device v0.0.13
+	github.com/ygelfand/libcountertop v0.1.1-0.20261010182021-4fd8a479fd27
 	github.com/zserge/microwakeword v0.0.0-20260330234603-bfaf3840114e // indirect
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 	golang.org/x/image v0.46.0 // indirect
