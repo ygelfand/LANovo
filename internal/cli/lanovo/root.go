@@ -1,4 +1,4 @@
-package lanovoctl
+package lanovo
 
 import (
 	"os"
@@ -12,9 +12,9 @@ var serial string
 
 func newRoot() *cobra.Command {
 	root := &cobra.Command{
-		Use:   "lanovoctl",
+		Use:   "lanovo",
 		Short: "LANovo host CLI",
-		Long: "lanovoctl installs LANovo on a Lenovo Smart Display and manages the parts of\n" +
+		Long: "lanovo installs LANovo on a Lenovo Smart Display and manages the parts of\n" +
 			"Android that would otherwise fight it.",
 		SilenceUsage: true,
 	}

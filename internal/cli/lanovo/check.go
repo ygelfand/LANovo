@@ -1,4 +1,4 @@
-package lanovoctl
+package lanovo
 
 import (
 	"fmt"

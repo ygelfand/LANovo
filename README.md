@@ -60,12 +60,12 @@ Bluetooth for integrations like [bermuda](https://github.com/agittins/bermuda).
 
 ## Installing
 
-You need an unlocked display connected over USB. `lanovoctl` checks it, installs LANovo, and asks
+You need an unlocked display connected over USB. `lanovo` checks it, installs LANovo, and asks
 for your Wi-Fi if the display isn't on a network yet:
 
 ```sh
-lanovoctl check
-lanovoctl install --name kitchen
+lanovo check
+lanovo install --name kitchen
 ```
 
 It then turns up in Home Assistant on its own, and shows a code on screen to pair it.
@@ -77,8 +77,8 @@ It then turns up in Home Assistant on its own, and shows a code on screen to pai
 ## Building it yourself
 
 ```sh
-make build             # lanovoctl, lanovod and its native helpers
-make dist              # lanovod, then lanovoctl carrying it
+make build             # lanovo, lanovod and its native helpers
+make dist              # lanovod, then lanovo carrying it
 make install-lanovod   # build, install, and restart it on a connected display
 ```
 
@@ -87,7 +87,7 @@ make install-lanovod   # build, install, and restart it on a connected display
 - **lanovod** runs on the display: the screen, the audio, the camera, the radios, the wake word
   engines, the conversation, and an ESPHome native API server. It is one static Go binary with no
   cgo.
-- **lanovoctl** is the host CLI: checking, installing, Wi-Fi and pairing.
+- **lanovo** is the host CLI: checking, installing, Wi-Fi and pairing.
 - **[go-esphome-device](https://github.com/ygelfand/go-esphome-device)** implements the device half of
   the ESPHome protocol, including the voice satellite and Bluetooth proxy.
 

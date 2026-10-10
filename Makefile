@@ -64,12 +64,12 @@ COUNTERTOP_NATIVE = $(MAKE) -f "$(LIBCOUNTERTOP_DIR)/native/Makefile" API="$(NAT
 PARTS_DIR := internal/parts/payload
 
 .PHONY: build
-build: build-lanovoctl build-lanovod ## Build everything
+build: build-lanovo build-lanovod ## Build everything
 
-.PHONY: build-lanovoctl
-build-lanovoctl: ## Build the host CLI into ./bin
+.PHONY: build-lanovo
+build-lanovo: ## Build the host CLI into ./bin
 	@mkdir -p $(BUILD_DIR)
-	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovoctl ./cmd/lanovoctl
+	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovo ./cmd/lanovo
 
 .PHONY: build-lanovod
 build-lanovod: build-surface build-camshim build-camera ## Cross-compile lanovod for the display, carrying its native parts (PACK=upx to compress it)
@@ -97,9 +97,9 @@ build-camshim: countertop-native-source ## Build the camera service preload with
 build-camera: countertop-native-source ## Build the camera helper with the NDK
 	+$(COUNTERTOP_NATIVE) camera
 
-.PHONY: run-lanovoctl
-run-lanovoctl: ## Run lanovoctl on the host (make run-lanovoctl ARGS="check")
-	go run ./cmd/lanovoctl $(ARGS)
+.PHONY: run-lanovo
+run-lanovo: ## Run the host CLI (make run-lanovo ARGS="check")
+	go run ./cmd/lanovo $(ARGS)
 
 .PHONY: push-lanovod
 push-lanovod: build-lanovod ## Push lanovod to /data/local/tmp for iteration
@@ -201,16 +201,16 @@ device: ## Say which device the device targets would write to, and refuse the wr
 	echo "device: $$model ($$platform)"
 
 .PHONY: payload
-payload: ## Stage lanovod for embedding into lanovoctl
+payload: ## Stage lanovod for embedding into the host CLI
 	@$(MAKE) --no-print-directory build-lanovod
 	@mkdir -p $(ASSET_DIR)
 	cp $(DEVICE_BIN) $(ASSET_DIR)/lanovod
 	@shasum -a 256 $(ASSET_DIR)/lanovod | awk '{print $$1}' > $(ASSET_DIR)/lanovod.sha256
 
 .PHONY: dist
-dist: payload ## Full build: lanovod, then lanovoctl carrying it
+dist: payload ## Full build: lanovod, then the lanovo CLI carrying it
 	@mkdir -p $(BUILD_DIR)
-	CGO_ENABLED=0 go build -tags payload -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovoctl ./cmd/lanovoctl
+	CGO_ENABLED=0 go build -tags payload -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovo ./cmd/lanovo
 
 .PHONY: install-lanovod
 install-lanovod: build-lanovod device ## Install lanovod, which puts its other parts in place as it starts
@@ -263,7 +263,7 @@ release-dev: ## Publish this working tree to the dev channel, without pushing an
 	@command -v goreleaser >/dev/null || { echo "needs goreleaser: brew install goreleaser"; exit 1; }
 	@command -v upx >/dev/null || { echo "needs upx: brew install upx"; exit 1; }
 	VERSION=$(VERSION) PACK=upx goreleaser release --snapshot --clean
-	@for f in dist/lanovoctl_*/lanovoctl dist/lanovoctl_*/lanovoctl.exe; do \
+	@for f in dist/host_*/lanovo dist/host_*/lanovo.exe; do \
 		[ -f "$$f" ] || continue; \
 		d=$$(basename $$(dirname $$f)); \
 		os=$$(echo $$d | cut -d_ -f2); \

@@ -1,4 +1,4 @@
-package lanovoctl
+package lanovo
 
 import (
 	"fmt"
@@ -17,5 +17,5 @@ func lanovod(path string) ([]byte, string, error) {
 			"this build ships no lanovod: build with `make dist`, or pass --binary",
 		)
 	}
-	return assets.Lanovod(), "shipped with lanovoctl", nil
+	return assets.Lanovod(), "shipped with lanovo", nil
 }

@@ -14,9 +14,9 @@ before:
     - make manifest
 
 builds:
-  - id: lanovoctl
-    main: ./cmd/lanovoctl
-    binary: lanovoctl
+  - id: host
+    main: ./cmd/lanovo
+    binary: lanovo
     env:
       - CGO_ENABLED=0
     tags:

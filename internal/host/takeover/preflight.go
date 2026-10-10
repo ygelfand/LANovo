@@ -134,7 +134,7 @@ func Preflight(d *adb.Device) ([]Check, error) {
 			Got:  map[bool]string{true: "patched", false: "not patched"}[b.Permissive],
 			Want: "patched",
 			OK:   b.Permissive,
-			Fix:  "lanovoctl install patches it",
+			Fix:  "lanovo install patches it",
 		})
 	}
 
