@@ -38,7 +38,7 @@ func (identity) Self() sharedpeer.Peer {
 
 func ID() string { return strings.ToLower(strings.ReplaceAll(wifi.Get().MAC(), ":", "")) }
 func caps() []string {
-	c := []string{"audio"}
+	c := []string{"audio", "sync"}
 	if board.Current().CameraWidth > 0 {
 		c = append(c, "video")
 	}

@@ -63,7 +63,7 @@ func Table() *setting.Table[config.Access] {
 			},
 			func(c *config.Access) *bool { return &c.ADB },
 		),
-	}, setting.Messages{Text: say.T, Missing: say.Missing})
+	}, setting.Messages{Text: say.T, Missing: say.Missing}).Local()
 }
 
 func (a *Access) Name() string { return "access" }

@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/hardware/ble"
 )
@@ -75,7 +76,8 @@ func newBleCmd() *cobra.Command {
 				defer done()
 
 				seen := map[uint64]int{}
-				err = hci.Scan(ctx, hci.Reader(ctx, p), active, func(a hci.Advertisement) {
+				sc := hci.Scanning{Active: active, Percent: schema.DefaultScanShare.Percent()}
+				err = hci.Scan(ctx, hci.Reader(ctx, p), sc, func(a hci.Advertisement) {
 					if seen[a.Addr()] == 0 {
 						fmt.Printf("%x  %4d dBm  % x\n", a.Address, a.RSSI, a.Data)
 					}

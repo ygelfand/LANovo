@@ -4,6 +4,7 @@
 <a href="https://github.com/ygelfand/LANovo/releases"><img src="https://img.shields.io/github/downloads/ygelfand/LANovo/total?style=for-the-badge&label=Downloads&color=e8604c" alt="Downloads"></a>
 <a href="https://github.com/ygelfand/LANovo/releases/latest"><img src="https://shields.io/github/v/release/ygelfand/LANovo?style=for-the-badge&color=5da3a6" alt="Version"></a>
 <a href="https://buymeacoffee.com/ygelfand"><img src="https://img.shields.io/badge/Buy_me_a_coffee-ffdd00?style=for-the-badge&logo=buymeacoffee&logoColor=000" alt="Buy me a coffee"></a>
+<a href="https://discord.gg/efWnv89pg2"><img src="https://img.shields.io/badge/Join_the_community-5865f2?style=for-the-badge&logo=discord&logoColor=fff" alt="Join the community on Discord"></a>
 
 Turn a Lenovo Smart Display into a local Home Assistant display, speaker and voice assistant.
 
@@ -75,33 +76,11 @@ It then turns up in Home Assistant on its own, and shows a code on screen to pai
 
 ## Building it yourself
 
-Shared Go packages and native helper sources come from the `libcountertop` version selected by
-`go.mod`. CI and release builds need no sibling checkout. Native targets compile those sources
-with the Android NDK and stage the resulting helpers into this project's embedded payload.
-For local changes across repositories, use an untracked `go.work` containing this directory and
-`../libcountertop`; both Go compilation and native source resolution then use that checkout.
-Until the initial `v0.1.0` is published, include a version-specific workspace replacement:
-`replace github.com/ygelfand/libcountertop v0.1.0 => ../libcountertop`.
-
-
 ```sh
 make build             # lanovoctl, lanovod and its native helpers
 make dist              # lanovod, then lanovoctl carrying it
 make install-lanovod   # build, install, and restart it on a connected display
 ```
-
-The local harness uses the shared `libcountertop` control client and task groups:
-
-```sh
-adb shell lanovod ctl device version
-adb shell lanovod ctl input tap 300 200
-adb shell lanovod ctl display shot /data/local/tmp/panel.png
-adb shell lanovod ctl audio record echo 5 /data/local/tmp/echo.wav
-adb shell lanovod ctl settings media.duck -20
-```
-
-Bare `ctl` prints help. Each command accepts `--help`; use the grouped command paths above.
-The local control socket always listens while the daemon runs; Linux peer checks allow root and adb shell.
 
 ## How it fits together
 

@@ -149,6 +149,14 @@ lint: ## Run golangci-lint
 tidy: ## Tidy go.mod / go.sum
 	go mod tidy
 
+COUNTERTOP ?= main
+
+.PHONY: countertop
+countertop: ## Point go.mod at a pushed libcountertop commit (COUNTERTOP=main, a branch, a commit or a tag)
+	GOWORK=off go get $(LIBCOUNTERTOP_MODULE)@$(COUNTERTOP)
+	GOWORK=off go mod tidy
+	@GOWORK=off go list -m $(LIBCOUNTERTOP_MODULE)
+
 .PHONY: check
 check: fmt vet lint test ## Format, vet, lint and test
 

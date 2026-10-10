@@ -64,7 +64,7 @@ func Table() *setting.Table[config.Presence] {
 					return nil
 				},
 			},
-		}, setting.Messages{Text: say.T, Missing: say.Missing})
+		}, setting.Messages{Text: say.T, Missing: say.Missing}).Local()
 	})
 	return table
 }

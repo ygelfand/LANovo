@@ -1,5 +1,7 @@
 version: 2
 
+project_name: lanovo
+
 git:
   ignore_tags:
     - dev
@@ -50,9 +52,4 @@ snapshot:
   version_template: "{{ incpatch .Version }}-next"
 
 changelog:
-  sort: asc
-  filters:
-    exclude:
-      - "^docs:"
-      - "^test:"
-      - "^chore:"
+  use: github-native

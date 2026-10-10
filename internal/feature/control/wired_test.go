@@ -98,6 +98,7 @@ var inTables = map[string]string{
 	"Call.Stream":               "call.stream",
 	"Bluetooth.Proxy":           "bluetooth.proxy",
 	"Bluetooth.Speaker":         "bluetooth.speaker",
+	"Bluetooth.Scan":            "bluetooth.scan",
 	"API.Adopted":               "api.adopted",
 	"RTSP.Enabled":              "rtsp.enabled",
 	"Access.ADB":                "access.adb",

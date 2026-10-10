@@ -6,7 +6,9 @@ import (
 	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
 	"github.com/ygelfand/libcountertop/pkg/display/callview"
 	"github.com/ygelfand/libcountertop/pkg/display/screens"
+	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
 	"github.com/ygelfand/libcountertop/pkg/display/shell"
+	"github.com/ygelfand/libcountertop/pkg/display/syncview"
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	tesseraview "github.com/ygelfand/libcountertop/pkg/tessera/widgets"
@@ -16,6 +18,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/assistant"
 	"github.com/ygelfand/LANovo/internal/feature/call"
+	"github.com/ygelfand/LANovo/internal/feature/configsync"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
@@ -57,6 +60,13 @@ var Get = sync.OnceValue(func() *screens.App {
 		Video: board.Current().CameraWidth > 0,
 	})
 	drawer.Get().Add(calls.Rail())
+	syncs := syncview.New(syncview.Options{
+		UI:    look,
+		Shell: featureshell.Get(),
+		Sync:  configsync.Get(),
+		Peers: discovery.Get(),
+		Logo:  sharedsettings.Themed(lanovoui.Logo().Light, lanovoui.Logo().Dark),
+	})
 	return screens.New(screens.Options{
 		Name:       "lanovo",
 		UISize:     board.Current().UISize,
@@ -123,6 +133,6 @@ var Get = sync.OnceValue(func() *screens.App {
 			screens.On(&web.Get().Offered),
 		},
 
-		Views: []func(shell.View) *screens.Screen{calls.Screen},
+		Views: []func(shell.View) *screens.Screen{calls.Screen, syncs.Screen},
 	})
 })
