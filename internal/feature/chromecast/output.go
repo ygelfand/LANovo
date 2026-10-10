@@ -3,6 +3,7 @@ package chromecast
 import (
 	"context"
 
+	"github.com/ygelfand/libcountertop/pkg/display/castscreen"
 	"github.com/ygelfand/libcountertop/pkg/display/geometry"
 	"github.com/ygelfand/libcountertop/pkg/display/video"
 	"github.com/ygelfand/libcountertop/pkg/media/castoutput"
@@ -28,20 +29,22 @@ func newOutput() *castoutput.Output {
 			Media:    func() castoutput.Media { return media.Get() },
 			Took:     func(p pcm.Producer) { a.Took(p) },
 			Gave:     func(p pcm.Producer) { a.Gave(p) },
-			NewPage:  videoplayer.NewPage,
-			NewUnder: func() *videostream.Beneath {
-				return &videostream.Beneath{
-					Rotation: func() geometry.Orientation { return display.Get().Orientation() },
-					Size:     func() (int, int) { return display.Get().Native() },
-				}
-			},
-			Video: func(ctx context.Context, b *videostream.Beneath, s videostream.Stream) (videostream.Report, error) {
-				player := video.Player{
-					Helper:         display.Get().Helper(),
-					SecureDecoders: board.Current().SecureDecoders,
-				}
-				return player.On(ctx, b, s)
-			},
+			Screen: castscreen.New(castscreen.Options{
+				NewPage: videoplayer.NewPage,
+				NewUnder: func() *videostream.Beneath {
+					return &videostream.Beneath{
+						Rotation: func() geometry.Orientation { return display.Get().Orientation() },
+						Size:     func() (int, int) { return display.Get().Native() },
+					}
+				},
+				Video: func(ctx context.Context, b *videostream.Beneath, s videostream.Stream) (videostream.Report, error) {
+					player := video.Player{
+						Helper:         display.Get().Helper(),
+						SecureDecoders: board.Current().SecureDecoders,
+					}
+					return player.On(ctx, b, s)
+				},
+			}),
 		},
 	)
 }

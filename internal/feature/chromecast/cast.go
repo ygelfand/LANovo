@@ -10,6 +10,11 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/audio/resample"
 	"github.com/ygelfand/libcountertop/pkg/display/surface"
 	"github.com/ygelfand/libcountertop/pkg/display/video"
+	"github.com/ygelfand/libcountertop/pkg/media/cast"
+	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/primevideo"
+	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/unsupported"
+	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube"
+	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube/unplugged"
 	"github.com/ygelfand/libcountertop/pkg/media/castreceiver"
 	"github.com/ygelfand/libcountertop/pkg/media/playback"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
@@ -35,6 +40,8 @@ var Preferences = castreceiver.Preferences("lanovo", config.CastSection)
 var get = sync.OnceValue(build)
 
 func Get() *castreceiver.Receiver { return get() }
+
+func helper() *surface.Client { return display.Get().Helper() }
 
 func build() *castreceiver.Receiver {
 	r := castreceiver.NewReceiver(castreceiver.ReceiverOptions{
@@ -67,7 +74,11 @@ func build() *castreceiver.Receiver {
 			Resample: func(from int) func([]int16) []int16 {
 				return resample.NewRational(from, speaker.Rate, speaker.Channels).Run
 			},
-			Surface:     func() *surface.Client { return display.Get().Helper() },
+			Apps: []cast.Maker{
+				primevideo.Maker(helper),
+				unsupported.Maker,
+				youtube.Maker(unplugged.TV(helper)),
+			},
 			Preferences: Preferences,
 		},
 	})
