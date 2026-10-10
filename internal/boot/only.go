@@ -55,10 +55,9 @@ func holder() (pid int, name string) {
 		return 0, ""
 	}
 
-	mine := os.Getpid()
 	for _, e := range entries {
 		at, err := strconv.Atoi(e.Name())
-		if err != nil || at == mine {
+		if err != nil {
 			continue
 		}
 		if holds(at, socket) {
