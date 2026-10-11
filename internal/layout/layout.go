@@ -16,25 +16,18 @@ func VersionString() string {
 	return fmt.Sprintf("%s (%s, built %s)", Version, GitCommit, BuildDate)
 }
 
-// A service takes its SELinux domain from the label of the file init execs.
 const (
-	Binary  = "/system/bin/lanovod"
-	InitRC  = "/system/etc/init/lanovod.rc"
 	Service = "lanovod"
 
-	Surface        = "/system/bin/lanovo-surface"
 	SurfaceSocket  = "/dev/socket/lanovo-surface"
 	SurfaceService = "lanovo_surface"
 
-	CamShim             = "/system/lib/liblanovo-camshim.so"
 	CameraHALService    = "lanovo_camhal"
 	CameraServerService = "lanovo_camserver"
 	CameraService       = "lanovo_camera"
-	Camera              = "/system/bin/lanovo-camera"
 	CameraSocket        = "/dev/socket/lanovo-camera"
 
-	PrevBinary = Binary + ".prev"
-	Incoming   = StateDir + "/lanovod.incoming"
+	Incoming = StateDir + "/lanovod.incoming"
 
 	// / is read-only; /data is unencrypted.
 	StateDir = "/data/misc/lanovo"
@@ -74,6 +67,45 @@ const (
 
 	ToneDir = StateDir + "/tones"
 )
+
+const (
+	SystemRoot = "/system"
+
+	// init.rc imports /init.${ro.hardware}.rc; the stock ramdisk carries no /init.qcom.rc.
+	BootRC = "/init.qcom.rc"
+)
+
+// A service takes its SELinux domain from the label of the file init execs.
+type Paths struct {
+	Root       string
+	Binary     string
+	PrevBinary string
+	InitRC     string
+	Surface    string
+	CamShim    string
+	Camera     string
+}
+
+func For(root string) Paths {
+	if root == "" {
+		root = SystemRoot
+	}
+	rc := root + "/etc/init/lanovod.rc"
+	if root != SystemRoot {
+		rc = BootRC
+	}
+	return Paths{
+		Root:       root,
+		Binary:     root + "/bin/lanovod",
+		PrevBinary: root + "/bin/lanovod.prev",
+		InitRC:     rc,
+		Surface:    root + "/bin/lanovo-surface",
+		CamShim:    root + "/lib/liblanovo-camshim.so",
+		Camera:     root + "/bin/lanovo-camera",
+	}
+}
+
+func (p Paths) OnSystem() bool { return p.Root == SystemRoot }
 
 const DefaultName = "Smart Display"
 

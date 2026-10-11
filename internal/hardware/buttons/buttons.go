@@ -46,28 +46,27 @@ func (c *Controller) Name() string { return "buttons" }
 func (c *Controller) Deliver(e Event) { c.Events.Emit(e) }
 
 func All() []Button {
-	if keys := board.Current().Keys; len(keys) > 0 {
-		codes := make([]int, 0, len(keys))
-		for code := range keys {
-			codes = append(codes, int(code))
+	seen := map[Button]bool{}
+	var out []Button
+	add := func(b Button) {
+		if !seen[b] {
+			seen[b] = true
+			out = append(out, b)
 		}
-		sort.Ints(codes)
-
-		seen := map[Button]bool{}
-		var out []Button
-		for _, code := range codes {
-			b := Button(keys[uint16(code)])
-			if !seen[b] {
-				seen[b] = true
-				out = append(out, b)
-			}
-		}
-		return out
 	}
 
-	out := make([]Button, 0, len(lines()))
 	for _, l := range lines() {
-		out = append(out, l.button)
+		add(l.button)
+	}
+
+	keys := board.Current().Keys
+	codes := make([]int, 0, len(keys))
+	for code := range keys {
+		codes = append(codes, int(code))
+	}
+	sort.Ints(codes)
+	for _, code := range codes {
+		add(Button(keys[uint16(code)]))
 	}
 	return out
 }
@@ -77,54 +76,57 @@ func (c *Controller) Startup() sharedcomponent.Progress {
 	w, ev := c.watch, c.ev
 	c.mu.Unlock()
 
-	if ev != nil {
-		if len(ev.devices) == 0 {
-			return sharedcomponent.Progress{Doing: "taking the buttons"}
-		}
-		return sharedcomponent.Progress{Done: true}
-	}
-
-	if w == nil {
+	if w == nil && ev == nil {
 		return sharedcomponent.Progress{Doing: "taking the buttons"}
 	}
 
-	if missing := len(lines()) - len(w.files); missing > 0 {
-		return sharedcomponent.Progress{
-			Done:  true,
-			Doing: fmt.Sprintf("%d of %d, the rest could not be read", len(w.files), len(lines())),
+	if w != nil {
+		if missing := len(lines()) - len(w.files); missing > 0 {
+			return sharedcomponent.Progress{
+				Done: true,
+				Doing: fmt.Sprintf(
+					"%d of %d, the rest could not be read",
+					len(w.files),
+					len(lines()),
+				),
+			}
 		}
 	}
 	return sharedcomponent.Progress{Done: true}
 }
 
 func (c *Controller) Start(context.Context) error {
+	var ev *evdev
 	if len(board.Current().Keys) > 0 {
-		ev, problems := watchEvdev()
+		e, problems := watchEvdev()
 		for _, p := range problems {
 			fmt.Fprintln(os.Stderr, "buttons:", p)
 		}
-		if len(ev.devices) == 0 {
-			ev.Close()
+		if len(e.devices) == 0 {
+			e.Close()
 			return errors.New("buttons: no input devices")
 		}
-
-		c.mu.Lock()
-		c.ev = ev
-		c.mu.Unlock()
-		return nil
+		ev = e
 	}
 
-	w, problems := Watch()
-	for _, p := range problems {
-		fmt.Fprintln(os.Stderr, "buttons:", p)
-	}
-	if len(w.files) == 0 {
-		w.Close()
-		return errors.New("buttons: no gpio lines could be opened")
+	var w *Watcher
+	if len(lines()) > 0 {
+		gw, problems := Watch()
+		for _, p := range problems {
+			fmt.Fprintln(os.Stderr, "buttons:", p)
+		}
+		if len(gw.files) == 0 {
+			gw.Close()
+			if ev != nil {
+				ev.Close()
+			}
+			return errors.New("buttons: no gpio lines could be opened")
+		}
+		w = gw
 	}
 
 	c.mu.Lock()
-	c.watch = w
+	c.watch, c.ev = w, ev
 	c.mu.Unlock()
 	return nil
 }
@@ -134,13 +136,24 @@ func (c *Controller) Run(ctx context.Context) error {
 	w, ev := c.watch, c.ev
 	c.mu.Unlock()
 
-	if ev != nil {
-		return ev.Run(ctx, c.Events.Emit)
-	}
-	if w == nil {
+	switch {
+	case w == nil && ev == nil:
 		return errors.New("buttons: not started")
+	case w == nil:
+		return ev.Run(ctx, c.Events.Emit)
+	case ev == nil:
+		return c.poll(ctx, w)
 	}
 
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	failed := make(chan error, 2)
+	go func() { failed <- ev.Run(ctx, c.Events.Emit) }()
+	go func() { failed <- c.poll(ctx, w) }()
+	return <-failed
+}
+
+func (c *Controller) poll(ctx context.Context, w *Watcher) error {
 	for {
 		select {
 		case <-ctx.Done():
@@ -179,7 +192,9 @@ func (c *Controller) State(b Button) (bool, bool) {
 	c.mu.Unlock()
 
 	if ev != nil {
-		return ev.State(b)
+		if on, ok := ev.State(b); ok {
+			return on, true
+		}
 	}
 	if w == nil {
 		return false, false

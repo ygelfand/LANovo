@@ -9,6 +9,7 @@ import (
 	"unsafe"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 const blkroset = 0x125d
@@ -17,7 +18,10 @@ var byNameDirs = []string{"/dev/block/bootdevice/by-name", "/dev/block/platform/
 
 var writing sync.Mutex
 
-func Writable() (restore func() error, err error) {
+func Writable(p layout.Paths) (restore func() error, err error) {
+	if !p.OnSystem() {
+		return func() error { return nil }, nil
+	}
 	writing.Lock()
 	part, err := systemPartition()
 	if err != nil {

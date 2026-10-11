@@ -26,6 +26,8 @@ func newRoot() *cobra.Command {
 	root.AddCommand(newInstallCmd())
 	root.AddCommand(newWifiCmd())
 	root.AddCommand(newKeyCmd())
+	root.AddCommand(newRCCmd())
+	root.AddCommand(newBoardCmd())
 	return root
 }
 

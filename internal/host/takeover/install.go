@@ -15,8 +15,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/parts"
 )
 
-var InitRC = parts.InitRC.Data()
-
 type Step struct {
 	What string
 	Note string
@@ -34,9 +32,17 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 	if len(binary) == 0 {
 		return res, errors.New("no lanovod to install")
 	}
+	paths := b.Paths()
+	if !paths.OnSystem() {
+		return installData(d, binary, b, paths)
+	}
 
-	existing, _ := d.ReadFile(layout.InitRC)
-	res.Settles = !bytes.Equal(bytes.TrimSpace(existing), bytes.TrimSpace(InitRC))
+	rc, err := parts.RC(paths)
+	if err != nil {
+		return res, err
+	}
+	existing, _ := d.ReadFile(paths.InitRC)
+	res.Settles = !bytes.Equal(bytes.TrimSpace(existing), bytes.TrimSpace(rc))
 
 	restore, err := Writable(d)
 	if err != nil {
@@ -53,20 +59,20 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 		return res, err
 	}
 
-	if err := d.WriteFile(layout.Binary, binary, parts.Lanovod.Mode); err != nil {
-		return res, fmt.Errorf("installing %s: %w", layout.Binary, err)
+	if err := d.WriteFile(paths.Binary, binary, parts.Lanovod.Mode); err != nil {
+		return res, fmt.Errorf("installing %s: %w", paths.Binary, err)
 	}
-	res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: layout.Binary})
+	res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: paths.Binary})
 
 	if res.Settles {
-		if err := d.WriteFile(layout.InitRC, InitRC, parts.InitRC.Mode); err != nil {
-			return res, fmt.Errorf("installing %s: %w", layout.InitRC, err)
+		if err := d.WriteFile(paths.InitRC, rc, parts.InitRC.Mode); err != nil {
+			return res, fmt.Errorf("installing %s: %w", paths.InitRC, err)
 		}
-		res.Steps = append(res.Steps, Step{What: parts.InitRC.Name, Note: layout.InitRC})
+		res.Steps = append(res.Steps, Step{What: parts.InitRC.Name, Note: paths.InitRC})
 	} else {
 		res.Steps = append(
 			res.Steps,
-			Step{What: parts.InitRC.Name, Note: layout.InitRC + " unchanged"},
+			Step{What: parts.InitRC.Name, Note: paths.InitRC + " unchanged"},
 		)
 	}
 
@@ -74,10 +80,8 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 	if err != nil {
 		return res, err
 	}
-	if now, err := d.Getprop(prop.Board); err == nil && now == "" {
-		if err := d.Setprop(prop.Board, b.Name); err != nil {
-			return res, err
-		}
+	if err := nameBoard(d, b); err != nil {
+		return res, err
 	}
 	res.Settles = res.Settles || secured
 
@@ -88,11 +92,35 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 	res.Steps = append(res.Steps, Step{What: "default.prop", Note: note})
 
 	// /system/bin and /system/etc are labelled system_file.
-	if _, err := d.Shell("restorecon " + layout.Binary + " " + layout.InitRC); err != nil {
+	if _, err := d.Shell("restorecon " + paths.Binary + " " + paths.InitRC); err != nil {
 		res.Steps = append(res.Steps, Step{What: "restorecon", Note: err.Error()})
 	}
 
 	return res, nil
+}
+
+// The boot image carries root, the permissive policy and the service definition.
+func installData(d *adb.Device, binary []byte, b board.Board, paths layout.Paths) (Result, error) {
+	var res Result
+	if err := prop.Stop(d, layout.Service); err != nil {
+		return res, err
+	}
+	if err := d.WriteFile(paths.Binary, binary, parts.Lanovod.Mode); err != nil {
+		return res, fmt.Errorf("installing %s: %w", paths.Binary, err)
+	}
+	res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: paths.Binary})
+	res.Steps = append(
+		res.Steps,
+		Step{What: parts.InitRC.Name, Note: paths.InitRC + " in the boot image"},
+	)
+	return res, nameBoard(d, b)
+}
+
+func nameBoard(d *adb.Device, b board.Board) error {
+	if now, err := d.Getprop(prop.Board); err == nil && now == "" {
+		return d.Setprop(prop.Board, b.Name)
+	}
+	return nil
 }
 
 func Start(d *adb.Device) error {

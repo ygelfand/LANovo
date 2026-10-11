@@ -21,7 +21,7 @@ func newRoot() *cobra.Command {
 		Version:      layout.VersionString(),
 	}
 
-	root.AddCommand(newRunCmd(), newToolsCmd(), newCtlCmd(), newBleCmd(), newWifiCmd())
+	root.AddCommand(newRunCmd(), newToolsCmd(), newCtlCmd(), newBleCmd(), newWifiCmd(), newWPACmd())
 	return root
 }
 

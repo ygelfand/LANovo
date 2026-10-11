@@ -1,6 +1,7 @@
 package takeover
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/board"
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 func decodeBase64(s string) ([]byte, error) {
@@ -158,8 +160,15 @@ func lockedPreflight(d *adb.Device, b board.Board) ([]Check, error) {
 		return nil, err
 	}
 	mode = strings.TrimSpace(mode)
+	rcPath := b.Paths().InitRC
+	rc, _ := d.ReadFile(rcPath)
+	carried := bytes.Contains(rc, []byte("service "+layout.Service+" "))
+	got := "missing"
+	if carried {
+		got = "present"
+	}
 
-	// TODO: link the ThinkSmart View root guide in both fixes
+	// TODO: link the ThinkSmart View root guide in all three fixes
 	return []Check{
 		{Name: "board", Got: b.Model, Want: b.Model, OK: true},
 		{
@@ -177,6 +186,14 @@ func lockedPreflight(d *adb.Device, b board.Board) ([]Check, error) {
 			OK:    mode == "Permissive",
 			Fatal: true,
 			Fix:   "make the " + b.Model + " permissive first",
+		},
+		{
+			Name:  "service",
+			Got:   rcPath + " " + got,
+			Want:  rcPath + " present",
+			OK:    carried,
+			Fatal: true,
+			Fix:   "flash a boot image built with `lanovo rc` as " + rcPath,
 		},
 	}, nil
 }

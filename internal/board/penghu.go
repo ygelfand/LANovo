@@ -1,30 +1,37 @@
 package board
 
 var Penghu = Board{
-	NativeAPI:    27,
-	Name:         "penghu",
-	Model:        "Lenovo ThinkSmart View",
-	SoC:          Qualcomm,
-	PanelWidth:   800,
-	PanelHeight:  1280,
-	CameraWidth:  Blueberry.CameraWidth,
-	CameraHeight: Blueberry.CameraHeight,
-	SubWidth:     Blueberry.SubWidth,
-	SubHeight:    Blueberry.SubHeight,
-	Motion:       true,
-	Mounted:      90,
-	UISize:       "medium",
-	Diagonal:     8,
-	Tessera:      Tessera{Board: "jc8012p4a1", Columns: 6, Rows: 4},
-	Touch:        "himax-touchscreen",
-	Amp:          Blueberry.Amp,
-	Keys: map[uint16]string{
-		115: "volume up",
-		114: "volume down",
-		91:  "mic mute",
-		87:  "camera shutter",
+	NativeAPI:             27,
+	Name:                  "penghu",
+	Model:                 "Lenovo ThinkSmart View",
+	SoC:                   Qualcomm,
+	PanelWidth:            800,
+	PanelHeight:           1280,
+	CameraWidth:           Blueberry.CameraWidth,
+	CameraHeight:          Blueberry.CameraHeight,
+	SubWidth:              Blueberry.SubWidth,
+	SubHeight:             Blueberry.SubHeight,
+	CameraTurn:            Blueberry.CameraTurn,
+	Motion:                true,
+	Mounted:               90,
+	UISize:                "medium",
+	Diagonal:              8,
+	Tessera:               Tessera{Board: "jc8012p4a1", Columns: 6, Rows: 4},
+	Touch:                 "himax-touchscreen",
+	Amp:                   Blueberry.Amp,
+	MicNoTertiaryChannels: true,
+	// Provisional until Penghu's microphone sensitivity is measured.
+	MicSensitivity: Blueberry.MicSensitivity,
+	// aboot power-on write-protects the eMMC group that holds system's superblock.
+	Root: "/data/misc/lanovo",
+	Buttons: []Button{
+		{"volume up", 85, true},
+		{"mic mute", 86, false},
+		{"camera shutter", 87, true},
 	},
-	// TODO: confirm mic mute / camera shutter polarity via getevent; MicSensitivity from the OEM app; CameraTurn on camera bring-up
+	Keys: map[uint16]string{
+		114: "volume down",
+	},
 }
 
 func init() { register(Penghu) }

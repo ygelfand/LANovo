@@ -2,9 +2,13 @@
 
 package parts
 
-import "errors"
+import (
+	"errors"
 
-func Writable() (restore func() error, err error) {
+	"github.com/ygelfand/LANovo/internal/layout"
+)
+
+func Writable(layout.Paths) (restore func() error, err error) {
 	return nil, errors.New("parts: only the device has a /system to remount")
 }
 

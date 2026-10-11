@@ -12,6 +12,11 @@ const (
 	sockets = layout.WifiSockets
 )
 
-func On(d *adb.Device) wifisetup.Supplicant {
-	return wifisetup.Supplicant{Device: d, Sockets: sockets, Iface: iface}
+func On(d *adb.Device, p layout.Paths) wifisetup.Supplicant {
+	return wifisetup.Supplicant{
+		Device:  d,
+		Sockets: sockets,
+		Iface:   iface,
+		Client:  p.Binary + " wpa",
+	}
 }

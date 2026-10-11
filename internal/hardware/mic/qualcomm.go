@@ -17,14 +17,17 @@ var qualcommRoute = []setting{
 
 var gains = []string{"DEC1 Volume", "DEC2 Volume"}
 
-type qualcomm struct{}
+type qualcomm struct{ skipTertiaryChannels bool }
 
 func (qualcomm) device() int { return 0 }
 
 func (qualcomm) bits() int { return 16 }
 
-func (qualcomm) open(m *alsa.Mixer) error {
+func (q qualcomm) open(m *alsa.Mixer) error {
 	for _, s := range qualcommRoute {
+		if q.skipTertiaryChannels && s.name == "TERT_MI2S_TX Channels" {
+			continue
+		}
 		var err error
 		if s.choice != "" {
 			err = m.SetEnum(s.name, s.choice)

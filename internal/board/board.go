@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 type SoC string
@@ -34,6 +35,9 @@ type Board struct {
 	Motion bool
 
 	MicMutesCamera bool
+
+	// MicNoTertiaryChannels means only MI2S_TX Channels controls capture width.
+	MicNoTertiaryChannels bool
 
 	CameraMirror bool
 
@@ -67,7 +71,25 @@ type Board struct {
 	CameraWidth, CameraHeight int
 
 	SubWidth, SubHeight int
+
+	Root string
 }
+
+func (b Board) Paths() layout.Paths { return layout.For(b.Root) }
+
+type Cap uint64
+
+const SecureVideo Cap = 1 << iota
+
+func (b Board) Caps() Cap {
+	var c Cap
+	if len(b.SecureDecoders) > 0 {
+		c |= SecureVideo
+	}
+	return c
+}
+
+func (b Board) Has(c Cap) bool { return b.Caps()&c == c }
 
 type Chip struct {
 	Bus    int

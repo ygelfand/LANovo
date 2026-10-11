@@ -7,13 +7,19 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/media/widevine"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
 func init() {
-	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(61))
+	component.Register(
+		sharedcomponent.Device,
+		Get,
+		sharedcomponent.Order(61),
+		component.Needs(board.SecureVideo),
+	)
 }
 
 var Get = sync.OnceValue(func() *widevine.Provisioner {

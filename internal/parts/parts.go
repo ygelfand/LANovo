@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
+	"text/template"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/board"
@@ -13,7 +15,9 @@ import (
 )
 
 //go:embed lanovod.rc
-var initRC []byte
+var initRC string
+
+var rcTemplate = template.Must(template.New("lanovod.rc").Option("missingkey=error").Parse(initRC))
 
 type Part struct {
 	Name     string
@@ -30,19 +34,22 @@ func (p Part) Data() []byte { return p.data }
 
 func (p Part) For(soc board.SoC) bool { return p.SoC == "" || p.SoC == soc }
 
+func (p Part) at(path string) Part {
+	p.Path = path
+	return p
+}
+
 var (
 	Lanovod = Part{
 		Name:     "lanovod",
-		Path:     layout.Binary,
 		Mode:     0o755,
 		Services: []string{layout.Service},
 	}
-	InitRC  = Part{Name: "service", Path: layout.InitRC, Mode: 0o644, Boot: true, data: initRC}
-	Surface = Part{Name: "helper", Path: layout.Surface, Mode: 0o755,
+	InitRC  = Part{Name: "service", Mode: 0o644, Boot: true}
+	Surface = Part{Name: "helper", Mode: 0o755,
 		Services: []string{layout.SurfaceService}, data: surface}
 	CamShim = Part{
 		Name: "camera preload",
-		Path: layout.CamShim,
 		Mode: 0o644,
 		Services: []string{
 			layout.CameraHALService,
@@ -51,18 +58,45 @@ var (
 		},
 		data: camshim,
 	}
-	Camera = Part{Name: "camera helper", Path: layout.Camera, Mode: 0o755,
+	Camera = Part{Name: "camera helper", Mode: 0o755,
 		Services: []string{layout.CameraService}, data: camera}
 )
 
-func Carried() []Part { return []Part{InitRC, Surface, CamShim, Camera} }
+func RC(p layout.Paths) ([]byte, error) {
+	var b bytes.Buffer
+	if err := rcTemplate.Execute(&b, p); err != nil {
+		return nil, fmt.Errorf("parts: rendering %s: %w", rcTemplate.Name(), err)
+	}
+	return b.Bytes(), nil
+}
+
+// A board with its root off /system carries the service definition in its boot image.
+func Carried(p layout.Paths) ([]Part, error) {
+	carried := []Part{Surface.at(p.Surface), CamShim.at(p.CamShim), Camera.at(p.Camera)}
+	if !p.OnSystem() {
+		return carried, nil
+	}
+	rc, err := RC(p)
+	if err != nil {
+		return nil, err
+	}
+	rcPart := InitRC.at(p.InitRC)
+	rcPart.data = rc
+	return append([]Part{rcPart}, carried...), nil
+}
 
 func Ensure() (rebootPending bool) {
-	soc := board.Current().SoC
+	b := board.Current()
+	paths := b.Paths()
+	carried, err := Carried(paths)
+	if err != nil {
+		slog.Error("listing parts failed", "err", err)
+		return false
+	}
 
 	var stale []Part
-	for _, p := range Carried() {
-		if len(p.data) == 0 || !p.For(soc) {
+	for _, p := range carried {
+		if len(p.data) == 0 || !p.For(b.SoC) {
 			continue
 		}
 		if have, err := os.ReadFile(p.Path); err == nil && bytes.Equal(have, p.data) {
@@ -74,7 +108,7 @@ func Ensure() (rebootPending bool) {
 		return false
 	}
 
-	restore, err := Writable()
+	restore, err := Writable(paths)
 	if err != nil {
 		slog.Error("remounting to update parts failed", "err", err)
 		return false
@@ -86,7 +120,7 @@ func Ensure() (rebootPending bool) {
 	}()
 
 	for _, p := range stale {
-		if err := Replace(p.Path, p.data, p.Mode); err != nil {
+		if err := Replace(p.Path, p.data, p.Mode, paths.Binary); err != nil {
 			slog.Error("updating a part failed", "part", p.Name, "path", p.Path, "err", err)
 			continue
 		}
@@ -104,7 +138,10 @@ func Ensure() (rebootPending bool) {
 	return rebootPending
 }
 
-func Replace(path string, data []byte, mode os.FileMode) error {
+func Replace(path string, data []byte, mode os.FileMode, labelFrom string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return err
+	}
 	tmp := path + ".new"
 	if err := os.WriteFile(tmp, data, mode); err != nil {
 		return err
@@ -113,7 +150,7 @@ func Replace(path string, data []byte, mode os.FileMode) error {
 		_ = os.Remove(tmp)
 		return err
 	}
-	if err := CopyLabel(layout.Binary, tmp); err != nil {
+	if err := CopyLabel(labelFrom, tmp); err != nil {
 		slog.Warn("labelling failed", "path", tmp, "err", err)
 	}
 	if err := os.Rename(tmp, path); err != nil {

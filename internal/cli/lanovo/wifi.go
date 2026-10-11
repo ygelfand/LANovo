@@ -9,6 +9,8 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/host/wifisetup"
 
 	"github.com/ygelfand/LANovo/internal/android/wifi"
+	"github.com/ygelfand/LANovo/internal/host/takeover"
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 func newWifiCmd() *cobra.Command {
@@ -27,7 +29,11 @@ func newWifiCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return ensureWifi(ctx, out, d, r)
+			b, err := takeover.DetectBoard(d)
+			if err != nil {
+				return err
+			}
+			return ensureWifi(ctx, out, d, b.Paths(), r)
 		},
 	}
 
@@ -37,9 +43,15 @@ func newWifiCmd() *cobra.Command {
 	return c
 }
 
-func ensureWifi(ctx context.Context, out io.Writer, d *adb.Device, r wifisetup.Request) error {
-	if err := wifi.Up(d); err != nil {
+func ensureWifi(
+	ctx context.Context,
+	out io.Writer,
+	d *adb.Device,
+	p layout.Paths,
+	r wifisetup.Request,
+) error {
+	if err := wifi.Up(d, p); err != nil {
 		return err
 	}
-	return wifisetup.Ensure(ctx, out, wifi.On(d), r)
+	return wifisetup.Ensure(ctx, out, wifi.On(d, p), r)
 }

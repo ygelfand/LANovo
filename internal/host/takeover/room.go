@@ -13,12 +13,16 @@ import (
 const RoomMargin = 4 << 20
 
 // adb push truncates the destination before it writes.
-func Room(d *adb.Device, need int64) (Check, error) {
-	free, err := freeOnRoot(d)
+func Room(d *adb.Device, paths layout.Paths, need int64) (Check, error) {
+	mount := "/"
+	if !paths.OnSystem() {
+		mount = "/data"
+	}
+	free, err := freeOn(d, mount)
 	if err != nil {
 		return Check{}, err
 	}
-	existing, err := sizeOf(d, layout.Binary)
+	existing, err := sizeOf(d, paths.Binary)
 	if err != nil {
 		return Check{}, err
 	}
@@ -32,15 +36,15 @@ func Room(d *adb.Device, need int64) (Check, error) {
 		Want:  megabytes(want),
 		OK:    have >= want,
 		Fatal: true,
-		Fix:   "/ is full — remove something before installing",
+		Fix:   mount + " is full — remove something before installing",
 	}, nil
 }
 
 // Root may write into the blocks ext4 holds back.
-func freeOnRoot(d *adb.Device) (int64, error) {
-	out, err := d.Shell(`stat -f -c "%f %S" /`)
+func freeOn(d *adb.Device, mount string) (int64, error) {
+	out, err := d.Shell(`stat -f -c "%f %S" ` + mount)
 	if err != nil {
-		return 0, fmt.Errorf("reading free space on /: %w", err)
+		return 0, fmt.Errorf("reading free space on %s: %w", mount, err)
 	}
 	return parseFree(out)
 }

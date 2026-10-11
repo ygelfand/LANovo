@@ -3,12 +3,19 @@ package component
 import (
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
 type Registry = sharedcomponent.Registry[config.Config]
 
-func New() *Registry { return sharedcomponent.New[config.Config](nil) }
+func New() *Registry {
+	return sharedcomponent.New[config.Config](
+		func(needs uint64) bool { return board.Current().Has(board.Cap(needs)) },
+	)
+}
+
+func Needs(c board.Cap) sharedcomponent.Option { return sharedcomponent.Needs(uint64(c)) }
 
 var shared = New()
 

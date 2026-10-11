@@ -39,14 +39,15 @@ ADB ?= adb
 DEVICE_TMP := /data/local/tmp
 
 DEVICE ?=
-EXPECT_PLATFORM ?= msm8x53 mt8167
+EXPECT_PLATFORM ?= msm8x53 msm8953 mt8167
 
 ifneq ($(DEVICE),)
 ADB := $(ADB) -s $(DEVICE)
+SERIAL := --serial $(DEVICE)
 endif
 
 # init takes a service's SELinux domain from the label of the file it execs; /system/bin is system_file.
-LANOVOD := /system/bin/lanovod
+BOARD_SH = go run ./cmd/lanovo board --sh $(SERIAL)
 STATE_DIR := /data/misc/lanovo
 
 # The system block device carries a read-only flag a plain remount does not clear.
@@ -233,11 +234,20 @@ dist: payload ## Full build: lanovod, then the lanovo CLI carrying it
 
 .PHONY: install-lanovod
 install-lanovod: build-lanovod device ## Install lanovod, which puts its other parts in place as it starts
-	@$(ADB) shell 'setprop ctl.stop lanovod; sleep 1'
-	@$(ADB) shell '$(SETRW) && mount -o remount,rw $(REMOUNT_MP)'
-	@$(ADB) push $(DEVICE_BIN) $(LANOVOD) >/dev/null
-	@$(ADB) shell 'chmod 755 $(LANOVOD); restorecon $(LANOVOD); sync; mount -o remount,ro $(REMOUNT_MP); ls -lZ $(LANOVOD)'
-	@$(ADB) shell 'setprop ctl.start lanovod; sleep 1; echo "init.svc: lanovod $$(getprop init.svc.lanovod)"'
+	@sh_vars=$$($(BOARD_SH)) || exit 1; eval "$$sh_vars"; \
+		$(ADB) shell 'setprop ctl.stop lanovod; sleep 1'; \
+		if [ "$$root" = /system ]; then \
+			$(ADB) shell '$(SETRW) && mount -o remount,rw $(REMOUNT_MP)' && \
+			$(ADB) push $(DEVICE_BIN) "$$binary" >/dev/null && \
+			$(ADB) shell "chmod 755 $$binary; restorecon $$binary; sync" && \
+			$(ADB) shell 'mount -o remount,ro $(REMOUNT_MP)' || exit 1; \
+		else \
+			$(ADB) shell "mkdir -p $${binary%/*}" && \
+			$(ADB) push $(DEVICE_BIN) "$$binary" >/dev/null && \
+			$(ADB) shell "chmod 755 $$binary; sync" || exit 1; \
+		fi; \
+		$(ADB) shell "ls -lZ $$binary"; \
+		$(ADB) shell 'setprop ctl.start lanovod; sleep 1; echo "init.svc: lanovod $$(getprop init.svc.lanovod)"'
 
 .PHONY: restart
 restart: ## Restart lanovod through init

@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/parts"
 )
@@ -39,10 +40,11 @@ func Install(ctx context.Context, m Manifest, progress func(float32)) error {
 	if err := download(ctx, b, layout.Incoming, progress); err != nil {
 		return err
 	}
-	if err := room(b.Size); err != nil {
+	paths := board.Current().Paths()
+	if err := room(paths.Root, b.Size); err != nil {
 		return err
 	}
-	return swap(layout.Incoming, m.Version)
+	return swap(paths, layout.Incoming, m.Version)
 }
 
 func download(ctx context.Context, b Binary, to string, progress func(float32)) error {
@@ -89,20 +91,20 @@ func download(ctx context.Context, b Binary, to string, progress func(float32)) 
 	return nil
 }
 
-func room(need int64) error {
+func room(root string, need int64) error {
 	var fs syscall.Statfs_t
-	if err := syscall.Statfs("/", &fs); err != nil {
+	if err := syscall.Statfs(root, &fs); err != nil {
 		return nil
 	}
 	if free := int64(fs.Bavail) * int64(fs.Bsize); free < need {
-		return fmt.Errorf("update: %d bytes free on /, need %d", free, need)
+		return fmt.Errorf("update: %d bytes free on %s, need %d", free, root, need)
 	}
 	return nil
 }
 
 // A running executable can be renamed but not overwritten.
-func swap(staged, version string) error {
-	restore, err := parts.Writable()
+func swap(paths layout.Paths, staged, version string) error {
+	restore, err := parts.Writable(paths)
 	if err != nil {
 		return fmt.Errorf("update: remounting to install: %w", err)
 	}
@@ -112,18 +114,18 @@ func swap(staged, version string) error {
 		}
 	}()
 
-	if err := os.Rename(layout.Binary, layout.PrevBinary); err != nil {
+	if err := os.Rename(paths.Binary, paths.PrevBinary); err != nil {
 		return fmt.Errorf("update: moving the running binary aside: %w", err)
 	}
 	data, err := os.ReadFile(staged)
 	if err != nil {
-		if back := os.Rename(layout.PrevBinary, layout.Binary); back != nil {
+		if back := os.Rename(paths.PrevBinary, paths.Binary); back != nil {
 			slog.Error("could not put the previous binary back", "err", back)
 		}
 		return err
 	}
-	if err := writeBinary(data); err != nil {
-		if back := os.Rename(layout.PrevBinary, layout.Binary); back != nil {
+	if err := writeBinary(paths, data); err != nil {
+		if back := os.Rename(paths.PrevBinary, paths.Binary); back != nil {
 			slog.Error("could not put the previous binary back", "err", back)
 		}
 		return err
@@ -132,14 +134,14 @@ func swap(staged, version string) error {
 	return nil
 }
 
-func writeBinary(data []byte) error {
-	f, err := os.OpenFile(layout.Binary, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o755)
+func writeBinary(paths layout.Paths, data []byte) error {
+	f, err := os.OpenFile(paths.Binary, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o755)
 	if err != nil {
 		return err
 	}
 	if _, err := f.Write(data); err != nil {
 		f.Close()
-		return fmt.Errorf("update: writing %s: %w", layout.Binary, err)
+		return fmt.Errorf("update: writing %s: %w", paths.Binary, err)
 	}
 	if err := f.Sync(); err != nil {
 		f.Close()
@@ -148,14 +150,15 @@ func writeBinary(data []byte) error {
 	if err := f.Close(); err != nil {
 		return err
 	}
-	return parts.CopyLabel(layout.PrevBinary, layout.Binary)
+	return parts.CopyLabel(paths.PrevBinary, paths.Binary)
 }
 
 func Settle() {
-	if _, err := os.Stat(layout.PrevBinary); err != nil {
+	paths := board.Current().Paths()
+	if _, err := os.Stat(paths.PrevBinary); err != nil {
 		return
 	}
-	restore, err := parts.Writable()
+	restore, err := parts.Writable(paths)
 	if err != nil {
 		slog.Error("remounting to clear the previous binary failed", "err", err)
 		return
@@ -165,11 +168,11 @@ func Settle() {
 			slog.Error("remounting read-only failed", "err", err)
 		}
 	}()
-	if err := os.Remove(layout.PrevBinary); err != nil {
+	if err := os.Remove(paths.PrevBinary); err != nil {
 		slog.Error("removing the previous binary failed", "err", err)
 		return
 	}
-	slog.Info("previous binary removed", "path", layout.PrevBinary)
+	slog.Info("previous binary removed", "path", paths.PrevBinary)
 }
 
 type counter struct {

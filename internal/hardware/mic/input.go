@@ -29,7 +29,7 @@ func inputFor(b board.Board) input {
 	if b.SoC == board.MediaTek {
 		return &mediatek{chip: b.MicADC}
 	}
-	return qualcomm{}
+	return qualcomm{skipTertiaryChannels: b.MicNoTertiaryChannels}
 }
 
 func (m *Mics) hw() input {

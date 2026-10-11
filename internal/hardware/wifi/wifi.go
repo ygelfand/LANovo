@@ -42,8 +42,9 @@ var get = sync.OnceValue(func() *sharedwifi.Radio {
 func Get() *sharedwifi.Radio { return get() }
 
 func load() error {
+	// A board whose qcacld is a module loads it from its boot rc.
 	if _, err := os.Stat(fwpath); err != nil {
-		return fmt.Errorf("no qcacld driver on this kernel: %w", err)
+		return nil
 	}
 	_ = os.WriteFile(conMode, []byte("0"), 0o644)
 	if err := os.WriteFile(fwpath, []byte("sta"), 0o644); err != nil {

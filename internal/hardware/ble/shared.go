@@ -1,6 +1,8 @@
 package ble
 
 import (
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -15,6 +17,23 @@ import (
 const Node = "/dev/stpbt"
 const TTY = "/dev/ttyHS0"
 
+const (
+	patchFile = "btfwnpla.tlv"
+	nvmFile   = "btnvnpla.bin"
+)
+
+// Qualcomm builds ship the Bluetooth patch on bt_firmware or in the modem image.
+var firmwareDirs = []string{"/bt_firmware/image", "/firmware/image"}
+
+func firmwareDir() string {
+	for _, d := range firmwareDirs {
+		if _, err := os.Stat(filepath.Join(d, patchFile)); err == nil {
+			return d
+		}
+	}
+	return firmwareDirs[0]
+}
+
 var Listen bool
 
 func Power(on bool) (bool, error) {
@@ -28,9 +47,9 @@ func BringUp() (*hci.Port, hci.Version, error) {
 		return hci.BringUp(
 			hci.BringUpOptions{
 				UART:              TTY,
-				FirmwareDirectory: "/bt_firmware/image",
-				PatchFile:         "btfwnpla.tlv",
-				NVMFile:           "btnvnpla.bin",
+				FirmwareDirectory: firmwareDir(),
+				PatchFile:         patchFile,
+				NVMFile:           nvmFile,
 				Power:             Power,
 				ListenAfterReset:  Listen,
 			},

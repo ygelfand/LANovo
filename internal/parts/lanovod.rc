@@ -1,8 +1,12 @@
-service lanovod /system/bin/lanovod run
+service lanovod {{.Binary}} run
     class core
     user root
     group root system graphics input audio inet net_raw net_admin
+{{- if .OnSystem}}
     seclabel u:r:su:s0
+{{- else}}
+    seclabel u:r:init:s0
+{{- end}}
     disabled
 
 # init's service rather than lanovod's child: ctl.stop kills the cgroup, and a forked supplicant
@@ -16,11 +20,15 @@ service lanovo_wpa /vendor/bin/hw/wpa_supplicant -i wlan0 -Dnl80211 -c /data/mis
     seclabel u:r:su:s0
     disabled
 
-service lanovo_surface /system/bin/lanovo-surface
+service lanovo_surface {{.Surface}}
     class core
     user root
     group root graphics system
+{{- if .OnSystem}}
     seclabel u:r:su:s0
+{{- else}}
+    seclabel u:r:init:s0
+{{- end}}
     socket lanovo-surface stream 0666 root root
 
 service lanovo_camserver /system/bin/cameraserver
@@ -28,7 +36,7 @@ service lanovo_camserver /system/bin/cameraserver
     user root
     group root audio camera input drmrpc
     seclabel u:r:su:s0
-    setenv LD_PRELOAD /system/lib/liblanovo-camshim.so
+    setenv LD_PRELOAD {{.CamShim}}
     disabled
 
 service lanovo_camhal /vendor/bin/hw/camerahalserver
@@ -36,16 +44,32 @@ service lanovo_camhal /vendor/bin/hw/camerahalserver
     user root
     group root audio camera input drmrpc sdcard_rw system media graphics
     seclabel u:r:su:s0
-    setenv LD_PRELOAD /system/lib/liblanovo-camshim.so
+    setenv LD_PRELOAD {{.CamShim}}
     disabled
 
-service lanovo_camera /system/bin/lanovo-camera
+service lanovo_wlan /system/bin/sh -c "n=0; while [ ! -e /sys/class/net/wlan0 ] && [ $$n -lt 12 ]; do sleep 5; n=$$((n+1)); echo lanovo_wlan: load try $$n > /dev/kmsg; insmod /vendor/lib/modules/qca_cld/qca_cld_wlan.ko; done"
+    user root
+    group root
+    seclabel u:r:su:s0
+    disabled
+    oneshot
+
+service lanovo_camera {{.Camera}}
     class core
     user root
     group root camera graphics media system
+{{- if .OnSystem}}
     seclabel u:r:su:s0
+{{- else}}
+    seclabel u:r:init:s0
+{{- end}}
     socket lanovo-camera stream 0666 root root
     disabled
+{{- if not .OnSystem}}
+
+on early-init
+    setprop ro.logd.auditd false
+{{- end}}
 
 on post-fs-data
     mkdir /data/misc/lanovo 0700 root root
@@ -103,6 +127,7 @@ on post-fs-data
     # Android's bluetooth stack dies with zygote
     stop bluetooth-1-0
 
+    start lanovo_surface
     start lanovod
 
 on post-fs-data && property:ro.board.platform=mt8167
@@ -127,6 +152,40 @@ on post-fs-data && property:ro.board.platform=msm8x53
     start camera-provider-2-4
     start lanovo_camserver
     start lanovo_camera
+
+on post-fs-data && property:ro.board.platform=msm8953
+    stop wpa_supplicant
+    stop sensors
+    stop ppd
+    stop gamed
+    stop mmid
+    stop mlid
+    stop loc_launcher
+    stop qti_gnss_service
+    stop imsdatadaemon
+    stop imsqmidaemon
+    stop cnd
+    stop dpmd
+    stop dpmQmiMgr
+    stop ipacm
+    stop bt-dun
+    stop qteeconnector-hal-1-0
+    stop qti_esepowermanager_service
+    stop tui_comm-1-0
+    stop perf-hal-1-0
+    stop alarm-hal-1-0
+    stop factory-hal-1-0
+    setprop persist.camera.gyro.disable 1
+    setprop log.tag.mm-camera W
+    setprop log.tag.QCamera S
+    start hidl_memory
+    start qcamerasvr
+    start camera-provider-2-4
+    start lanovo_camserver
+    start lanovo_camera
+
+on property:init.svc.cnss-daemon=running && property:ro.board.platform=msm8953
+    start lanovo_wlan
 
 on property:init.svc.camerahalserver=running && property:ro.board.platform=mt8167
     stop camerahalserver

@@ -185,21 +185,24 @@ func newInstallCmd() *cobra.Command {
 			}
 			fmt.Fprintf(out, "  %-18s %s\n", "lanovod", styleDetail.Render(from))
 
-			moved, err := takeover.Stash(d)
-			for _, s := range moved {
-				fmt.Fprintf(out, "  %-18s %s\n", s.What, styleDetail.Render(s.Note))
-			}
-			if err != nil {
-				return err
+			paths := detected.Paths()
+			if paths.OnSystem() {
+				moved, err := takeover.Stash(d)
+				for _, s := range moved {
+					fmt.Fprintf(out, "  %-18s %s\n", s.What, styleDetail.Render(s.Note))
+				}
+				if err != nil {
+					return err
+				}
 			}
 
-			room, err := takeover.Room(d, int64(len(payload)+len(takeover.InitRC)))
+			room, err := takeover.Room(d, paths, int64(len(payload)))
 			if err != nil {
 				return err
 			}
 			if !room.OK {
 				fmt.Fprintf(out, "  %-18s %s\n", room.Name, styleFail.Render(room.Got))
-				return fmt.Errorf("installing needs %s and / has %s — %s",
+				return fmt.Errorf("installing needs %s, have %s — %s",
 					room.Want, room.Got, room.Fix)
 			}
 			fmt.Fprintf(out, "  %-18s %s\n", room.Name, styleDetail.Render(room.Got))
@@ -246,6 +249,7 @@ func newInstallCmd() *cobra.Command {
 				ctx,
 				out,
 				d,
+				paths,
 				wifisetup.Request{SSID: ssid, Password: password, WPS: wps},
 			); err != nil {
 				return err

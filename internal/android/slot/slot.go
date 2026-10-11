@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"syscall"
+
+	"github.com/ygelfand/LANovo/internal/android/prop"
 )
 
 // PATH is not set up when init starts a service.
@@ -11,6 +13,9 @@ const bin = "/system/bin/bootctl"
 
 // bootctl writes GPT attribute bits through the boot_control HAL.
 func MarkBooted() error {
+	if suffix, err := prop.Local.Getprop(prop.SlotSuffix); err == nil && suffix == "" {
+		return nil
+	}
 	if _, err := os.Stat(bin); err != nil {
 		return fmt.Errorf("slot: %s: %w", bin, err)
 	}
