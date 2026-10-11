@@ -3,6 +3,7 @@ package parts
 import (
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"syscall"
 	"unsafe"
@@ -23,23 +24,44 @@ func Writable() (restore func() error, err error) {
 		writing.Unlock()
 		return nil, err
 	}
+	mount := systemMountpoint()
 	if err := setReadOnly(part, false); err != nil {
 		writing.Unlock()
 		return nil, err
 	}
-	if err := syscall.Mount("", "/", "", syscall.MS_REMOUNT, ""); err != nil {
+	if err := syscall.Mount("", mount, "", syscall.MS_REMOUNT, ""); err != nil {
 		_ = setReadOnly(part, true)
 		writing.Unlock()
-		return nil, fmt.Errorf("parts: remounting / read-write: %w", err)
+		return nil, fmt.Errorf("parts: remounting %s read-write: %w", mount, err)
 	}
 	return func() error {
 		defer writing.Unlock()
 		syscall.Sync()
-		if err := syscall.Mount("", "/", "", syscall.MS_REMOUNT|syscall.MS_RDONLY, ""); err != nil {
-			return fmt.Errorf("parts: remounting / read-only: %w", err)
+		if err := syscall.Mount(
+			"",
+			mount,
+			"",
+			syscall.MS_REMOUNT|syscall.MS_RDONLY,
+			"",
+		); err != nil {
+			return fmt.Errorf("parts: remounting %s read-only: %w", mount, err)
 		}
 		return setReadOnly(part, true)
 	}, nil
+}
+
+// A system-as-root board carries the system image at /; a board with a standalone system partition mounts it at /system.
+func systemMountpoint() string {
+	data, err := os.ReadFile("/proc/mounts")
+	if err != nil {
+		return "/"
+	}
+	for _, line := range strings.Split(string(data), "\n") {
+		if fields := strings.Fields(line); len(fields) >= 2 && fields[1] == "/system" {
+			return "/system"
+		}
+	}
+	return "/"
 }
 
 func systemPartition() (string, error) {

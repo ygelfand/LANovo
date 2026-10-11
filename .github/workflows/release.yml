@@ -28,8 +28,8 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;30.0.16248370"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/30.0.16248370" >> "$GITHUB_ENV"
 
-      - name: install upx
-        run: sudo apt-get update && sudo apt-get install -y upx-ucl
+      - name: build upx
+        run: make upx
 
       - uses: goreleaser/goreleaser-action@v7
         with:
@@ -37,4 +37,4 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACK: upx
+          PACK: bin/upx-4.2.4/build/upx --lzma

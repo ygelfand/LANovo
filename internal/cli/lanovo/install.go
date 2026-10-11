@@ -131,7 +131,7 @@ func newInstallCmd() *cobra.Command {
 			}
 
 			var patched bool
-			if !noBoot {
+			if !noBoot && takeover.PatchesBoot(detected) {
 				slots, err := takeover.Slots(d)
 				if err != nil {
 					return err

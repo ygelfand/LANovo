@@ -13,6 +13,7 @@ var (
 	AlertsSection    = sections.Alerts
 	FeedbackSection  = sections.Feedback
 	APISection       = sections.API
+	AppsSection      = sections.Apps
 	NetworkSection   = sections.Network
 	CallSection      = sections.Call
 	CastSection      = sections.Cast

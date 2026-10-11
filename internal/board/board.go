@@ -49,6 +49,8 @@ type Board struct {
 
 	Buttons []Button
 
+	Keys map[uint16]string
+
 	Amp, MicADC *Chip
 
 	AmpPins []int

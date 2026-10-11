@@ -16,6 +16,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/apps"
 	"github.com/ygelfand/LANovo/internal/feature/assistant"
 	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/configsync"
@@ -59,7 +60,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		Voice: sharedvolume.For(volume.Get(), config.StreamVoice),
 		Video: board.Current().CameraWidth > 0,
 	})
-	drawer.Get().Add(calls.Rail())
+	apps.Get().Add(calls.App())
 	syncs := syncview.New(syncview.Options{
 		UI:    look,
 		Shell: featureshell.Get(),
@@ -133,6 +134,10 @@ var Get = sync.OnceValue(func() *screens.App {
 			screens.On(&web.Get().Offered),
 		},
 
-		Views: []func(shell.View) *screens.Screen{calls.Screen, syncs.Screen},
+		Views: []func(shell.View) *screens.Screen{
+			calls.Screen,
+			syncs.Screen,
+			apps.Get().Screens(look),
+		},
 	})
 })

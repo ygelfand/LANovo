@@ -22,6 +22,11 @@ TAGS ?=
 PACK ?=
 
 BUILD_DIR := bin
+
+# UPX 5.x packs static ARM executables that fail upx -t.
+UPX_VERSION := 4.2.4
+UPX_DIR := $(BUILD_DIR)/upx-$(UPX_VERSION)
+UPX := $(UPX_DIR)/build/upx
 ASSET_DIR := internal/host/assets/payload
 
 # lanovod targets the Lenovo Smart Display: APQ8053, Android Things 1.1 on Android 8.1 (API 27).
@@ -44,8 +49,11 @@ endif
 LANOVOD := /system/bin/lanovod
 STATE_DIR := /data/misc/lanovo
 
-# / is the system image on this system-as-root device; its block device carries a read-only flag a plain remount does not clear.
+# The system block device carries a read-only flag a plain remount does not clear.
 SETRW = blockdev --setrw $$(ls -d /dev/block/bootdevice/by-name /dev/block/platform/bootdevice/by-name 2>/dev/null | head -1)/system$$(getprop ro.boot.slot_suffix)
+
+# A system-as-root board mounts the system image at /; a board with a standalone system partition mounts it at /system.
+REMOUNT_MP = $$(grep -qE ' /system ' /proc/mounts && echo /system || echo /)
 
 ##@ Development
 
@@ -72,13 +80,24 @@ build-lanovo: ## Build the host CLI into ./bin
 	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovo ./cmd/lanovo
 
 .PHONY: build-lanovod
-build-lanovod: build-surface build-camshim build-camera ## Cross-compile lanovod for the display, carrying its native parts (PACK=upx to compress it)
+build-lanovod: build-surface build-camshim build-camera ## Cross-compile lanovod for the display, carrying its native parts (PACK=bin/upx-4.2.4/build/upx to compress it)
 	@mkdir -p $(BUILD_DIR) $(PARTS_DIR)
 	cp $(SURFACE_BIN) $(PARTS_DIR)/lanovo-surface
 	cp $(CAMSHIM_BIN) $(PARTS_DIR)/liblanovo-camshim.so
 	cp $(CAMERA_BIN) $(PARTS_DIR)/lanovo-camera
 	$(DEVICE_ENV) go build -tags "payload$(if $(TAGS),$(comma)$(TAGS))" -ldflags "$(DEVICE_LDFLAGS)" -o $(DEVICE_BIN) ./cmd/lanovod
 	$(if $(PACK),$(PACK) -q $(DEVICE_BIN))
+	$(if $(PACK),$(firstword $(PACK)) -q -t $(DEVICE_BIN))
+
+.PHONY: upx
+upx: $(UPX) ## Build the pinned UPX that packs device binaries
+
+$(UPX):
+	@command -v cmake >/dev/null || { echo "needs cmake: brew install cmake"; exit 1; }
+	@mkdir -p $(UPX_DIR)
+	curl -sSfL https://github.com/upx/upx/releases/download/v$(UPX_VERSION)/upx-$(UPX_VERSION)-src.tar.xz | tar -xJ -C $(UPX_DIR) --strip-components=1
+	cmake -S $(UPX_DIR) -B $(UPX_DIR)/build -DCMAKE_BUILD_TYPE=Release >/dev/null
+	cmake --build $(UPX_DIR)/build -j >/dev/null
 
 # go list may know the version before its source archive has been downloaded.
 .PHONY: countertop-native-source
@@ -215,9 +234,9 @@ dist: payload ## Full build: lanovod, then the lanovo CLI carrying it
 .PHONY: install-lanovod
 install-lanovod: build-lanovod device ## Install lanovod, which puts its other parts in place as it starts
 	@$(ADB) shell 'setprop ctl.stop lanovod; sleep 1'
-	@$(ADB) shell '$(SETRW) && mount -o remount,rw /'
+	@$(ADB) shell '$(SETRW) && mount -o remount,rw $(REMOUNT_MP)'
 	@$(ADB) push $(DEVICE_BIN) $(LANOVOD) >/dev/null
-	@$(ADB) shell 'chmod 755 $(LANOVOD); restorecon $(LANOVOD); sync; mount -o remount,ro /; ls -lZ $(LANOVOD)'
+	@$(ADB) shell 'chmod 755 $(LANOVOD); restorecon $(LANOVOD); sync; mount -o remount,ro $(REMOUNT_MP); ls -lZ $(LANOVOD)'
 	@$(ADB) shell 'setprop ctl.start lanovod; sleep 1; echo "init.svc: lanovod $$(getprop init.svc.lanovod)"'
 
 .PHONY: restart
@@ -258,11 +277,10 @@ manifest: build-lanovod ## Write the manifest a device fetches to find this buil
 	@cat $(BUILD_DIR)/manifest.json
 
 .PHONY: release-dev
-release-dev: ## Publish this working tree to the dev channel, without pushing anything
+release-dev: $(UPX) ## Publish this working tree to the dev channel, without pushing anything
 	@command -v gh >/dev/null || { echo "needs the gh CLI: brew install gh"; exit 1; }
 	@command -v goreleaser >/dev/null || { echo "needs goreleaser: brew install goreleaser"; exit 1; }
-	@command -v upx >/dev/null || { echo "needs upx: brew install upx"; exit 1; }
-	VERSION=$(VERSION) PACK=upx goreleaser release --snapshot --clean
+	VERSION=$(VERSION) PACK="$(UPX) --lzma" goreleaser release --snapshot --clean
 	@for f in dist/host_*/lanovo dist/host_*/lanovo.exe; do \
 		[ -f "$$f" ] || continue; \
 		d=$$(basename $$(dirname $$f)); \
@@ -274,7 +292,7 @@ release-dev: ## Publish this working tree to the dev channel, without pushing an
 	done
 	@gh release view dev >/dev/null 2>&1 || \
 		gh release create dev --prerelease --title dev --notes "Rolling build from the dev channel."
-	@$(MAKE) --no-print-directory manifest VERSION=$(VERSION) FROM=$(RELEASES)/download/dev PAGE=$(RELEASES)/tag/dev
+	@$(MAKE) --no-print-directory manifest PACK="$(UPX) --lzma" VERSION=$(VERSION) FROM=$(RELEASES)/download/dev PAGE=$(RELEASES)/tag/dev
 	gh release upload dev dist/lanovo_* $(DEVICE_BIN) $(BUILD_DIR)/manifest.json --clobber
 	@echo "dev channel now serves $(VERSION)"
 

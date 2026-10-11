@@ -63,7 +63,9 @@ func Get() *Idle {
 				return display.Get().Uncovered(panel.PriorityDashboard) &&
 					web.Get().Offering() == ""
 			},
+			Ambient: sensors.Get().Ambient,
 		})}
+		shared.Night.Listen(sensors.Get().Night)
 		component.Settings.Add(shared.Settings())
 		sensors.Get().Arrived.Listen(func(near bool) {
 			if near && config.Get().Presence.Wake {

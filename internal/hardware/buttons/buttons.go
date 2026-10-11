@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,6 +31,7 @@ type Controller struct {
 
 	mu    sync.Mutex
 	watch *Watcher
+	ev    *evdev
 }
 
 var (
@@ -44,6 +46,25 @@ func (c *Controller) Name() string { return "buttons" }
 func (c *Controller) Deliver(e Event) { c.Events.Emit(e) }
 
 func All() []Button {
+	if keys := board.Current().Keys; len(keys) > 0 {
+		codes := make([]int, 0, len(keys))
+		for code := range keys {
+			codes = append(codes, int(code))
+		}
+		sort.Ints(codes)
+
+		seen := map[Button]bool{}
+		var out []Button
+		for _, code := range codes {
+			b := Button(keys[uint16(code)])
+			if !seen[b] {
+				seen[b] = true
+				out = append(out, b)
+			}
+		}
+		return out
+	}
+
 	out := make([]Button, 0, len(lines()))
 	for _, l := range lines() {
 		out = append(out, l.button)
@@ -53,8 +74,15 @@ func All() []Button {
 
 func (c *Controller) Startup() sharedcomponent.Progress {
 	c.mu.Lock()
-	w := c.watch
+	w, ev := c.watch, c.ev
 	c.mu.Unlock()
+
+	if ev != nil {
+		if len(ev.devices) == 0 {
+			return sharedcomponent.Progress{Doing: "taking the buttons"}
+		}
+		return sharedcomponent.Progress{Done: true}
+	}
 
 	if w == nil {
 		return sharedcomponent.Progress{Doing: "taking the buttons"}
@@ -70,6 +98,22 @@ func (c *Controller) Startup() sharedcomponent.Progress {
 }
 
 func (c *Controller) Start(context.Context) error {
+	if len(board.Current().Keys) > 0 {
+		ev, problems := watchEvdev()
+		for _, p := range problems {
+			fmt.Fprintln(os.Stderr, "buttons:", p)
+		}
+		if len(ev.devices) == 0 {
+			ev.Close()
+			return errors.New("buttons: no input devices")
+		}
+
+		c.mu.Lock()
+		c.ev = ev
+		c.mu.Unlock()
+		return nil
+	}
+
 	w, problems := Watch()
 	for _, p := range problems {
 		fmt.Fprintln(os.Stderr, "buttons:", p)
@@ -87,9 +131,12 @@ func (c *Controller) Start(context.Context) error {
 
 func (c *Controller) Run(ctx context.Context) error {
 	c.mu.Lock()
-	w := c.watch
+	w, ev := c.watch, c.ev
 	c.mu.Unlock()
 
+	if ev != nil {
+		return ev.Run(ctx, c.Events.Emit)
+	}
 	if w == nil {
 		return errors.New("buttons: not started")
 	}
@@ -113,21 +160,27 @@ func (c *Controller) Run(ctx context.Context) error {
 
 func (c *Controller) Close() error {
 	c.mu.Lock()
-	w := c.watch
-	c.watch = nil
+	w, ev := c.watch, c.ev
+	c.watch, c.ev = nil, nil
 	c.mu.Unlock()
 
 	if w != nil {
 		w.Close()
+	}
+	if ev != nil {
+		ev.Close()
 	}
 	return nil
 }
 
 func (c *Controller) State(b Button) (bool, bool) {
 	c.mu.Lock()
-	w := c.watch
+	w, ev := c.watch, c.ev
 	c.mu.Unlock()
 
+	if ev != nil {
+		return ev.State(b)
+	}
 	if w == nil {
 		return false, false
 	}

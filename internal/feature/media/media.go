@@ -18,7 +18,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/drawer"
+	"github.com/ygelfand/LANovo/internal/feature/apps"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -56,7 +56,7 @@ func Get() *Player {
 		)
 		shared.Begun.Listen(func(s nowplaying.Source) { theCard.Began(s) })
 		volume.Get().Watch(config.StreamMedia, func(int) { shared.Changed() })
-		drawer.Get().Add(theCard.Rail())
+		apps.Get().Add(theCard.App())
 	})
 	return shared
 }

@@ -10,6 +10,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/host/adb"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
+	"github.com/ygelfand/LANovo/internal/board"
 )
 
 func decodeBase64(s string) ([]byte, error) {
@@ -45,7 +46,13 @@ const (
 	WantIoT         = "1.1.0"
 )
 
+func PatchesBoot(b board.Board) bool { return b.Name != board.Penghu.Name }
+
 func Preflight(d *adb.Device) ([]Check, error) {
+	if b, err := DetectBoard(d); err == nil && !PatchesBoot(b) {
+		return lockedPreflight(d, b)
+	}
+
 	props := map[string]string{}
 	for _, p := range []string{
 		prop.Model,
@@ -139,6 +146,39 @@ func Preflight(d *adb.Device) ([]Check, error) {
 	}
 
 	return checks, nil
+}
+
+func lockedPreflight(d *adb.Device, b board.Board) ([]Check, error) {
+	root, err := d.IsRoot()
+	if err != nil {
+		return nil, err
+	}
+	mode, err := d.Shell("getenforce")
+	if err != nil {
+		return nil, err
+	}
+	mode = strings.TrimSpace(mode)
+
+	// TODO: link the ThinkSmart View root guide in both fixes
+	return []Check{
+		{Name: "board", Got: b.Model, Want: b.Model, OK: true},
+		{
+			Name:  "adb root",
+			Got:   fmt.Sprintf("%v", root),
+			Want:  "true",
+			OK:    root,
+			Fatal: true,
+			Fix:   "root the " + b.Model + " first",
+		},
+		{
+			Name:  "selinux",
+			Got:   mode,
+			Want:  "Permissive",
+			OK:    mode == "Permissive",
+			Fatal: true,
+			Fix:   "make the " + b.Model + " permissive first",
+		},
+	}, nil
 }
 
 func mustSlots(d *adb.Device) []string {

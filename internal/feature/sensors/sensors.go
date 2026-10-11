@@ -14,6 +14,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/hook"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
@@ -95,6 +96,8 @@ func (s *Sensors) Seen() (time.Duration, bool) {
 func (s *Sensors) Orientation() geometry.Orientation { return s.tracker.Orientation() }
 
 func (s *Sensors) Ambient() (lux float64, ok bool) { return s.auto.Ambient() }
+
+func (s *Sensors) Night(n schema.Night) { s.auto.Night(n) }
 
 func (s *Sensors) Turn(rot geometry.Orientation) {
 	slog.Info("turned by hand", "orientation", rot)
