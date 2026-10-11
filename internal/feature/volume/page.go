@@ -18,6 +18,8 @@ var page = sync.OnceValue(func() *sharedshell.Page {
 		Streams:   config.Streams(),
 		MainSteps: MainSteps,
 		Chimes:    chimes{},
+		Feedback:  feedback.Get().Feedback,
+		Push:      shell.Get().Push,
 	})
 })
 

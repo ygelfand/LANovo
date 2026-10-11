@@ -17,6 +17,11 @@ var manyRows = map[string]string{
 }
 
 var inTables = map[string]string{
+	"Feedback.Chime":            "feedback.chime",
+	"Feedback.Failure":          "feedback.failure",
+	"Feedback.Cancel":           "feedback.cancel",
+	"Feedback.Mute":             "feedback.mute",
+	"Feedback.Unmute":           "feedback.unmute",
 	"Alerts.Info":               "alerts.info",
 	"Alerts.Success":            "alerts.success",
 	"Alerts.Warning":            "alerts.warning",
@@ -144,7 +149,7 @@ var byHand = map[string]string{
 	"Network.Address": "read back from the lease, not chosen",
 
 	"Screen.Volume":       "not wired yet",
-	"Feedback.Chime":      "not wired yet",
+	"Feedback.Hold":       "the held mute button sound is only exposed by hardware with a hold action",
 	"Diag.Interval":       "not wired yet",
 	"Time.Home":           "not wired yet",
 	"Time.Chosen":         "not wired yet",
