@@ -15,13 +15,17 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
-var cameraPages = sync.OnceValue(func() *sharedsettings.CameraPages[live.Knobs] {
-	cam := livecam.Get()
-	preview := sharedpreview.New(sharedpreview.Dependencies{
+var Preview = sync.OnceValue(func() *sharedpreview.Preview {
+	return sharedpreview.New(sharedpreview.Dependencies{
 		Shell:   shell.Get(),
-		Camera:  cam.Sessions(),
+		Camera:  livecam.Get().Sessions(),
 		Display: display.Get(),
 	})
+})
+
+var cameraPages = sync.OnceValue(func() *sharedsettings.CameraPages[live.Knobs] {
+	cam := livecam.Get()
+	preview := Preview()
 	return sharedsettings.NewCameraPages(sharedsettings.CameraOptions[live.Knobs]{
 		Table:     cam.Table,
 		Read:      cam.Saved,

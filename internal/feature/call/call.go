@@ -16,6 +16,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/tones"
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
@@ -36,6 +37,7 @@ func Get() *sharedcall.Calls {
 			Privacy:  privacy.Get(),
 			Media:    media.Get(),
 			Sound:    device{},
+			Tones:    tones.Get(),
 			Stage:    callview.NewStage(shell.Get()),
 			Video: callvideo.New(callvideo.Dependencies{
 				Display: display.Get(),

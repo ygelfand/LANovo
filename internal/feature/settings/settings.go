@@ -3,8 +3,6 @@ package settings
 import (
 	"sync"
 
-	gogui "github.com/go-gui-org/go-gui/gui"
-
 	shareddrawer "github.com/ygelfand/libcountertop/pkg/display/drawer"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/say"
@@ -35,7 +33,7 @@ func Get() *Settings {
 		drawer.Get().Add(shareddrawer.Entry{
 			Name:  func() string { return say.T("settings.title") },
 			Order: shareddrawer.OrderSettings,
-			Glyph: func() string { return gogui.IconGear },
+			Icon:  "mdi:cog",
 			Open:  Open,
 		})
 	})

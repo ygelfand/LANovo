@@ -2,15 +2,23 @@ package gui
 
 import (
 	"sync"
+	"time"
 
+	gogui "github.com/go-gui-org/go-gui/gui"
 	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
+	"github.com/ygelfand/libcountertop/pkg/display/agenda"
 	"github.com/ygelfand/libcountertop/pkg/display/callview"
+	"github.com/ygelfand/libcountertop/pkg/display/mirror"
+	"github.com/ygelfand/libcountertop/pkg/display/radarview"
 	"github.com/ygelfand/libcountertop/pkg/display/screens"
 	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
 	"github.com/ygelfand/libcountertop/pkg/display/shell"
+	"github.com/ygelfand/libcountertop/pkg/display/shopping"
 	"github.com/ygelfand/libcountertop/pkg/display/syncview"
+	"github.com/ygelfand/libcountertop/pkg/display/tuner"
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 	tesseraview "github.com/ygelfand/libcountertop/pkg/tessera/widgets"
 
 	"github.com/ygelfand/LANovo/internal/board"
@@ -18,7 +26,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/apps"
 	"github.com/ygelfand/LANovo/internal/feature/assistant"
+	"github.com/ygelfand/LANovo/internal/feature/calendar"
 	"github.com/ygelfand/LANovo/internal/feature/call"
+	"github.com/ygelfand/LANovo/internal/feature/commands"
 	"github.com/ygelfand/LANovo/internal/feature/configsync"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
@@ -29,14 +39,18 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/idle"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
+	"github.com/ygelfand/LANovo/internal/feature/nws"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
+	"github.com/ygelfand/LANovo/internal/feature/radar"
+	"github.com/ygelfand/LANovo/internal/feature/radio"
 	"github.com/ygelfand/LANovo/internal/feature/screen"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/feature/settings"
 	featureshell "github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/tessera"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
+	"github.com/ygelfand/LANovo/internal/feature/todo"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/feature/weather"
 	"github.com/ygelfand/LANovo/internal/feature/web"
@@ -61,6 +75,12 @@ var Get = sync.OnceValue(func() *screens.App {
 		Video: board.Current().CameraWidth > 0,
 	})
 	apps.Get().Add(calls.App())
+	var mirrors []func(shell.View) *screens.Screen
+	if board.Current().CameraWidth > 0 {
+		m := mirror.New(mirror.Options{Shell: featureshell.Get(), Camera: settings.Preview()})
+		apps.Get().Add(m.App())
+		mirrors = append(mirrors, m.Screen)
+	}
 	syncs := syncview.New(syncview.Options{
 		UI:    look,
 		Shell: featureshell.Get(),
@@ -68,7 +88,47 @@ var Get = sync.OnceValue(func() *screens.App {
 		Peers: discovery.Get(),
 		Logo:  sharedsettings.Themed(lanovoui.Logo().Light, lanovoui.Logo().Dark),
 	})
-	return screens.New(screens.Options{
+	var app *screens.App
+	shop := shopping.New(shopping.Options{
+		UI:    look,
+		Shell: featureshell.Get(),
+		Todo:  todo.Get().Todo,
+		Gate:  func(w *gogui.Window) gogui.View { return app.Gate(w) },
+	})
+	apps.Get().Add(shop.App())
+	diary := agenda.New(agenda.Options{
+		UI:       look,
+		Shell:    featureshell.Get(),
+		Calendar: calendar.Get().Calendar,
+		Gate:     func(w *gogui.Window) gogui.View { return app.Gate(w) },
+		TwentyFour: func() bool {
+			return config.Get().Screen.Hours == schema.TwentyFourHour
+		},
+	})
+	apps.Get().Add(diary.App())
+	dial := tuner.New(tuner.Options{
+		UI:     look,
+		Shell:  featureshell.Get(),
+		Radio:  radio.Get(),
+		Player: media.Get(),
+		Gate:   func(w *gogui.Window) gogui.View { return app.Gate(w) },
+		Redraw: func() { featureshell.Get().Redraw() },
+	})
+	apps.Get().Add(dial.App())
+	sky := radarview.New(radarview.Options{
+		UI:       look,
+		Shell:    featureshell.Get(),
+		Radar:    radar.Get(),
+		Settings: config.WeatherSection,
+		Clock24: func() bool {
+			return config.Get().Screen.Hours == schema.TwentyFourHour
+		},
+		Again: func(w *gogui.Window, after time.Duration) { app.Again(w, after) },
+		Gate:  func(w *gogui.Window) gogui.View { return app.Gate(w) },
+	})
+	apps.Get().Add(sky.App())
+	commands.Get().Listen(sky.Command())
+	app = screens.New(screens.Options{
 		Name:       "lanovo",
 		UISize:     board.Current().UISize,
 		DeviceName: func() string { return config.Get().Device.Name },
@@ -111,9 +171,13 @@ var Get = sync.OnceValue(func() *screens.App {
 			HomeAfterIdle: homecontrol.Get().ReturnHome,
 			Logo:          lanovoui.Logo(),
 		}),
-		Forecast: weather.Get(),
+		Forecast:  weather.Get(),
+		Warnings:  nws.Get(),
+		OpenRadar: sky.Open,
 
 		WeatherEntities: func() shell.View { return settings.WeatherEntities() },
+		Todo:            todo.Get().Todo,
+		Calendar:        calendar.Get().Calendar,
 		Player:          media.Get(),
 		PlayerPage:      media.Page,
 		MediaVolume:     sharedvolume.For(volume.Get(), config.StreamMedia),
@@ -134,10 +198,15 @@ var Get = sync.OnceValue(func() *screens.App {
 			screens.On(&web.Get().Offered),
 		},
 
-		Views: []func(shell.View) *screens.Screen{
+		Views: append([]func(shell.View) *screens.Screen{
 			calls.Screen,
 			syncs.Screen,
+			shop.Screen,
+			diary.Screen,
+			dial.Screen,
+			sky.Screen,
 			apps.Get().Screens(look),
-		},
+		}, mirrors...),
 	})
+	return app
 })

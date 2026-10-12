@@ -32,6 +32,8 @@ type Part struct {
 
 func (p Part) Data() []byte { return p.data }
 
+func Voice() []byte { return voice }
+
 func (p Part) For(soc board.SoC) bool { return p.SoC == "" || p.SoC == soc }
 
 func (p Part) at(path string) Part {

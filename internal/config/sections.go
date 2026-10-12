@@ -28,6 +28,10 @@ var (
 	IdleSection      = sections.Idle
 	VisualSection    = sections.Visual
 	WeatherSection   = sections.Weather
+	TodoSection      = sections.Todo
+	CalendarSection  = sections.Calendar
+	RadioSection     = sections.Radio
+	VoiceSection     = sections.Voice
 
 	LiftSection = storage.Bind(
 		func() *storage.Store[Config] { return store().Store },

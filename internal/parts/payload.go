@@ -12,3 +12,6 @@ var camshim []byte
 
 //go:embed payload/lanovo-camera
 var camera []byte
+
+//go:embed payload/lanovo-voice
+var voice []byte

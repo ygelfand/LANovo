@@ -40,6 +40,8 @@ const (
 
 	StatePath = StateDir + "/state.json"
 
+	RuntimePath = StateDir + "/runtime.json"
+
 	NamePath = StateDir + "/name"
 
 	KeyPath = StateDir + "/psk"
@@ -62,6 +64,10 @@ const (
 	BondPath = StateDir + "/bonds"
 
 	ModelDir = StateDir + "/models"
+
+	VoiceHelper = StateDir + "/bin/lanovo-voice"
+
+	TileDir = StateDir + "/tiles"
 
 	RecordingDir = StateDir + "/recordings"
 

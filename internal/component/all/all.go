@@ -11,6 +11,7 @@ import (
 	_ "github.com/ygelfand/LANovo/internal/feature/call"
 	_ "github.com/ygelfand/LANovo/internal/feature/chromecast"
 	_ "github.com/ygelfand/LANovo/internal/feature/clock"
+	_ "github.com/ygelfand/LANovo/internal/feature/commands"
 	_ "github.com/ygelfand/LANovo/internal/feature/control"
 	_ "github.com/ygelfand/LANovo/internal/feature/dashboard"
 	_ "github.com/ygelfand/LANovo/internal/feature/detect"

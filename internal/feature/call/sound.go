@@ -25,6 +25,6 @@ func (device) Claim(name string, run func(context.Context) error) {
 		Claim(name, func(ctx context.Context, _ *speaker.Speaker) error { return run(ctx) })
 }
 func (device) Duck(on bool) { speaker.Sound().Backgrounds().Duck(on) }
-func (device) Chime(s config.Stream, level float64, notes ...tone.Note) {
-	speaker.Sound().Interject(func(p *speaker.Speaker) { p.Chime(s, level, notes...) })
+func (device) Tone(s config.Stream, level float64, snd tone.Sound) {
+	speaker.Sound().Sound(s, level, snd)
 }

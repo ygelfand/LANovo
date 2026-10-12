@@ -5,6 +5,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/call"
+	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 )
 
@@ -14,6 +15,7 @@ func callPages() *sharedsettings.CallPages {
 			Settings:   config.CallSection,
 			Shell:      shell.Get(),
 			Controller: call.Get(),
+			Peers:      discovery.Get().Peers,
 		},
 	)
 }
