@@ -19,6 +19,7 @@ var Penghu = Board{
 	Tessera:               Tessera{Board: "jc8012p4a1", Columns: 6, Rows: 4},
 	Touch:                 "himax-touchscreen",
 	Amp:                   Blueberry.Amp,
+	AmpPins:               Blueberry.AmpPins,
 	MicNoTertiaryChannels: true,
 	// Provisional until Penghu's microphone sensitivity is measured.
 	MicSensitivity: Blueberry.MicSensitivity,
