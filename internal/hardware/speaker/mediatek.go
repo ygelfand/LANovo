@@ -47,7 +47,10 @@ func (m *mediatek) power(out *alsa.Playback, on bool) error {
 	if err != nil {
 		return err
 	}
-	stop := silence(out)
+	stop, err := silence(out)
+	if err != nil {
+		return fmt.Errorf("speaker: starting silence for the amplifier: %w", err)
+	}
 	err = mtkaudio.AmpOn(*m.chip, t)
 	if serr := stop(); err == nil && serr != nil {
 		err = fmt.Errorf("speaker: silence while loading the amplifier: %w", serr)
@@ -71,30 +74,4 @@ func (m *mediatek) volume(_ *alsa.Mixer, dB float64) (bool, error) {
 		return true, nil
 	}
 	return true, mtkaudio.AmpVolume(*m.chip, dB)
-}
-
-func silence(out *alsa.Playback) (stop func() error) {
-	if out == nil {
-		return func() error { return nil }
-	}
-	quit, done := make(chan struct{}), make(chan error, 1)
-	go func() {
-		quiet := make([]byte, period*FrameBytes)
-		for {
-			select {
-			case <-quit:
-				done <- nil
-				return
-			default:
-			}
-			if _, err := out.Write(quiet); err != nil {
-				done <- err
-				return
-			}
-		}
-	}()
-	return func() error {
-		close(quit)
-		return <-done
-	}
 }

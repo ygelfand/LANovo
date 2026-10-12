@@ -60,8 +60,11 @@ func (q *qualcomm) power(out *alsa.Playback, on bool) error {
 		return nil
 	}
 
-	stop := silence(out)
-	err := qcomaudio.AmpOn(*q.chip)
+	stop, err := silence(out)
+	if err != nil {
+		return fmt.Errorf("speaker: starting silence for the amplifier: %w", err)
+	}
+	err = qcomaudio.AmpOn(*q.chip)
 	if serr := stop(); err == nil && serr != nil {
 		err = fmt.Errorf("speaker: silence while loading the amplifier: %w", serr)
 	}
