@@ -25,7 +25,7 @@ func TestRC(t *testing.T) {
 				"service lanovo_camera /system/bin/lanovo-camera",
 				"group root system graphics input audio inet net_raw net_admin\n    seclabel u:r:su:s0\n    disabled",
 			},
-			absent: []string{"ro.logd.auditd"},
+			absent: []string{"ro.logd.auditd", "lanovo_widevine"},
 		},
 		{
 			name:  "data",
@@ -37,6 +37,9 @@ func TestRC(t *testing.T) {
 				"service lanovo_camera /data/misc/lanovo/bin/lanovo-camera",
 				"group root system graphics input audio inet net_raw net_admin\n    seclabel u:r:init:s0\n    disabled",
 				"on early-init\n    setprop ro.logd.auditd false",
+				"service lanovo_widevine /data/misc/lanovo/bin/android.hardware.drm@1.0-service.widevine",
+				"setenv LD_LIBRARY_PATH /data/misc/lanovo/lib:/vendor/lib:/system/lib",
+				"on post-fs-data\n    start lanovo_widevine",
 			},
 			absent: []string{"/system/bin/lanovo", "/system/lib/liblanovo"},
 		},

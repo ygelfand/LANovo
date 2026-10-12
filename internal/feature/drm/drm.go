@@ -18,10 +18,13 @@ func init() {
 		sharedcomponent.Device,
 		Get,
 		sharedcomponent.Order(61),
-		component.Needs(board.SecureVideo),
 	)
 }
 
 var Get = sync.OnceValue(func() *widevine.Provisioner {
-	return widevine.New(func() *surface.Client { return display.Get().Helper() }, dhcp.Get())
+	floor := widevine.L3
+	if board.Current().Has(board.SecureVideo) {
+		floor = widevine.L1
+	}
+	return widevine.New(func() *surface.Client { return display.Get().Helper() }, dhcp.Get(), floor)
 })

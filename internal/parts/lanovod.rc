@@ -67,8 +67,19 @@ service lanovo_camera {{.Camera}}
     disabled
 {{- if not .OnSystem}}
 
+service lanovo_widevine {{.Root}}/bin/android.hardware.drm@1.0-service.widevine
+    class hal
+    user root
+    group root drmrpc
+    setenv LD_LIBRARY_PATH {{.Root}}/lib:/vendor/lib:/system/lib
+    seclabel u:r:init:s0
+    disabled
+
 on early-init
     setprop ro.logd.auditd false
+
+on post-fs-data
+    start lanovo_widevine
 {{- end}}
 
 on post-fs-data
