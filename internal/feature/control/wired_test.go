@@ -107,6 +107,19 @@ var inTables = map[string]string{
 	"Call.PauseWake":            "call.pause_wake",
 	"Call.AutoVideo":            "call.auto_video",
 	"Call.Stream":               "call.stream",
+	"Call.AnswerFrom":           "call.answer_from",
+	"Call.AnswerPeers":          "call.answer_peers",
+	"Call.Ring":                 "call.ring",
+	"Call.VideoRing":            "call.video_ring",
+	"Call.Ringback":             "call.ringback",
+	"Calendar.Entities":         "calendar.entities",
+	"Calendar.Span":             "calendar.span",
+	"Todo.Entity":               "todo.entity",
+	"Todo.Completed":            "todo.completed",
+	"Voice.Commands":            "voice.commands",
+	"Weather.Alerts":            "weather.alerts",
+	"Weather.RadarSource":       "weather.radar_source",
+	"Weather.RadarRange":        "weather.radar_range",
 	"Bluetooth.Proxy":           "bluetooth.proxy",
 	"Bluetooth.Speaker":         "bluetooth.speaker",
 	"Bluetooth.Scan":            "bluetooth.scan",
@@ -140,6 +153,10 @@ var byHand = map[string]string{
 	"Wake.Stop.Threshold": "an entity on the microphone page; a harness that changed it would be turning detection off under whatever else it was testing",
 
 	"Poster.Last": "the picture last shown, written by the poster itself",
+
+	"Radio.Favorites": "starred on the radio screen",
+	"Radio.Last":      "the station last tuned, written by the radio itself",
+	"Radio.LastTitle": "the same",
 
 	"Home.Picks": "Home control's entity pickers, keyed by selection",
 
