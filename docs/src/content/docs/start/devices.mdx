@@ -1,0 +1,64 @@
+---
+title: Supported devices
+description: Which displays LANovo runs on.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import tall from '../../../assets/devices/sd10-portrait-clock.jpg';
+import wide from '../../../assets/devices/sd10-clock.jpg';
+import sd7 from '../../../assets/devices/sd7-clock.jpg';
+import rotate from '../../../assets/screens/rotate.webp';
+import jbl from '../../../assets/screens/jbl-light-cycles.webp';
+import sd7Saver from '../../../assets/screens/sd7-light-cycles.webp';
+
+LANovo detects the model itself.
+
+| | Smart Display 10 | Smart Display 8 | Smart Display 7 | JBL Link View | ThinkSmart View |
+|---|---|---|---|---|---|
+| **Codename** | blueberry | amber | ivy | opal | penghu |
+| **Status** | Supported | Untested | Supported | Supported | Supported |
+| **Screen** | 10.1", 1920 × 1200 | 8", 1280 × 800 | 7", 1024 × 600 | 8", 1280 × 800 | 8", 1280 × 800 |
+| **Rotation** | Automatic | Automatic | Landscape | Landscape | Automatic |
+| **Camera** | Yes | Yes | Yes | Yes | Yes |
+
+## Smart Display 10 (blueberry)
+
+The reference device; every feature is developed and tested on it first.
+
+<div class="pair">
+	<Image src={tall} alt="A Smart Display 10 standing upright with the LANovo clock" class="device" />
+	<Image src={wide} alt="A Smart Display 10 in landscape with the LANovo clock" class="device" />
+</div>
+
+<Image src={rotate} alt="The dashboard in landscape and portrait" class="screen-wide" />
+
+## Smart Display 8 (amber)
+
+Same platform as the Smart Display 10. Not confirmed on hardware yet; report results on
+[Discord](https://discord.gg/efWnv89pg2).
+
+## Smart Display 7 (ivy)
+
+MediaTek instead of Qualcomm, with a compact layout. Landscape only.
+
+<Image src={sd7} alt="A Smart Display 7 running LANovo" class="device device-small" />
+
+<Image src={sd7Saver} alt="The Light Cycles visual on a Smart Display 7" class="screen-wide" />
+
+## JBL Link View (opal)
+
+Qualcomm, stereo speakers. Landscape only. Unlock it with the Smart Display 8/10 guide and flash the
+**Android 8.1 Debug Firmware** (see [Before you install](/start/before/)).
+
+<Image src={jbl} alt="The Light Cycles visual on a JBL Link View" class="screen-wide" />
+
+## Lenovo ThinkSmart View (penghu)
+
+<Aside type="note">
+The ThinkSmart View unlocks differently. Ask on [Discord](https://discord.gg/efWnv89pg2).
+</Aside>
+
+## Smart Clock
+
+Not supported yet. Different hardware.

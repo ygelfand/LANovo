@@ -1,0 +1,175 @@
+---
+title: LANovo
+description: Turn a Lenovo Smart Display into a local Home Assistant device.
+template: splash
+hero:
+  title: LANovo
+  tagline: Turn a Lenovo Smart Display into a local Home Assistant display, speaker and voice assistant. One program in place of Android, no cloud, no account.
+  image:
+    file: ../../assets/hero.png
+  actions:
+    - text: Install LANovo
+      link: /start/devices/
+      icon: right-arrow
+    - text: Features
+      link: '#features'
+      icon: open-book
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import onboard from '../../assets/devices/sd10-onboard.jpg';
+import hal from '../../assets/devices/sd10-hal.jpg';
+import message from '../../assets/devices/sd10-message.jpg';
+import tallVu from '../../assets/devices/sd10-portrait-vu.jpg';
+import wideVu from '../../assets/devices/sd10-vu.jpg';
+import tallMsg from '../../assets/devices/sd10-portrait-message.jpg';
+import sd7Clock from '../../assets/devices/sd7-clock.jpg';
+import intercom from '../../assets/screens/intercom.webp';
+import rotate from '../../assets/screens/rotate.webp';
+
+<div class="stats">
+	<div><strong>33</strong><span>visualizers</span></div>
+	<div><strong>9</strong><span>UI styles</span></div>
+	<div><strong>18</strong><span>color themes</span></div>
+	<div><strong>8</strong><span>clock faces</span></div>
+	<div><strong>2</strong><span>wake words at once</span></div>
+	<div><strong>0</strong><span>cloud accounts</span></div>
+</div>
+
+<img src="/anim/visual-wall.webp" alt="Six visuals: Synthwave, LCARS, Classic VU, Aurora, a Pip-Boy and a koi pond" class="screen-wide" width="978" height="412" />
+
+## Visualizers
+
+33 audio visualizers for the screen saver, all GPU shaders at the screen's full resolution. Each
+one reacts to the microphone, to what's playing, or both.
+
+[See all 33 →](/use/visuals/)
+
+## What LANovo is
+
+Lenovo's Smart Displays have a good screen, stereo speakers, two far-field microphones, a camera
+with a shutter, and a proximity sensor. Google stopped updating them.
+
+LANovo replaces the whole Android stack with a single program that drives the screen, speakers,
+microphones, camera and radios directly, and talks only to your Home Assistant.
+
+## Features
+
+<div class="showcase">
+	<div>
+		### Tessera dashboards
+
+		Lay out pages in [Tessera](https://github.com/MaxGramser/homeassistant_espscreen)'s editor in
+		Home Assistant and the display draws them. Most of Tessera's tiles and features are supported,
+		in every style and theme.
+
+		[Dashboards →](/use/dashboards/)
+	</div>
+	<img src="/anim/tessera-styles.webp" alt="One Tessera page in each of the nine styles" class="screen" width="540" height="864" />
+</div>
+
+<div class="showcase flip">
+	<div>
+		### Adding it to Home Assistant
+
+		After install the display shows a code. Scan it and submit, and Home Assistant adds it through
+		the ESPHome integration. No YAML, no add-on, no key to copy.
+
+		[Adding it →](/start/home-assistant/)
+	</div>
+	<Image src={onboard} alt="A Smart Display 10 showing a code to add it to Home Assistant" class="device" />
+</div>
+
+<div class="showcase">
+	<div>
+		### Two voice assistants
+
+		Two wake words, each with its own Assist pipeline and its own visuals for listening, thinking
+		and answering. "Stop" works without a wake word.
+
+		[Voice →](/features/voice/)
+	</div>
+	<Image src={hal} alt="A Smart Display 10 showing the HAL 9000 visual" class="device" />
+</div>
+
+<div class="showcase flip">
+	<div>
+		### Intercom
+
+		Audio and video calls between LANovo displays and EchoLocal devices on your network, with
+		auto-answer for the devices you choose.
+
+		[Intercom →](/features/intercom/)
+	</div>
+	<Image src={intercom} alt="The Intercom directory" class="screen" />
+</div>
+
+<div class="showcase">
+	<div>
+		### Messages and timers
+
+		Messages from any automation in four tones and four styles, each with its own chime. Timers in
+		six styles.
+
+		[Messages and timers →](/features/messages/)
+	</div>
+	<img src="/anim/alerts.webp" alt="A message as a banner, a card, a toast and full screen" class="screen" width="420" height="672" />
+</div>
+
+## Also
+
+<CardGrid>
+	<Card title="Audio" icon="seti:audio">
+		A Home Assistant media player, a Sendspin player for Music Assistant, and a Bluetooth speaker.
+	</Card>
+	<Card title="Chromecast" icon="laptop">
+		YouTube with SponsorBlock, YouTube Music, YouTube TV and Prime Video. Experimental.
+	</Card>
+	<Card title="Camera" icon="seti:video">
+		RTSP with main and sub streams, ONVIF discovery, and a snapshot camera in Home Assistant.
+	</Card>
+	<Card title="Privacy switches" icon="warning">
+		The microphone switch and camera shutter are physical. Home Assistant sees their state but
+		can't change it.
+	</Card>
+	<Card title="Sensors" icon="star">
+		Proximity wake, adaptive brightness, and night mode when the room is dark.
+	</Card>
+	<Card title="Updates" icon="rocket">
+		From Home Assistant's Updates page or from System on the display. The previous version is kept
+		until the new one runs.
+	</Card>
+</CardGrid>
+
+## Rotation
+
+The Smart Display 10, Smart Display 8 and ThinkSmart View rotate automatically. The
+dashboards, settings, camera and everything else turn with them.
+
+<Image src={rotate} alt="The same dashboard in landscape and in portrait" class="screen-wide" />
+
+<div class="pair">
+	<Image src={tallVu} alt="A Smart Display 10 standing upright, showing the VU meters" class="device" />
+	<Image src={wideVu} alt="A Smart Display 10 lying landscape, showing the VU meters" class="device" />
+</div>
+
+<div class="pair">
+	<Image src={tallMsg} alt="An upright Smart Display 10 showing a welcome home message" class="device" />
+	<Image src={message} alt="A Smart Display 10 in landscape showing a front door alert" class="device" />
+</div>
+
+## Other displays
+
+The Smart Display 7 gets a compact layout for its smaller screen. The JBL Link View and the Lenovo
+ThinkSmart View are supported too.
+
+<Image src={sd7Clock} alt="A Smart Display 7 showing the LANovo clock" class="device device-small" />
+
+## Get started
+
+<CardGrid>
+	<LinkCard title="Supported devices" description="Which displays LANovo runs on." href="/start/devices/" />
+	<LinkCard title="Install" description="One command, about half an hour the first time." href="/start/install/" />
+</CardGrid>

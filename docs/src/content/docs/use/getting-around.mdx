@@ -1,0 +1,46 @@
+---
+title: Getting around
+description: The dashboard, the dock, apps, going back, and the volume buttons.
+---
+
+import { Image } from 'astro:assets';
+import tessera from '../../../assets/screens/tessera.webp';
+import rotate from '../../../assets/screens/rotate.webp';
+
+## The dashboard
+
+Most of the time the display shows your dashboard: Tessera pages of Home Assistant tiles, or a big
+clock with the weather and your lights. See [Dashboards](/use/dashboards/).
+
+<div class="pair">
+	<Image src={tessera} alt="A Tessera dashboard" class="screen" />
+	<Image src={rotate} alt="The native dashboard in landscape and portrait" class="screen-wide" />
+</div>
+
+Swipe left and right to move between Tessera pages, or tap the tabs on the native dashboard.
+
+## The dock
+
+The dock sits on the right edge of the screen. It has:
+
+- **Settings** (the gear): every option on the display
+- **Apps** (the grid): every app, see [Apps](/features/apps/)
+- **Your starred apps**, like Intercom, the player or the shopping list
+- **Sleep** (the moon): start the screen saver now
+
+**Settings → Display → Dock position** moves it to the left, top or bottom edge.
+**Hide dock after** hides it after 5 seconds to a minute without a touch; swipe in from its edge to
+bring it back.
+
+## Volume buttons
+
+Each press changes the volume by 5%. A volume panel pops up on the side of the screen and shows the
+level. Tap the circle at the top of the panel to see every volume (media, alarms, the assistant and
+system sounds) and pick which one the buttons change.
+
+The panel can sit on the left or right. Change it in **Settings → Display → Volume panel
+position**.
+
+## Tap to dismiss
+
+Tap to close the screen saver, a message, a ringing timer, or the voice assistant.

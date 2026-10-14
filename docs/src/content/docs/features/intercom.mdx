@@ -1,0 +1,37 @@
+---
+title: Intercom
+description: Calls between displays and Echos on your network.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import intercom from '../../../assets/screens/intercom.webp';
+
+**Intercom** lists every LANovo display and [EchoLocal](https://github.com/ygelfand/echolocal) Echo
+on your network. Open it from the dock or the Apps screen.
+
+<Image src={intercom} alt="The Intercom directory, listing displays and Echos" class="screen" />
+
+## Calls
+
+Tap the phone button for audio or the camera button for video. Video needs a camera on both ends.
+During a call: mute, camera off, hang up.
+
+## Answering
+
+Tap to answer. **Settings → Connected services → Intercom**:
+
+| Setting | |
+|---|---|
+| **Incoming calls** | Accept calls |
+| **Auto-answer** | Answer automatically |
+| **Auto-answer with camera on** | Send video when auto-answering |
+| **Answer from** | **Everyone**, or selected panels |
+| **Pause wake word during calls** | |
+| **Video stream** | Main or sub stream |
+| **Ring**, **Video ring**, **Ringback** | Tones, including custom ones |
+
+<Aside type="caution">
+With auto-answer and the camera on, allowed devices can see the room without anyone touching the
+display.
+</Aside>

@@ -1,0 +1,46 @@
+---
+title: Music and casting
+description: Media player, Sendspin, Bluetooth speaker and Chromecast.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Turn each of these on under **Settings → Connected services**.
+
+## Media player
+
+The display is a Home Assistant **media player**: radio, media sources, TTS announcements. Music
+ducks during announcements; **Ducking depth** sets how much.
+
+## Sendspin
+
+A [Music Assistant](https://music-assistant.io) player. Group it with other speakers.
+
+## Bluetooth speaker
+
+The display shows up under its own name. Pair a phone and play.
+
+## Chromecast
+
+Turn on **Cast receiver** and the display shows up as a cast target.
+
+| App | Notes |
+|---|---|
+| **YouTube** | [SponsorBlock](https://sponsor.ajay.app) segment skipping |
+| **YouTube Music** | |
+| **YouTube TV** | Live delay setting |
+| **Prime Video** | **Skip intro** |
+| Default media receiver | Apps that use the standard receiver |
+
+Per-app settings are under **Cast receiver → Apps**.
+
+<Aside type="caution" title="Experimental">
+Behavior varies by app and phone.
+</Aside>
+
+## Player
+
+A mini player shows on the dashboard while something plays. Tap it, or **Media** in the dock, for
+the full player. Cast video plays full screen; tap for controls.
+
+**Settings → Display → Dashboard → Close paused player after** closes a paused player.

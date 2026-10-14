@@ -1,0 +1,51 @@
+---
+title: The screen saver
+description: Clock, visuals and night mode.
+---
+
+import { Image } from 'astro:assets';
+import saver from '../../../assets/screens/sd10-vu-saver.webp';
+import ivySaver from '../../../assets/screens/sd7-light-cycles.webp';
+
+The screen saver shows a clock and up to two visuals.
+
+<Image src={saver} alt="Two studio VU meters with a small clock in the corner" class="screen" />
+
+<img src="/anim/visual-wall.webp" alt="Six visuals" class="screen-wide" width="978" height="412" />
+
+<Image src={ivySaver} alt="The Light Cycles visual on a Smart Display 7" class="screen-wide" />
+
+## Visuals
+
+33 visuals, each reacting to the microphone, the speaker, or both. Show one full screen, or two
+side by side or stacked.
+
+[All visuals →](/use/visuals/)
+
+## Settings
+
+**Settings → Display → Screen saver**:
+
+- **Mode**: **Native** (LANovo's clock and visuals) or **Tessera** (the screen saver set up in
+  Tessera)
+- **Start after**: 30 seconds, 1, 2, 5 or 15 minutes, or never
+- **Visual 1** and **Visual 2**: a visual, or None
+- **Visual 1 audio** and **Visual 2 audio**: microphone, speaker or both
+- **Clock face**, **position**, **alignment** and **size**, or no clock
+- **Weather**: show the weather card
+
+These are also in Home Assistant.
+
+## Night mode
+
+**Screen saver → Night mode**:
+
+- **Mode**: **Dim**, **Dim to a clock**, **Turn off the screen**, or **Nothing**
+- **Darker than**: room brightness, in lux
+- **Starts after**: how long it has to be that dark
+
+## Waking
+
+Tap the screen. With **Wake on motion** on, walking up to the display wakes it.
+
+**Sleep** in the dock starts the screen saver.

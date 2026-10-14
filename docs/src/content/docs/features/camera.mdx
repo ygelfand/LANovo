@@ -1,0 +1,35 @@
+---
+title: Camera
+description: RTSP, ONVIF and a snapshot camera.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+## RTSP
+
+Off by default. Turn it on with **Camera stream** in **Settings → Camera** or the **RTSP server**
+switch in Home Assistant.
+
+```text
+rtsp://192.168.1.50:8554/main
+rtsp://192.168.1.50:8554/sub
+```
+
+`main` is full resolution, `sub` is a smaller stream. ONVIF discovery is supported.
+
+## Snapshot
+
+Home Assistant gets a snapshot camera.
+
+## Picture
+
+**Settings → Camera** has picture, exposure and white balance settings with a live preview, and
+**Reset to defaults**. These are also in Home Assistant.
+
+## Shutter
+
+With the shutter closed, the stream won't start, snapshots fail, and a privacy mark shows on screen.
+
+<Aside type="caution">
+The RTSP stream has no password.
+</Aside>

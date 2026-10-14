@@ -1,0 +1,32 @@
+---
+title: Visuals
+description: Every audio visualizer LANovo ships.
+---
+
+import visuals from '../../../data/visuals.json';
+
+Each visual reacts to the microphone, the speaker, or both. Run one full screen, or two side by
+side.
+
+<div class="gallery">
+	{visuals.map((v) => (
+		<figure>
+			<img src={`/visuals/${v.kind}.webp`} alt={`The ${v.label} visual`} loading="lazy" width="640" height="400" />
+			<figcaption>{v.label}</figcaption>
+		</figure>
+	))}
+</div>
+
+## Use one
+
+Pick a visual in **Settings → Display → Screen saver → Visual 1** and its source in
+**Visual 1 audio**. Add a second in **Visual 2** to split the screen. These are also in Home
+Assistant.
+
+See [The screen saver](/use/screen-saver/) for the other options.
+
+## Assistants
+
+Each voice assistant can show a visual while listening, waiting and responding, in the panel or
+full screen. Set them under **Settings → Voice assistants → Visuals**
+([Voice assistants](/features/voice/)).

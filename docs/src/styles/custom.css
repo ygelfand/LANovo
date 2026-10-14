@@ -1,0 +1,161 @@
+:root {
+	--sl-color-accent-low: #0b2a4a;
+	--sl-color-accent: #2f8cff;
+	--sl-color-accent-high: #cfe4ff;
+}
+
+:root[data-theme='light'] {
+	--sl-color-accent-low: #d6e8ff;
+	--sl-color-accent: #0a66d9;
+	--sl-color-accent-high: #072c5c;
+}
+
+.screen,
+.screen-wide {
+	width: 100%;
+	height: auto;
+}
+
+.pair > * {
+	min-width: 0;
+}
+
+.screen {
+	max-width: 22rem;
+	border-radius: 1rem;
+	box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.35);
+}
+
+.screen-wide {
+	max-width: 36rem;
+	border-radius: 1rem;
+	box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.35);
+}
+
+.stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+	gap: 1rem;
+	margin-block: 2rem;
+	text-align: center;
+}
+
+.stats > div {
+	padding: 1.25rem 0.5rem;
+	border-radius: 1rem;
+	background: var(--sl-color-accent-low);
+}
+
+.stats strong {
+	display: block;
+	font-size: 2.75rem;
+	line-height: 1;
+	color: var(--sl-color-white);
+}
+
+.stats span {
+	display: block;
+	margin-top: 0.5rem;
+	font-size: var(--sl-text-sm);
+	color: var(--sl-color-gray-2);
+}
+
+.showcase {
+	display: grid;
+	grid-template-columns: 1fr minmax(0, 26rem);
+	gap: 2.5rem;
+	align-items: center;
+	margin-block: 3rem;
+}
+
+.showcase.flip {
+	grid-template-columns: minmax(0, 26rem) 1fr;
+}
+
+.showcase.flip > :first-child {
+	order: 2;
+}
+
+.showcase img {
+	width: 100%;
+	height: auto;
+}
+
+@media (max-width: 50rem) {
+	.showcase,
+	.showcase.flip {
+		grid-template-columns: 1fr;
+	}
+	.showcase.flip > :first-child {
+		order: 0;
+	}
+}
+
+.gallery {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+	gap: 1.25rem;
+	margin-block: 2rem;
+}
+
+.gallery figure {
+	margin: 0;
+}
+
+.gallery img {
+	display: block;
+	width: 100%;
+	height: auto;
+	aspect-ratio: 16 / 10;
+	border-radius: 0.75rem;
+	background: #000;
+	box-shadow: 0 0.4rem 1.5rem rgb(0 0 0 / 0.35);
+}
+
+.gallery figcaption {
+	margin-top: 0.5rem;
+	font-weight: 600;
+	text-align: center;
+}
+
+.clip {
+	width: 100%;
+	height: auto;
+	border-radius: 1rem;
+	box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 0.35);
+}
+
+.device {
+	width: 100%;
+	height: auto;
+	border-radius: 1.25rem;
+}
+
+.device-small {
+	max-width: 30rem;
+}
+
+.pair {
+	display: grid;
+	grid-template-columns: 0.75fr 1.25fr;
+	gap: 1.5rem;
+	align-items: center;
+	margin-block: 2rem;
+}
+
+.pair.even {
+	grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 50rem) {
+	.pair,
+	.pair.even {
+		grid-template-columns: 1fr;
+	}
+}
+
+.hero img {
+	object-fit: contain;
+	width: min(100%, 36rem);
+	height: auto;
+}

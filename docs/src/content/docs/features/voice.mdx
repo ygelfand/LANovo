@@ -1,0 +1,52 @@
+---
+title: Voice assistants
+description: Two wake words, each with its own Assist pipeline.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Wake words run on the display. Audio goes only where your Assist pipeline sends it.
+
+## Two assistants
+
+**Assistant 1** and **Assistant 2** each have their own wake word and Assist pipeline.
+
+## Set it up
+
+<Steps>
+
+1. In Home Assistant, open the display's **Assistant 1** device.
+
+2. Pick an **Assistant** (Assist pipeline) and a **Wake word**. Custom wake words added to Home
+   Assistant are listed too.
+
+3. The display downloads the wake word and starts listening.
+
+</Steps>
+
+<Aside type="note">
+A slot with no wake word is off.
+</Aside>
+
+## On the display
+
+**Settings → Voice assistants**, one page per assistant:
+
+- **Talk now**: start without the wake word
+- **Wake word sensitivity**: higher wakes more easily
+- **Wake sound**: a chime, or none
+- **Response playback**: **Stream** starts sooner and can stutter on a slow network; **Download
+  first** waits for the whole answer
+- **Visuals**: a visual for listening, waiting and responding, in the panel or full screen
+
+  <img src="/visuals/orb.webp" alt="The Orb visual" class="screen-wide" width="640" height="400" loading="lazy" />
+
+
+## Stop
+
+Tap the screen or say **"stop"**, no wake word needed. It stops, in order: a ringing timer, the
+assistant, an announcement, music.
+
+## Timers
+
+"Set a timer for ten minutes" shows a countdown. See [Messages and timers](/features/messages/).

@@ -1,0 +1,64 @@
+---
+title: Messages and timers
+description: Messages from Home Assistant, and timers.
+---
+
+import { Image } from 'astro:assets';
+import message from '../../../assets/screens/bb-message.png';
+
+## Messages
+
+<div class="pair even">
+	<Image src={message} alt="A message on the display" class="screen" />
+	<img src="/anim/alerts.webp" alt="A message as a banner, a card, a toast and full screen" class="screen" width="420" height="672" />
+</div>
+
+Use the display's **show message** action:
+
+```yaml
+action: esphome.kitchen_display_show_message
+data:
+  title: Laundry
+  body: The washer is done
+  tone: info
+  seconds: 30
+```
+
+| Field | |
+|---|---|
+| `body` | Required |
+| `title` | Optional |
+| `tone` | `info`, `success`, `warning` or `alert`: color and chime |
+| `seconds` | Default 15, up to an hour |
+
+A new message replaces the current one. Tap to dismiss, or use the **clear message** action. The
+action name comes from the display's name.
+
+## Alert styles and chimes
+
+**Settings → Alerts & Alarms**:
+
+- **Alert style**: **Banner**, **Card**, **Toast** or **Full screen**
+- A chime for each tone, or none
+
+## Timers
+
+Timers set by voice show on screen. **Settings → Alerts & Alarms → Timer style**:
+
+<img src="/anim/timers.webp" alt="A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen" class="screen" width="420" height="672" />
+
+| Style | |
+|---|---|
+| **Bar** | Progress bar at the bottom |
+| **Banner** | Strip at the top |
+| **Corner** | Badge in the corner |
+| **Dial** | Ring |
+| **Clock face** | Countdown in the clock face |
+| **Full screen** | |
+
+A finished timer rings until tapped or "stop" is said, up to **Timer rings for** (1, 5, 15 or 30
+minutes). **Timer sound** sets the ring.
+
+## Custom sounds
+
+Custom tones, uploaded through the display's ESPHome actions, appear in every sound picker.

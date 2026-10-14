@@ -1,0 +1,53 @@
+---
+title: Styles and themes
+description: Nine UI styles and eighteen color themes.
+---
+
+import { Image } from 'astro:assets';
+import neon from '../../../assets/screens/tessera-neon.webp';
+import terminal from '../../../assets/screens/tessera-terminal.webp';
+import skeuo from '../../../assets/screens/tessera-skeuo.webp';
+
+**Style** sets shapes, borders, shadows and type. **Theme** sets colors. Both apply to everything on
+the display and are under **Settings → Display** and in Home Assistant.
+
+<img src="/anim/tessera-styles.webp" alt="One page in all nine styles" class="screen" width="540" height="864" />
+
+## Styles
+
+| Style | Look |
+|---|---|
+| **Standard** | Flat cards |
+| **Material You** | Rounded tiles |
+| **Glass** | See-through panels |
+| **E-ink** | Paper and ink |
+| **Metro** | Flat squares |
+| **Terminal** | Monospace, green screen |
+| **Hi-fi** | Backlit receiver display |
+| **Neon** | Glowing outlines |
+| **Skeuo** | Raised buttons |
+
+## Themes
+
+**Default** uses the style's palette.
+
+- **Dark:** Midnight, Nocturne, Slate, Ember, Forest, Ocean, Plum, Carbon, Phosphor, Amber, Graphite,
+  Synthwave
+- **Light:** Paper, Linen, Mist, Bloom, Braun, Ink
+
+## Examples
+
+<div class="pair even">
+	<Image src={terminal} alt="Terminal style with the Phosphor theme" class="screen" />
+	<Image src={neon} alt="Neon style with the Synthwave theme" class="screen" />
+</div>
+
+Terminal with Phosphor; Neon with Synthwave.
+
+<Image src={skeuo} alt="Skeuo style with the Braun theme" class="screen" />
+
+Skeuo with Braun.
+
+## Size
+
+**Settings → Display → Size**: Mini, Compact, Medium, Large, Extra large.

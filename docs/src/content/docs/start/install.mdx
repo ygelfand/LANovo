@@ -1,0 +1,108 @@
+---
+title: Install LANovo
+description: Put LANovo on your display with one command.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+`lanovo` installs LANovo on the display over USB and connects it to your Wi‑Fi.
+
+## Get lanovo
+
+Download `lanovo` for your computer from the
+[Releases page](https://github.com/ygelfand/LANovo/releases). It's a single file with LANovo
+inside it.
+
+<Tabs>
+	<TabItem label="macOS">
+		```sh
+		cd ~/Downloads
+		mv lanovo_darwin_arm64 lanovo
+		chmod +x lanovo
+		```
+		On an Intel Mac, the file is `lanovo_darwin_x86_64`. If macOS says it can't check the file for
+		malware, right-click it in Finder, choose **Open**, then run it again from the terminal.
+	</TabItem>
+	<TabItem label="Linux">
+		```sh
+		cd ~/Downloads
+		mv lanovo_linux_x86_64 lanovo
+		chmod +x lanovo
+		```
+		On ARM, such as a Raspberry Pi, the file is `lanovo_linux_arm64`.
+	</TabItem>
+	<TabItem label="Windows">
+		In PowerShell:
+		```powershell
+		cd ~\Downloads
+		Rename-Item lanovo_windows_x86_64.exe lanovo.exe
+		```
+		On an ARM PC, the file is `lanovo_windows_arm64.exe`. Use `.\lanovo.exe` wherever this guide
+		says `./lanovo`.
+	</TabItem>
+</Tabs>
+
+## Install
+
+Plug the display in over USB and run:
+
+```sh
+./lanovo install
+```
+
+A full install, with the answers typed in:
+
+```text
+$ ./lanovo install
+? Install on HUA0XXXXX? Yes
+dm-verity is enforcing — disabling, the device will reboot and come back
+  waiting for the device… back
+
+? Name this device: Kitchen Display
+  Home Assistant keys the device on its name, so changing it later creates a new one.
+
+rebooting for the permissive boot command line
+  waiting for the device… back
+
+installing lanovod
+rebooting for the service definition
+  waiting for the device… back
+
+Scanning…
+? Which network?
+  > MyWiFi              ▂▄▆█  WPA2
+    Neighbors-5G        ▂▄▆   WPA2
+    Other network…
+? Passphrase: ********
+✓ connected: MyWiFi  192.168.1.50
+
+started lanovod running
+Adding it — scan the code on the screen, and Home Assistant will set the key itself
+```
+
+The display reboots up to three times. Leave the cable in until `lanovo` finishes.
+
+Renaming the display later makes Home Assistant see it as a new device, so pick a name you'll keep.
+
+<Aside type="tip" title="More than one display">
+`./lanovo install --name "Bedroom Display" --ssid MyWiFi --password 'your-password' --yes --reboot`
+</Aside>
+
+## Options
+
+| Option | What it does |
+|---|---|
+| `--name "Kitchen Display"` | Name the display without being asked |
+| `--ssid MyWiFi --password …` | Join this network without scanning |
+| `--wps` | Join by pressing your router's WPS button |
+| `--yes` | Don't ask before installing |
+| `--reboot` | Reboot when needed without asking |
+| `--serial HUA0XXXXX` | Pick a display when more than one is plugged in |
+
+## Changing Wi‑Fi later
+
+```sh
+./lanovo wifi
+```
+
+Next: [add it to Home Assistant](/start/home-assistant/).

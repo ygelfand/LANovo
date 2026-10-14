@@ -1,0 +1,49 @@
+---
+title: Before you install
+description: What you need, and unlocking the display.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+The display has to be unlocked first, using the community's unlock process.
+
+## What you need
+
+- A supported [display](/start/devices/)
+- A computer running macOS, Linux or Windows
+- A USB cable
+- **Android platform-tools** (`adb`)
+  - macOS: `brew install --cask android-platform-tools`
+  - Debian or Ubuntu: `sudo apt install android-sdk-platform-tools`
+  - Other: [download from Google](https://developer.android.com/tools/releases/platform-tools)
+- Home Assistant on the same network
+- Your Wi‑Fi name and password. **WPA2** or open networks; WPA3-only and enterprise networks aren't
+  supported.
+
+## Unlock and flash the debug firmware
+
+<Steps>
+
+1. Follow the XDA guide for the
+   [Smart Display 8/10](https://xdaforums.com/t/lenovo-smart-display-8-10-amber-blueberry-avb-bootloader-unlock-firmware.4472049/)
+   (also for the JBL Link View) or the
+   [Smart Display 7](https://xdaforums.com/t/cd-17302f-lenovo-smart-display-7-ivy-avb-bootloader-unlock-firmware.4472041/).
+   For the ThinkSmart View, ask on [Discord](https://discord.gg/efWnv89pg2).
+
+2. Flash the **Android 8.1 Debug Firmware**. The regular firmware won't work.
+
+3. Plug the display in and run:
+
+   ```sh
+   adb devices
+   ```
+
+   You should see one device listed.
+
+</Steps>
+
+<Aside type="caution">
+There's no uninstaller. To go back, reflash the stock firmware from the same XDA thread.
+</Aside>
+
+Next: [install](/start/install/).

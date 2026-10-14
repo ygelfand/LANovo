@@ -1,0 +1,83 @@
+---
+title: Settings
+description: The settings on the display.
+---
+
+import { Image } from 'astro:assets';
+import settings from '../../../assets/screens/settings.webp';
+import theme from '../../../assets/screens/bb-theme.png';
+
+The gear in the dock opens Settings. Most settings are also in Home Assistant; see
+[Configuration](/use/configuration/).
+
+<Image src={settings} alt="The Settings page" class="screen" />
+
+## Network & internet
+
+Wi‑Fi network, IP and MAC address, router, lease. Change networks with
+[`./lanovo wifi`](/start/install/#changing-wifi-later).
+
+**Verify certificates** checks certificates on downloads (updates, wake words, photos).
+
+## Connected services
+
+- **Sendspin**: Music Assistant player
+- **Cast receiver**: Chromecast, with per-app settings ([Music and casting](/features/music/))
+- **Intercom**: incoming calls and auto-answer ([Intercom](/features/intercom/))
+- **Bluetooth proxy**: BLE proxy for Home Assistant
+- **Bluetooth speaker**
+
+## Display
+
+- **Brightness**, **Adaptive brightness**
+- **Theme**, **Style**, **Size** ([Styles and themes](/use/styles/))
+
+  <Image src={theme} alt="The theme picker" class="screen" />
+
+- **Dashboard**: Native or Tessera, clock, weather, wallpaper, **Close paused player after**
+  ([Dashboards](/use/dashboards/))
+- **Screen saver**: visuals, clock, night mode, wake on motion ([The screen saver](/use/screen-saver/))
+- **Dock position**, **Hide dock after**
+- **Volume panel position**
+- **Privacy indicators** ([Privacy switches](/features/privacy/))
+
+## Home control
+
+Home control on/off, dashboard and screen saver mode, native lights and switches, Tessera grid,
+weather entity, shopping list, calendars.
+
+## Sound
+
+Volumes for media, assistant, alarms and system sounds; system sounds; notification sound.
+
+## Alerts & Alarms
+
+Alert style, chime per tone, timer style, timer sound, timer ring time
+([Messages and timers](/features/messages/)).
+
+## Voice assistants
+
+A page per assistant ([Voice assistants](/features/voice/)).
+
+## Camera
+
+Live preview, streams, picture, exposure, white balance, **Camera stream**, **Reset to defaults**
+([Camera](/features/camera/)).
+
+## System
+
+- **Language**
+- **Date & time**: time zone and 24-hour format
+- **Keyboard size**
+- **Config sync** ([Configuration](/use/configuration/#config-sync))
+- **Software update** ([Updates](/features/updates/))
+- **Restart**: the app or the device
+
+## Developer options
+
+**ADB over network** (an unauthenticated root shell on your network), a visuals gallery, and visual
+settings.
+
+## About
+
+Name, version, build date.

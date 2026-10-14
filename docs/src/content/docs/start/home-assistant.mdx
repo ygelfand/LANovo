@@ -1,0 +1,54 @@
+---
+title: Add it to Home Assistant
+description: Scan the code on the screen to add the display.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import onboard from '../../../assets/screens/bb-onboard.png';
+
+Until Home Assistant adds it, the display shows this:
+
+<Image src={onboard} alt="The onboarding card, with a QR code and the display's address" class="screen" />
+
+## Add it
+
+<Steps>
+
+1. **Scan the code** with your phone. It opens Home Assistant's "add ESPHome device" screen.
+
+2. **Enter the address** shown under the code, like `192.168.1.50:6053`.
+
+3. **Submit.** No password or key; the display and Home Assistant set up the key themselves.
+
+</Steps>
+
+<Aside type="tip">
+Home Assistant often discovers the display on its own. Check **Settings → Devices & services**
+first.
+</Aside>
+
+## In Home Assistant
+
+The display is one device with these parts:
+
+| Part | Contents |
+|---|---|
+| **Screen** | Brightness, theme, clock face, screen saver, wallpaper |
+| **Microphone** | Mute state, gain, room sensitivity |
+| **Playback** | The media player and volumes for media, alarms, the assistant and system sounds |
+| **Camera** | Snapshot camera, RTSP switch, picture settings |
+| **Assistant 1** and **Assistant 2** | Wake word, pipeline, sensitivity and sound |
+
+Plus sensors for ambient light, presence, the privacy switches, temperature, memory and Wi‑Fi
+signal.
+
+## Encryption key
+
+If you installed with `./lanovo install --generate-key`, Home Assistant asks for a key. Get it with:
+
+```sh
+./lanovo key
+```
+
+Next: [getting around](/use/getting-around/).

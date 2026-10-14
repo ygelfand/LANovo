@@ -1,0 +1,93 @@
+---
+title: Dashboards
+description: LANovo's own clock and home control, or a Tessera dashboard from Home Assistant.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import tessera from '../../../assets/screens/tessera.webp';
+import setup from '../../../assets/screens/tessera-setup.webp';
+import lights from '../../../assets/screens/home-lights.webp';
+import rotate from '../../../assets/screens/rotate.webp';
+
+The dashboard is what the display shows when you're using it. There are two kinds, and you pick one
+in **Settings → Home control → Dashboard**:
+
+- **Native**: a big clock, the weather, and tabs for your lights and switches
+- **Tessera**: pages of tiles you lay out in Home Assistant
+
+## Native
+
+The native dashboard is a clock with the date, an optional weather card, and optional wallpaper
+from Immich behind it. Pick the clock face, position, size and color under
+**Settings → Display → Dashboard → Clock**.
+
+<img src="/anim/faces.webp" alt="The eight clock faces: Plain, Stack, Cards, Analog, Segments, Words, Overlap and Analog seconds" class="screen" width="420" height="672" />
+
+### Lights and switches
+
+Turn on **Control lights** or **Control switches** under **Settings → Home control → Native**, and
+the dashboard gains a **Lights** and a **Switches** tab. Choose what goes on them by area, by label,
+or one by one, and how to group them:
+
+- Every device on its own card
+- Areas with a few devices on one card
+- Every area on one card
+
+<Image src={lights} alt="The Lights tab, with a card per room" class="screen" />
+
+### Weather
+
+Pick a Home Assistant weather entity under **Settings → Home control → Weather**, then choose how it
+looks on the dashboard and on the screen saver: Compact, Stack, Card, Detail, Icon or Words, with
+or without animation.
+
+## Tessera
+
+[Tessera](https://github.com/MaxGramser/homeassistant_espscreen) is a Home Assistant integration
+with a drag-and-drop editor for touch screens. LANovo speaks its screen protocol, so the display
+shows up in Tessera like any other screen. Lay out the pages there; the display draws them in your
+style and theme.
+
+<div class="pair even">
+	<Image src={tessera} alt="A Tessera page with climate, weather, a clock, the sun, energy flow, lights and locks" class="screen" />
+	<img src="/anim/tessera-styles.webp" alt="The same page cycling through the nine styles" class="screen" width="540" height="864" />
+</div>
+
+Most of Tessera's tiles and features are supported.
+
+### Set it up
+
+<Steps>
+
+1. Install Tessera in Home Assistant from its
+   [GitHub page](https://github.com/MaxGramser/homeassistant_espscreen).
+
+2. On the display, set **Settings → Home control → Dashboard** to **Tessera**.
+
+3. The display appears in Tessera as a screen. Without tiles it shows:
+
+   <Image src={setup} alt="A display asking to be set up in Tessera" class="screen-wide" />
+
+4. Add pages and tiles in Tessera's editor. They show up on the display.
+
+</Steps>
+
+The Smart Display 10, Smart Display 8 and ThinkSmart View appear as two screens, one for landscape
+and one for portrait, so you can lay each out for the way the display is standing. The others
+appear as one.
+
+**Settings → Home control → Tessera** sets the tile grid, which orientations to offer, and whether
+the display goes back to the first page after the screen saver.
+
+<Aside type="tip">
+Turn on **Allow the device to perform Home Assistant actions** on the display's ESPHome device in
+Home Assistant, or taps on tiles won't do anything. The Home control page reminds you if it's off.
+</Aside>
+
+## Rotation
+
+The Smart Display 10, Smart Display 8 and ThinkSmart View rotate automatically. The
+dashboards, settings, camera and everything else turn with them.
+
+<Image src={rotate} alt="The native dashboard in landscape and portrait" class="screen-wide" />
