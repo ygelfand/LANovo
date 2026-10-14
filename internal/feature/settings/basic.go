@@ -9,6 +9,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/alerts"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
+	"github.com/ygelfand/LANovo/internal/feature/firmware"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
@@ -37,6 +38,7 @@ func basicPages() *sharedsettings.BasicPages {
 			HA:          homeassistant.Get(),
 			Marks:       modeMarks(),
 			Alerts:      alerts.Get(),
+			Updates:     firmware.Get(),
 			Previews:    previewKit(),
 			PowerPage:   func() sharedshell.View { return powerPage() },
 			SyncPage:    func() sharedshell.View { return &syncview.Directory{} },
