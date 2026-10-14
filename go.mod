@@ -33,7 +33,7 @@ require (
 	github.com/tfriedel6/canvas v0.12.1 // indirect
 	github.com/tphakala/go-aac v0.7.0 // indirect
 	github.com/ygelfand/go-esphome-device v0.0.13
-	github.com/ygelfand/libcountertop v0.1.1-0.20261014120951-00d72439701b
+	github.com/ygelfand/libcountertop v0.1.1-0.20261014124240-14e7e8b682c6
 	github.com/zserge/microwakeword v0.0.0-20260330234603-bfaf3840114e // indirect
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 	golang.org/x/image v0.46.0 // indirect
@@ -73,6 +73,7 @@ require (
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/pprof v0.0.0-20260302011040-a15ffb7f9dcc // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/hajimehoshi/go-mp3 v0.3.4 // indirect
 	github.com/icza/bitio v1.1.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/josharian/native v1.1.0 // indirect

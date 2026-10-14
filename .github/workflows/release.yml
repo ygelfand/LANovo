@@ -37,4 +37,4 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACK: bin/upx-4.2.4/build/upx --lzma
+          PACK: bin/upx-4.2.4/build/upx --lzma -2

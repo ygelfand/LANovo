@@ -72,6 +72,8 @@ const (
 	RecordingDir = StateDir + "/recordings"
 
 	ToneDir = StateDir + "/tones"
+
+	PhotoDir = StateDir + "/photos"
 )
 
 const (

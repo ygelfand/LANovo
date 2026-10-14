@@ -31,7 +31,8 @@ func TestSavedKeysKeepTheirLayout(t *testing.T) {
 
 	want := []string{
 		"api", "bluetooth", "call", "camera", "cast", "clock", "diag", "feedback", "home", "idle",
-		"media", "microphone", "network", "poster", "rtsp", "screen", "sendspin", "time", "update",
+		"media", "microphone", "network", "photos", "poster", "rtsp", "screen", "sendspin", "time",
+		"update",
 		"visual", "volume", "wake", "weather", "access", "presence", "alerts", "apps",
 		"calendar", "radio", "todo", "voice",
 	}

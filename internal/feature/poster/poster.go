@@ -8,7 +8,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/sensors"
+	"github.com/ygelfand/LANovo/internal/feature/photos"
 	hwtouch "github.com/ygelfand/LANovo/internal/hardware/touch"
 )
 
@@ -21,7 +21,7 @@ var get = sync.OnceValue(func() *sharedposter.Poster {
 		sharedposter.Dependencies{
 			Settings: config.PosterSection,
 			Touch:    hwtouch.Get(),
-			Ambient:  sensors.Get().Ambient,
+			Photos:   photos.Get(),
 			DeviceID: component.DeviceScreen,
 		},
 	)

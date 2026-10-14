@@ -282,7 +282,11 @@ FROM ?= $(RELEASES)/download/$(AT)
 PAGE ?= $(RELEASES)/tag/$(AT)
 
 .PHONY: manifest
-manifest: build-lanovod ## Write the manifest a device fetches to find this build
+manifest: build-lanovod ## Build lanovod and write the manifest a device fetches to find this build
+	@$(MAKE) --no-print-directory manifest-json
+
+.PHONY: manifest-json
+manifest-json: ## Write the manifest for the lanovod already in bin
 	go run ./cmd/mkmanifest \
 		-version "$(AT)" \
 		-from "$(FROM)" \
@@ -296,7 +300,7 @@ manifest: build-lanovod ## Write the manifest a device fetches to find this buil
 release-dev: $(UPX) ## Publish this working tree to the dev channel, without pushing anything
 	@command -v gh >/dev/null || { echo "needs the gh CLI: brew install gh"; exit 1; }
 	@command -v goreleaser >/dev/null || { echo "needs goreleaser: brew install goreleaser"; exit 1; }
-	VERSION=$(VERSION) PACK="$(UPX) --lzma" goreleaser release --snapshot --clean
+	VERSION=$(VERSION) PACK="$(UPX) --lzma -2" goreleaser release --snapshot --clean
 	@for f in dist/host_*/lanovo dist/host_*/lanovo.exe; do \
 		[ -f "$$f" ] || continue; \
 		d=$$(basename $$(dirname $$f)); \
@@ -308,7 +312,7 @@ release-dev: $(UPX) ## Publish this working tree to the dev channel, without pus
 	done
 	@gh release view dev >/dev/null 2>&1 || \
 		gh release create dev --prerelease --title dev --notes "Rolling build from the dev channel."
-	@$(MAKE) --no-print-directory manifest PACK="$(UPX) --lzma" VERSION=$(VERSION) FROM=$(RELEASES)/download/dev PAGE=$(RELEASES)/tag/dev
+	@$(MAKE) --no-print-directory manifest-json VERSION=$(VERSION) FROM=$(RELEASES)/download/dev PAGE=$(RELEASES)/tag/dev
 	gh release upload dev dist/lanovo_* $(DEVICE_BIN) $(BUILD_DIR)/manifest.json --clobber
 	@echo "dev channel now serves $(VERSION)"
 

@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/runtime/crash"
 	"github.com/ygelfand/libcountertop/pkg/runtime/safe"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 
@@ -35,7 +36,7 @@ func Run(ctx context.Context) error {
 	}
 	defer done()
 
-	keepCrashes(layout.CrashPath)
+	crash.Keep(layout.CrashPath)
 
 	slog.Info("lanovod starting", "version", layout.Version,
 		"pid", os.Getpid(), "uid", os.Getuid(), "selinux", selinuxContext())

@@ -19,6 +19,7 @@ var (
 	CastSection      = sections.Cast
 	HomeSection      = sections.Home
 	PosterSection    = sections.Poster
+	PhotosSection    = sections.Photos
 	SendspinSection  = sections.Sendspin
 	BluetoothSection = sections.Bluetooth
 	MediaSection     = sections.Media
