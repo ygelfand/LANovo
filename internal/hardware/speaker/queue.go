@@ -31,7 +31,7 @@ func (s *Speaker) PlayVoice(mono []int16) {
 	if s.voice == nil {
 		s.voice, s.using = upsample.New(upsample.Sinc, Rate)
 	}
-	out := s.voice.Run(mono, make([]int16, 0, len(mono)*Rate/VoiceRate*Channels))
+	out := s.voice.Run(mono, make([]int16, 0, len(mono)*(Rate/VoiceRate)*Channels))
 	s.voiceMu.Unlock()
 
 	s.PlayStream(schema.StreamVoice, out)
