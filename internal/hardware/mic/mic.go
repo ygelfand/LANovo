@@ -90,12 +90,10 @@ func Get() *Mics {
 		shared = &Mics{
 			History: capture.NewHistory(Voice, time.Second),
 			Leveler: level.New(level.Config{
-				Rate:          Voice,
-				Frame:         VoiceSamples,
-				ReferenceGain: config.DefaultMicGain,
-				Gain:          cfg.Gain + lift,
-				Sensitivity:   cfg.Sensitivity,
-				Leveling:      cfg.Leveling,
+				Rate:        Voice,
+				Frame:       VoiceSamples,
+				Sensitivity: cfg.Sensitivity,
+				Leveling:    cfg.Leveling,
 			}),
 			lift:   lift,
 			gain:   min(max(cfg.Gain, MinGain), MaxGain-lift),
@@ -225,9 +223,6 @@ func (m *Mics) SetGain(gain int) error {
 	m.gain = gain
 	mixer := m.mixer
 	m.mu.Unlock()
-	if m.Leveler != nil {
-		m.SetInputGain(gain + m.lift)
-	}
 
 	if mixer == nil {
 		return nil
@@ -300,7 +295,7 @@ func (m *Mics) Run(ctx context.Context) error {
 		speech := mono(left, right)
 
 		m.SetPlayback(sounding)
-		m.Process(speech)
+		m.Process(mono(rawL, rawR), speech)
 
 		m.Add(speech)
 		m.Speech.Emit(Frame{Samples: speech, At: at})
