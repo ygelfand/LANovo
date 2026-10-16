@@ -3,12 +3,15 @@ package settings
 import (
 	"github.com/ygelfand/libcountertop/pkg/assistant/turn"
 	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
+	sharedha "github.com/ygelfand/libcountertop/pkg/homeassistant"
 
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/tones"
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
+	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
 )
 
@@ -18,7 +21,12 @@ func assistantPages() *sharedsettings.AssistantPages {
 			Slots:       wakeword.Slots,
 			Preferences: preferences(),
 			Models:      wake.Lib().Ours,
-			Requested:   &wakeword.Requested,
+			Phrases:     wake.Lib().Phrases,
+			Chooser: sharedha.WakeWords{
+				Controller: homeassistant.Get(),
+				MAC:        func() string { return wifi.Get().MAC() },
+			},
+			Requested: &wakeword.Requested,
 			Words: turn.Words{
 				Settings: config.WakeSection,
 				Speaker:  speaker.Sound(),
