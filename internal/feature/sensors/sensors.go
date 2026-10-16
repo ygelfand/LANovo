@@ -99,6 +99,8 @@ func (s *Sensors) Ambient() (lux float64, ok bool) { return s.auto.Ambient() }
 
 func (s *Sensors) Night(n schema.Night) { s.auto.Night(n) }
 
+func (s *Sensors) Rising(share func() (float64, bool)) { s.auto.Rising(share) }
+
 func (s *Sensors) Turn(rot geometry.Orientation) {
 	slog.Info("turned by hand", "orientation", rot)
 

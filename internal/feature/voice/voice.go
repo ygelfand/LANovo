@@ -11,6 +11,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/alarm"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
@@ -47,6 +48,7 @@ func build() *Voice {
 			Slots:   wakeword.Slots,
 			Initial: slots,
 			Timers:  timer.Get(),
+			Alarms:  alarm.Get(),
 			Sound:   speaker.Sound(),
 			Player:  media.Get(),
 			Save:    func(slot int, id string) error { return config.Set().Wake(slot).ID(id) },

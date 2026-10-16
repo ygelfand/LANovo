@@ -44,8 +44,10 @@ func Get() *Visuals { return get() }
 
 func (v *Visuals) Restore(c config.Config) { v.Visuals.Restore(c.Visual) }
 
-func (v *Visuals) View() *visualview.View {
-	return visualview.New(v, visualview.Dependencies{
+func (v *Visuals) View() *visualview.View { return Show(v) }
+
+func Show(source visualview.Source) *visualview.View {
+	return visualview.New(source, visualview.Dependencies{
 		GPU:      gpu.Get(),
 		Display:  display.Get(),
 		Shell:    shell.Get(),

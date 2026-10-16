@@ -5,9 +5,12 @@ import (
 	"time"
 
 	gogui "github.com/go-gui-org/go-gui/gui"
+	sharedalarm "github.com/ygelfand/libcountertop/pkg/assistant/alarm"
 	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
 	"github.com/ygelfand/libcountertop/pkg/display/agenda"
+	"github.com/ygelfand/libcountertop/pkg/display/alarms"
 	"github.com/ygelfand/libcountertop/pkg/display/callview"
+	"github.com/ygelfand/libcountertop/pkg/display/dawnview"
 	"github.com/ygelfand/libcountertop/pkg/display/mirror"
 	"github.com/ygelfand/libcountertop/pkg/display/radarview"
 	"github.com/ygelfand/libcountertop/pkg/display/screens"
@@ -24,6 +27,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/alarm"
+	"github.com/ygelfand/LANovo/internal/feature/alerts"
 	"github.com/ygelfand/LANovo/internal/feature/apps"
 	"github.com/ygelfand/LANovo/internal/feature/assistant"
 	"github.com/ygelfand/LANovo/internal/feature/calendar"
@@ -51,6 +56,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/tessera"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
 	"github.com/ygelfand/LANovo/internal/feature/todo"
+	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/feature/weather"
 	"github.com/ygelfand/LANovo/internal/feature/web"
@@ -128,6 +134,35 @@ var Get = sync.OnceValue(func() *screens.App {
 	})
 	apps.Get().Add(sky.App())
 	commands.Get().Listen(sky.Command())
+	wake := alarms.New(alarms.Options{
+		Shell:  featureshell.Get(),
+		Alarms: alarm.Get(),
+		Tones:  alerts.Get().Tones,
+	})
+	apps.Get().Add(wake.App())
+	light := dawnview.NewLight(
+		featureshell.Get(),
+		alarm.Get(),
+		visuals.Show(dawnview.NewSource(dawnview.Options{
+			Alarms:  alarm.Get(),
+			Look:    func() schema.WakeLook { return alerts.Get().Current().Wake },
+			Clock24: func() bool { return config.Get().Screen.Hours == schema.TwentyFourHour },
+		})),
+	)
+	alarm.Get().Dawning.Listen(func(sharedalarm.Dawn) { light.Check() })
+	alarm.Get().Changed.Listen(func(struct{}) {
+		if alarm.Get().Ringing() {
+			idle.Get().Wake()
+		}
+		light.Check()
+		featureshell.Get().Redraw()
+	})
+	sensors.Get().Rising(func() (float64, bool) {
+		if d := alarm.Get().Dawn(); d.Rising() {
+			return d.Share(time.Now()), true
+		}
+		return 1, dawnview.Showing(alarm.Get())
+	})
 	app = screens.New(screens.Options{
 		Name:       "lanovo",
 		UISize:     board.Current().UISize,
@@ -173,6 +208,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		}),
 		Forecast:  weather.Get(),
 		Warnings:  nws.Get(),
+		Alarms:    alarm.Get(),
 		OpenRadar: sky.Open,
 
 		WeatherEntities: func() shell.View { return settings.WeatherEntities() },

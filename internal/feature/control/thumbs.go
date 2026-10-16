@@ -108,6 +108,34 @@ func render(args []string) (string, error) {
 	return fmt.Sprintf("rendered %s at %dx%d to %s", args[0], w, h, args[1]), nil
 }
 
+func wake(args []string) (string, error) {
+	share, err := strconv.ParseFloat(args[1], 64)
+	if err != nil {
+		return "", fmt.Errorf("want a share from 0 to 1, got %q", args[1])
+	}
+	w, h := picture()
+	img, err := screencmd.RenderWake(
+		gpu.Get(),
+		visual.Kind("wake-"+args[0]),
+		w,
+		h,
+		share,
+		time.Now().Format("3:04"),
+	)
+	if err != nil {
+		return "", err
+	}
+	f, err := os.Create(args[2])
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	if err := png.Encode(f, img); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("rendered wake %s at %.2f, %dx%d, to %s", args[0], share, w, h, args[2]), nil
+}
+
 func clip(args []string) (string, error) {
 	w, h, seconds, fps := 480, 300, 3, 12
 	nums := []*int{&w, &h, &seconds, &fps}

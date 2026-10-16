@@ -7,9 +7,11 @@ import (
 	"github.com/spf13/cobra"
 
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/alarmcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/callcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 
+	"github.com/ygelfand/LANovo/internal/feature/alarm"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
@@ -25,6 +27,7 @@ func (c *Control) tree() *cobra.Command {
 	t := harness.NewTree()
 	t.Add(harness.DeviceTask, harness.DeviceCommands(deviceInfo)...)
 	t.Add(harness.DeviceTask, telling()...)
+	t.Add(harness.DeviceTask, alarmcmd.Command(alarm.Get))
 	t.Add(harness.InputTask, c.touching()...)
 	t.Add(harness.DisplayTask, showing()...)
 	t.Add(harness.AudioTask, sounding()...)
@@ -101,6 +104,11 @@ func showing() []*cobra.Command {
 			Short: "Render one visual offscreen after loud frames (50 by default) into a PNG",
 			Args:  cobra.RangeArgs(2, 5),
 		}, render),
+		says(&cobra.Command{
+			Use:   "wake sunrise|ember|white SHARE FILE",
+			Short: "Render a wake light look offscreen at SHARE (0 to 1) of its window into a PNG",
+			Args:  cobra.ExactArgs(3),
+		}, wake),
 		says(&cobra.Command{
 			Use:   "clip KIND DIR [W H [SECONDS [FPS]]]",
 			Short: "Render a few seconds of one visual offscreen, to a beat, as numbered PNG frames",
