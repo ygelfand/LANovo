@@ -148,6 +148,7 @@ var Get = sync.OnceValue(func() *screens.App {
 			Look:    func() schema.WakeLook { return alerts.Get().Current().Wake },
 			Clock24: func() bool { return config.Get().Screen.Hours == schema.TwentyFourHour },
 		})),
+		idle.Get(),
 	)
 	alarm.Get().Dawning.Listen(func(sharedalarm.Dawn) { light.Check() })
 	alarm.Get().Changed.Listen(func(struct{}) {

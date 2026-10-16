@@ -10,6 +10,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/alerts"
+	"github.com/ygelfand/LANovo/internal/feature/clock"
 	featureremember "github.com/ygelfand/LANovo/internal/feature/remember"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
@@ -29,6 +30,7 @@ var get = sync.OnceValue(func() *alarm.Alarms {
 			return func() { sound.Backgrounds().Duck(false) }
 		},
 		RingFor: alerts.Get().RingFor,
+		Trusted: clock.Get().Set,
 	})
 	a.Told.Listen(component.Fire.Emit)
 	return a
