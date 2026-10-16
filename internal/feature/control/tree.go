@@ -13,6 +13,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
+	"github.com/ygelfand/LANovo/internal/feature/nws"
 	panel "github.com/ygelfand/LANovo/internal/feature/settings"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
@@ -145,6 +146,7 @@ func showing() []*cobra.Command {
 			},
 		},
 		screencmd.Timer(timer.Get),
+		screencmd.Warning(nws.Get),
 		{
 			Use:   "clear",
 			Short: "Take the message away again",
