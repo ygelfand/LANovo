@@ -50,6 +50,7 @@ var inTables = map[string]string{
 	"Cast.Prime.Persist":        "cast.prime.persist",
 	"Cast.Prime.SkipIntro":      "cast.prime.skipintro",
 	"Sendspin.Enabled":          "sendspin.on",
+	"AirPlay.Enabled":           "airplay.on",
 	"Screen.Backlight":          "screen.backlight",
 	"Screen.Mode":               "screen.auto",
 	"Screen.Theme":              "screen.theme",
