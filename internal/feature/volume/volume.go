@@ -28,7 +28,7 @@ const (
 type Change = sharedvolume.Change
 
 type Volume struct {
-	*sharedvolume.Mixer
+	*sharedvolume.Volume
 
 	card *sharedview.Card
 	duck *sharedvolume.Ducking
@@ -42,13 +42,15 @@ var (
 func Get() *Volume {
 	once.Do(func() {
 		shared = &Volume{
-			Mixer: sharedvolume.NewMixer(sharedvolume.MixerOptions{
-				Output:  speaker.Get(),
-				Streams: config.Streams(),
-				Save: func(s config.Stream, level int) error {
-					return config.Set().Volume().Level(s, level)
+			Volume: sharedvolume.NewVolume(sharedvolume.Options{
+				Mixer: sharedvolume.MixerOptions{
+					Output:  speaker.Get(),
+					Streams: config.Streams(),
+					Save: func(s config.Stream, level int) error {
+						return config.Set().Volume().Level(s, level)
+					},
+					Device: component.DevicePlayback,
 				},
-				Device: component.DevicePlayback,
 			}),
 			card: sharedview.NewCard(shell.Get()),
 			duck: sharedvolume.NewDucking(config.MediaSection, component.DevicePlayback),
@@ -61,19 +63,19 @@ func Get() *Volume {
 func (v *Volume) Name() string { return "volume" }
 
 func (v *Volume) Entities() []esphome.Entity {
-	return append(v.Mixer.Entities(), v.duck.Entities()...)
+	return append(v.Volume.Entities(), v.duck.Entities()...)
 }
 
 func (v *Volume) Restore(c config.Config) {
 	v.duck.PublishFrom(c.Media)
-	v.Mixer.Restore(c.Volume.Level)
+	v.Volume.Restore(c.Volume.Level)
 }
 
 func (v *Volume) Set(s config.Stream, level int) {
 	if v.Level(s) == sharedvolume.Clamp(level) {
 		return
 	}
-	v.Mixer.Set(s, level)
+	v.Volume.Set(s, level)
 
 	if showing(s) {
 		v.card.Stir()
