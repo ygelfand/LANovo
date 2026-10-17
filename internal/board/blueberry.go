@@ -22,6 +22,8 @@ var Blueberry = Board{
 	AmpPins:        []int{68},
 	MicSensitivity: -39,
 	MaxFPS:         60,
+	DecodeWidth:    1920,
+	DecodeHeight:   1088,
 	SecureDecoders: map[string]string{
 		"video/x-vnd.on2.vp9": "OMX.qcom.video.decoder.vp9.secure",
 		"video/avc":           "OMX.qcom.video.decoder.avc.secure",

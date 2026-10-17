@@ -33,6 +33,7 @@ var (
 	CalendarSection  = sections.Calendar
 	RadioSection     = sections.Radio
 	VoiceSection     = sections.Voice
+	AirPlaySection   = sections.AirPlay
 
 	LiftSection = storage.Bind(
 		func() *storage.Store[Config] { return store().Store },

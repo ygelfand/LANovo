@@ -24,6 +24,8 @@ var Penghu = Board{
 	MicNoTertiaryChannels: true,
 	// Provisional until Penghu's microphone sensitivity is measured.
 	MicSensitivity: Blueberry.MicSensitivity,
+	DecodeWidth:    3840,
+	DecodeHeight:   2160,
 	// aboot power-on write-protects the eMMC group that holds system's superblock.
 	Root: "/data/misc/lanovo",
 	Buttons: []Button{

@@ -33,7 +33,7 @@ func TestSavedKeysKeepTheirLayout(t *testing.T) {
 		"api", "bluetooth", "call", "camera", "cast", "clock", "diag", "feedback", "home", "idle",
 		"media", "microphone", "network", "photos", "poster", "rtsp", "screen", "sendspin", "time",
 		"update",
-		"visual", "volume", "wake", "weather", "access", "presence", "alerts", "apps",
+		"visual", "volume", "wake", "weather", "access", "airplay", "presence", "alerts", "apps",
 		"calendar", "radio", "todo", "voice",
 	}
 	slices.Sort(want)

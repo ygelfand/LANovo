@@ -68,6 +68,8 @@ type Board struct {
 
 	MaxFPS int
 
+	DecodeWidth, DecodeHeight int
+
 	CameraWidth, CameraHeight int
 
 	SubWidth, SubHeight int

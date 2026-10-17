@@ -22,6 +22,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/castvideo"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
@@ -68,7 +69,7 @@ func build() *castreceiver.Receiver {
 				return video.Target(display.Get(), board.Current().MaxFPS)
 			},
 			Output: func(ended func()) playback.Output {
-				o := newOutput()
+				o := castvideo.New()
 				o.SetEnded(ended)
 				return o
 			},

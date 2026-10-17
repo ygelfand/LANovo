@@ -1,4 +1,4 @@
-package chromecast
+package castvideo
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
-func newOutput() *castoutput.Output {
+func New() *castoutput.Output {
 	a := speaker.Sound().Backgrounds()
 	return castoutput.New(
 		castoutput.Options{

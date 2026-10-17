@@ -4,6 +4,7 @@ import (
 	_ "github.com/ygelfand/LANovo/internal/feature/a2dp"
 	_ "github.com/ygelfand/LANovo/internal/feature/access"
 	_ "github.com/ygelfand/LANovo/internal/feature/activity"
+	_ "github.com/ygelfand/LANovo/internal/feature/airplay"
 	_ "github.com/ygelfand/LANovo/internal/feature/alarm"
 	_ "github.com/ygelfand/LANovo/internal/feature/api"
 	_ "github.com/ygelfand/LANovo/internal/feature/assistant"

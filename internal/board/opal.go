@@ -21,6 +21,8 @@ var Opal = Board{
 	MicSensitivity: -27,
 	Stereo:         true,
 	MaxFPS:         60,
+	DecodeWidth:    1920,
+	DecodeHeight:   1088,
 	SecureDecoders: Blueberry.SecureDecoders,
 	Buttons:        Blueberry.Buttons,
 }

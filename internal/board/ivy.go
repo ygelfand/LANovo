@@ -29,6 +29,8 @@ var Ivy = Board{
 	MicADC:         &Chip{Bus: 1, Addr: 0x1b, Enable: 494, Reset: 406},
 	MicSensitivity: -19,
 	MaxFPS:         60,
+	DecodeWidth:    1920,
+	DecodeHeight:   1088,
 	SecureDecoders: map[string]string{
 		"video/avc":  "OMX.MTK.VIDEO.DECODER.AVC.secure",
 		"video/hevc": "OMX.MTK.VIDEO.DECODER.HEVC.secure",

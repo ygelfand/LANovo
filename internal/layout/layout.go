@@ -67,6 +67,10 @@ const (
 
 	VoiceHelper = StateDir + "/bin/lanovo-voice"
 
+	AirPlayHelper = StateDir + "/bin/lanovo-airplay"
+
+	AirPlayKey = StateDir + "/airplay.pem"
+
 	TileDir = StateDir + "/tiles"
 
 	RecordingDir = StateDir + "/recordings"
