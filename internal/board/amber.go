@@ -19,9 +19,9 @@ var Amber = Board{
 	Tessera:      Tessera{Board: "jc8012p4a1", Columns: 6, Rows: 4},
 	Touch:        "goodix-ts",
 	Buttons:      Blueberry.Buttons,
+	Amp:          &Chip{Bus: 1, Addr: 0x49, Table: "amber"},
+	AmpPins:      Blueberry.AmpPins,
 	// Inferred from blueberry's hardware; not yet tested on amber.
-	Amp:            Blueberry.Amp,
-	AmpPins:        Blueberry.AmpPins,
 	MicSensitivity: Blueberry.MicSensitivity,
 }
 

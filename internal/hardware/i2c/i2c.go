@@ -105,7 +105,7 @@ func Probe(bus Bus, addr uint16) bool {
 
 func Scan(bus Bus) []uint16 {
 	var found []uint16
-	for addr := uint16(0x03); addr <= 0x77; addr++ {
+	for addr := uint16(0x08); addr <= 0x77; addr++ {
 		if Probe(bus, addr) {
 			found = append(found, addr)
 		}

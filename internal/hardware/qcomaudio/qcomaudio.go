@@ -1,24 +1,29 @@
 package qcomaudio
 
 import (
-	_ "embed"
+	"embed"
 	"fmt"
-	"sync"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/i2c"
 )
 
-//go:embed amp.bin
-var amp []byte
+//go:embed tables/*.bin
+var tables embed.FS
 
-var Stock = sync.OnceValues(func() ([][2]byte, error) { return i2c.Pairs(amp) })
+func Table(name string) ([][2]byte, error) {
+	raw, err := tables.ReadFile("tables/" + name + ".bin")
+	if err != nil {
+		return nil, fmt.Errorf("qcomaudio: no amplifier table %q: %w", name, err)
+	}
+	return i2c.Pairs(raw)
+}
 
 // The I2S clocks have to be running while the amplifier loads.
 func AmpOn(c board.Chip) error {
-	rows, err := Stock()
+	rows, err := Table(c.Table)
 	if err != nil {
-		return fmt.Errorf("qcomaudio: %w", err)
+		return err
 	}
 	return i2c.WriteRows(c.Bus, c.Addr, rows)
 }

@@ -18,7 +18,7 @@ var Blueberry = Board{
 	Diagonal:       10.03,
 	Tessera:        Tessera{Board: "jc8012p4a1", Columns: 8, Rows: 5},
 	Touch:          "goodix-ts",
-	Amp:            &Chip{Bus: 1, Addr: 0x49},
+	Amp:            &Chip{Bus: 1, Addr: 0x49, Table: "blueberry"},
 	AmpPins:        []int{68},
 	MicSensitivity: -39,
 	MaxFPS:         60,

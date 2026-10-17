@@ -191,6 +191,7 @@ func telling() []*cobra.Command {
 			Short: "Other devices on the network",
 			Args:  cobra.NoArgs,
 		}, func([]string) (string, error) { return callcmd.Peers(discovery.Get().Peers()), nil }),
+		i2cCommand(),
 	}
 }
 

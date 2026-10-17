@@ -96,6 +96,7 @@ type Chip struct {
 	Addr   uint16
 	Enable int
 	Reset  int
+	Table  string
 }
 
 type Button struct {
