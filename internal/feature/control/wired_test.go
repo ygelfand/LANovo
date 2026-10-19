@@ -135,6 +135,8 @@ var inTables = map[string]string{
 	"Bluetooth.Scan":            "bluetooth.scan",
 	"API.Adopted":               "api.adopted",
 	"RTSP.Enabled":              "rtsp.enabled",
+	"RTSP.Username":             "rtsp.username",
+	"RTSP.Password":             "rtsp.password",
 	"Access.ADB":                "access.adb",
 	"Presence.Wake":             "presence.wake",
 	"Presence.Range":            "presence.range",
