@@ -1,21 +1,21 @@
 ---
-title: Getting around
-description: The dashboard, the dock, apps, going back, and the volume buttons.
+title: "Getting around"
+description: The dashboard, the dock, apps, going back, and the buttons.
 ---
 
 import { Image } from 'astro:assets';
 import tessera from '../../../assets/screens/tessera.webp';
 import rotate from '../../../assets/screens/rotate.webp';
 
+
 ## The dashboard
 
 Most of the time the display shows your dashboard: Tessera pages of Home Assistant tiles, or a big
-clock with the weather and your lights. See [Dashboards](/use/dashboards/).
+clock with the weather and your Home Assistant lights and switches. See [Dashboards](/use/dashboards/).
 
-<div class="pair">
-	<Image src={tessera} alt="A Tessera dashboard" class="screen" />
-	<Image src={rotate} alt="The native dashboard in landscape and portrait" class="screen-wide" />
-</div>
+<Image src={tessera} alt="A Tessera dashboard" class="screen" />
+
+<Image src={rotate} alt="The native dashboard in landscape and portrait" class="screen-wide" />
 
 Swipe left and right to move between Tessera pages, or tap the tabs on the native dashboard.
 
@@ -34,13 +34,15 @@ bring it back.
 
 ## Volume buttons
 
-Each press changes the volume by 5%. A volume panel pops up on the side of the screen and shows the
-level. Tap the circle at the top of the panel to see every volume (media, alarms, the assistant and
-system sounds) and pick which one the buttons change.
+Each press changes the volume by 5%.
+A volume panel pops up on the side of the screen and shows the level. Tap the circle at the top of
+the panel to see every volume (media, alarms, the assistant and system sounds) and pick which one
+the buttons change.
 
 The panel can sit on the left or right. Change it in **Settings → Display → Volume panel
 position**.
 
+
 ## Tap to dismiss
 
-Tap to close the screen saver, a message, a ringing timer, or the voice assistant.
+Tap to close the screen saver, a message, a ringing timer or alarm, or the voice assistant.

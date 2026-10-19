@@ -1,0 +1,40 @@
+---
+title: Custom tones
+description: Upload your own sounds for chimes, timers, alarms, calls and the wake word.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+A custom tone is a sound of up to 30 seconds stored on the display. Once uploaded, it shows up
+in every sound picker: the device chime, message chimes, timer sound, alarms, intercom rings, the
+wake word tone and the mute sounds.
+
+
+## With the device's actions
+
+The display has three actions:
+
+| Action | Fields |
+|---|---|
+| `tone_write` | `key`, `name`, `page`, `pages`, `data` |
+| `tone_rename` | `key`, `name` |
+| `tone_remove` | `key` |
+
+- **key**: lowercase letters, digits, `-` and `_`, up to 64 characters, starting with a letter or
+  digit. Writing an existing key replaces that tone.
+- **name**: what the pickers show.
+- **data**: the sound as **raw 16-bit little-endian mono PCM at 48 kHz**, base64 encoded, sent in
+  pages of 32 KB (before encoding). `page` counts from 0; `pages` is the total.
+
+To make the raw sound from any file:
+
+```sh
+ffmpeg -i doorbell.mp3 -ac 1 -ar 48000 -f s16le doorbell.raw
+```
+
+Then split it into 32 KB pieces and call `tone_write` once per piece, with the same `key`, `name`
+and `pages`.
+
+<Aside>
+Tones are kept per display. Upload to each one that should have it.
+</Aside>

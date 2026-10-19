@@ -1,15 +1,16 @@
 ---
 title: The screen saver
-description: Clock, visuals and night mode.
+description: Clock, visuals, weather and night mode.
 ---
 
 import { Image } from 'astro:assets';
 import saver from '../../../assets/screens/sd10-vu-saver.webp';
 import ivySaver from '../../../assets/screens/sd7-light-cycles.webp';
 
+
 The screen saver shows a clock and up to two visuals.
 
-<Image src={saver} alt="Two studio VU meters with a small clock in the corner" class="screen" />
+<Image src={saver} alt="The screen saver with a visual and a small clock" class="screen" />
 
 <img src="/anim/visual-wall.webp" alt="Six visuals" class="screen-wide" width="978" height="412" />
 
@@ -32,20 +33,24 @@ side by side or stacked.
 - **Visual 1** and **Visual 2**: a visual, or None
 - **Visual 1 audio** and **Visual 2 audio**: microphone, speaker or both
 - **Clock face**, **position**, **alignment** and **size**, or no clock
-- **Weather**: show the weather card
+- **Weather**: the screen saver's own weather card and layout
+- **Visual label**: text some visuals show
+- **Night mode**: below
 
-These are also in Home Assistant.
+Every option, with its default and Home Assistant entity, is on
+[Settings on the screen](/use/settings/#screen-saver).
 
 ## Night mode
 
 **Screen saver → Night mode**:
 
-- **Mode**: **Dim**, **Dim to a clock**, **Turn off the screen**, or **Nothing**
-- **Darker than**: room brightness, in lux
-- **Starts after**: how long it has to be that dark
+- **Mode**: **Dim**, **Dim to a clock** (the default), **Turn off the screen**, or **Nothing**
+- **Darker than**: room brightness, in lux (default 5)
+- **Starts after**: how long it has to be that dark (default 5 minutes)
 
 ## Waking
 
-Tap the screen. With **Wake on motion** on, walking up to the display wakes it.
+Tap the screen. With **Wake on motion** on, walking up to the display wakes it; **Detection range**
+sets how far away counts.
 
 **Sleep** in the dock starts the screen saver.

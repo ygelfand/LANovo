@@ -1,19 +1,47 @@
 ---
 title: Apps
-description: The Apps screen and dock favorites.
+description: The Apps screen, dock favorites, and each app.
 ---
 
-The grid in the dock opens the Apps screen. Star an app to keep it in the dock; drag to reorder.
+
+The grid in the dock opens the Apps screen. Tap the star on an app to keep it in the dock; drag to
+reorder. **Media** and **Intercom** are in the dock to start with.
 
 | App | |
 |---|---|
-| **Intercom** | [Calls](/features/intercom/) to other displays and Echos |
-| **Mirror** | Camera, full screen |
-| **Media** | The player |
-| **Shopping list** | A Home Assistant to-do list |
+| **Media** | The [player](/features/music/#player) |
+| **Intercom** | [Calls](/features/intercom/) to other devices |
+| **Alarms** | [Alarms](/features/messages/#alarms) with a wake light |
+| **Radio** | Internet radio |
+| **Radar** | Animated weather radar |
 | **Calendar** | Upcoming events from Home Assistant calendars |
-| **Radar** | Animated weather radar with a short-range forecast |
+| **Shopping list** | A Home Assistant to-do list |
+| **Mirror** | The camera, full screen |
 
-The shopping list and calendars are set under **Settings → Home control**.
+## Radio
 
-More coming soon.
+Stations come from the **Radio Browser** integration, which you add in Home Assistant first. The
+radio opens on **Local** and **Popular** stations; star a station to put it on the dial.
+
+## Radar
+
+An animated loop of rain and clouds around your home, with a short-range forecast. Under
+**Settings → Display → Dashboard → Weather**:
+
+- **Radar source**: **Auto**, **NWS** (US only) or **RainViewer**
+- **Radar starting range**: 50 to 800 miles, default 200
+
+With **Voice commands** on, saying "radar" opens it.
+
+## Calendar
+
+Pick the calendars and **Days to show** (3, 7 or 14) under **Settings → Home control → Calendar**.
+
+## Shopping list
+
+Pick the to-do list under **Settings → Home control → Shopping list**. Add items with the on-screen
+keyboard, tap to check them off, and turn on **Show completed items** to see the checked ones.
+
+## Mirror
+
+The camera, full screen. It's on displays with a camera.

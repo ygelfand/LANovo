@@ -8,5 +8,5 @@ npm run dev
 npm run build
 ```
 
-Pages live in `src/content/docs/`, screenshots in `src/assets/screens/`. Pushing to `main` publishes
-the site to GitHub Pages through `.github/workflows/docs.yml`.
+Generated from the shared docs source; edit there, not here. Pushing to `main` publishes the site
+to GitHub Pages through `.github/workflows/docs.yml`.

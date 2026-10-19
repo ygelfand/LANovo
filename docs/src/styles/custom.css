@@ -1,15 +1,3 @@
-:root {
-	--sl-color-accent-low: #0b2a4a;
-	--sl-color-accent: #2f8cff;
-	--sl-color-accent-high: #cfe4ff;
-}
-
-:root[data-theme='light'] {
-	--sl-color-accent-low: #d6e8ff;
-	--sl-color-accent: #0a66d9;
-	--sl-color-accent-high: #072c5c;
-}
-
 .screen,
 .screen-wide {
 	width: 100%;
@@ -38,6 +26,10 @@
 	gap: 1rem;
 	margin-block: 2rem;
 	text-align: center;
+}
+
+.sl-markdown-content .stats > div {
+	margin-top: 0;
 }
 
 .stats > div {
@@ -154,8 +146,55 @@
 	}
 }
 
-.hero img {
+.hero img,
+.hero .hero-html img {
 	object-fit: contain;
 	width: min(100%, 36rem);
 	height: auto;
+}
+
+.sl-markdown-content td code {
+	font-size: 0.8em;
+	overflow-wrap: anywhere;
+	white-space: normal;
+}
+
+.sl-markdown-content img {
+	cursor: zoom-in;
+}
+
+.zoom-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2vmin;
+	background: rgb(0 0 0 / 0.85);
+	cursor: zoom-out;
+}
+
+.zoom-overlay img {
+	max-width: 96vw;
+	max-height: 96vh;
+	object-fit: contain;
+	border-radius: 0.5rem;
+}
+
+.carousel {
+	display: flex;
+	gap: 0.75rem;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	padding-bottom: 0.5rem;
+}
+
+.sl-markdown-content .carousel > img {
+	flex: 0 0 auto;
+	height: 22rem;
+	width: auto;
+	margin: 0;
+	scroll-snap-align: start;
+	border-radius: 0.5rem;
 }

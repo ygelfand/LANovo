@@ -1,0 +1,35 @@
+---
+title: Microphones
+description: What each microphone setting does and how to tune for your room.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The microphone settings are only in Home Assistant. They stay on
+the display: [config sync](/use/configuration/#config-sync) doesn't copy them.
+
+| Setting | Entity | What it does | Range | Default |
+|---|---|---|---|---|
+| **Microphone gain** | `number.<device>_microphone_microphone_gain` | Amplification before anything else | 0–20 dB on the Smart Display 10, 8 and ThinkSmart View; 0–32 on the JBL Link View; 0–40 on the Smart Display 7 | 0 dB |
+| **Microphone leveling** | `switch.<device>_microphone_microphone_leveling` | Keeps your voice at a steady level whether you're near or across the room | On, Off | On |
+| **Noise suppression** | `switch.<device>_microphone_noise_suppression` | Takes the room's steady noise (a fan, traffic) out of what the microphones hear | On, Off | On |
+| **Room sensitivity** | `number.<device>_microphone_room_sensitivity` | How much louder than the room's background noise a sound has to be before the listening visual reacts | 4–20 dB | 8 dB |
+
+The room's sound level and noise floor are sensors (`room_level`, `room_floor`), which help when
+tuning.
+
+## Tuning
+
+- **The wake word misses you from across the room.** Make the wake word easier to trigger first:
+  lower **Wake word sensitivity** in Home Assistant, or raise its slider on the screen; then raise **Microphone gain** a few dB at a time. Keep **Microphone
+  leveling** on.
+- **It wakes on its own, or on the TV.** Make the wake word harder to trigger: raise **Wake word sensitivity** in Home Assistant, or lower
+  its slider on the screen.
+- **It cuts you off, or keeps listening too long.** Adjust **Max listening time**, and **Room
+  sensitivity** if the room is loud.
+- **Voices sound distorted in the recordings.** Lower **Microphone gain**.
+
+## What the visuals hear
+
+**Visualizer lift** (`visualizer_lift`, 0–40 dB) adds gain for the visuals only, so they move in a
+quiet room without changing what the wake word hears.

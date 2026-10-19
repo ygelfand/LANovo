@@ -1,37 +1,37 @@
 ---
 title: Intercom
-description: Calls between displays and Echos on your network.
+description: Calls between devices on your network.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import intercom from '../../../assets/screens/intercom.webp';
 
-**Intercom** lists every LANovo display and [EchoLocal](https://github.com/ygelfand/echolocal) Echo
-on your network. Open it from the dock or the Apps screen.
+**Intercom** lists every LANovo display and every [EchoLocal](https://www.echolocal.link) device on
+your network, found automatically. Open it from the dock or the Apps screen.
 
-<Image src={intercom} alt="The Intercom directory, listing displays and Echos" class="screen" />
+<Image src={intercom} alt="The Intercom directory, listing devices on the network" class="screen" />
 
 ## Calls
 
 Tap the phone button for audio or the camera button for video. Video needs a camera on both ends.
 During a call: mute, camera off, hang up.
 
+
 ## Answering
 
-Tap to answer. **Settings → Connected services → Intercom**:
+Tap to answer. Every option is under **Settings → Connected services → Intercom** and in Home
+Assistant:
 
-| Setting | |
-|---|---|
-| **Incoming calls** | Accept calls |
-| **Auto-answer** | Answer automatically |
-| **Auto-answer with camera on** | Send video when auto-answering |
-| **Answer from** | **Everyone**, or selected panels |
-| **Pause wake word during calls** | |
-| **Video stream** | Main or sub stream |
-| **Ring**, **Video ring**, **Ringback** | Tones, including custom ones |
+| Setting | | Default |
+|---|---|---|
+| **Incoming calls** | Accept calls | On |
+| **Auto-answer** | Answer automatically | Off |
+| **Answer from** | Auto-answer **Everyone**, or **Selected**: the devices you pick under **Panels** | Everyone |
+| **Auto-answer with camera on** | Send video when auto-answering | Off |
+| **Pause wake word during calls** | | On |
+| **Video stream** | Main or sub stream | Main |
+| **Ring**, **Video ring**, **Ringback** | Tones, including [custom ones](/features/tones/) | Ring, Ring, Ringback |
 
-<Aside type="caution">
-With auto-answer and the camera on, allowed devices can see the room without anyone touching the
-display.
-</Aside>
+The **Call** and **Call with** sensors in Home Assistant show the call in progress.
+

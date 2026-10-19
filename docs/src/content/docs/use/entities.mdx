@@ -1,0 +1,124 @@
+---
+title: Settings in Home Assistant
+description: The settings that are only in Home Assistant, and the sensors, buttons, events and actions every device has.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+Everything on [Settings on the screen](/use/settings/) is also a Home Assistant entity. This page
+covers what is **only** in Home Assistant: the microphones, the assistants' timing, ducking, photos
+and more, plus the sensors, buttons, events and actions.
+
+Find them on the display's page under **Settings → Devices & services → ESPHome**. The
+**Entity** column is the entity id Home Assistant gives each one by default, with `<device>` standing
+for your display's name.
+
+The entities are on sub-devices named after the display: **screen**, **microphone**, **playback**,
+**camera**, **assistant 1** and **assistant 2**, and **dashboard**, **landscape** and **portrait**
+(Tessera).
+
+## Speaker
+
+| Entity | Name | What it does | Range | Default |
+|---|---|---|---|---|
+| `media_player.<device>_speaker` | Speaker | The media player: announcements, TTS, music, volume | | |
+| `number.<device>_playback_music_ducking` | Music ducking | How far music drops while the assistant listens or talks | −40 to −3 dB | −15 dB |
+| `select.<device>_playback_sound_machine_layer_1`, `select.<device>_playback_sound_machine_layer_2` | Sound machine layer 1, 2 | Two layers of steady sound, mixed, ducking under everything else | Off, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | Off |
+| `volume_*` | Volumes | The same sliders as Settings → Sound | 0–100 % | |
+
+
+## Microphones
+
+See [Microphones](/features/microphones/) for what these do and how to tune them. Apart from Mute sound,
+none of them are copied by config sync.
+
+| Entity | Name | Range | Default |
+|---|---|---|---|
+| `number.<device>_microphone_microphone_gain` | Microphone gain | 0–20 dB on the Smart Display 10, 8 and ThinkSmart View; 0–32 on the JBL Link View; 0–40 on the Smart Display 7 | 0 dB |
+| `switch.<device>_microphone_microphone_leveling` | Microphone leveling | On, Off | On |
+| `switch.<device>_microphone_noise_suppression` | Noise suppression | On, Off | On |
+| `number.<device>_microphone_room_sensitivity` | Room sensitivity | 4–20 dB above the room | 8 dB |
+
+## Voice assistants
+
+Each assistant has its own set, on its own sub-device. `N` is 1 or 2.
+
+| Entity | Name | What it does | Range | Default |
+|---|---|---|---|---|
+| `button.<device>_assistant_N_wake` | Wake | Start this assistant without the wake word (button) | | |
+| `number.<device>_assistant_N_wake_word_sensitivity` | Wake word sensitivity | Higher needs a clearer wake word | 0.5–0.99 | 0.85 |
+| `select.<device>_assistant_N_wake_word_tone` | Wake word tone | The sound when it wakes | Chimes, custom tones | Chirp |
+| `select.<device>_assistant_N_reply_delivery` | Reply delivery | Download the reply first, or stream it | Download first, Stream | Download first |
+| `number.<device>_assistant_N_reply_buffer` | Reply buffer | How much of a streamed reply to collect before playing | 0–3000 ms | 650 ms |
+| `number.<device>_assistant_N_follow_up_time` | Follow-up time | Keep listening this long after a reply, for another request without the wake word | 0–30 s | 0 |
+| `number.<device>_assistant_N_max_listening_time` | Max listening time | Stop listening after this long | 5–60 s | 15 s |
+| `number.<device>_assistant_N_max_thinking_time` | Max thinking time | Give up waiting for Home Assistant after this long | 5–300 s | 90 s |
+| `number.<device>_assistant_N_recordings_kept` | Recordings kept | Keep the last N requests' audio, for the `recordings` action | 0–10 | 0 |
+
+The wake word and the Assist pipeline are picked with Home Assistant's own selects on the same
+device.
+
+| Entity | Name | What it does | Range | Default |
+|---|---|---|---|---|
+| `number.<device>_microphone_stop_word_sensitivity` | Stop word sensitivity | How sure "Stop" has to be. 1 turns it off | 0.5–1 | 0.7 |
+| `switch.<device>_microphone_voice_commands` | Voice commands | Spoken commands without a wake word; so far "radar" opens the radar | On, Off | Off |
+| `sensor.<device>_last_wake_word`, `sensor.<device>_last_heard`, `sensor.<device>_last_reply` | | The last wake word, what was heard, and the reply (sensors) | | |
+| `sensor.<device>_timers` | Timers | Running timers (sensor) | | |
+
+
+## Network and Bluetooth
+
+| Entity | Name | What it does | Range | Default |
+|---|---|---|---|---|
+| `select.<device>_bluetooth_scanning` | Bluetooth scanning | How much of the radio's time the Bluetooth proxy spends scanning. Lower leaves more for Wi‑Fi and the Bluetooth speaker | 9, 5, 2, 1 % | 9 % |
+
+## Screen
+
+| Entity | Name | What it does | Range | Default |
+|---|---|---|---|---|
+| `number.<device>_screen_visualizer_lift` | Visualizer lift | Extra gain on the microphone for the visuals only, so quiet rooms still move them | 0–40 dB | 10 dB |
+| `photos_*` | Photos | Where wallpaper photos come from; see [Photos and wallpaper](/features/photos/) | | |
+| `sensor.<device>_screen_screen_brightness` | Screen brightness | The backlight right now (sensor) | | |
+| `sensor.<device>_ambient_light`, `sensor.<device>_proximity`, `binary_sensor.<device>_presence`, `sensor.<device>_orientation` | | Sensors | | |
+
+
+## Buttons
+
+| Entity | What it does |
+|---|---|
+| `button.<device>_restart` | Restart LANovo |
+| `button.<device>_check_for_updates` | Check for an update now |
+| `button.<device>_purge_cache`, with sensor `sensor.<device>_cached_data` | Delete cached wake word models; they download again when needed |
+| `button.<device>_screen_next_poster` | Show the next wallpaper photo |
+| `button.<device>_camera_reset_camera_settings` | Put every camera setting back to its default |
+
+## Sensors
+
+CPU usage, load average, free memory and disk, ambient light, proximity, presence, orientation,
+microphone muted, camera covered, now playing, timers, and the call state.
+
+## Events
+
+| Event | When |
+|---|---|
+| `update_outcome` | An update finished or failed |
+| `esphome.alarm_ringing`, `esphome.alarm_snoozed`, `esphome.alarm_stopped` | An [alarm](/features/messages/#alarms) rings, is snoozed or stopped |
+| `esphome.screen_alert` | A Tessera alert was dismissed or a button on it tapped (action, title, screen) |
+| `esphome.echolocal_turn` | An assistant turn finished, with its timings |
+
+## Actions
+
+Call these as `esphome.<device>_<action>`, for example `esphome.kitchen_show_message`.
+
+| Action | What it does |
+|---|---|
+| `show_message`, `clear_message` | Show or clear a [message](/features/messages/) |
+| `alarm_list`, `alarm_set`, `alarm_enable`, `alarm_delete`, `alarm_stop`, `alarm_snooze` | [Alarms](/features/messages/#alarms) |
+| `tone_write`, `tone_rename`, `tone_remove` | [Custom tones](/features/tones/) |
+| `recordings`, `turn_audio` | The kept recordings of recent requests |
+| `<orientation>_show_page`, `_show_alert`, `_show_alert_choice`, `_dismiss_alert`, `_screen_message` | [Tessera](/use/dashboards/#tessera) pages and alerts |
+
+<Aside>
+Some actions, such as picking a wake word on the screen, need **Allow the device to perform Home
+Assistant actions** turned on in the ESPHome integration's options for the display.
+</Aside>

@@ -1,32 +1,58 @@
 ---
 title: Configuration
-description: Change settings on the display, from Home Assistant, or copy them from another display.
+description: Where to change a setting, and how to copy settings between devices.
 ---
 
 import { Steps } from '@astrojs/starlight/components';
 
-Most settings can be changed in three places. A change in one shows up in the others.
+Every setting is saved on the display itself, and the places that show it stay in step: change
+it in one and the others follow.
 
-## On the display
+| Where | What's there |
+|---|---|
+| **On the display**: the gear in the dock | Nearly everything, grouped the way a phone's settings are. [Settings on the screen](/use/settings/) |
+| **In Home Assistant** | An entity for each setting, on the device page and usable in dashboards and automations, plus some that are only there. [Settings in Home Assistant](/use/entities/) |
 
-The gear in the dock opens **Settings**. See [Settings](/use/settings/) for what's where.
 
-## From Home Assistant
+## Finding a setting
 
-The same settings are entities on the display's device: switches, selects and numbers for the
-screen, screen saver, sounds, voice assistants, camera and the rest. Use them from the device page,
-dashboards or automations.
+1. Look it up on [Settings on the screen](/use/settings/). Each row there names its Home Assistant
+   entity.
+2. If it isn't there, it's on [Settings in Home Assistant](/use/entities/).
+3. In Home Assistant, open **Settings → Devices & services → ESPHome**, pick the display, and look
+   under the sub-device the setting belongs to ([which one](/start/home-assistant/#in-home-assistant)).
+
+## Settings that stay on one display
+
+Config sync leaves these alone, since they belong to the display and the room it's in:
+
+- Brightness, auto brightness and display size
+- Microphone tuning: gain, leveling, noise and echo cancellation, sensitivity
+- Camera picture and stream settings
+- Bluetooth scanning
+- Home control: which tabs are on, the entities picked for them, and how they're grouped
+- The intercom's auto-answer list
+- Whether Home Assistant's API adoption is allowed
+- The Immich API key
+- ADB over network and the motion sensor's detection range
+
+The display's name and Wi‑Fi aren't settings, so they aren't copied either.
 
 ## Config sync
 
-Copy settings between LANovo displays on the same network.
+Copy settings from one display to another, so a second one starts out set up the same way.
+It works between any LANovo displays and Echo Shows running EchoLocal on the same network; settings
+the other device doesn't have are skipped.
 
 <Steps>
 
 1. On one display, open **Settings → System → Config sync**.
 
-2. Pick another display, then **send** this display's settings to it, or **fetch** its settings.
+2. Find the other device, then tap its upload arrow to send this one's settings to it, or its
+   download arrow to fetch its settings.
 
-3. Enter the six-digit code shown on the other display.
+3. Enter the six-digit code shown on the other device.
 
 </Steps>
+
+The receiving display reports how many settings it applied.

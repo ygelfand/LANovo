@@ -50,35 +50,14 @@ Plug the display in over USB and run:
 ./lanovo install
 ```
 
-A full install, with the answers typed in:
+What it does, in order:
 
-```text
-$ ./lanovo install
-? Install on HUA0XXXXX? Yes
-dm-verity is enforcing — disabling, the device will reboot and come back
-  waiting for the device… back
-
-? Name this device: Kitchen Display
-  Home Assistant keys the device on its name, so changing it later creates a new one.
-
-rebooting for the permissive boot command line
-  waiting for the device… back
-
-installing lanovod
-rebooting for the service definition
-  waiting for the device… back
-
-Scanning…
-? Which network?
-  > MyWiFi              ▂▄▆█  WPA2
-    Neighbors-5G        ▂▄▆   WPA2
-    Other network…
-? Passphrase: ********
-✓ connected: MyWiFi  192.168.1.50
-
-started lanovod running
-Adding it — scan the code on the screen, and Home Assistant will set the key itself
-```
+1. Turns off dm-verity, if it's on, and reboots.
+2. Asks for a name for the display.
+3. Sets SELinux to permissive on the boot command line, and reboots.
+4. Installs lanovod and its service, and reboots.
+5. Joins Wi‑Fi: pick a network and type its passphrase, unless you gave `--ssid` and `--password`.
+6. Starts lanovod and shows a code to add the display to Home Assistant.
 
 The display reboots up to three times. Leave the cable in until `lanovo` finishes.
 
@@ -96,7 +75,8 @@ Renaming the display later makes Home Assistant see it as a new device, so pick 
 | `--ssid MyWiFi --password …` | Join this network without scanning |
 | `--wps` | Join by pressing your router's WPS button |
 | `--yes` | Don't ask before installing |
-| `--reboot` | Reboot when needed without asking |
+| `--reboot`, `--no-reboot` | Reboot at the end without asking, or finish without rebooting |
+| `--generate-key` | Make the encryption key here, to paste into Home Assistant, instead of letting Home Assistant set it |
 | `--serial HUA0XXXXX` | Pick a display when more than one is plugged in |
 
 ## Changing Wi‑Fi later

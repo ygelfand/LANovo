@@ -1,25 +1,29 @@
 ---
 title: Updates
-description: Updating from Home Assistant or from the display.
+description: Updating from Home Assistant or from the screen.
 ---
 
 ## From Home Assistant
 
-New versions show up under **Settings → Updates** through the display's **Firmware** entity. The
-previous version is kept until the new one is running.
+New versions show up under **Settings → Updates** through the display's **Firmware** entity.
+Install from there, or press **Check for updates** to look now. The previous version is kept until the new one is running.
 
-## From the display
+
+## From the screen
 
 **Settings → System → Software update** shows the current version, **Check for updates**, and
 **Download and install** when an update is available.
 
 ## Checks
 
-A few minutes after start, then daily.
+A few minutes after start, then daily. **Update status** shows what it's doing, and **Update
+outcome** fires when an update finishes or fails.
 
 ## Update channel
 
-- **Stable**: releases
-- **Development**: latest builds
+**Update channel** (`update_channel`), on the screen or in Home Assistant:
+
+- **Stable** (`stable`): releases
+- **Development** (`dev`): the latest builds, for trying fixes early
 
 Only newer builds are offered.

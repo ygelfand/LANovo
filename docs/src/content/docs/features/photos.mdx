@@ -1,0 +1,51 @@
+---
+title: Photos and wallpaper
+description: Show photos from Immich behind the dashboard.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+
+The dashboard can show a photo from your [Immich](https://immich.app) library behind the clock,
+changing on a schedule.
+
+## Connect Immich
+
+The connection is set in Home Assistant, on the display's page:
+
+<Steps>
+
+1. In Immich, create an API key: **Account settings → API keys**.
+
+2. Set **Immich server** (`photos_server`) to Immich's address, for example
+   `http://192.168.1.20:2283`, and **Immich API key** (`photos_key`) to the key.
+
+3. Narrow down which photos to show, or leave these empty for the whole library:
+
+   | Setting | Entity | |
+   |---|---|---|
+   | Photo albums | `photos_albums` | Album names or ids, separated by commas |
+   | Photo tags | `photos_tags` | Tag names or ids, separated by commas |
+   | Photo people | `photos_people` | People's names or ids, separated by commas |
+   | Photos favorites only | `photos_favorites` | Only favorites (default off) |
+   | Photo memories first | `photos_memories` | Prefer Immich's "on this day" memories (default on) |
+
+   Names match in any case. A name Immich doesn't know shows as "Nothing named …" in the status.
+
+4. On the display, turn on **Settings → Display → Dashboard → Wallpaper → Show wallpaper**.
+
+</Steps>
+
+**Photos status** (`photos_status`) says whether the connection works, and what's wrong if it
+doesn't. Immich 3.2 or newer is needed.
+
+## Wallpaper settings
+
+| Setting | Entity | Choices | Default |
+|---|---|---|---|
+| Show wallpaper | `switch.<device>_screen_poster` | | Off |
+| Change every | `select.<device>_screen_poster_changes` | Never, On each wake, Hourly, Daily | Hourly |
+| Change now | `button.<device>_screen_next_poster` (button) | | |
+
+The key isn't copied by [config sync](/use/configuration/#config-sync); enter it on each display.
+

@@ -1,6 +1,6 @@
 ---
 title: Voice assistants
-description: Two wake words, each with its own Assist pipeline.
+description: Two wake words, each with its own Assist pipeline, and everything you can tune.
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
@@ -9,7 +9,9 @@ Wake words run on the display. Audio goes only where your Assist pipeline sends 
 
 ## Two assistants
 
-**Assistant 1** and **Assistant 2** each have their own wake word and Assist pipeline.
+**Assistant 1** and **Assistant 2** each have their own wake word, Assist pipeline, sensitivity,
+sounds and timing. Use one for Home Assistant's own assistant and the other for, say, a cloud LLM.
+A slot with no wake word is off.
 
 ## Set it up
 
@@ -24,29 +26,65 @@ Wake words run on the display. Audio goes only where your Assist pipeline sends 
 
 </Steps>
 
-<Aside type="note">
-A slot with no wake word is off.
-</Aside>
+You can also pick the wake word under **Settings → Voice assistants**. That needs **Allow the
+device to perform Home Assistant actions** turned on for the display in the ESPHome integration;
+without it the row is dimmed.
 
-## On the display
+## Starting without the wake word
 
-**Settings → Voice assistants**, one page per assistant:
+- **Talk now** on the assistant's settings page.
+- From Home Assistant: the **Wake** button on the assistant's device (`wake_assistant_1`,
+  `wake_assistant_2`).
 
-- **Talk now**: start without the wake word
-- **Wake word sensitivity**: higher wakes more easily
-- **Wake sound**: a chime, or none
+## On the screen
+
+**Settings → Voice assistants** has a page per assistant:
+
+- **Talk now**
+- **Wake word**
+- **Wake word sensitivity**: higher wakes more easily, with more false wakes. In Home Assistant the
+  same setting is a threshold (0.5–0.99, default 0.85) where *lower* wakes more easily
+- **Wake sound**: a chime, a [custom tone](/features/tones/), or none
 - **Response playback**: **Stream** starts sooner and can stutter on a slow network; **Download
   first** waits for the whole answer
-- **Visuals**: a visual for listening, waiting and responding, in the panel or full screen
+- **Visuals**: a visual for listening, thinking and replying, in the panel or full screen
 
   <img src="/visuals/orb.webp" alt="The Orb visual" class="screen-wide" width="640" height="400" loading="lazy" />
+
+## Timing, follow-up and recordings
+
+These are only in Home Assistant, on each assistant's device:
+
+| Setting | What it does | Default |
+|---|---|---|
+| **Follow-up time** | Keep listening after a reply, so you can ask again without the wake word (0–30 s) | 0 |
+| **Max listening time** | Stop listening after this long (5–60 s) | 15 s |
+| **Max thinking time** | Give up waiting for Home Assistant after this long (5–300 s) | 90 s |
+| **Reply buffer** | How much of a streamed reply to collect before playing (0–3000 ms) | 650 ms |
+| **Recordings kept** | Keep the audio of the last N requests (0–10) | 0 |
+
+The **Last wake word**, **Last heard** and **Last reply** sensors show the most recent turn.
 
 
 ## Stop
 
-Tap the screen or say **"stop"**, no wake word needed. It stops, in order: a ringing timer, the
-assistant, an announcement, music.
+Say **"stop"**, no wake word needed, or tap the screen. It stops, in order: a ringing alarm or timer, the assistant, an announcement, then pauses music.
+
+**Stop word sensitivity** in Home Assistant (0.5–1, default 0.7) sets how sure it has to be; 1 turns
+it off.
+
+## Voice commands
+
+**Voice commands** (`voice_commands`, off by default, in Home Assistant) listens for commands
+without a wake word, on the display itself. So far there is one: say **"radar"** (or "show me the
+weather radar") to open the [Radar app](/features/apps/#radar).
 
 ## Timers
 
-"Set a timer for ten minutes" shows a countdown. See [Messages and timers](/features/messages/).
+"Set a timer for ten minutes" starts a timer and shows a countdown. See
+[Messages, timers and alarms](/features/messages/).
+
+<Aside type="tip">
+If the wake word triggers too often or not enough, see [Microphones](/features/microphones/) as well
+as the sensitivity.
+</Aside>

@@ -1,22 +1,27 @@
 ---
-title: Messages and timers
-description: Messages from Home Assistant, and timers.
+title: Messages, timers and alarms
+description: Messages from Home Assistant, timers, and alarms with a wake light.
 ---
 
+import { Aside } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import message from '../../../assets/screens/bb-message.png';
 
 ## Messages
 
-<div class="pair even">
-	<Image src={message} alt="A message on the display" class="screen" />
-	<img src="/anim/alerts.webp" alt="A message as a banner, a card, a toast and full screen" class="screen" width="420" height="672" />
+
+<Image src={message} alt="A message on the screen" class="screen" />
+<div class="carousel">
+	<img src="/carousel/alerts-0.png" alt="A message as a banner, a card, a toast and full screen, 1 of 4" loading="lazy" />
+	<img src="/carousel/alerts-1.png" alt="A message as a banner, a card, a toast and full screen, 2 of 4" loading="lazy" />
+	<img src="/carousel/alerts-2.png" alt="A message as a banner, a card, a toast and full screen, 3 of 4" loading="lazy" />
+	<img src="/carousel/alerts-3.png" alt="A message as a banner, a card, a toast and full screen, 4 of 4" loading="lazy" />
 </div>
 
 Use the display's **show message** action:
 
 ```yaml
-action: esphome.kitchen_display_show_message
+action: esphome.kitchen_show_message
 data:
   title: Laundry
   body: The washer is done
@@ -32,20 +37,28 @@ data:
 | `seconds` | Default 15, up to an hour |
 
 A new message replaces the current one. Tap to dismiss, or use the **clear message** action. The
-action name comes from the display's name.
+action name comes from the display's name: a display named Kitchen has
+`esphome.kitchen_show_message`.
 
-## Alert styles and chimes
+### Alert styles and chimes
 
 **Settings → Alerts & Alarms**:
 
 - **Alert style**: **Banner**, **Card**, **Toast** or **Full screen**
-- A chime for each tone, or none
+- **Info**, **Success**, **Warning** and **Alert chime**: a sound for each tone, a
+  [custom tone](/features/tones/), or none
 
 ## Timers
 
 Timers set by voice show on screen. **Settings → Alerts & Alarms → Timer style**:
-
-<img src="/anim/timers.webp" alt="A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen" class="screen" width="420" height="672" />
+<div class="carousel">
+	<img src="/carousel/timers-0.png" alt="A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen, 1 of 6" loading="lazy" />
+	<img src="/carousel/timers-1.png" alt="A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen, 2 of 6" loading="lazy" />
+	<img src="/carousel/timers-2.png" alt="A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen, 3 of 6" loading="lazy" />
+	<img src="/carousel/timers-3.png" alt="A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen, 4 of 6" loading="lazy" />
+	<img src="/carousel/timers-4.png" alt="A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen, 5 of 6" loading="lazy" />
+	<img src="/carousel/timers-5.png" alt="A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen, 6 of 6" loading="lazy" />
+</div>
 
 | Style | |
 |---|---|
@@ -56,9 +69,63 @@ Timers set by voice show on screen. **Settings → Alerts & Alarms → Timer sty
 | **Clock face** | Countdown in the clock face |
 | **Full screen** | |
 
-A finished timer rings until tapped or "stop" is said, up to **Timer rings for** (1, 5, 15 or 30
-minutes). **Timer sound** sets the ring.
+A finished timer rings until stopped, up to **Timer rings for** (1, 5, 15 or 30 minutes, default
+15). **Timer sound** sets the ring. Stop it by saying "stop" or tapping the screen.
 
-## Custom sounds
+The **Timers** sensor in Home Assistant lists running timers.
 
-Custom tones, uploaded through the display's ESPHome actions, appear in every sound picker.
+## Alarms
+
+Open **Alarms** from the Apps screen to add one. Each alarm has:
+
+| Field | |
+|---|---|
+| Name and time | |
+| Repeat | Once, Every day, Weekdays, Weekends, or chosen days |
+| Sound | Any chime or [custom tone](/features/tones/) |
+| Snooze | Minutes per snooze, up to 60 |
+| Volume | **Steady**, **Gentle** (ramps up from quiet) or **Silent** |
+| Wake light | Minutes before the alarm to start brightening the screen, up to 30 |
+
+The wake light's color is **Settings → Alerts & Alarms → Wake light**: **Sunrise**, **White** or
+**Ember**. An alarm rings for **Timer rings for**.
+
+To stop a ringing alarm, tap **Stop** or say "stop"; tap **Snooze** to snooze.
+
+### From Home Assistant
+
+```yaml
+action: esphome.kitchen_alarm_set
+data:
+  name: Weekdays
+  time: "06:45"
+  days: mon,tue,wed,thu,fri
+  enabled: true
+  sound: rise
+  snooze_minutes: 9
+  volume: gentle
+  ramp_seconds: 60
+  light_minutes: 10
+```
+
+| Field | Value |
+|---|---|
+| `time` | `HH:MM`, 24-hour |
+| `days` | Day names separated by commas or spaces (`sun` … `sat`, or longer, like `monday`). Empty rings once |
+| `sound` | A chime (`chirp`, `ding`, `rise`, `timer`, `trouble`) or a [custom tone's](/features/tones/) key |
+| `volume` | `static`, `gentle` or `silent` |
+| `ramp_seconds` | How long `gentle` takes to reach full volume, 15–300 |
+| `snooze_minutes` | 0–60 |
+| `light_minutes` | Wake light lead, 0–30 |
+| `id` | Leave out to add an alarm; pass an existing id to change it |
+
+| Action | |
+|---|---|
+| `alarm_list` | The alarms and their ids |
+| `alarm_set` | Add an alarm, or change one by passing its `id` |
+| `alarm_enable` | Turn one on or off |
+| `alarm_delete` | Remove one |
+| `alarm_stop`, `alarm_snooze` | Stop or snooze the one ringing |
+
+When an alarm rings, is snoozed or stops, Home Assistant gets the events `esphome.alarm_ringing`,
+`esphome.alarm_snoozed` and `esphome.alarm_stopped`, for automations such as turning on the lights.

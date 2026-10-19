@@ -1,0 +1,312 @@
+---
+title: All settings and defaults
+description: Every setting, with its default, its choices and its Home Assistant entity, generated from the code.
+---
+
+Every setting on the display, grouped by feature, with the value it starts at and what it can be
+set to. The **Entity** column is the entity id Home Assistant gives it by default, with `<device>`
+standing for your display's name. A model in brackets means the setting exists only there.
+
+For what each setting does, see [Settings on the screen](/use/settings/) and
+[Settings in Home Assistant](/use/entities/).
+
+## Display
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Brightness | 70 % | 0 to 100 % | `number.<device>_screen_brightness` |
+| Hide dock after | Never | 5 seconds, 10 seconds, 15 seconds, 30 seconds, 1 minute, Never | `select.<device>_screen_hide_dock_after` |
+| Dock location | Right | Left, Right, Top, Bottom | `select.<device>_screen_dock_location` |
+| Privacy marks | On | On, Off | `switch.<device>_screen_privacy_marks` |
+| Alert style | Banner | Banner, Card, Full screen, Toast | `select.<device>_screen_alert_style` |
+| Keyboard size | Compact | Compact, Standard, Large | `select.<device>_screen_keyboard_size` |
+| Language | English | English | `select.<device>_screen_language` |
+| Auto brightness | On | On, Off | `switch.<device>_screen_auto_brightness` |
+| Size | large (Smart Display 10), medium (JBL Link View), compact (Smart Display 7), medium (ThinkSmart View), medium (Smart Display 8) | mini, compact, medium, large, xlarge | `select.<device>_screen_size` |
+| Style | standard | standard, material, glass, eink, metro, terminal, hifi, neon, skeuo | `select.<device>_screen_style` |
+| Timer style | Bar | Bar, Banner, Dial, Full screen, Clock face, Corner | `select.<device>_screen_timer_style` |
+| Theme | Default | Default, Midnight, Nocturne, Slate, Ember, Forest, Ocean, Plum, Carbon, Phosphor, Amber, Graphite, Synthwave, Paper, Linen, Mist, Bloom, Braun, Ink | `select.<device>_screen_theme` |
+
+## Screen saver
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Idle screen after | 1 minute | 30 seconds, 1 minute, 2 minutes, 5 minutes, 15 minutes, Never | `select.<device>_screen_idle_screen_after` |
+| Idle clock horizontal position | Random | Left, Center, Right, Random | `select.<device>_screen_idle_clock_horizontal_position` |
+| Idle clock face | Plain | None, Plain, Stack, Cards, Analog, Analog seconds, Segments, Words, Overlap | `select.<device>_screen_idle_clock_face` |
+| Close paused player after | 5 minutes | 1 minute, 3 minutes, 5 minutes, 10 minutes, 15 minutes, Never | `select.<device>_screen_close_paused_player_after` |
+| Idle clock vertical position | Random | Top, Center, Bottom, Random | `select.<device>_screen_idle_clock_vertical_position` |
+| Screen saver mode | Native | Native, Tessera | `select.<device>_screen_screen_saver_mode` |
+| Idle clock size | Large | Nano, Micro, Mini, Small, Medium, Large | `select.<device>_screen_idle_clock_size` |
+| Idle visual 1 | None | None, any [visual](/use/visuals/) | `select.<device>_screen_idle_visual_1` |
+| Idle visual 1 listens to | Microphone and speaker | Microphone and speaker, Microphone, Speaker | `select.<device>_screen_idle_visual_1_listens_to` |
+| Idle visual 2 | None | None, any [visual](/use/visuals/) | `select.<device>_screen_idle_visual_2` |
+| Idle visual 2 listens to | Microphone and speaker | Microphone and speaker, Microphone, Speaker | `select.<device>_screen_idle_visual_2_listens_to` |
+| Night mode after | 5 minutes | 1 minute, 5 minutes, 15 minutes, 30 minutes | `select.<device>_screen_night_mode_after` |
+| Night mode below | 5 lx | 0 to 100 lx | `number.<device>_screen_night_mode_below` |
+| Night mode | Dim to a clock | Nothing, Dim, Dim to a clock, Turn off the screen | `select.<device>_screen_night_mode` |
+
+## Clock
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Clock horizontal position | Center | Left, Center, Right | `select.<device>_screen_clock_horizontal_position` |
+| Clock color | Theme | Theme, Amber, Red, Green, Cyan, Blue, Violet, Pink | `select.<device>_screen_clock_color` |
+| Clock date | On | On, Off | `switch.<device>_screen_clock_date` |
+| Clock face | Plain | Plain, Stack, Cards, Analog, Analog seconds, Segments, Words, Overlap | `select.<device>_screen_clock_face` |
+| Clock format | 24 hour | 24 hour, 12 hour | `select.<device>_screen_clock_format` |
+| Clock vertical position | Center | Top, Center, Bottom | `select.<device>_screen_clock_vertical_position` |
+| Clock size | Large | Nano, Micro, Mini, Small, Medium, Large | `select.<device>_screen_clock_size` |
+
+## Visuals
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Visual | Orb | any [visual](/use/visuals/) | `select.<device>_screen_visual` |
+| Visual frame cap | 60 | 10, 15, 20, 30, 45, 60 | `select.<device>_screen_visual_frame_cap` |
+| Visual label | LANovo | Text | `text.<device>_screen_visual_label` |
+| Visual seed | 0 | 0 to 1024 | `number.<device>_screen_visual_seed` |
+| Visualizer lift | 10 dB | 0 to 40 dB | `number.<device>_screen_visualizer_lift` |
+
+## Weather
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Weather alerts | Off | On, Off | `switch.<device>_screen_weather_alerts` |
+| Dashboard weather horizontal position | Right | Left, Center, Right | `select.<device>_screen_dashboard_weather_horizontal_position` |
+| Animate dashboard weather | On | On, Off | `switch.<device>_screen_animate_dashboard_weather` |
+| Weather on dashboard | On | On, Off | `switch.<device>_screen_weather_on_dashboard` |
+| entity | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | On the screen only |
+| Dashboard weather look | Compact | Compact, Stack, Icon, Words, Card, Detail | `select.<device>_screen_dashboard_weather_look` |
+| Dashboard weather vertical position | Top | Top, Center, Bottom | `select.<device>_screen_dashboard_weather_vertical_position` |
+| Radar starting range | 200 mi | 50 mi, 100 mi, 200 mi, 300 mi, 400 mi, 600 mi, 800 mi | `select.<device>_screen_radar_starting_range` |
+| Radar source | Auto | Auto, NWS, RainViewer | `select.<device>_screen_radar_source` |
+| Screen saver weather horizontal position | Right | Left, Center, Right | `select.<device>_screen_screen_saver_weather_horizontal_position` |
+| Animate screen saver weather | On | On, Off | `switch.<device>_screen_animate_screen_saver_weather` |
+| Screen saver weather look | Compact | Compact, Stack, Icon, Words, Card, Detail | `select.<device>_screen_screen_saver_weather_look` |
+| Screen saver weather vertical position | Top | Top, Center, Bottom | `select.<device>_screen_screen_saver_weather_vertical_position` |
+| Screen saver weather size | Small | Nano, Micro, Mini, Small, Medium, Large | `select.<device>_screen_screen_saver_weather_size` |
+| Themed screen saver weather colors | Off | On, Off | `switch.<device>_screen_themed_screen_saver_weather_colors` |
+| Weather on screen saver | Off | On, Off | `switch.<device>_screen_weather_on_screen_saver` |
+| Dashboard weather size | Small | Nano, Micro, Mini, Small, Medium, Large | `select.<device>_screen_dashboard_weather_size` |
+| Themed dashboard weather colors | Off | On, Off | `switch.<device>_screen_themed_dashboard_weather_colors` |
+
+## Wallpaper
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Poster | Off | On, Off | `switch.<device>_screen_poster` |
+| Poster changes | Hourly | Never, On each wake, Hourly, Daily | `select.<device>_screen_poster_changes` |
+
+## Photos
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Photo albums | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | `text.<device>_screen_photo_albums` |
+| Photos favorites only | Off | On, Off | `switch.<device>_screen_photos_favorites_only` |
+| Photo interval | 30 seconds | 10 seconds, 15 seconds, 30 seconds, 1 minute, 2 minutes, 5 minutes | `select.<device>_screen_photo_interval` |
+| Immich API key | — | Text | `text.<device>_screen_immich_api_key` |
+| Photo memories first | On | On, Off | `switch.<device>_screen_photo_memories_first` |
+| Photos app motion | On | On, Off | `switch.<device>_screen_photos_app_motion` |
+| Wallpaper motion | Off | On, Off | `switch.<device>_screen_wallpaper_motion` |
+| Photo screen saver motion | On | On, Off | `switch.<device>_screen_photo_screen_saver_motion` |
+| Photo people | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | `text.<device>_screen_photo_people` |
+| Immich server | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | `text.<device>_screen_immich_server` |
+| Photo tags | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | `text.<device>_screen_photo_tags` |
+
+## Calendar
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| entities | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | On the screen only |
+| span | 7 days | On, Off | On the screen only |
+
+## Shopping list
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| completed | off | On, Off | On the screen only |
+| entity | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | On the screen only |
+
+## Apps
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| dock | player,calls | Text | On the screen only |
+| order | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | On the screen only |
+
+## Media
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Music ducking | -15 dB | -40 to -3 dB | `number.<device>_playback_music_ducking` |
+
+## Sendspin
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Sendspin | Off | On, Off | `switch.<device>_playback_sendspin` |
+
+## Cast receiver
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Prime Video persistent registration | Off | On, Off | `switch.<device>_prime_video_persistent_registration` |
+| Prime Video skip intro | Off | On, Off | `switch.<device>_prime_video_skip_intro` |
+| Cast receiver | Off | On, Off | `switch.<device>_cast_receiver` |
+| YouTube lounge | Always | Always, On demand | `select.<device>_youtube_lounge` |
+| YouTube live delay | 10 s | 4 to 60 s | `number.<device>_youtube_live_delay` |
+| YouTube SponsorBlock categories | sponsor | Text | `text.<device>_youtube_sponsorblock_categories` |
+
+## AirPlay
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| AirPlay | Off | On, Off | `switch.<device>_playback_airplay` |
+
+## Bluetooth
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Bluetooth proxy | Off | On, Off | `switch.<device>_bluetooth_proxy` |
+| Bluetooth scanning | 9% | 9%, 5%, 2%, 1% | `select.<device>_bluetooth_scanning` |
+| Bluetooth speaker | Off | On, Off | `switch.<device>_bluetooth_speaker` |
+
+## Intercom
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Auto-answer from | Everyone | Everyone, Selected | `select.<device>_auto_answer_from` |
+| Auto-answer panels | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | `text.<device>_auto_answer_panels` |
+| Auto-answer calls | Off | On, Off | `switch.<device>_auto_answer_calls` |
+| Auto-answer with camera on | Off | On, Off | `switch.<device>_auto_answer_with_camera_on` |
+| Incoming calls | On | On, Off | `switch.<device>_incoming_calls` |
+| Pause wake word during calls | On | On, Off | `switch.<device>_pause_wake_word_during_calls` |
+| Ring tone | Ring | None, Chirp, Ding, Rise, Timer, Trouble, Ring, Ringback | `select.<device>_ring_tone` |
+| Ringback tone | Ringback | None, Chirp, Ding, Rise, Timer, Trouble, Ring, Ringback | `select.<device>_ringback_tone` |
+| Call video stream | Main | Main, Sub | `select.<device>_call_video_stream` |
+| Video ring tone | Ring | None, Chirp, Ding, Rise, Timer, Trouble, Ring, Ringback | `select.<device>_video_ring_tone` |
+
+## Alerts and alarms
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Alert chime | Trouble | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_playback_alert_chime` |
+| Info chime | Ding | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_playback_info_chime` |
+| Timer rings for | 15 minutes | 1 minute, 5 minutes, 15 minutes, 30 minutes | `select.<device>_playback_timer_rings_for` |
+| Success chime | Chirp | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_playback_success_chime` |
+| Timer sound | Timer | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_playback_timer_sound` |
+| Wake light | Sunrise | Sunrise, White, Ember | `select.<device>_playback_wake_light` |
+| Warning chime | Rise | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_playback_warning_chime` |
+
+## Sound cues
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Device chime | Chirp | None, Chirp, Ding, Rise | `select.<device>_playback_device_chime` |
+| Cancellation sound | Cancel | None, Chirp, Ding, Rise, Cancel | `select.<device>_playback_cancellation_sound` |
+| Failure sound | Trouble | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_playback_failure_sound` |
+| Mute sound | Mute | None, Chirp, Ding, Rise, Mute | `select.<device>_playback_mute_sound` |
+| Unmute sound | Unmute | None, Chirp, Ding, Rise, Unmute | `select.<device>_playback_unmute_sound` |
+
+## Microphones
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Noise suppression | On | On, Off | `switch.<device>_microphone_noise_suppression` |
+| Microphone gain | 0 dB | 0 to 20 dB | `number.<device>_microphone_microphone_gain` |
+| Microphone leveling | On | On, Off | `switch.<device>_microphone_microphone_leveling` |
+| Room sensitivity | 8 dB | 4 to 20 dB | `number.<device>_microphone_room_sensitivity` |
+| Stop word sensitivity | 0.7 | 0.5 to 1 | `number.<device>_microphone_stop_word_sensitivity` |
+
+## Voice
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Voice commands | Off | On, Off | `switch.<device>_microphone_voice_commands` |
+
+## Voice assistants
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Follow-up time | 0 s | 0 to 30 s | `number.<device>_assistant_N_follow_up_time` |
+| Recordings kept | 0 | 0 to 10 | `number.<device>_assistant_N_recordings_kept` |
+| Max listening time | 15 s | 5 to 60 s | `number.<device>_assistant_N_max_listening_time` |
+| Max thinking time | 90 s | 5 to 300 s | `number.<device>_assistant_N_max_thinking_time` |
+| Reply buffer | 650 ms | 0 to 3000 ms | `number.<device>_assistant_N_reply_buffer` |
+| Reply delivery | Download first | Download first, Stream | `select.<device>_assistant_N_reply_delivery` |
+| Wake word sensitivity | 0.85 | 0.5 to 0.99 | `number.<device>_assistant_N_wake_word_sensitivity` |
+| Wake word tone | Chirp | None, Chirp, Ding, Rise | `select.<device>_assistant_N_wake_word_tone` |
+
+## Camera
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Anti-banding | Auto | Auto, Off, 50 Hz, 60 Hz | `select.<device>_camera_anti_banding` |
+| Brightness | 5 (Smart Display 10), Medium (Smart Display 7) | 0 to 10 | `number.<device>_camera_brightness` |
+| Contrast | 5 (Smart Display 10), Medium (Smart Display 7) | 0 to 10 | `number.<device>_camera_contrast` |
+| Effect | None | None, Mono, Negative, Solarize, Sepia, Posterize, Whiteboard, Blackboard, Aqua | `select.<device>_camera_effect` |
+| Exposure compensation | 0 | -12 to 12 | `number.<device>_camera_exposure_compensation` |
+| Frame rate | 30 fps | 15 to 30 fps | `number.<device>_camera_frame_rate` |
+| Auto frame rate | On | On, Off | `switch.<device>_camera_auto_frame_rate` |
+| Hue (Smart Display 7) | Medium | Low, Medium, High | `select.<device>_camera_hue` |
+| ISO (Smart Display 7) | auto | auto, 100, 200, 400, 800, 1600 | `select.<device>_camera_iso` |
+| Keyframe interval | 2 s | 1 to 10 s | `number.<device>_camera_keyframe_interval` |
+| Main stream | On | On, Off | `switch.<device>_camera_main_stream` |
+| Main resolution | 1600×1200 (Smart Display 10), 1280×720 (Smart Display 7) | 1600×1200, 1280×960, 1024×768, 800×600, 640×480 | `select.<device>_camera_main_resolution` |
+| Noise reduction (Smart Display 10, JBL Link View, ThinkSmart View, Smart Display 8) | Fast | Off, Fast, High quality, Minimal | `select.<device>_camera_noise_reduction` |
+| Quality | Standard | Low, Standard, High | `select.<device>_camera_quality` |
+| Saturation | 5 (Smart Display 10), Medium (Smart Display 7) | 0 to 10 | `number.<device>_camera_saturation` |
+| Scene | Auto | Auto, Landscape, Snow, Beach, Sunset, Night, Portrait, Sports, Steady photo, Candlelight, Fireworks, Party, Night portrait, Theatre, Action, HDR | `select.<device>_camera_scene` |
+| Sharpness | 2 (Smart Display 10), Medium (Smart Display 7) | 0 to 6 | `number.<device>_camera_sharpness` |
+| Sub stream | On | On, Off | `switch.<device>_camera_sub_stream` |
+| Sub resolution | 640 px wide (Smart Display 10), 768 px wide (Smart Display 7) | 960 px wide, 768 px wide, 640 px wide, 480 px wide, 320 px wide | `select.<device>_camera_sub_resolution` |
+| White balance | Auto | Auto, Incandescent, Fluorescent, Warm fluorescent, Daylight, Cloudy, Twilight, Shade | `select.<device>_camera_white_balance` |
+
+## Camera stream
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| RTSP server | Off | On, Off | `switch.<device>_camera_rtsp_server` |
+
+## Speaker and playback
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Sound machine layer 1 | Off | Off, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | `select.<device>_playback_sound_machine_layer_1` |
+| Sound machine layer 2 | Off | Off, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | `select.<device>_playback_sound_machine_layer_2` |
+| Alerts volume | 100 % | 0 to 100 % | `number.<device>_playback_alerts_volume` |
+| Feedback volume | 100 % | 0 to 100 % | `number.<device>_playback_feedback_volume` |
+| Main volume | 40 % | 0 to 100 % | `number.<device>_playback_main_volume` |
+| Media volume | 100 % | 0 to 100 % | `number.<device>_playback_media_volume` |
+| Voice volume | 100 % | 0 to 100 % | `number.<device>_playback_voice_volume` |
+
+## Network
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Verify certificates | On | On, Off | `switch.<device>_verify_certificates` |
+
+## Access
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| ADB over network | Off | On, Off | `switch.<device>_adb_over_network` |
+
+## Presence
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Detection range | 3 | 1 to 5 | `number.<device>_detection_range` |
+| Wake on motion | Off | On, Off | `switch.<device>_wake_on_motion` |
+
+## System
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Cast bundle | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | `text.<device>_cast_bundle` |
+| Cast oracle | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | `text.<device>_cast_oracle` |
+| Metrics interval | 60 s | 10 to 3600 s | `number.<device>_metrics_interval` |
+| Time zone | Home Assistant | Home Assistant, UTC, Europe/London, Europe/Lisbon, Europe/Paris, Europe/Berlin and 34 more | `select.<device>_time_zone` |
+| Update channel | stable | stable, dev | `select.<device>_update_channel` |
+

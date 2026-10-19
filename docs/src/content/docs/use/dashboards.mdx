@@ -5,30 +5,39 @@ description: LANovo's own clock and home control, or a Tessera dashboard from Ho
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
-import tessera from '../../../assets/screens/tessera.webp';
 import setup from '../../../assets/screens/tessera-setup.webp';
+import tessera from '../../../assets/screens/tessera.webp';
 import lights from '../../../assets/screens/home-lights.webp';
 import rotate from '../../../assets/screens/rotate.webp';
 
+
 The dashboard is what the display shows when you're using it. There are two kinds, and you pick one
-in **Settings → Home control → Dashboard**:
+in **Settings → Display → Dashboard**:
 
 - **Native**: a big clock, the weather, and tabs for your lights and switches
 - **Tessera**: pages of tiles you lay out in Home Assistant
 
 ## Native
 
-The native dashboard is a clock with the date, an optional weather card, and optional wallpaper
-from Immich behind it. Pick the clock face, position, size and color under
-**Settings → Display → Dashboard → Clock**.
-
-<img src="/anim/faces.webp" alt="The eight clock faces: Plain, Stack, Cards, Analog, Segments, Words, Overlap and Analog seconds" class="screen" width="420" height="672" />
+The native dashboard is a clock with the date, an optional weather card, and optional
+[wallpaper from Immich](/features/photos/) behind it. Pick the clock face, position, size and color
+under **Settings → Display → Dashboard → Clock**.
+<div class="carousel">
+	<img src="/carousel/faces-0.png" alt="A clock face, 1 of 8" loading="lazy" />
+	<img src="/carousel/faces-1.png" alt="A clock face, 2 of 8" loading="lazy" />
+	<img src="/carousel/faces-2.png" alt="A clock face, 3 of 8" loading="lazy" />
+	<img src="/carousel/faces-3.png" alt="A clock face, 4 of 8" loading="lazy" />
+	<img src="/carousel/faces-4.png" alt="A clock face, 5 of 8" loading="lazy" />
+	<img src="/carousel/faces-5.png" alt="A clock face, 6 of 8" loading="lazy" />
+	<img src="/carousel/faces-6.png" alt="A clock face, 7 of 8" loading="lazy" />
+	<img src="/carousel/faces-7.png" alt="A clock face, 8 of 8" loading="lazy" />
+</div>
 
 ### Lights and switches
 
-Turn on **Control lights** or **Control switches** under **Settings → Home control → Native**, and
-the dashboard gains a **Lights** and a **Switches** tab. Choose what goes on them by area, by label,
-or one by one, and how to group them:
+Open **Settings → Home control → Native → Lights** (or **Switches**) and turn on **Enable**; the
+dashboard gains a **Lights** (or **Switches**) tab. **Select devices** picks what goes on it by
+label, by area or one by one, and **Group by area** sets how it's grouped:
 
 - Every device on its own card
 - Areas with a few devices on one card
@@ -40,18 +49,31 @@ or one by one, and how to group them:
 
 Pick a Home Assistant weather entity under **Settings → Home control → Weather**, then choose how it
 looks on the dashboard and on the screen saver: Compact, Stack, Card, Detail, Icon or Words, with
-or without animation.
+or without animation, in the weather's colors or the theme's, and where it sits. The dashboard and
+the screen saver each have their own layout.
+
+**Weather alerts** replaces the card with severe and extreme US warnings from the National Weather
+Service until you dismiss them. Every weather setting is on
+[Settings on the screen](/use/settings/#weather).
 
 ## Tessera
 
 [Tessera](https://github.com/MaxGramser/homeassistant_espscreen) is a Home Assistant integration
-with a drag-and-drop editor for touch screens. LANovo speaks its screen protocol, so the display
-shows up in Tessera like any other screen. Lay out the pages there; the display draws them in your
-style and theme.
+with a drag-and-drop editor for touch screens. LANovo speaks its screen protocol, so the
+display shows up in Tessera like any other screen. Lay out the pages there; the display draws
+them in your style and theme.
 
-<div class="pair even">
-	<Image src={tessera} alt="A Tessera page with climate, weather, a clock, the sun, energy flow, lights and locks" class="screen" />
-	<img src="/anim/tessera-styles.webp" alt="The same page cycling through the nine styles" class="screen" width="540" height="864" />
+<Image src={tessera} alt="A Tessera page with climate, weather, a clock, the sun, energy flow, lights and locks" class="screen" />
+<div class="carousel">
+	<img src="/carousel/styles-0.png" alt="The same Tessera page in a style, 1 of 9" loading="lazy" />
+	<img src="/carousel/styles-1.png" alt="The same Tessera page in a style, 2 of 9" loading="lazy" />
+	<img src="/carousel/styles-2.png" alt="The same Tessera page in a style, 3 of 9" loading="lazy" />
+	<img src="/carousel/styles-3.png" alt="The same Tessera page in a style, 4 of 9" loading="lazy" />
+	<img src="/carousel/styles-4.png" alt="The same Tessera page in a style, 5 of 9" loading="lazy" />
+	<img src="/carousel/styles-5.png" alt="The same Tessera page in a style, 6 of 9" loading="lazy" />
+	<img src="/carousel/styles-6.png" alt="The same Tessera page in a style, 7 of 9" loading="lazy" />
+	<img src="/carousel/styles-7.png" alt="The same Tessera page in a style, 8 of 9" loading="lazy" />
+	<img src="/carousel/styles-8.png" alt="The same Tessera page in a style, 9 of 9" loading="lazy" />
 </div>
 
 Most of Tessera's tiles and features are supported.
@@ -63,11 +85,11 @@ Most of Tessera's tiles and features are supported.
 1. Install Tessera in Home Assistant from its
    [GitHub page](https://github.com/MaxGramser/homeassistant_espscreen).
 
-2. On the display, set **Settings → Home control → Dashboard** to **Tessera**.
+2. On the display, set **Settings → Display → Dashboard** to **Tessera**.
 
 3. The display appears in Tessera as a screen. Without tiles it shows:
 
-   <Image src={setup} alt="A display asking to be set up in Tessera" class="screen-wide" />
+   <Image src={setup} alt="A screen asking to be set up in Tessera" class="screen-wide" />
 
 4. Add pages and tiles in Tessera's editor. They show up on the display.
 
@@ -78,7 +100,8 @@ and one for portrait, so you can lay each out for the way the display is standin
 appear as one.
 
 **Settings → Home control → Tessera** sets the tile grid, which orientations to offer, and whether
-the display goes back to the first page after the screen saver.
+the display goes back to the first page after the screen saver. The screen saver can be a Tessera
+page too: **Settings → Display → Screen saver → Mode**.
 
 <Aside type="tip">
 Turn on **Allow the device to perform Home Assistant actions** on the display's ESPHome device in
