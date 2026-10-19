@@ -19,6 +19,7 @@ var page = sync.OnceValue(func() *sharedshell.Page {
 		MainSteps: MainSteps,
 		Chimes:    chimes{},
 		Feedback:  feedback.Get().Feedback,
+		Media:     Get().duck,
 		Push:      shell.Get().Push,
 	})
 })

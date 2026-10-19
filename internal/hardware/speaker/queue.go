@@ -2,6 +2,7 @@ package speaker
 
 import (
 	"log/slog"
+	"time"
 
 	"github.com/ygelfand/libcountertop/pkg/audio/upsample"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
@@ -24,6 +25,10 @@ func (s *Speaker) PlayStream(stream schema.Stream, samples []int16) {
 func (s *Speaker) Take() []int16 { return s.bus.Take(schema.StreamMedia) }
 
 func (s *Speaker) Adjust(rewrite func([]int16)) { s.bus.Adjust(schema.StreamMedia, rewrite) }
+
+func (s *Speaker) Heard(stream schema.Stream, within time.Duration) bool {
+	return s.bus.Heard(stream, within)
+}
 
 // The codec only takes 48 kHz stereo.
 func (s *Speaker) PlayVoice(mono []int16) {

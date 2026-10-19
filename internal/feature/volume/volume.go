@@ -94,8 +94,10 @@ func (v *Volume) Adjust(s config.Stream, steps int) {
 }
 
 func (v *Volume) Target() config.Stream {
-	if s, ok := v.card.Selected(); ok {
-		return s
-	}
-	return config.StreamMain
+	return sharedvolume.Target(sharedvolume.Aim{
+		Mode:   config.Get().Media.Buttons,
+		Picked: v.card.Selected,
+		Screen: func() any { return shell.Get().Top() },
+		Heard:  func(s config.Stream) bool { return speaker.Get().Heard(s, sharedvolume.Recent) },
+	})
 }

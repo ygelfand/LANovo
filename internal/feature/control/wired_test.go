@@ -31,6 +31,7 @@ var inTables = map[string]string{
 	"Alerts.RingFor":            "alerts.ring_for",
 	"Alerts.Wake":               "alerts.wake",
 	"Media.DuckDB":              "media.duck",
+	"Media.Buttons":             "media.buttons",
 	"Poster.Enabled":            "poster.on",
 	"Poster.Every":              "poster.every",
 	"Photos.Server":             "photos.server",
