@@ -26,6 +26,10 @@ func assistantPages() *sharedsettings.AssistantPages {
 				Controller: homeassistant.Get(),
 				MAC:        func() string { return wifi.Get().MAC() },
 			},
+			Pipelines: sharedha.Pipelines{
+				Controller: homeassistant.Get(),
+				MAC:        func() string { return wifi.Get().MAC() },
+			},
 			Requested: &wakeword.Requested,
 			Words: turn.Words{
 				Settings: config.WakeSection,
