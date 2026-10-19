@@ -49,7 +49,8 @@ type Board struct {
 
 	Mounted int
 
-	Touch string
+	Touch     string
+	SoundCard string
 
 	Buttons []Button
 

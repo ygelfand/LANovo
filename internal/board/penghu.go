@@ -18,6 +18,7 @@ var Penghu = Board{
 	Diagonal:     8,
 	Tessera:      Tessera{Board: "jc8012p4a1", Columns: 6, Rows: 4},
 	Touch:        "himax-touchscreen",
+	SoundCard:    "msm8953-snd-card-mtp",
 	// The kernel TAS5782M codec loads its own table on first playback.
 	// Only drive the enable pin here; a userspace table load races that work.
 	AmpPins:               Blueberry.AmpPins,

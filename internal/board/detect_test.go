@@ -36,8 +36,10 @@ func TestEachBoardIsFoundByItsHardware(t *testing.T) {
 	}{
 		{device("U:1200x1920p-60", "qpnp_pon", "goodix-ts", "msm8953-openq624-snd-card Headset Jack"), "blueberry"},
 		{device("U:800x1280p-60", "qpnp_pon", "fts_ts", "msm8953-openq624-snd-card Button Jack"), "opal"},
-		{device("U:800x1280p-60", "qpnp_pon", "goodix-ts"), "amber"},
-		{device("U:800x1280p-60", "qpnp_pon", "gpio-keys", "himax-touchscreen"), "penghu"},
+		{device("U:800x1280p-60", "qpnp_pon", "msm8953-openq624-snd-card Headset Jack",
+			"msm8953-openq624-snd-card Button Jack", "himax-touchscreen"), "amber"},
+		{device("U:800x1280p-60", "qpnp_pon", "hbtp_vm", "msm8953-snd-card-mtp Headset Jack",
+			"msm8953-snd-card-mtp Button Jack", "himax-touchscreen"), "penghu"},
 		{device("U:600x1024p-0", "mtk-pmic-keys", "fts_ts", "mtk-tpd"), "ivy"},
 	} {
 		b, err := Resolve(fakeProps{}, c.files)
@@ -51,7 +53,7 @@ func TestNoTwoBoardsShareTheirHardware(t *testing.T) {
 	for i, a := range boards {
 		for _, b := range boards[i+1:] {
 			if a.PanelWidth == b.PanelWidth && a.PanelHeight == b.PanelHeight &&
-				a.Touch == b.Touch {
+				a.Touch == b.Touch && a.SoundCard == b.SoundCard {
 				t.Errorf("%s and %s cannot be told apart", a.Name, b.Name)
 			}
 		}
