@@ -31,26 +31,23 @@ const (
 	helperService = "lanovo_camera"
 )
 
-var (
-	qualcommMain = []string{"1600x1200", "1280x960", "1024x768", "800x600", "640x480"}
-	mediatekMain = []string{"1280x720", "864x480", "640x480"}
-	subWidths    = []int{960, 768, 640, 480, 320}
-)
+var subWidths = []int{960, 768, 640, 480, 320}
 
 var Get = sync.OnceValue(func() Camera {
 	b := board.Current()
 	o := live.Options{
 		Vendor: qualcomm,
 		Streams: live.Streams{
-			Main:        qualcommMain,
+			Main:        b.CameraSizes,
 			MainDefault: fmt.Sprintf("%dx%d", b.CameraWidth, b.CameraHeight),
 			Sub:         subWidths,
 			SubDefault:  b.SubWidth,
 		},
-		Mirror: b.CameraMirror,
-		Turn:   func() int { return turnFor(b.CameraTurn, int(display.Get().Orientation())) },
-		Open:   func(c camerafeed.Config) (session.Transport, error) { return mtkcamera.Open(c) },
-		Muted:  func() bool { return b.MicMutesCamera && privacy.Get().MicMuted() },
+		Mirror:  b.CameraMirror,
+		Turn:    func() int { return turnFor(b.CameraTurn, int(display.Get().Orientation())) },
+		Open:    func(c camerafeed.Config) (session.Transport, error) { return mtkcamera.Open(c) },
+		Muted:   func() bool { return b.MicMutesCamera && privacy.Get().MicMuted() },
+		Covered: func() bool { return privacy.Get().CameraCovered() },
 		Restart: func() error {
 			return prop.Restart(prop.Local, helperService)
 		},
@@ -60,7 +57,6 @@ var Get = sync.OnceValue(func() Camera {
 	}
 	if b.SoC == board.MediaTek {
 		o.Vendor = mediatek
-		o.Streams.Main = mediatekMain
 		o.Turn = func() int { return 0 }
 	}
 	c := Camera{live.New(o)}

@@ -14,6 +14,7 @@ var manyRows = map[string]string{
 	"Camera.Settings": "camera.",
 	"Home.Control":    "home.control.",
 	"Home.Group":      "home.group.",
+	"Screen.Custom":   "screen.custom.",
 }
 
 var inTables = map[string]string{

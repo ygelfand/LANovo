@@ -9,6 +9,7 @@ var Opal = Board{
 	PanelHeight:    1280,
 	CameraWidth:    Blueberry.CameraWidth,
 	CameraHeight:   Blueberry.CameraHeight,
+	CameraSizes:    Blueberry.CameraSizes,
 	SubWidth:       Blueberry.SubWidth,
 	SubHeight:      Blueberry.SubHeight,
 	CameraTurn:     1,

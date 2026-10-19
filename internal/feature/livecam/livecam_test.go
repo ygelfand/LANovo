@@ -5,13 +5,15 @@ import (
 	"testing"
 
 	"github.com/ygelfand/libcountertop/pkg/camera/live"
+
+	"github.com/ygelfand/LANovo/internal/board"
 )
 
 func TestEveryCameraNameIsTranslated(t *testing.T) {
 	for name, v := range map[string]live.Vendor{"qualcomm": qualcomm, "mediatek": mediatek} {
 		table := live.New(live.Options{
 			Vendor:  v,
-			Streams: live.Streams{Main: qualcommMain, Sub: subWidths},
+			Streams: live.Streams{Main: board.Blueberry.CameraSizes, Sub: subWidths},
 		}).Table()
 		for _, g := range table.Groups() {
 			if got := table.Title(g); strings.HasPrefix(got, "camera.") {

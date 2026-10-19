@@ -9,6 +9,7 @@ var Ivy = Board{
 	PanelHeight:  1024,
 	CameraWidth:  1280,
 	CameraHeight: 720,
+	CameraSizes:  []string{"1280x720", "864x480", "640x480"},
 	SubWidth:     768,
 	SubHeight:    432,
 	Motion:       false,

@@ -72,6 +72,7 @@ type Board struct {
 	DecodeWidth, DecodeHeight int
 
 	CameraWidth, CameraHeight int
+	CameraSizes               []string
 
 	SubWidth, SubHeight int
 

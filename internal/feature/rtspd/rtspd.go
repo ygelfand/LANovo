@@ -18,7 +18,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
-	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/vision"
 )
 
@@ -51,7 +50,6 @@ func Get() *Server {
 			Served:   livecam.Get().Served,
 			FPS:      live.FPS,
 			Bitrate:  livecam.Get().Bitrate,
-			Allowed:  func() bool { return !privacy.Get().CameraCovered() },
 			ONVIF:    describe,
 		})}
 		shared.build()

@@ -19,6 +19,13 @@ rtsp://192.168.1.50:8554/sub
 `main` is full resolution, `sub` is a smaller stream for previews and motion detection. Turn either
 off, and set their resolutions, under **Settings → Camera → Streams**.
 
+| Device | Main resolutions | Sub stream widths |
+|---|---|---|
+| Smart Display 10, Smart Display 8, JBL Link View, ThinkSmart View | 1920×1080, **1600×1200**, 1280×960, 1024×768, 800×600, 640×480 | 960, 768, **640**, 480, 320 px |
+| Smart Display 7 | **1280×720**, 864×480, 640×480 | 960, **768**, 640, 480, 320 px |
+
+Defaults in bold. The sub stream keeps the main stream's shape and is never wider than it.
+
 ONVIF discovery is supported.
 
 ## Snapshot
