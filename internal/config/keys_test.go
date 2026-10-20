@@ -34,6 +34,7 @@ func TestSavedKeysKeepTheirLayout(t *testing.T) {
 		"bluetooth",
 		"call",
 		"camera",
+		"cameras",
 		"cast",
 		"clock",
 		"diag",

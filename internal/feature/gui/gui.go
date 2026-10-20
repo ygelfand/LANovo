@@ -33,6 +33,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/assistant"
 	"github.com/ygelfand/LANovo/internal/feature/calendar"
 	"github.com/ygelfand/LANovo/internal/feature/call"
+	"github.com/ygelfand/LANovo/internal/feature/cameras"
 	"github.com/ygelfand/LANovo/internal/feature/commands"
 	"github.com/ygelfand/LANovo/internal/feature/configsync"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
@@ -82,10 +83,12 @@ var Get = sync.OnceValue(func() *screens.App {
 		Video: board.Current().CameraWidth > 0,
 	})
 	apps.Get().Add(calls.App())
+	apps.Get().Add(cameras.Get().App())
 	var mirrors []func(shell.View) *screens.Screen
 	if board.Current().CameraWidth > 0 {
 		m := mirror.New(mirror.Options{Shell: featureshell.Get(), Camera: settings.Preview()})
 		apps.Get().Add(m.App())
+		commands.Get().Listen(m.Command())
 		mirrors = append(mirrors, m.Screen)
 	}
 	syncs := syncview.New(syncview.Options{
@@ -246,6 +249,7 @@ var Get = sync.OnceValue(func() *screens.App {
 			diary.Screen,
 			dial.Screen,
 			sky.Screen,
+			cameras.Get().Screen,
 			apps.Get().Screens(look),
 		}, mirrors...),
 	})

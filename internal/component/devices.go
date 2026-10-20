@@ -19,6 +19,7 @@ const (
 	DeviceDashboard uint32 = 16 + iota
 	DeviceLandscape
 	DevicePortrait
+	DeviceVoice
 )
 
 var Sometimes = map[uint32]bool{DeviceDashboard: true, DeviceLandscape: true, DevicePortrait: true}
@@ -43,6 +44,7 @@ func SubDevices() []SubDevice {
 		{ID: DeviceDashboard, Name: "dashboard"},
 		{ID: DeviceLandscape, Name: "landscape"},
 		{ID: DevicePortrait, Name: "portrait"},
+		{ID: DeviceVoice, Name: "voice triggers"},
 	}
 
 	for slot := range Assistants {

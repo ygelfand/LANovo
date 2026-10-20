@@ -14,16 +14,23 @@ import (
 
 var Get = sync.OnceValue(func() *shared.Sync {
 	return shared.New(shared.Dependencies{
-		Store: &component.Settings,
-		Peers: discovery.Get(),
-		Port:  web.Port,
-		Stage: syncview.NewStage(shell.Get()),
+		Store:  &component.Settings,
+		Peers:  discovery.Get(),
+		Port:   web.Port,
+		Secure: web.SecurePort,
+		Client: discovery.AnyClient(),
+		Stage:  syncview.NewStage(shell.Get()),
 	})
 })
 
 func init() {
-	web.Handle("POST /config/offer", Get().OfferHandler())
-	web.Handle("POST /config/ask", Get().AskHandler())
-	web.Handle("POST /config/pull", Get().PullHandler())
-	web.Handle("POST /config/cancel", Get().CancelHandler())
+	web.HandlePeer("POST /config/offer", Get().OfferHandler())
+	web.HandlePeer("POST /config/ask", Get().AskHandler())
+	web.HandlePeer("POST /config/pull", Get().PullHandler())
+	web.HandlePeer("POST /config/cancel", Get().CancelHandler())
+	// TODO: remove the plain-HTTP sync routes once no device predates the secure port.
+	web.Handle("POST /config/offer", discovery.Legacy(Get().OfferHandler()))
+	web.Handle("POST /config/ask", discovery.Legacy(Get().AskHandler()))
+	web.Handle("POST /config/pull", discovery.Legacy(Get().PullHandler()))
+	web.Handle("POST /config/cancel", discovery.Legacy(Get().CancelHandler()))
 }

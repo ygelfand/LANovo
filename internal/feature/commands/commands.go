@@ -21,7 +21,7 @@ func init() {
 
 type Commands struct{ *voice.Listener }
 
-func (c *Commands) Restore(cfg config.Config) { c.Listener.Restore(cfg.Voice) }
+func (c *Commands) Restore(config.Config) { c.Apply() }
 
 func (c *Commands) Close() error {
 	c.Stop()
@@ -36,9 +36,7 @@ var get = sync.OnceValue(func() *Commands {
 		Source:   mic.Get(),
 		Paused:   func() bool { return privacy.Get().MicMuted() || call.Get().PausesWake() },
 		Settings: config.VoiceSection,
-		Device:   component.DeviceMicrophone,
 	})}
-	component.Settings.Add(c.Settings())
 	return c
 })
 

@@ -20,6 +20,7 @@ var (
 	HomeSection      = sections.Home
 	PosterSection    = sections.Poster
 	PhotosSection    = sections.Photos
+	CamerasSection   = sections.Cameras
 	SendspinSection  = sections.Sendspin
 	BluetoothSection = sections.Bluetooth
 	MediaSection     = sections.Media

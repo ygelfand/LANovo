@@ -14,12 +14,15 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	"github.com/ygelfand/LANovo/internal/feature/airplay"
 	"github.com/ygelfand/LANovo/internal/feature/bluetooth"
+	"github.com/ygelfand/LANovo/internal/feature/cameras"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
+	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/network"
 	"github.com/ygelfand/LANovo/internal/feature/sendspin"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/triggers"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
@@ -47,6 +50,22 @@ func root() *sharedshell.Page {
 					Label: "settings.camera",
 					Glyph: gogui.IconCamera,
 					Page:  func() sharedshell.View { return cameraPage() },
+				},
+				{
+					Label: "cameras.app",
+					Glyph: gogui.IconVideo,
+					Page:  func() sharedshell.View { return cameras.Get().Page() },
+				},
+				{
+					Label: "voice.title",
+					Glyph: gogui.IconMegaphone,
+					Page: func() sharedshell.View {
+						return sharedsettings.VoicePage(
+							triggers.Get().Controls(),
+							homeassistant.Get(),
+							shell.Get(),
+						)
+					},
 				},
 			}
 		},

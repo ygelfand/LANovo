@@ -16,7 +16,10 @@ func init() {
 	component.Register(sharedcomponent.Network, Get, sharedcomponent.Order(50))
 }
 
-const Port = 80
+const (
+	Port       = 80
+	SecurePort = 8443
+)
 
 var get = sync.OnceValue(func() *libweb.Server {
 	return libweb.New(
@@ -27,5 +30,7 @@ var get = sync.OnceValue(func() *libweb.Server {
 func Get() *libweb.Server { return get() }
 
 func Handle(pattern string, h http.Handler) { Get().Handle(pattern, h) }
+
+func HandlePeer(pattern string, h http.Handler) { Get().HandlePeer(pattern, h) }
 
 func Adopted() bool { return config.Get().API.Adopted }

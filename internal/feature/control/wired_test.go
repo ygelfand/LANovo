@@ -10,11 +10,12 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 )
 
-var manyRows = map[string]string{
-	"Camera.Settings": "camera.",
-	"Home.Control":    "home.control.",
-	"Home.Group":      "home.group.",
-	"Screen.Custom":   "screen.custom.",
+var manyRows = map[string][]string{
+	"Camera.Settings": {"camera."},
+	"Home.Control":    {"home.control."},
+	"Home.Group":      {"home.group."},
+	"Screen.Custom":   {"screen.custom."},
+	"Voice.Off":       {"voice.action.", "voice.command."},
 }
 
 var inTables = map[string]string{
@@ -109,11 +110,17 @@ var inTables = map[string]string{
 	"Weather.Saver.Align":       "weather.saver.align",
 	"Weather.Saver.Size":        "weather.saver.size",
 	"Network.Verify":            "network.verify",
+	"Cameras.Scale":             "cameras.scale",
+	"Cameras.Refresh":           "cameras.refresh",
+	"Cameras.Rotate":            "cameras.rotate",
+	"Cameras.URL":               "cameras.url",
+	"Network.HomeKey":           "network.home_key",
 	"Microphone.Gain":           "microphone.gain",
 	"Microphone.Leveling":       "microphone.leveling",
 	"Microphone.Denoise":        "microphone.denoise",
 	"Microphone.Sensitivity":    "microphone.sensitivity",
 	"Call.Incoming":             "call.incoming",
+	"Call.Broadcasts":           "call.broadcasts",
 	"Call.AutoAnswer":           "call.auto_answer",
 	"Call.PauseWake":            "call.pause_wake",
 	"Call.AutoVideo":            "call.auto_video",
@@ -128,6 +135,7 @@ var inTables = map[string]string{
 	"Todo.Entity":               "todo.entity",
 	"Todo.Completed":            "todo.completed",
 	"Voice.Commands":            "voice.commands",
+	"Voice.Actions":             "voice.actions",
 	"Weather.Alerts":            "weather.alerts",
 	"Weather.RadarSource":       "weather.radar_source",
 	"Weather.RadarRange":        "weather.radar_range",
@@ -175,7 +183,11 @@ var byHand = map[string]string{
 	"Radio.Last":      "the station last tuned, written by the radio itself",
 	"Radio.LastTitle": "the same",
 
-	"Home.Picks": "Home control's entity pickers, keyed by selection",
+	"Home.Picks":            "Home control's entity pickers, keyed by selection",
+	"Cameras.Pick.All":      "the cameras app's entity picker",
+	"Cameras.Pick.Labels":   "the cameras app's entity picker",
+	"Cameras.Pick.Areas":    "the cameras app's entity picker",
+	"Cameras.Pick.Entities": "the cameras app's entity picker",
 
 	"Update.Channel":     "Home Assistant's update channel select",
 	"Update.LastVersion": "the version last announced to Home Assistant, written by the firmware feature itself",
@@ -217,20 +229,22 @@ func TestEverySettingIsReachedOrAccountedFor(t *testing.T) {
 	for field, name := range inTables {
 		reached[field] = name
 	}
-	for field, prefix := range manyRows {
-		reached[field] = prefix
+	var prefixes []string
+	for field, ps := range manyRows {
+		reached[field] = ps[0]
+		prefixes = append(prefixes, ps...)
 	}
 	for _, s := range settings() {
 		if s.Field == "" {
 			if !slices.Contains(slices.Collect(maps.Values(inTables)), s.Name) &&
-				!slices.ContainsFunc(slices.Collect(maps.Values(manyRows)), func(p string) bool {
+				!slices.ContainsFunc(prefixes, func(p string) bool {
 					return strings.HasPrefix(s.Name, p)
 				}) {
 				t.Errorf("%s does not say which setting it changes", s.Name)
 			}
 			continue
 		}
-		if was, twice := reached[s.Field]; twice && manyRows[s.Field] == "" {
+		if was, twice := reached[s.Field]; twice && manyRows[s.Field] == nil {
 			t.Errorf("%s is changed by both %s and %s", s.Field, was, s.Name)
 		}
 		reached[s.Field] = s.Name

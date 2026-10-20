@@ -34,6 +34,8 @@ func Get() *sharedcall.Calls {
 			Settings: config.CallSection,
 			Peers:    discovery.Get(),
 			Port:     web.Port,
+			Secure:   web.SecurePort,
+			Client:   discovery.Client(),
 			Privacy:  privacy.Get(),
 			Media:    media.Get(),
 			Sound:    device{},
@@ -56,7 +58,11 @@ func init() {
 		func() *componentCall { return &componentCall{Get()} },
 		sharedcomponent.Order(62),
 	)
-	web.Handle("POST /call/offer", Get().OfferHandler())
-	web.Handle("POST /call/answer", Get().AnswerHandler())
-	web.Handle("POST /call/end", Get().EndHandler())
+	web.HandlePeer("POST /call/offer", discovery.Home(Get().OfferHandler()))
+	web.HandlePeer("POST /call/answer", discovery.Home(Get().AnswerHandler()))
+	web.HandlePeer("POST /call/end", discovery.Home(Get().EndHandler()))
+	// TODO: remove the plain-HTTP call routes once no device predates the secure port.
+	web.Handle("POST /call/offer", discovery.Legacy(Get().OfferHandler()))
+	web.Handle("POST /call/answer", discovery.Legacy(Get().AnswerHandler()))
+	web.Handle("POST /call/end", discovery.Legacy(Get().EndHandler()))
 }
