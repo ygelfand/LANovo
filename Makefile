@@ -334,6 +334,7 @@ publish-local:
 
 .PHONY: release
 release: ## Release the version in VERSION, then start the next patch version
+	git push origin HEAD
 	@$(MAKE) --no-print-directory tag TAG=$(BASE)
 	@next=$$(echo $(BASE) | awk -F. -v OFS=. '{$$NF += 1; print}'); \
 		echo "$$next" > VERSION; \
