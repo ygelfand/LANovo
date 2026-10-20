@@ -138,6 +138,7 @@ var inTables = map[string]string{
 	"RTSP.Enabled":              "rtsp.enabled",
 	"RTSP.Username":             "rtsp.username",
 	"RTSP.Password":             "rtsp.password",
+	"Lock.PIN":                  "lock.pin",
 	"Access.ADB":                "access.adb",
 	"Presence.Wake":             "presence.wake",
 	"Presence.Range":            "presence.range",
@@ -166,6 +167,9 @@ var byHand = map[string]string{
 	"Wake.Stop.Threshold": "an entity on the microphone page; a harness that changed it would be turning detection off under whatever else it was testing",
 
 	"Poster.Last": "the picture last shown, written by the poster itself",
+
+	"Lock.Failures": "wrong PINs counted by the lock screen",
+	"Lock.Until":    "the lockout the lock screen sets after too many wrong PINs",
 
 	"Radio.Favorites": "starred on the radio screen",
 	"Radio.Last":      "the station last tuned, written by the radio itself",

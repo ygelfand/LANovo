@@ -12,6 +12,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/firmware"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
+	"github.com/ygelfand/LANovo/internal/feature/lock"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/screen"
@@ -39,6 +40,7 @@ func basicPages() *sharedsettings.BasicPages {
 			Marks:       modeMarks(),
 			Alerts:      alerts.Get(),
 			Updates:     firmware.Get(),
+			Lock:        lock.Get().Gate(),
 			Previews:    previewKit(),
 			PowerPage:   func() sharedshell.View { return powerPage() },
 			SyncPage:    func() sharedshell.View { return &syncview.Directory{} },

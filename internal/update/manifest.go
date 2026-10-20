@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"runtime"
 	"time"
+
+	"github.com/ygelfand/libcountertop/pkg/network/releases"
 )
 
 // Version has to stay rankable by Home Assistant's AwesomeVersion.
@@ -34,16 +36,26 @@ const (
 )
 
 func Fetch(ctx context.Context, c Channel) (Manifest, error) {
-	var m Manifest
-
 	ctx, cancel := context.WithTimeout(ctx, manifestTimeout)
 	defer cancel()
 
 	url, err := c.Manifest(ctx)
 	if err != nil {
-		return m, err
+		return Manifest{}, err
 	}
+	return fetch(ctx, url)
+}
 
+func FetchTag(ctx context.Context, tag string) (Manifest, error) {
+	ctx, cancel := context.WithTimeout(ctx, manifestTimeout)
+	defer cancel()
+	return fetch(ctx, releases.Manifest(repo, tag))
+}
+
+func Releases(ctx context.Context) ([]releases.Release, error) { return releases.List(ctx, repo) }
+
+func fetch(ctx context.Context, url string) (Manifest, error) {
+	var m Manifest
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return m, err

@@ -33,7 +33,7 @@ func (c Channel) Manifest(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return repo + "/releases/download/" + tag + "/manifest.json", nil
+	return releases.Manifest(repo, tag), nil
 }
 
 func Channels() []Channel { return []Channel{Stable, Dev} }

@@ -10,6 +10,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
+	"github.com/ygelfand/LANovo/internal/feature/lock"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 )
 
@@ -34,7 +35,7 @@ func Get() *Settings {
 			Name:  func() string { return say.T("settings.title") },
 			Order: shareddrawer.OrderSettings,
 			Icon:  "mdi:cog",
-			Open:  Open,
+			Open:  func() { lock.Get().Gate().Open(Open) },
 		})
 	})
 	return shared

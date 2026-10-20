@@ -42,6 +42,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/idle"
+	"github.com/ygelfand/LANovo/internal/feature/lock"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/nws"
@@ -232,6 +233,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		},
 		Redraws: []screens.Watch{
 			screens.On(&firmware.Get().Offered),
+			screens.On(&firmware.Get().Listed),
 			screens.On(&privacy.Get().Changed),
 			screens.On(&web.Get().Offered),
 		},
@@ -239,6 +241,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		Views: append([]func(shell.View) *screens.Screen{
 			calls.Screen,
 			syncs.Screen,
+			lock.Get().Gate().Views(look),
 			shop.Screen,
 			diary.Screen,
 			dial.Screen,

@@ -19,9 +19,27 @@ jobs:
           fetch-depth: 0
 
       - uses: actions/setup-go@v7
+        id: go
         with:
           go-version-file: go.mod
-          cache: true
+          cache: false
+
+      - uses: actions/cache/restore@v6
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-check-
+          restore-keys: go-${{ runner.os }}-${{ steps.go.outputs.go-version }}-check-
+
+      - name: upx version
+        id: upx
+        run: echo "version=$(sed -n 's/^UPX_VERSION := //p' Makefile)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache/restore@v6
+        with:
+          path: bin/upx-${{ steps.upx.outputs.version }}/build/upx
+          key: upx-${{ runner.os }}-${{ steps.upx.outputs.version }}
 
       - name: install Android NDK
         run: |
