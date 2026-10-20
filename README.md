@@ -18,13 +18,23 @@ Assistant discovers it the way it discovers any ESPHome device.
 
 ## Devices
 
-| Display | Codename | Status |
-| --- | --- | --- |
-| Lenovo Smart Display 10 | blueberry | Supported, portrait and landscape |
-| Lenovo Smart Display 8 | amber | Portrait and landscape, untested |
-| Lenovo Smart Display 7 | ivy | Supported, landscape |
-| JBL Link View | opal | Supported, landscape |
-| Lenovo ThinkSmart View | penghu | Supported, portrait and landscape |
+| Device                  | Codename  | OS                 | Status    |
+| ----------------------- | --------- | ------------------ | --------- |
+| Lenovo Smart Display 10 | blueberry | Android Things 8.x | Supported |
+| Lenovo Smart Display 8  | amber     | Android Things 8.x | Supported |
+| Lenovo Smart Display 7  | ivy       | Android Things 8.x | Supported |
+| JBL Link View           | opal      | Android Things 8.x | Supported |
+| Lenovo ThinkSmart View  | penghu    | Android 8.x        | Supported |
+
+## Additional devices supported by our sister project [EchoLocal](https://github.com/ygelfand/echolocal)
+
+| Device                | Codename | OS          | Status    |
+| --------------------- | -------- | ----------- | --------- |
+| Echo Dot (2nd gen)    | biscuit  | Fire OS 6.x | Supported |
+| Echo Show 5 (1st gen) | checkers | Fire OS 6.x | Supported |
+| Echo Show 5 (2nd gen) | cronos   | Fire OS 6.x | Supported |
+| Echo Show 8 (1st gen) | crown    | Fire OS 6.x | Supported |
+| Echo Show 8 (2nd gen) | athena   | Fire OS 7.x | Supported |
 
 ## Features
 
