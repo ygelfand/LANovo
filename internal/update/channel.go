@@ -1,5 +1,11 @@
 package update
 
+import (
+	"context"
+
+	"github.com/ygelfand/libcountertop/pkg/network/releases"
+)
+
 type Channel int
 
 const (
@@ -9,7 +15,7 @@ const (
 	Dev
 )
 
-const releases = "https://github.com/ygelfand/LANovo/releases"
+const repo = "https://github.com/ygelfand/LANovo"
 
 func (c Channel) Label() string {
 	if c == Dev {
@@ -19,11 +25,15 @@ func (c Channel) Label() string {
 }
 
 // api.github.com allows sixty unauthenticated requests an hour per address.
-func (c Channel) URL() string {
-	if c == Dev {
-		return releases + "/download/dev/manifest.json"
+func (c Channel) Manifest(ctx context.Context) (string, error) {
+	if c != Dev {
+		return repo + "/releases/latest/download/manifest.json", nil
 	}
-	return releases + "/latest/download/manifest.json"
+	tag, err := releases.Newest(ctx, repo)
+	if err != nil {
+		return "", err
+	}
+	return repo + "/releases/download/" + tag + "/manifest.json", nil
 }
 
 func Channels() []Channel { return []Channel{Stable, Dev} }

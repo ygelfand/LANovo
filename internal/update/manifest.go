@@ -35,10 +35,14 @@ const (
 
 func Fetch(ctx context.Context, c Channel) (Manifest, error) {
 	var m Manifest
-	url := c.URL()
 
 	ctx, cancel := context.WithTimeout(ctx, manifestTimeout)
 	defer cancel()
+
+	url, err := c.Manifest(ctx)
+	if err != nil {
+		return m, err
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
