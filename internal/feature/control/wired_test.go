@@ -127,6 +127,7 @@ var inTables = map[string]string{
 	"Call.Stream":               "call.stream",
 	"Call.AnswerFrom":           "call.answer_from",
 	"Call.AnswerPeers":          "call.answer_peers",
+	"Call.AnswerUsers":          "call.answer_users",
 	"Call.Ring":                 "call.ring",
 	"Call.VideoRing":            "call.video_ring",
 	"Call.Ringback":             "call.ringback",

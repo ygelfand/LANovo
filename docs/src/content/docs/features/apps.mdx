@@ -17,6 +17,7 @@ reorder. **Media** and **Intercom** are in the dock to start with.
 | **Calendar** | Upcoming events from Home Assistant calendars |
 | **Shopping list** | A Home Assistant to-do list |
 | **Mirror** | The camera, full screen |
+| **Cameras** | Your Home Assistant cameras |
 
 ## Radio
 
@@ -31,7 +32,7 @@ An animated loop of rain and clouds around your home, with a short-range forecas
 - **Radar source**: **Auto**, **NWS** (US only) or **RainViewer**
 - **Radar starting range**: 50 to 800 miles, default 200
 
-With **Voice commands** on, saying "radar" opens it.
+With the **Radar** [voice command](/features/voice/#commands) on, saying "radar" opens it.
 
 ## Calendar
 
@@ -44,4 +45,26 @@ keyboard, tap to check them off, and turn on **Show completed items** to see the
 
 ## Mirror
 
-The camera, full screen. It's on displays with a camera.
+The camera, full screen. It's on displays with a camera. With the **Mirror**
+[voice command](/features/voice/#commands) on, saying "mirror" opens it.
+
+## Cameras
+
+Pictures from your Home Assistant cameras, laid out to fill the screen. Swipe for the next page.
+Tap a camera to see it full screen; tap again or the close button to go back.
+
+Full screen, a camera that can stream plays live video, with a button for its sound (off to start
+with). That needs the companion integration from [Voice triggers](/features/voice/#actions).
+Otherwise the picture keeps updating as fast as Home Assistant sends it. An icon at the top shows
+which you're getting.
+
+The app needs Home Assistant actions allowed for the display. Its settings are under **Settings →
+Home control → Cameras** and in Home Assistant:
+
+| Setting | What it does | Choices | Default | Entity |
+|---|---|---|---|---|
+| Select | Which cameras to show, by label, area or by hand | | All cameras | — |
+| Thumbnail size | How big each picture is | 1–5 | 3 | `number.<device>_thumbnail_size` |
+| Refresh | How often the pictures update | Off, 1–60 s | 5 s | `number.<device>_refresh` |
+| Auto paginate | Turn to the next page every so often | Off, 5–120 s | Off | `number.<device>_auto_paginate` |
+| Home Assistant URL | Where the display fetches the pictures. Found on your network on its own; set it if the app says Home Assistant's address isn't known | | | `text.<device>_home_assistant_url` |

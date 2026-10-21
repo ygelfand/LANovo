@@ -73,11 +73,37 @@ Say **"stop"**, no wake word needed, or tap the screen. It stops, in order: a ri
 **Stop word sensitivity** in Home Assistant (0.5–1, default 0.7) sets how sure it has to be; 1 turns
 it off.
 
-## Voice commands
+## Voice triggers
 
-**Voice commands** (`voice_commands`, off by default, in Home Assistant) listens for commands
-without a wake word, on the display itself. So far there is one: say **"radar"** (or "show me the
-weather radar") to open the [Radar app](/features/apps/#radar).
+**Settings → Voice triggers** turns on and off the things you can say to the display. Each has its
+own switch on the **Voice triggers** device in Home Assistant, under an **All actions** or **All
+commands** switch for its group. All are on to start with.
+
+### Commands
+
+Commands need no wake word and are heard on the display itself:
+
+| Say | Does |
+|---|---|
+| **"radar"**, or "show me the weather radar" | Opens the [Radar app](/features/apps/#radar) |
+| **"mirror"** | Opens the [Mirror app](/features/apps/#mirror), on displays with a camera |
+
+### Actions
+
+Actions are said to your assistant, after the wake word:
+
+| Say | Does |
+|---|---|
+| "call the kitchen", "ring the kitchen", "intercom the kitchen" | Calls that device on the [intercom](/features/intercom/) |
+| "video call the kitchen" | A video call, on displays with a camera |
+| "broadcast" or "announce", then your message after the tone | Sends what you say to every other device in your home ([Broadcasts](/features/intercom/#broadcasts)) |
+| "broadcast dinner is ready" | Sends the words, spoken by your Assist pipeline's voice |
+
+Device names don't have to match exactly; the closest one is called.
+
+Actions need the companion Home Assistant integration, installed through HACS. Until it is
+installed and up to date, **Settings → Voice triggers** shows a warning row; tap it for a code to
+scan that opens the integration in HACS.
 
 ## Timers
 

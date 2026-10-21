@@ -14,8 +14,8 @@ Find them on the display's page under **Settings → Devices & services → ESPH
 for your display's name.
 
 The entities are on sub-devices named after the display: **screen**, **microphone**, **playback**,
-**camera**, **assistant 1** and **assistant 2**, and **dashboard**, **landscape** and **portrait**
-(Tessera).
+**camera**, **assistant 1** and **assistant 2**, **voice triggers**, and **dashboard**, **landscape**
+and **portrait** (Tessera).
 
 ## Speaker
 
@@ -61,10 +61,18 @@ device.
 | Entity | Name | What it does | Range | Default |
 |---|---|---|---|---|
 | `number.<device>_microphone_stop_word_sensitivity` | Stop word sensitivity | How sure "Stop" has to be. 1 turns it off | 0.5–1 | 0.7 |
-| `switch.<device>_microphone_voice_commands` | Voice commands | Spoken commands without a wake word; so far "radar" opens the radar | On, Off | Off |
 | `sensor.<device>_last_wake_word`, `sensor.<device>_last_heard`, `sensor.<device>_last_reply` | | The last wake word, what was heard, and the reply (sensors) | | |
 | `sensor.<device>_timers` | Timers | Running timers (sensor) | | |
 
+
+The voice actions and commands have their switches on the **voice triggers** sub-device; see
+[Settings on the screen](/use/settings/#voice-triggers).
+
+## Intercom
+
+| Entity | Name | What it does | Range | Default |
+|---|---|---|---|---|
+| `switch.<device>_receive_broadcasts` | Receive broadcasts | Play [broadcasts](/features/intercom/#broadcasts) from other devices in this home | On, Off | On |
 
 ## Network and Bluetooth
 
@@ -88,6 +96,7 @@ device.
 |---|---|
 | `button.<device>_restart` | Restart LANovo |
 | `button.<device>_check_for_updates` | Check for an update now |
+| `button.<device>_install_selected_version` | Install the version picked in `select.<device>_install_version` ([Other versions](/features/updates/#other-versions)) |
 | `button.<device>_purge_cache`, with sensor `sensor.<device>_cached_data` | Delete cached wake word models; they download again when needed |
 | `button.<device>_screen_next_poster` | Show the next wallpaper photo |
 | `button.<device>_camera_reset_camera_settings` | Put every camera setting back to its default |
@@ -116,6 +125,8 @@ Call these as `esphome.<device>_<action>`, for example `esphome.kitchen_show_mes
 | `alarm_list`, `alarm_set`, `alarm_enable`, `alarm_delete`, `alarm_stop`, `alarm_snooze` | [Alarms](/features/messages/#alarms) |
 | `tone_write`, `tone_rename`, `tone_remove` | [Custom tones](/features/tones/) |
 | `recordings`, `turn_audio` | The kept recordings of recent requests |
+| `call` | Call another device: `peer` is its name, `video` true for a video call. Replies with the reason when the call can't be made ([Intercom](/features/intercom/)) |
+| `broadcast` | Send a [broadcast](/features/intercom/#broadcasts): `message` empty to record from the microphone, or the address of an audio clip |
 | `<orientation>_show_page`, `_show_alert`, `_show_alert_choice`, `_dismiss_alert`, `_screen_message` | [Tessera](/use/dashboards/#tessera) pages and alerts |
 
 <Aside>

@@ -127,6 +127,15 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | entities | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | On the screen only |
 | span | 7 days | On, Off | On the screen only |
 
+## Cameras
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Thumbnail size | 3 | 1 to 5 | `number.<device>_thumbnail_size` |
+| Refresh | 5 s | 0 to 60 s | `number.<device>_refresh` |
+| Auto paginate | 0 s | 0 to 120 s | `number.<device>_auto_paginate` |
+| Home Assistant URL | — | Text | `text.<device>_home_assistant_url` |
+
 ## Shopping list
 
 | Setting | Default | Choices | Entity |
@@ -184,9 +193,11 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 |---|---|---|---|
 | Auto-answer from | Everyone | Everyone, Selected | `select.<device>_auto_answer_from` |
 | Auto-answer panels | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | `text.<device>_auto_answer_panels` |
+| Auto-answer users | — (JBL Link View), — (Smart Display 7), — (ThinkSmart View), — (Smart Display 8) | Text | `text.<device>_auto_answer_users` |
 | Auto-answer calls | Off | On, Off | `switch.<device>_auto_answer_calls` |
 | Auto-answer with camera on | Off | On, Off | `switch.<device>_auto_answer_with_camera_on` |
 | Incoming calls | On | On, Off | `switch.<device>_incoming_calls` |
+| Receive broadcasts | On | On, Off | `switch.<device>_receive_broadcasts` |
 | Pause wake word during calls | On | On, Off | `switch.<device>_pause_wake_word_during_calls` |
 | Ring tone | Ring | None, Chirp, Ding, Rise, Timer, Trouble, Ring, Ringback | `select.<device>_ring_tone` |
 | Ringback tone | Ringback | None, Chirp, Ding, Rise, Timer, Trouble, Ring, Ringback | `select.<device>_ringback_tone` |
@@ -229,7 +240,12 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
-| Voice commands | Off | On, Off | `switch.<device>_microphone_voice_commands` |
+| All actions | On | On, Off | `switch.<device>_voice_triggers_all_actions` |
+| Broadcast a message | On | On, Off | `switch.<device>_voice_triggers_broadcast_a_message` |
+| Call a device | On | On, Off | `switch.<device>_voice_triggers_call_a_device` |
+| All commands | On | On, Off | `switch.<device>_voice_triggers_all_commands` |
+| Radar | On | On, Off | `switch.<device>_voice_triggers_radar` |
+| Mirror | On | On, Off | `switch.<device>_voice_triggers_mirror` |
 
 ## Voice assistants
 
@@ -292,6 +308,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
 | Verify certificates | On | On, Off | `switch.<device>_verify_certificates` |
+| Home key | — | Text | `text.<device>_home_key` |
 
 ## Access
 
@@ -315,4 +332,5 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Metrics interval | 60 s | 10 to 3600 s | `number.<device>_metrics_interval` |
 | Time zone | Home Assistant | Home Assistant, UTC, Europe/London, Europe/Lisbon, Europe/Paris, Europe/Berlin and 34 more | `select.<device>_time_zone` |
 | Update channel | stable | stable, dev | `select.<device>_update_channel` |
+| Settings Lock | — | 4 to 8 digits | `text.<device>_settings_lock` |
 

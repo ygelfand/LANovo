@@ -21,7 +21,8 @@ your display's name. "—" means the setting is only on the screen.
 ## Network & internet
 
 The Wi‑Fi network, IP and MAC address, router and DHCP lease, all read-only. Change networks with
-[`./lanovo wifi`](/start/install/#changing-wifi-later).
+[`./lanovo wifi`](/start/install/#changing-wifi-later). When the router offers a different address
+from the one the display had before, the display takes the new one.
 
 | Setting | What it does | Default | Entity |
 |---|---|---|---|
@@ -62,6 +63,7 @@ The Wi‑Fi network, IP and MAC address, router and DHCP lease, all read-only. C
 | Auto-answer | Answer calls without a tap | Off | `switch.<device>_auto_answer_calls` |
 | Answer from | Auto-answer **Everyone** or only the **Selected** devices | Everyone | `select.<device>_auto_answer_from` |
 | Panels | The devices auto-answer accepts, when Answer from is Selected | | `text.<device>_auto_answer_panels` |
+| Users | The Home Assistant users auto-answer accepts, when Answer from is Selected | | `text.<device>_auto_answer_users` |
 | Auto-answer with camera on | Start auto-answered calls with video | Off | `switch.<device>_auto_answer_with_camera_on` |
 | Ring, Video ring, Ringback | The sounds for an audio call, a video call, and while you wait | Ring, Ring, Ringback | `select.<device>_ring_tone`, `select.<device>_video_ring_tone`, `select.<device>_ringback_tone` |
 | Pause wake word during calls | Don't listen for the wake word on a call | On | `switch.<device>_pause_wake_word_during_calls` |
@@ -179,6 +181,7 @@ Apart from Screen saver (`idle_saver`), none of these are Home Assistant entitie
 | Weather | The Home Assistant weather entity for the weather card and alerts | None |
 | Shopping list | A Home Assistant to-do list, and **Show completed items** | None, Off |
 | Calendar | Calendars to show, and **Days to show**: 3, 7 or 14 | None, 7 |
+| Cameras | The [Cameras app](/features/apps/#cameras): which cameras, thumbnail size, refresh, auto paginate and Home Assistant URL. These are Home Assistant entities | All cameras |
 
 ## Sound
 
@@ -222,6 +225,20 @@ A page per assistant ([Voice assistants](/features/voice/)):
 
 Timing, follow-up and recordings are in [Home Assistant](/use/entities/#voice-assistants).
 
+## Voice triggers
+
+What you can say to the display ([Voice triggers](/features/voice/#voice-triggers)). Turning off
+**All actions** or **All commands** turns off everything under it.
+
+| Setting | What it does | Default | Entity |
+|---|---|---|---|
+| All actions | Actions said to your assistant | On | `switch.<device>_voice_triggers_all_actions` |
+| Broadcast a message | "Broadcast …" | On | `switch.<device>_voice_triggers_broadcast_a_message` |
+| Call a device | "Call …" | On | `switch.<device>_voice_triggers_call_a_device` |
+| All commands | Commands heard without a wake word | On | `switch.<device>_voice_triggers_all_commands` |
+| Radar | "Radar" opens the radar | On | `switch.<device>_voice_triggers_radar` |
+| Mirror | "Mirror" opens the mirror | On | `switch.<device>_voice_triggers_mirror` |
+
 ## Camera
 
 The live preview and the camera's settings ([Camera](/features/camera/)). Camera settings stay on
@@ -249,7 +266,17 @@ the display; [config sync](/use/configuration/#config-sync) doesn't copy them.
 | Keyboard size | The on-screen keyboard | Compact | `select.<device>_screen_keyboard_size` |
 | Restart | Restart the app or the whole display | | `button.<device>_restart` (button) |
 | Config sync | Copy settings to or from another display ([Configuration](/use/configuration/#config-sync)) | | |
-| Software update | Version, channel (stable or development) and check for updates ([Updates](/features/updates/)) | Stable | `select.<device>_update_channel`, `update.<device>_firmware` |
+| Software update | Version, channel (stable or development), check for updates, and other versions to install ([Updates](/features/updates/)) | Stable | `select.<device>_update_channel`, `update.<device>_firmware`, `select.<device>_install_version` |
+| Settings Lock | A PIN for this Settings menu ([below](#settings-lock)) | Off | `text.<device>_settings_lock` |
+| Home key | Which devices are in your home, for calls and broadcasts ([Intercom](/features/intercom/#home-key)) | None | `text.<device>_home_key` |
+
+### Settings Lock
+
+**Set PIN** asks for 4 to 8 digits, twice. From then on the gear asks for the PIN before Settings
+opens; **Change PIN** and **Remove PIN** are on the same page. After five wrong PINs it makes you
+wait 30 seconds, doubling with each wrong PIN after that, up to an hour.
+
+The lock covers the screen only. If you forget the PIN, clear **Settings Lock** in Home Assistant.
 
 ## Developer options
 

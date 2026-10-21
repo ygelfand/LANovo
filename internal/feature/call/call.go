@@ -11,6 +11,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
+	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
@@ -46,6 +47,7 @@ func Get() *sharedcall.Calls {
 				Camera:  callvideo.NewCamera(livecam.Get().Sessions()),
 			}),
 			Messages: message.Get(),
+			Home:     homeassistant.Get(),
 		})
 		component.Settings.Add(shared.Controls())
 	})

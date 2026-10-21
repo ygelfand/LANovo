@@ -83,12 +83,14 @@ dashboards, settings, camera and everything else turn with them.
 
 On-device wake words with [microWakeWord](https://github.com/kahrendt/microWakeWord) and
 [openWakeWord](https://github.com/dscripka/openWakeWord). Two assistants, each with its own wake
-word, Assist pipeline and visuals. "Stop" works without a wake word.
+word, Assist pipeline and visuals. "Stop" works without a wake word. Ask your assistant to call
+another device or send a broadcast.
 
 ### Intercom
 
 Audio and video calls between LANovo displays and EchoLocal devices on your network, with
-auto-answer for the devices you choose.
+auto-answer for the devices you choose. Broadcast a voice message to every device at once, and keep
+devices outside your home out with a shared home key.
 
 <p align="center">
   <img src="assets/readme/intercom.webp" alt="The Intercom directory listing displays and Echos on the network" width="420">
@@ -124,8 +126,10 @@ discovery, and a snapshot camera in Home Assistant. The physical shutter stops t
 - Night mode: dim, dim to a clock, or screen off when the room is dark
 - Immich wallpaper
 - Settings on the display or from Home Assistant, and config sync between displays
-- Updates from Home Assistant or from the display, stable or development channel
-- Apps: Intercom, Mirror, Shopping list, Calendar, Radar, more coming
+- Updates from Home Assistant or from the display, stable or development channel, and earlier
+  versions to go back to
+- A PIN lock for the settings menu
+- Apps: Intercom, Cameras, Mirror, Shopping list, Calendar, Radar, more coming
 
 ## Installing
 
