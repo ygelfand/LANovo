@@ -1,0 +1,149 @@
+---
+title: The EchoLocal integration
+description: A card for every display, a dashboard for all of them, Fleet, wake words and custom tones.
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import cardPanel from '../../../assets/screens/hacs-card-blueberry.webp';
+import fleet from '../../../assets/screens/hacs-fleet.webp';
+import fleetSync from '../../../assets/screens/hacs-fleet-sync.webp';
+
+The EchoLocal integration was made for LANovo's sister project, [EchoLocal](https://www.echolocal.link), and
+works with LANovo displays too. One integration covers both: Lenovo Smart Displays and Echo devices
+share its dashboard, cards and Fleet, side by side.
+
+The display works in Home Assistant without this. The integration is an optional companion that
+adds:
+
+- **A card** for each display, with its settings and controls laid out by area
+- **A dashboard** in the sidebar with every display, plus wake words, activity, groups, tones and
+  health
+- **Fleet**, which compares every device's settings with one of them and copies settings across
+- What the ESPHome integration can't do on its own: a shared wake word library, custom tones and
+  recordings of each turn
+- [Voice actions](/features/voice/#voice-triggers) such as "call the kitchen" and "broadcast
+  dinner is ready", and live video in the [Cameras app](/features/apps/#cameras)
+- [Calls to a display](/features/intercom/#calling-from-home-assistant) from a dashboard
+
+## Install
+
+Needs Home Assistant **2026.8** or newer.
+
+<Steps>
+
+1. In HACS, open **⋮ → Custom repositories**, add `https://github.com/ygelfand/echolocal-hacs` with
+   the category **Integration**.
+
+   [![Open in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ygelfand&repository=echolocal-hacs&category=Integration)
+
+2. Install **EchoLocal**, then restart Home Assistant.
+
+3. **Settings → Devices & services → Add integration → EchoLocal**.
+
+</Steps>
+
+Its only option is **Show the EchoLocal dashboard in the sidebar**. Change it later from the
+integration's **Configure**.
+
+## The card
+
+Each card is drawn like its display, Smart Display 10, 8 or 7, JBL Link View or ThinkSmart View.
+The buttons beside it open a panel of settings for each area: playback, screen, posters, camera and
+each assistant. Every setting has a **?** beside it that says what it does. The screen shows the
+display's clock in its theme and brightness, and the bar along its bottom edge lights while the
+assistant listens and replies. The phone button
+[calls the display](/features/intercom/#calling-from-home-assistant).
+
+<Image src={cardPanel} alt="The card for a Smart Display 10: the display drawn with its clock and date, buttons for each area, and call, activity, settings and diagnostics" class="screen" />
+
+Add one to any dashboard: **Edit dashboard → Add card → EchoLocal Satellite**, then pick the device.
+
+```yaml
+type: custom:echolocal-satellite-card
+device_id: 0123456789abcdef0123456789abcdef
+help: true
+```
+
+| Option | Does |
+|---|---|
+| `device_id` | The display |
+| `help` | Show the **?** beside each setting. On by default |
+
+## The dashboard
+
+**EchoLocal** in the sidebar.
+
+### Home
+
+Every display's card on one page, or one section per group. Each group's bar has **Mute all**, **Ring** and **Stop** where its devices have them, which act on every device in it. If only some of them take it, the bar says how
+many did.
+
+### Activity
+
+Every turn a device reports: what woke it, what it heard, what it answered, and how long listening,
+thinking and replying took. Where a recording was kept, play back what the microphones sent. How
+many recordings each assistant keeps is in its panel on the card.
+
+### Wake words
+
+Which device listens for what, and the wake word library every device can use. Drop a microWakeWord
+`.tflite` file onto the tab to add it; it's offered to every display straight away, with no
+restart. The library lives in Home Assistant's `config/custom_wake_words/`.
+
+### Groups
+
+A table of devices against groups. Tick a box to put a device in a group, rename a group in its
+heading, or add and delete groups. Groups are Home Assistant labels, so they also work in
+automations and in Home Assistant's own filters.
+
+### Fleet
+
+Compare every device's settings with one of them, and copy settings from it to the others. Only
+administrators see this tab. LANovo displays and [EchoLocal](https://www.echolocal.link) devices
+appear in the same table; a setting one of them doesn't have shows as not applying.
+
+<Image src={fleet} alt="The Fleet tab: a Primary picker, settings as angled columns grouped by section, and one row per device marking each setting as matching, differing or not applying" class="screen-wide" />
+
+- **Primary** is the device the others are compared with.
+- Each setting is a column, grouped by section, and each device a row. A cell says whether the
+  device matches the primary, differs from it, or doesn't have that setting, such as a screen setting
+  on an Echo Dot.
+- With **Show matching** off, only the settings that differ on some device are shown.
+- Collapse a section to a single column that counts how many settings differ. Its checkbox ticks or
+  clears the whole section.
+- The pills above the table limit it to the devices in one group.
+- The eye beside a device leaves it out of the comparison until the page is reloaded.
+- **Local** is a list of settings that are never synced, for ones you want to keep different on each
+  device. Search it and tick a setting to add it.
+
+To copy, tick the settings and the devices, then press **Sync**. Each device's row then says how many
+settings changed, or what went wrong.
+
+<Image src={fleetSync} alt="Fleet with two devices ticked, the Sync button ready, and the Local list open with a search for auto" class="screen-wide" />
+
+Each assistant's pipeline and wake word are compared and set through Home Assistant's own selects.
+A device on firmware from before Fleet shows **needs an update** and can't be synced; an offline one
+is greyed out.
+
+### Tones
+
+Upload a sound, tidy it up, and send it to devices. It then shows up in their sound pickers for
+chimes, timers, alarms, rings and the wake tone. See [Custom tones](/features/tones/).
+
+### Health
+
+One row per device: version, update status, Wi‑Fi signal, CPU temperature, load, memory, disk and
+address.
+
+## Actions
+
+| Action | Does |
+|---|---|
+| `echolocal.assign_tone` | Send a tone from the library to devices (`tone`, `device_id`) |
+| `echolocal.unassign_tone` | Remove a tone from devices; it stays in the library |
+
+<Aside>
+Each display's own actions, such as messages, alarms and timers, come from the ESPHome
+integration. See [Messages, timers and alarms](/features/messages/).
+</Aside>
