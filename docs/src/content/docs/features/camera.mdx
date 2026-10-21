@@ -8,8 +8,8 @@ import { Aside } from '@astrojs/starlight/components';
 
 ## RTSP
 
-Off by default. Turn it on with **Camera stream** in **Settings → Camera** or the **RTSP server**
-switch (`rtsp`) in Home Assistant.
+Off by default. Turn it on under **Settings → Connected services → Camera stream**, or with the
+**RTSP server** switch (`rtsp`) in Home Assistant.
 
 ```text
 rtsp://192.168.1.50:8554/main
@@ -28,6 +28,19 @@ Defaults in bold. The sub stream keeps the main stream's shape and is never wide
 
 ONVIF discovery is supported.
 
+## Password
+
+Set a password under **Settings → Connected services → Camera stream**, or with **RTSP password**
+(`rtsp_password`) in Home Assistant. The stream, ONVIF and the snapshot then all ask for it, with
+the username `admin` unless you change it (`rtsp_username`). Leave the password empty to turn it off.
+
+Give a recorder or Home Assistant's ONVIF integration the same username and password. A player that
+takes a plain address needs them in it:
+
+```text
+rtsp://admin:password@192.168.1.50:8554/main
+```
+
 ## Snapshot
 
 Home Assistant gets a camera entity with still pictures.
@@ -41,11 +54,11 @@ aren't copied by config sync.
 
 ## Shutter
 
-With the shutter closed, the stream won't start, the snapshot camera shows a picture saying the
-shutter is closed, and a privacy mark shows on screen.
-Home Assistant's **Camera covered** sensor (`camera_covered`) follows it.
+With the shutter closed, the stream, calls, the camera preview and Mirror show **Camera shutter is
+closed** instead of the picture, snapshots fail, and a privacy mark shows on screen. Home
+Assistant's **Camera covered** sensor (`camera_covered`) follows it.
 
 
 <Aside type="caution">
-The RTSP stream has no password. Anyone on your network can watch it while it's on.
+Without a [password](#password), anyone on your network can watch the stream while it's on.
 </Aside>

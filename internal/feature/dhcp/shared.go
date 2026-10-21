@@ -31,7 +31,11 @@ func init() {
 func Get() *Client {
 	once.Do(func() {
 		sharedClient = &Client{
-			Client: shared.New(shared.Options{Hostname: hostname, Store: saved{}}),
+			Client: shared.New(shared.Options{
+				Hostname: hostname,
+				Store:    saved{},
+				Network:  wifi.Get().Network,
+			}),
 		}
 	})
 	return sharedClient

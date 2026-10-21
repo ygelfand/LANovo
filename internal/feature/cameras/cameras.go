@@ -15,6 +15,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
@@ -44,7 +45,9 @@ var Get = sync.OnceValue(func() *cameraview.Cameras {
 		Settings: config.CamerasSection,
 		Client:   fetch.Client(fetchWait),
 		Picker:   picker,
+		Tabs:     dashboard.Tabs(),
 	})
+	dashboard.Tabs().Add(20, c.DashboardTabs)
 	component.Settings.Add(c.Controls())
 	return c
 })

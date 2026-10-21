@@ -74,6 +74,7 @@ The voice actions and commands have their switches on the **voice triggers** sub
 |---|---|---|---|---|
 | `switch.<device>_receive_broadcasts` | Receive broadcasts | Play [broadcasts](/features/intercom/#broadcasts) from other devices in this home | On, Off | On |
 
+
 ## Network and Bluetooth
 
 | Entity | Name | What it does | Range | Default |
@@ -96,7 +97,7 @@ The voice actions and commands have their switches on the **voice triggers** sub
 |---|---|
 | `button.<device>_restart` | Restart LANovo |
 | `button.<device>_check_for_updates` | Check for an update now |
-| `button.<device>_install_selected_version` | Install the version picked in `select.<device>_install_version` ([Other versions](/features/updates/#other-versions)) |
+| `button.<device>_install_selected_version` | Install the version picked in `install_version` ([Other versions](/features/updates/#other-versions)) |
 | `button.<device>_purge_cache`, with sensor `sensor.<device>_cached_data` | Delete cached wake word models; they download again when needed |
 | `button.<device>_screen_next_poster` | Show the next wallpaper photo |
 | `button.<device>_camera_reset_camera_settings` | Put every camera setting back to its default |
@@ -125,6 +126,8 @@ Call these as `esphome.<device>_<action>`, for example `esphome.kitchen_show_mes
 | `alarm_list`, `alarm_set`, `alarm_enable`, `alarm_delete`, `alarm_stop`, `alarm_snooze` | [Alarms](/features/messages/#alarms) |
 | `tone_write`, `tone_rename`, `tone_remove` | [Custom tones](/features/tones/) |
 | `recordings`, `turn_audio` | The kept recordings of recent requests |
+| `settings_export` | Every setting that can be copied to another device, with its section, title and value |
+| `settings_import` | Apply settings from another device: `settings` is JSON of domain → setting → value, the shape `settings_export` lists. Answers how many changed and which were skipped |
 | `call` | Call another device: `peer` is its name, `video` true for a video call. Replies with the reason when the call can't be made ([Intercom](/features/intercom/)) |
 | `broadcast` | Send a [broadcast](/features/intercom/#broadcasts): `message` empty to record from the microphone, or the address of an audio clip |
 | `<orientation>_show_page`, `_show_alert`, `_show_alert_choice`, `_dismiss_alert`, `_screen_message` | [Tessera](/use/dashboards/#tessera) pages and alerts |

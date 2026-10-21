@@ -26,6 +26,7 @@ from the one the display had before, the display takes the new one.
 
 | Setting | What it does | Default | Entity |
 |---|---|---|---|
+| Web access → | The address of the [web page](/use/web/), the admin password, and the certificate in use | | `text.<device>_frontend_admin_password`, `sensor.<device>_frontend_certificate` |
 | Verify certificates | Check TLS certificates on downloads: updates, wake words, photos, radar | On | `switch.<device>_verify_certificates` |
 
 ## Connected services
@@ -39,6 +40,15 @@ from the one the display had before, the display takes the new one.
 | Intercom → | Calls with other devices ([below](#intercom)) | | |
 | Bluetooth proxy | A Bluetooth LE proxy for Home Assistant | Off | `switch.<device>_bluetooth_proxy` |
 | Bluetooth speaker | Play from a phone over Bluetooth | Off | `switch.<device>_bluetooth_speaker` |
+| Camera stream → | RTSP and ONVIF, with a username and password ([below](#camera-stream)) | Off | `switch.<device>_camera_rtsp_server` |
+
+### Camera stream
+
+| Setting | What it does | Default | Entity |
+|---|---|---|---|
+| RTSP server | Serve the camera over RTSP and ONVIF ([Camera](/features/camera/#rtsp)) | Off | `switch.<device>_camera_rtsp_server` |
+| Username | Asked for along with the password | admin | `text.<device>_camera_rtsp_username` |
+| Password | Empty means no password. Shows **Set** once there is one | | `text.<device>_camera_rtsp_password` |
 
 ### Cast receiver
 
@@ -64,6 +74,7 @@ from the one the display had before, the display takes the new one.
 | Answer from | Auto-answer **Everyone** or only the **Selected** devices | Everyone | `select.<device>_auto_answer_from` |
 | Panels | The devices auto-answer accepts, when Answer from is Selected | | `text.<device>_auto_answer_panels` |
 | Users | The Home Assistant users auto-answer accepts, when Answer from is Selected | | `text.<device>_auto_answer_users` |
+| Auto-answer API calls | Auto-answer calls from the [web page](/use/web/#call), when Answer from is Selected | Off | `switch.<device>_auto_answer_api_calls` |
 | Auto-answer with camera on | Start auto-answered calls with video | Off | `switch.<device>_auto_answer_with_camera_on` |
 | Ring, Video ring, Ringback | The sounds for an audio call, a video call, and while you wait | Ring, Ring, Ringback | `select.<device>_ring_tone`, `select.<device>_video_ring_tone`, `select.<device>_ringback_tone` |
 | Pause wake word during calls | Don't listen for the wake word on a call | On | `switch.<device>_pause_wake_word_during_calls` |
@@ -181,7 +192,7 @@ Apart from Screen saver (`idle_saver`), none of these are Home Assistant entitie
 | Weather | The Home Assistant weather entity for the weather card and alerts | None |
 | Shopping list | A Home Assistant to-do list, and **Show completed items** | None, Off |
 | Calendar | Calendars to show, and **Days to show**: 3, 7 or 14 | None, 7 |
-| Cameras | The [Cameras app](/features/apps/#cameras): which cameras, thumbnail size, refresh, auto paginate and Home Assistant URL. These are Home Assistant entities | All cameras |
+| Cameras | The [Cameras app](/features/apps/#cameras): a dashboard tab, which cameras, thumbnail size, refresh, auto paginate and Home Assistant URL. These are Home Assistant entities | Off, all cameras |
 
 ## Sound
 
@@ -189,6 +200,7 @@ Apart from Screen saver (`idle_saver`), none of these are Home Assistant entitie
 | Setting | What it does | Default | Entity |
 |---|---|---|---|
 | Main volume, Media volume, Assistant volume, Alarm volume, System sounds | Volume sliders | | `volume_*` |
+| Volume buttons | What the volume buttons change: **What's playing**, or **Main volume** ([Volume buttons](/use/getting-around/#volume-buttons)) | What's playing | `select.<device>_playback_volume_buttons` |
 | Device chime | The sound for wake and confirmations. **None** silences all the sounds below | Chirp | `select.<device>_playback_device_chime` |
 | Failure sound | When a request fails | Trouble | `select.<device>_playback_failure_sound` |
 | Cancellation sound | When a request is cancelled | Cancel | `select.<device>_playback_cancellation_sound` |
@@ -253,7 +265,6 @@ the display; [config sync](/use/configuration/#config-sync) doesn't copy them.
 | Exposure | ISO (Smart Display 7) | Auto | `select.<device>_camera_iso` |
 | White Balance | Auto and seven presets | Auto | `select.<device>_camera_white_balance` |
 | Streams | Main stream and resolution, Sub stream and resolution, Keyframe interval, Quality | On, On, 2 s, Standard | `switch.<device>_camera_main_stream`, `select.<device>_camera_main_resolution`, `switch.<device>_camera_sub_stream`, `select.<device>_camera_sub_resolution`, `number.<device>_camera_keyframe_interval`, `select.<device>_camera_quality` |
-| | Camera stream: the RTSP server | Off | `switch.<device>_camera_rtsp_server` |
 | | Reset to defaults | | `button.<device>_camera_reset_camera_settings` (button) |
 
 ## System

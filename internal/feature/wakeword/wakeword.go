@@ -33,10 +33,12 @@ func Get() *WakeWord {
 		shared = &WakeWord{wakesettings.New(wakesettings.Options{
 			Slots:    Slots,
 			DeviceID: component.AssistantDevice,
+			Read:     func() schema.Wake { return config.Get().Wake },
 			Write:    func(slot int) schema.WakeWriter { return config.Set().Wake(slot) },
 			Wake:     Requested.Emit,
 			Tones:    tones.Get().Choices,
 		})}
+		component.Settings.Add(shared.Controls())
 		tones.Get().Changed.Listen(func(struct{}) {
 			shared.Refresh(config.Get().Wake.Slots(Slots))
 		})

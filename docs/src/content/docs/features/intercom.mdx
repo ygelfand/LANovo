@@ -1,6 +1,6 @@
 ---
 title: Intercom
-description: Calls between devices on your network.
+description: Calls and broadcasts between devices on your network.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -27,7 +27,7 @@ Assistant:
 |---|---|---|
 | **Incoming calls** | Accept calls | On |
 | **Auto-answer** | Answer automatically | Off |
-| **Answer from** | Auto-answer **Everyone**, or **Selected**: the devices you pick under **Panels** and the Home Assistant users you pick under **Users** | Everyone |
+| **Answer from** | Auto-answer **Everyone**, or **Selected**: the devices you pick under **Panels**, the Home Assistant users you pick under **Users**, and calls from the [web page](/use/web/#call) when **Auto-answer API calls** is on | Everyone |
 | **Auto-answer with camera on** | Send video when auto-answering | Off |
 | **Pause wake word during calls** | | On |
 | **Video stream** | Main or sub stream | Main |
@@ -82,4 +82,3 @@ off in Home Assistant to stop taking them.
 
 From Home Assistant, the `broadcast` action takes a `message`: leave it empty to record from this
 display's microphone, or give the address of an audio clip to send.
-

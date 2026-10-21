@@ -10,6 +10,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/agenda"
 	"github.com/ygelfand/libcountertop/pkg/display/alarms"
 	"github.com/ygelfand/libcountertop/pkg/display/callview"
+	"github.com/ygelfand/libcountertop/pkg/display/cameraview"
 	"github.com/ygelfand/libcountertop/pkg/display/dawnview"
 	"github.com/ygelfand/libcountertop/pkg/display/mirror"
 	"github.com/ygelfand/libcountertop/pkg/display/radarview"
@@ -84,6 +85,9 @@ var Get = sync.OnceValue(func() *screens.App {
 	})
 	apps.Get().Add(calls.App())
 	apps.Get().Add(cameras.Get().App())
+	for _, a := range homecontrol.Get().Apps() {
+		apps.Get().Add(a)
+	}
 	var mirrors []func(shell.View) *screens.Screen
 	if board.Current().CameraWidth > 0 {
 		m := mirror.New(mirror.Options{Shell: featureshell.Get(), Camera: settings.Preview()})
@@ -200,9 +204,13 @@ var Get = sync.OnceValue(func() *screens.App {
 		Poster:    poster.Get(),
 		Drawer:    drawer.Get(),
 		Tabs:      dashboard.Tabs(),
-		Home:      homecontrol.Get(),
-		HomeHA:    homeassistant.Get(),
-		Saver:     idle.Get(),
+		Boards: map[string]screens.Board{cameraview.TabKind: {
+			Glyph: cameras.Get().Glyph,
+			Draw:  cameras.Get().Board,
+		}},
+		Home:   homecontrol.Get(),
+		HomeHA: homeassistant.Get(),
+		Saver:  idle.Get(),
 		Tessera: tesseraview.New(tesseraview.Dependencies{
 			UI:      look,
 			Screens: tessera.Get(),

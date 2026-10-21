@@ -36,6 +36,10 @@ export default defineConfig({
 						{
 							"label": "Add it to Home Assistant",
 							"slug": "start/home-assistant"
+						},
+						{
+							"label": "The EchoLocal integration",
+							"slug": "start/integration"
 						}
 					]
 				},
@@ -78,6 +82,10 @@ export default defineConfig({
 						{
 							"label": "In Home Assistant",
 							"slug": "use/entities"
+						},
+						{
+							"label": "In a browser",
+							"slug": "use/web"
 						},
 						{
 							"label": "All settings and defaults",

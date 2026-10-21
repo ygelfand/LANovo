@@ -82,7 +82,11 @@ Renaming the display later makes Home Assistant see it as a new device, so pick 
 ## Changing Wi‑Fi later
 
 ```sh
-./lanovo wifi
+./lanovo wifi --force
 ```
+
+`--force` lists the networks even when the display is already connected; without it, a connected
+display just reports where it is. Once the new network connects, the display forgets every other
+network; if it does not connect, the display goes back to the one it was on.
 
 Next: [add it to Home Assistant](/start/home-assistant/).

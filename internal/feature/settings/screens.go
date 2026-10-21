@@ -14,7 +14,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	"github.com/ygelfand/LANovo/internal/feature/airplay"
 	"github.com/ygelfand/LANovo/internal/feature/bluetooth"
+	"github.com/ygelfand/LANovo/internal/feature/certs"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
+	"github.com/ygelfand/LANovo/internal/feature/frontend"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/network"
@@ -118,7 +120,10 @@ func networkPage() *sharedshell.Page {
 			c.Renew = l.Renew
 		}
 		return c
-	}, network.Get().SetVerify)
+	}, network.Get().SetVerify, &sharedsettings.WebAccess{
+		Admin:       frontend.Get(),
+		Certificate: certs.Get(),
+	}, shell.Get())
 }
 
 func callsPage() *sharedshell.Page { return callPages().Calls() }

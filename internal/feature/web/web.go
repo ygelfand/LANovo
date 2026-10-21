@@ -19,11 +19,12 @@ func init() {
 const (
 	Port       = 80
 	SecurePort = 8443
+	PublicPort = 443
 )
 
 var get = sync.OnceValue(func() *libweb.Server {
 	return libweb.New(
-		libweb.Options{Port: Port, APIPort: layout.Port, Adopted: Adopted, Page: page},
+		libweb.Options{Port: Port, APIPort: layout.Port, Adopted: Adopted},
 	)
 })
 

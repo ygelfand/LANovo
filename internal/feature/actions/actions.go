@@ -35,7 +35,6 @@ var get = sync.OnceValue(func() *Actions {
 func Get() *Actions { return get() }
 
 func (a *Actions) Names() []string { return a.reg.Names() }
-
 func (a *Actions) Declare() {
 	voiced := config.Get().Voice.Action
 	component.Fire.Emit(

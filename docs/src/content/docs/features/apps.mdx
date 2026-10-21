@@ -18,6 +18,7 @@ reorder. **Media** and **Intercom** are in the dock to start with.
 | **Shopping list** | A Home Assistant to-do list |
 | **Mirror** | The camera, full screen |
 | **Cameras** | Your Home Assistant cameras |
+| **Lights**, **Switches** | Your [lights and switches](/use/dashboards/#lights-and-switches), full screen |
 
 ## Radio
 
@@ -63,6 +64,7 @@ Home control → Cameras** and in Home Assistant:
 
 | Setting | What it does | Choices | Default | Entity |
 |---|---|---|---|---|
+| Dashboard tab | Adds a **Cameras** tab to the [native dashboard](/use/dashboards/#cameras) | On, Off | Off | `switch.<device>_dashboard_tab` |
 | Select | Which cameras to show, by label, area or by hand | | All cameras | — |
 | Thumbnail size | How big each picture is | 1–5 | 3 | `number.<device>_thumbnail_size` |
 | Refresh | How often the pictures update | Off, 1–60 s | 5 s | `number.<device>_refresh` |

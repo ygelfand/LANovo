@@ -205,8 +205,8 @@ MARK_SIZE ?= 1000x666!
 
 .PHONY: logo
 logo: ## Rescale the light and dark marks from assets/ into what the binary embeds
-	magick assets/logo_light.png -resize $(MARK_SIZE) -colors 256 internal/ui/logo_light.png
-	magick assets/logo_dark.png -resize $(MARK_SIZE) -colors 256 internal/ui/logo_dark.png
+	magick assets/logo_light.png -resize $(MARK_SIZE) -colors 256 internal/brand/logo_light.png
+	magick assets/logo_dark.png -resize $(MARK_SIZE) -colors 256 internal/brand/logo_dark.png
 
 
 ##@ Device (lanovod)

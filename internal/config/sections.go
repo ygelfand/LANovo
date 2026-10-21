@@ -21,6 +21,8 @@ var (
 	PosterSection    = sections.Poster
 	PhotosSection    = sections.Photos
 	CamerasSection   = sections.Cameras
+	CertsSection     = sections.Certs
+	FrontendSection  = sections.Frontend
 	SendspinSection  = sections.Sendspin
 	BluetoothSection = sections.Bluetooth
 	MediaSection     = sections.Media

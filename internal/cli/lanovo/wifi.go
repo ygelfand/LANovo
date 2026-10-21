@@ -40,6 +40,7 @@ func newWifiCmd() *cobra.Command {
 	c.Flags().StringVar(&r.SSID, "ssid", "", "network to join, instead of picking from a scan")
 	c.Flags().StringVar(&r.Password, "password", "", "passphrase, for an --ssid that needs one")
 	c.Flags().BoolVar(&r.WPS, "wps", false, "join by pressing the router's WPS button instead")
+	c.Flags().BoolVar(&r.Force, "force", false, "pick a network even when already connected")
 	return c
 }
 

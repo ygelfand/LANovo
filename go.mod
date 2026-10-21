@@ -32,8 +32,8 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/tfriedel6/canvas v0.12.1 // indirect
 	github.com/tphakala/go-aac v0.7.0 // indirect
-	github.com/ygelfand/go-esphome-device v0.0.16
-	github.com/ygelfand/libcountertop v0.1.1-0.20261021013732-37d8ca667c2f
+	github.com/ygelfand/go-esphome-device v0.0.17
+	github.com/ygelfand/libcountertop v0.1.1-0.20261021150040-4fc1e228554a
 	github.com/zserge/microwakeword v0.0.0-20260330234603-bfaf3840114e // indirect
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 	golang.org/x/image v0.47.0 // indirect
@@ -67,6 +67,7 @@ require (
 	github.com/dop251/goja v0.0.0-20260311135729-065cd970411c // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/flynn/noise v1.1.0 // indirect
+	github.com/go-chi/chi/v5 v5.5.0 // indirect
 	github.com/go-pdf/fpdf v0.9.0 // indirect
 	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/go-text/typesetting v0.3.5 // indirect
