@@ -68,6 +68,7 @@ func Run(ctx context.Context) error {
 
 	sensors.Get().Orient()
 
+	markBooted()
 	startSplash(ctx)
 
 	component.Default().Restore(config.Get())

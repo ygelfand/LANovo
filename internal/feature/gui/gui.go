@@ -219,6 +219,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		WeatherEntities: func() shell.View { return settings.WeatherEntities() },
 		Todo:            todo.Get().Todo,
 		Calendar:        calendar.Get().Calendar,
+		CamerasPage:     func() shell.View { return cameras.Get().Page() },
 		Player:          media.Get(),
 		PlayerPage:      media.Page,
 		MediaVolume:     sharedvolume.For(volume.Get(), config.StreamMedia),

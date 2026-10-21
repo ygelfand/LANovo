@@ -29,7 +29,7 @@ func startSplash(ctx context.Context) {
 		claim.Show(DrawLogo)
 		slog.Info("splash claimed")
 
-		completed := bootview.Splash{
+		bootview.Splash{
 			Claim:    claim,
 			Display:  display.Get(),
 			Layers:   gpu.Get(),
@@ -44,10 +44,11 @@ func startSplash(ctx context.Context) {
 				return nil
 			},
 		}.Play(ctx, w, h)
-		if !completed {
-			return
-		}
+	})
+}
 
+func markBooted() {
+	safe.Go("mark booted", func() {
 		if err := slot.MarkBooted(); err != nil {
 			slog.Warn("could not mark the boot good, this slot is spending its retries", "err", err)
 		}

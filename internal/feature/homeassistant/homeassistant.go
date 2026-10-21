@@ -8,10 +8,13 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/states"
 )
 
 var get = sync.OnceValue(func() *sharedha.Controller {
-	return sharedha.New(sharedha.Settings{Home: config.HomeSection, API: config.APISection})
+	c := sharedha.New(sharedha.Settings{Home: config.HomeSection, API: config.APISection})
+	c.FollowIntegration(states.Get())
+	return c
 })
 
 func Get() *sharedha.Controller { return get() }

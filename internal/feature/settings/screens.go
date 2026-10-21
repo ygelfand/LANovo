@@ -14,7 +14,6 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	"github.com/ygelfand/LANovo/internal/feature/airplay"
 	"github.com/ygelfand/LANovo/internal/feature/bluetooth"
-	"github.com/ygelfand/LANovo/internal/feature/cameras"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
@@ -50,11 +49,6 @@ func root() *sharedshell.Page {
 					Label: "settings.camera",
 					Glyph: gogui.IconCamera,
 					Page:  func() sharedshell.View { return cameraPage() },
-				},
-				{
-					Label: "cameras.app",
-					Glyph: gogui.IconVideo,
-					Page:  func() sharedshell.View { return cameras.Get().Page() },
 				},
 				{
 					Label: "voice.title",
