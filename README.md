@@ -89,7 +89,8 @@ another device or send a broadcast.
 ### Intercom
 
 Audio and video calls between LANovo displays and EchoLocal devices on your network, with
-auto-answer for the devices you choose. Broadcast a voice message to every device at once, and keep
+auto-answer for the devices you choose. Call a display from a Home Assistant dashboard with the
+[integration](#the-optional-integration). Broadcast a voice message to every device at once, and keep
 devices outside your home out with a shared home key.
 
 <p align="center">
@@ -129,7 +130,24 @@ discovery, and a snapshot camera in Home Assistant. The physical shutter stops t
 - Updates from Home Assistant or from the display, stable or development channel, and earlier
   versions to go back to
 - A PIN lock for the settings menu
-- Apps: Intercom, Cameras, Mirror, Shopping list, Calendar, Radar, more coming
+- Apps: Intercom, Cameras (live video and audio with the integration), Lights, Switches, Mirror,
+  Shopping list, Calendar, Radar, more coming
+
+### In a browser
+
+Every display serves its own web page over HTTPS: a live view of the screen, every setting with
+search, alarms, calls and broadcasts, and logs. Behind it is an HTTP API for scripts. The
+certificate is self-signed, or comes from [Cert Warden](https://www.certwarden.com) if you run one.
+See [In a browser](https://www.lanovo.link/use/web/).
+
+## The optional integration
+
+Everything above works with stock Home Assistant. The
+[EchoLocal integration](https://github.com/ygelfand/echolocal-hacs) (HACS), shared with our sister
+project, adds a card for each display with its screen drawn live, a dashboard with every display
+and Echo, Fleet to compare settings across devices and copy them from one to the others, calls from
+a dashboard, turn history with recordings, a wake word library, custom tones, groups and a health
+view. See [The EchoLocal integration](https://www.lanovo.link/start/integration/).
 
 ## Installing
 
