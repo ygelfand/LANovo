@@ -30,7 +30,7 @@ var get = sync.OnceValue(func() *alarm.Alarms {
 			return func() { sound.Backgrounds().Duck(false) }
 		},
 		RingFor: alerts.Get().RingFor,
-		Trusted: clock.Get().Set,
+		Trusted: clock.Get().Valid,
 	})
 	a.Told.Listen(component.Fire.Emit)
 	return a

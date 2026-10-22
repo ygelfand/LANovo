@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 	"sync"
-	"time"
 
 	"github.com/ygelfand/libcountertop/pkg/audio/resample"
 	"github.com/ygelfand/libcountertop/pkg/display/surface"
@@ -18,6 +17,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/media/castreceiver"
 	"github.com/ygelfand/libcountertop/pkg/media/playback"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	sharedclock "github.com/ygelfand/libcountertop/pkg/system/clock"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
@@ -62,7 +62,7 @@ func build() *castreceiver.Receiver {
 			AuthorityPath:   layout.CastAuthorityPath,
 			AppDir:          layout.CastAppDir,
 			Synced: func(do func()) func() {
-				return clock.Get().Synced.Listen(func(time.Time) { do() })
+				return clock.Get().Synced.Listen(func(sharedclock.Sync) { do() })
 			},
 			Volume: mediaVolume{},
 			Video: func() playback.Target {

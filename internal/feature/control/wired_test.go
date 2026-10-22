@@ -52,8 +52,8 @@ var inTables = map[string]string{
 	"Cast.YouTube.OnDemand":     "cast.youtube.lounge",
 	"Cast.Prime.Persist":        "cast.prime.persist",
 	"Cast.Prime.SkipIntro":      "cast.prime.skipintro",
-	"Sendspin.Enabled":          "sendspin.on",
-	"AirPlay.Enabled":           "airplay.on",
+	"Sendspin.Enabled":          "media.sendspin",
+	"AirPlay.Enabled":           "media.airplay",
 	"Screen.Backlight":          "screen.backlight",
 	"Screen.Mode":               "screen.auto",
 	"Screen.Theme":              "screen.theme",
@@ -115,7 +115,7 @@ var inTables = map[string]string{
 	"Certs.Cert":                "certs.cert",
 	"Certs.CertAPIKey":          "certs.cert_api_key",
 	"Certs.KeyAPIKey":           "certs.key_api_key",
-	"Frontend.Password":         "frontend.password",
+	"Frontend.Password":         "access.password",
 	"Cameras.Scale":             "cameras.scale",
 	"Cameras.Refresh":           "cameras.refresh",
 	"Cameras.Rotate":            "cameras.rotate",
@@ -150,11 +150,11 @@ var inTables = map[string]string{
 	"Bluetooth.Proxy":           "bluetooth.proxy",
 	"Bluetooth.Speaker":         "bluetooth.speaker",
 	"Bluetooth.Scan":            "bluetooth.scan",
-	"API.Adopted":               "api.adopted",
+	"API.Adopted":               "access.adopted",
 	"RTSP.Enabled":              "rtsp.enabled",
 	"RTSP.Username":             "rtsp.username",
 	"RTSP.Password":             "rtsp.password",
-	"Lock.PIN":                  "lock.pin",
+	"Lock.PIN":                  "screen.lock_pin",
 	"Access.ADB":                "access.adb",
 	"Presence.Wake":             "presence.wake",
 	"Presence.Range":            "presence.range",
@@ -166,6 +166,12 @@ var inTables = map[string]string{
 	"Home.Return":               "home.tessera.home_after_idle",
 	"Home.Wide":                 "home.tessera.landscape",
 	"Home.Tall":                 "home.tessera.portrait",
+	"Home.Themed":               "home.tessera.themed",
+	"Home.Turn":                 "home.tessera.turn",
+	"Home.Bottom":               "home.tessera.bottom",
+	"Home.Follow":               "home.tessera.follow",
+	"Diag.Interval":             "diag.interval",
+	"Wake.Stop.Threshold":       "assistants.stop_sensitivity",
 }
 
 var byHand = map[string]string{
@@ -179,8 +185,7 @@ var byHand = map[string]string{
 	"Volume.Voice":    "the volume command",
 	"Volume.Feedback": "the volume command",
 
-	"Wake.Words":          "Home Assistant's, by slot, through the satellite",
-	"Wake.Stop.Threshold": "an entity on the microphone page; a harness that changed it would be turning detection off under whatever else it was testing",
+	"Wake.Words": "Home Assistant's, by slot, through the satellite",
 
 	"Poster.Last": "the picture last shown, written by the poster itself",
 
@@ -204,7 +209,7 @@ var byHand = map[string]string{
 
 	"Screen.Volume":       "not wired yet",
 	"Feedback.Hold":       "the held mute button sound is only exposed by hardware with a hold action",
-	"Diag.Interval":       "not wired yet",
+	"Diag.MinCores":       "held online only on boards whose kernel hotplugs cores",
 	"Time.Home":           "not wired yet",
 	"Time.Chosen":         "not wired yet",
 	"Cast.Oracle":         "Home Assistant's text entity",

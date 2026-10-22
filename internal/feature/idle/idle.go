@@ -38,14 +38,7 @@ func Get() *Idle {
 			DeviceID: component.DeviceScreen,
 			Shell:    shell.Get(),
 			View:     newView(),
-			Ready: func() bool {
-				select {
-				case <-clock.Get().Ready():
-					return true
-				default:
-					return false
-				}
-			},
+			Ready:    clock.Get().Valid,
 			Activity: []idleview.Activity{
 				func() (time.Duration, bool) { return hwtouch.Get().Since(), true },
 				func() (time.Duration, bool) {

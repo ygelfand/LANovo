@@ -12,21 +12,20 @@ type Config struct {
 	Device     Device     `json:"-"`
 	Volume     Volume     `json:"volume"`
 	Microphone Microphone `json:"microphone"`
-	Diag       Diag       `json:"diag"`
-	Access     Access     `json:"access"`
 	Presence   Presence   `json:"presence"`
 }
+
+const metricsInterval = 60
 
 func Defaults() Config {
 	c := Config{
 		Shared:     schema.DefaultShared(),
 		Volume:     defaultVolume(),
 		Microphone: defaultMicrophone(),
-		Diag:       defaultDiag(),
-		Access:     defaultAccess(),
 		Presence:   defaultPresence(),
 	}
 	c.Visual.Label = layout.Manufacturer
+	c.Diag.Interval = metricsInterval
 	return c
 }
 
@@ -43,7 +42,6 @@ type Writer struct {
 
 func (w Writer) Volume() VolumeWriter         { return VolumeWriter{st: w.st} }
 func (w Writer) Microphone() MicrophoneWriter { return MicrophoneWriter{st: w.st} }
-func (w Writer) Diag() DiagWriter             { return DiagWriter{st: w.st} }
 func (w Writer) Presence() PresenceWriter     { return PresenceWriter{st: w.st} }
 
 type Labeled interface{ Label() string }

@@ -63,12 +63,7 @@ func (d *Dashboard) Restore(cfg config.Config) {
 }
 
 func (d *Dashboard) Ready() bool {
-	select {
-	case <-clock.Get().Ready():
-		return true
-	default:
-		return false
-	}
+	return clock.Get().Valid()
 }
 
 func (d *Dashboard) Redraw() { shell.Get().Redraw() }

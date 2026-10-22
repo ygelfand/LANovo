@@ -66,6 +66,7 @@ func newDetect() *Detect {
 		Read: func() float64 { return config.Get().Wake.Stop.Threshold },
 		Save: func(v float64) error { return config.Set().Stop().Threshold(v) },
 	})
+	component.Settings.Add(d.stop.Controls())
 
 	e.Load = func() error {
 		turn := voice.Get()

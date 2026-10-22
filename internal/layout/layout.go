@@ -56,6 +56,12 @@ const (
 
 	TesseraDir = StateDir
 
+	TesseraHelper = StateDir + "/bin/lanovo-tessera"
+
+	TesseraFirmwareDir = StateDir + "/tessera"
+
+	TesseraPort = 6054
+
 	CastAppDir = StateDir + "/cast"
 
 	// init sends stderr to /dev/null.

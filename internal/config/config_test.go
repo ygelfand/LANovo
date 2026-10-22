@@ -19,8 +19,8 @@ func TestDefaultsAreUsable(t *testing.T) {
 	if c.Screen.Mode != schema.DefaultScreenMode {
 		t.Errorf("screen mode defaults to %q, want %q", c.Screen.Mode, schema.DefaultScreenMode)
 	}
-	if c.Diag.Interval != DefaultInterval {
-		t.Errorf("metrics interval defaults to %d, want %d", c.Diag.Interval, DefaultInterval)
+	if c.Diag.Interval != metricsInterval {
+		t.Errorf("metrics interval defaults to %d, want %d", c.Diag.Interval, metricsInterval)
 	}
 }
 
@@ -49,7 +49,7 @@ func TestSettingPersists(t *testing.T) {
 	if err := st.Set().Screen().Backlight(42); err != nil {
 		t.Fatalf("Backlight: %v", err)
 	}
-	if err := st.Set().Diag().Interval(120); err != nil {
+	if err := st.Update(func(c *Config) { c.Diag.Interval = 120 }); err != nil {
 		t.Fatalf("Interval: %v", err)
 	}
 
@@ -74,7 +74,7 @@ func TestWritingOneSettingLeavesTheRest(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load: %v", err)
 	}
-	if err := st.Set().Diag().Interval(120); err != nil {
+	if err := st.Update(func(c *Config) { c.Diag.Interval = 120 }); err != nil {
 		t.Fatalf("Interval: %v", err)
 	}
 

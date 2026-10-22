@@ -28,7 +28,7 @@ var get = sync.OnceValue(func() *Lock {
 		Shell:  shell.Get(),
 		Read:   read,
 		Save:   save,
-		SetPIN: func(pin string) error { return l.knobs.Change("pin", pin) },
+		SetPIN: func(pin string) error { return l.knobs.Change("lock_pin", pin) },
 	})
 	component.Settings.Add(l.knobs)
 	return l

@@ -94,7 +94,7 @@ func Table() *setting.Table[config.Microphone] {
 			},
 			func(m *config.Microphone) *int { return &m.Sensitivity },
 		),
-	}, setting.Messages{Text: say.T, Missing: say.Missing}).Local()
+	}, setting.Messages{Text: say.T, Missing: say.Missing})
 }
 
 var applies = map[string]func(config.Microphone) error{

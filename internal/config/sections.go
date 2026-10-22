@@ -10,7 +10,9 @@ func sharedOf(c *Config) *schema.Shared { return &c.Shared }
 var sections = schema.NewSections(func() *storage.Store[Config] { return store().Store }, sharedOf)
 
 var (
+	AccessSection    = sections.Access
 	AlertsSection    = sections.Alerts
+	DiagSection      = sections.Diag
 	FeedbackSection  = sections.Feedback
 	APISection       = sections.API
 	AppsSection      = sections.Apps
@@ -46,10 +48,5 @@ var (
 	MicrophoneSection = storage.Bind(
 		func() *storage.Store[Config] { return store().Store },
 		func(c *Config) *Microphone { return &c.Microphone },
-	)
-
-	AccessSection = storage.Bind(
-		func() *storage.Store[Config] { return store().Store },
-		func(c *Config) *Access { return &c.Access },
 	)
 )

@@ -50,7 +50,6 @@ func Table() *setting.Table[config.Presence] {
 				Group:  PresenceGroup,
 				ID:     "presence_range",
 				Icon:   "mdi:signal-distance-variant",
-				Local:  true,
 				Kind:   setting.Number,
 				Slider: true,
 				Min:    config.PresenceRangeMin,

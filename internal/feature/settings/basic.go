@@ -22,6 +22,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
 )
 
+func Visuals() *sharedsettings.BasicPages { return basicPages() }
+
 func basicPages() *sharedsettings.BasicPages {
 	return sharedsettings.NewBasicPages(
 		sharedsettings.BasicDependencies{
