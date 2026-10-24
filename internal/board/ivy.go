@@ -18,7 +18,7 @@ var Ivy = Board{
 	UISize:       "compact",
 	Diagonal:     6.94,
 	Tessera:      Tessera{Board: "jc1060p470", Columns: 6, Rows: 4},
-	Touch:        "fts_ts",
+	Touch:        []string{"fts_ts", "mtk-tpd"},
 	Buttons: []Button{
 		{"volume up", 429, true},
 		{"volume down", 576, true},

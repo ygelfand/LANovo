@@ -48,10 +48,6 @@ var inTables = map[string]string{
 	"Photos.Motion.App":         "photos.motion.app",
 	"Cast.Receiver":             "cast.receiver",
 	"Cast.YouTube.Skip":         "cast.youtube.skip",
-	"Cast.YouTube.LiveDelay":    "cast.youtube.livedelay",
-	"Cast.YouTube.OnDemand":     "cast.youtube.lounge",
-	"Cast.Prime.Persist":        "cast.prime.persist",
-	"Cast.Prime.SkipIntro":      "cast.prime.skipintro",
 	"Sendspin.Enabled":          "media.sendspin",
 	"AirPlay.Enabled":           "media.airplay",
 	"Screen.Backlight":          "screen.backlight",
@@ -171,6 +167,8 @@ var inTables = map[string]string{
 	"Home.Bottom":               "home.tessera.bottom",
 	"Home.Follow":               "home.tessera.follow",
 	"Diag.Interval":             "diag.interval",
+	"Diag.LowMemory":            "diag.low_memory",
+	"Diag.PageMemory":           "diag.page_memory",
 	"Wake.Stop.Threshold":       "assistants.stop_sensitivity",
 }
 
@@ -207,16 +205,17 @@ var byHand = map[string]string{
 
 	"Network.Address": "read back from the lease, not chosen",
 
-	"Screen.Volume":       "not wired yet",
-	"Feedback.Hold":       "the held mute button sound is only exposed by hardware with a hold action",
-	"Diag.MinCores":       "held online only on boards whose kernel hotplugs cores",
-	"Time.Home":           "not wired yet",
-	"Time.Chosen":         "not wired yet",
-	"Cast.Oracle":         "Home Assistant's text entity",
-	"Cast.Bundle":         "Home Assistant's text entity",
-	"Cast.YouTube.Device": "made on first use, never chosen",
-	"Cast.YouTube.Music":  "issued by YouTube on first use",
-	"Cast.YouTube.Video":  "issued by YouTube on first use",
+	"Screen.Volume":         "not wired yet",
+	"Feedback.Hold":         "the held mute button sound is only exposed by hardware with a hold action",
+	"Diag.MinCores":         "held online only on boards whose kernel hotplugs cores",
+	"Time.Home":             "not wired yet",
+	"Time.Chosen":           "not wired yet",
+	"Cast.Oracle":           "Home Assistant's text entity",
+	"Cast.Bundle":           "Home Assistant's text entity",
+	"Cast.YouTube.Device":   "the Echo Dot's YouTube lounge; LANovo runs none",
+	"Cast.YouTube.Music":    "the Echo Dot's YouTube lounge; LANovo runs none",
+	"Cast.YouTube.Video":    "the Echo Dot's YouTube lounge; LANovo runs none",
+	"Cast.YouTube.OnDemand": "the Echo Dot's YouTube lounge; LANovo runs none",
 }
 
 func leaves(t reflect.Type, at string) []string {

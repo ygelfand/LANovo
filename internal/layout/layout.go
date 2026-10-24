@@ -42,6 +42,8 @@ const (
 
 	RuntimePath = StateDir + "/runtime.json"
 
+	ReleasesPath = StateDir + "/releases.json"
+
 	NamePath = StateDir + "/name"
 
 	KeyPath = StateDir + "/psk"
@@ -62,7 +64,9 @@ const (
 
 	TesseraPort = 6054
 
-	CastAppDir = StateDir + "/cast"
+	CastAppDir      = StateDir + "/cast"
+	CastEngineDir   = StateDir + "/engine"
+	CastEngineState = StateDir + "/engine-state"
 
 	// init sends stderr to /dev/null.
 	CrashPath = StateDir + "/crash"

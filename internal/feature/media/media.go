@@ -9,16 +9,13 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
-	sharedcard "github.com/ygelfand/libcountertop/pkg/display/mediacard"
 	"github.com/ygelfand/libcountertop/pkg/media/mediaplayer"
-	"github.com/ygelfand/libcountertop/pkg/media/nowplaying"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/apps"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -51,12 +48,7 @@ func Get() *Player {
 			Changed:  shared.refresh,
 			Device:   component.DevicePlayback,
 		})
-		theCard = sharedcard.New(
-			sharedcard.Dependencies{Player: shared, Idle: config.IdleSection, Shell: shell.Get()},
-		)
-		shared.Begun.Listen(func(s nowplaying.Source) { theCard.Began(s) })
 		volume.Get().Watch(config.StreamMedia, func(int) { shared.Changed() })
-		apps.Get().Add(theCard.App())
 	})
 	return shared
 }
@@ -72,20 +64,8 @@ func (p *Player) Restore(config.Config) { p.Changed() }
 func (p *Player) Run(ctx context.Context) error {
 	p.Start(ctx)
 	defer p.Close()
-	defer card().Close()
-	tick := time.NewTicker(250 * time.Millisecond)
-	defer tick.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-tick.C:
-		}
-
-		card().Follow()
-		card().Tick()
-	}
+	<-ctx.Done()
+	return nil
 }
 
 func (p *Player) SetIdle(v schema.Delay) {
@@ -93,8 +73,6 @@ func (p *Player) SetIdle(v schema.Delay) {
 		slog.Warn("saving the media idle timeout", "err", err)
 	}
 }
-
-func (p *Player) Open() { card().Open() }
 
 func (p *Player) refresh() {
 	mp := p.Entity()

@@ -7,6 +7,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/feature/access"
 	"github.com/ygelfand/LANovo/internal/feature/alerts"
+	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/firmware"
@@ -32,6 +33,7 @@ func basicPages() *sharedsettings.BasicPages {
 			Screen:      screen.Get(),
 			Poster:      poster.Get(),
 			Visuals:     visuals.Get(),
+			Engine:      chromecast.Tuning(),
 			Privacy:     privacy.Get(),
 			Access:      access.Get(),
 			Zone:        clock.Get(),

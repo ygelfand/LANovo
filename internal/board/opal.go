@@ -17,7 +17,7 @@ var Opal = Board{
 	UISize:         "medium",
 	Diagonal:       8,
 	Tessera:        Tessera{Board: "jc8012p4a1", Columns: 6, Rows: 4},
-	Touch:          "fts_ts",
+	Touch:          []string{"fts_ts"},
 	AmpPins:        []int{127, 98, 0},
 	MicSensitivity: -27,
 	Stereo:         true,

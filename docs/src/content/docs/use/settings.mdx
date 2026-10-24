@@ -53,16 +53,10 @@ from the one the display had before, the display takes the new one.
 ### Cast receiver
 
 
-**Enable** turns the receiver on. **Apps** has a page per app:
-
-| Page | Setting | Choices | Default | Entity |
-|---|---|---|---|---|
-| YouTube | Connect only when casting | Always connected, or only while something is casting | Always | `select.<device>_youtube_lounge` |
-| YouTube | Skip segments | SponsorBlock categories: sponsor, self-promotion, interaction reminder, intro, outro, preview, hook, non-music section, filler | Sponsor | `text.<device>_youtube_sponsorblock_categories` |
-| YouTube | Live delay | 4–60 seconds behind live | 10 s | `number.<device>_youtube_live_delay` |
-| Prime Video | Persistent registration | Keep the first registration for every cast, across restarts too | Off | `switch.<device>_prime_video_persistent_registration` |
-| Prime Video | Reset registration | Forget the registration. Shows whether one is saved | | — |
-| Prime Video | Skip intro | Skip Amazon's leading intro | Off | `switch.<device>_prime_video_skip_intro` |
+| Setting | Choices | Default | Entity |
+|---|---|---|---|
+| Enable | On, Off | Off | `switch.<device>_cast_receiver` |
+| Skip segments | YouTube's SponsorBlock categories: sponsor, self-promotion, interaction reminder, intro, outro, preview, hook, non-music section, filler | Sponsor | `text.<device>_youtube_sponsorblock_categories` |
 
 ### Intercom
 

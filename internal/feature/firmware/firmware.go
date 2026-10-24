@@ -26,6 +26,7 @@ var get = sync.OnceValue(func() *firmware.Firmware[update.Manifest] {
 		Channels:  config.Labels(update.Channels()),
 		OnFailure: feedback.Failure,
 		Reconnect: func() { component.Reconnect.Emit(struct{}{}) },
+		ListPath:  layout.ReleasesPath,
 	})
 	component.Subscribed.Listen(func(struct{}) {
 		safe.Go("update announce", f.Announce)

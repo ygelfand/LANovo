@@ -14,7 +14,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/castvideo"
+	"github.com/ygelfand/LANovo/internal/feature/playout"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -50,7 +50,7 @@ var get = sync.OnceValue(func() *Receiver {
 		},
 		Largest: image.Pt(board.Current().DecodeWidth, board.Current().DecodeHeight),
 		Output: func(ended func()) playback.Output {
-			o := castvideo.New()
+			o := playout.New()
 			o.SetEnded(ended)
 			return o
 		},

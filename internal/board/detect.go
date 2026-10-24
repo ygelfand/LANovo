@@ -65,7 +65,11 @@ func parseInputs(s string) []string {
 
 func (b Board) fits(f Facts) bool {
 	return b.PanelWidth == f.Width && b.PanelHeight == f.Height &&
-		slices.Contains(f.Inputs, b.Touch) && b.hasSoundCard(f.Inputs)
+		b.hasTouch(f.Inputs) && b.hasSoundCard(f.Inputs)
+}
+
+func (b Board) hasTouch(inputs []string) bool {
+	return slices.ContainsFunc(b.Touch, func(name string) bool { return slices.Contains(inputs, name) })
 }
 
 func (b Board) hasSoundCard(inputs []string) bool {

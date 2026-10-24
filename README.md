@@ -112,8 +112,8 @@ chime, including custom sounds.
 - A Home Assistant `media_player` for announcements, TTS and radio
 - A Sendspin player for Music Assistant
 - A Bluetooth speaker
-- A Chromecast receiver for YouTube (with SponsorBlock), YouTube Music, YouTube TV, Prime Video and
-  the default media receiver (experimental)
+- A Chromecast receiver that runs each app's own receiver page, with SponsorBlock for YouTube
+  (experimental)
 
 ### Camera
 

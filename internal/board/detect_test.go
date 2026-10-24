@@ -41,6 +41,7 @@ func TestEachBoardIsFoundByItsHardware(t *testing.T) {
 		{device("U:800x1280p-60", "qpnp_pon", "hbtp_vm", "msm8953-snd-card-mtp Headset Jack",
 			"msm8953-snd-card-mtp Button Jack", "himax-touchscreen"), "penghu"},
 		{device("U:600x1024p-0", "mtk-pmic-keys", "fts_ts", "mtk-tpd"), "ivy"},
+		{device("U:600x1024p-0", "mtk-pmic-keys", "mtk-tpd"), "ivy"},
 	} {
 		b, err := Resolve(fakeProps{}, c.files)
 		if err != nil || b.Name != c.want {
@@ -53,7 +54,7 @@ func TestNoTwoBoardsShareTheirHardware(t *testing.T) {
 	for i, a := range boards {
 		for _, b := range boards[i+1:] {
 			if a.PanelWidth == b.PanelWidth && a.PanelHeight == b.PanelHeight &&
-				a.Touch == b.Touch && a.SoundCard == b.SoundCard {
+				a.hasTouch(b.Touch) && a.SoundCard == b.SoundCard {
 				t.Errorf("%s and %s cannot be told apart", a.Name, b.Name)
 			}
 		}

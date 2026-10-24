@@ -1,5 +1,12 @@
 package main
 
-import "github.com/ygelfand/LANovo/internal/cli/lanovod"
+import (
+	"github.com/ygelfand/libcountertop/pkg/runtime/payload"
 
-func main() { lanovod.Execute() }
+	"github.com/ygelfand/LANovo/internal/cli/lanovod"
+)
+
+func main() {
+	payload.Enter()
+	lanovod.Execute()
+}

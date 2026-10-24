@@ -10,21 +10,20 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/surface"
 	"github.com/ygelfand/libcountertop/pkg/display/video"
 	"github.com/ygelfand/libcountertop/pkg/media/cast"
-	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/primevideo"
-	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/unsupported"
-	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube"
-	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/youtube/unplugged"
+	"github.com/ygelfand/libcountertop/pkg/media/cast/engine"
+	"github.com/ygelfand/libcountertop/pkg/media/cast/protocols/webreceiver"
 	"github.com/ygelfand/libcountertop/pkg/media/castreceiver"
 	"github.com/ygelfand/libcountertop/pkg/media/playback"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/castcmd"
 	sharedclock "github.com/ygelfand/libcountertop/pkg/system/clock"
 
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/castvideo"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
+	"github.com/ygelfand/LANovo/internal/feature/playout"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -42,7 +41,37 @@ var get = sync.OnceValue(build)
 
 func Get() *castreceiver.Receiver { return get() }
 
+var tuning = sync.OnceValue(func() *engine.Tuning {
+	t := engine.NewTuning(config.DiagSection)
+	component.Settings.Add(t.Controls())
+	return t
+})
+
+func Tuning() *engine.Tuning { return tuning() }
+
 func helper() *surface.Client { return display.Get().Helper() }
+
+var page castPage
+
+type castPage struct {
+	mu sync.Mutex
+	r  *webreceiver.Receiver
+}
+
+func (p *castPage) keep(r *webreceiver.Receiver) {
+	p.mu.Lock()
+	p.r = r
+	p.mu.Unlock()
+}
+
+func Page() castcmd.Page {
+	page.mu.Lock()
+	defer page.mu.Unlock()
+	if page.r == nil {
+		return nil
+	}
+	return page.r
+}
 
 func build() *castreceiver.Receiver {
 	r := castreceiver.NewReceiver(castreceiver.ReceiverOptions{
@@ -69,7 +98,7 @@ func build() *castreceiver.Receiver {
 				return video.Target(display.Get(), board.Current().MaxFPS)
 			},
 			Output: func(ended func()) playback.Output {
-				o := castvideo.New()
+				o := playout.New()
 				o.SetEnded(ended)
 				return o
 			},
@@ -77,15 +106,28 @@ func build() *castreceiver.Receiver {
 				return resample.NewRational(from, speaker.Rate, speaker.Channels).Run
 			},
 			Apps: []cast.Maker{
-				primevideo.Maker(helper),
-				unsupported.Maker,
-				youtube.Maker(unplugged.TV(helper)),
+				webreceiver.Maker(webreceiver.Options{
+					Dir:         layout.CastEngineDir,
+					State:       layout.CastEngineState,
+					Nameservers: nameservers,
+					Helper:      helper,
+					Built:       page.keep,
+					Tuning:      Tuning(),
+				}),
 			},
 			Preferences: Preferences,
 		},
 	})
+	r.Settings().Table = r.Settings().Table.Without("youtube.lounge")
 	component.Settings.Add(r.Settings())
 	return r
+}
+
+func nameservers() []string {
+	if l := dhcp.Get().Lease(); l != nil {
+		return l.Nameservers()
+	}
+	return nil
 }
 
 type mediaVolume struct{}

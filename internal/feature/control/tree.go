@@ -1,7 +1,6 @@
 package control
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -9,9 +8,11 @@ import (
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/alarmcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/callcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/castcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 
 	"github.com/ygelfand/LANovo/internal/feature/alarm"
+	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
@@ -31,20 +32,12 @@ func (c *Control) tree() *cobra.Command {
 	t.Add(harness.InputTask, c.touching()...)
 	t.Add(harness.DisplayTask, showing()...)
 	t.Add(harness.AudioTask, sounding()...)
-	t.Add(harness.MediaTask, casting()...)
 	t.Top(settingsCommand(), camera())
 	t.Top(radios()...)
 	t.Top(homeAssistant()...)
 	t.Top(calling()...)
+	t.Top(castcmd.Command(chromecast.Page))
 	return t.Root()
-}
-
-func Local(args []string) (string, error) {
-	return harness.Execute(context.Background(), func() *cobra.Command {
-		t := harness.NewTree()
-		t.Add(harness.MediaTask, casting()...)
-		return t.Root()
-	}, args)
 }
 
 var says = harness.Says
