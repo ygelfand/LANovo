@@ -40,6 +40,7 @@ var get = sync.OnceValue(func() *diag.Diag {
 		Zones:    zones,
 		Cache:    wake.Lib().CacheEntities(inUse),
 		Network:  wifi.Get().Network,
+		LogTag:   layout.LogTag,
 	})
 	component.Settings.Add(d.Controls())
 	component.Subscribed.Listen(func(struct{}) { d.Soon() })

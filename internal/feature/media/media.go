@@ -10,6 +10,7 @@ import (
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/libcountertop/pkg/media/mediaplayer"
+	"github.com/ygelfand/libcountertop/pkg/media/noiselayer"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
@@ -28,6 +29,8 @@ func init() {
 
 type Player struct {
 	*mediaplayer.Player[*speaker.Speaker]
+
+	layers *noiselayer.Layers
 }
 
 var (
@@ -48,6 +51,7 @@ func Get() *Player {
 			Changed:  shared.refresh,
 			Device:   component.DevicePlayback,
 		})
+		shared.layers = noiselayer.New(shared.Stream(), component.DevicePlayback)
 		volume.Get().Watch(config.StreamMedia, func(int) { shared.Changed() })
 	})
 	return shared
@@ -56,7 +60,8 @@ func Get() *Player {
 func (p *Player) Name() string { return "media player" }
 
 func (p *Player) Entities() []esphome.Entity {
-	return append([]esphome.Entity{p.Entity()}, p.Track()...)
+	out := append([]esphome.Entity{p.Entity()}, p.Track()...)
+	return append(out, p.layers.Entities()...)
 }
 
 func (p *Player) Restore(config.Config) { p.Changed() }
@@ -78,6 +83,7 @@ func (p *Player) refresh() {
 	mp := p.Entity()
 	mp.SetVolume(float32(volume.Get().Level(config.StreamMedia)) / 100)
 	mp.SetMuted(volume.Get().Muted(config.StreamMedia))
+	p.layers.Sync()
 
 	if Showing() {
 		shell.Get().Redraw()

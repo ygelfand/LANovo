@@ -34,7 +34,6 @@ import (
 	_ "github.com/ygelfand/LANovo/internal/feature/message"
 	_ "github.com/ygelfand/LANovo/internal/feature/microphone"
 	_ "github.com/ygelfand/LANovo/internal/feature/network"
-	_ "github.com/ygelfand/LANovo/internal/feature/noise"
 	_ "github.com/ygelfand/LANovo/internal/feature/poster"
 	_ "github.com/ygelfand/LANovo/internal/feature/privacy"
 	_ "github.com/ygelfand/LANovo/internal/feature/reboot"
