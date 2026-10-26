@@ -19,6 +19,7 @@ var Ivy = Board{
 	Diagonal:     6.94,
 	Tessera:      Tessera{Board: "jc1060p470", Columns: 6, Rows: 4},
 	Touch:        []string{"fts_ts", "mtk-tpd"},
+	Thermal:      Thermal{CPU: []string{"mtktscpu"}, PerDegree: 1000},
 	Buttons: []Button{
 		{"volume up", 429, true},
 		{"volume down", 576, true},

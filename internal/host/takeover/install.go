@@ -129,12 +129,38 @@ func Start(d *adb.Device) error {
 
 // system_server sets sys.boot_completed, and zygote is stopped.
 func WaitRunning(ctx context.Context, d *adb.Device) error {
+	return poll(ctx, layout.Service+" did not start within two minutes", func() bool {
+		return prop.Running(d, layout.Service)
+	})
+}
+
+func WaitParts(ctx context.Context, d *adb.Device, paths layout.Paths) error {
+	return poll(ctx, layout.Service+" ctl did not answer within two minutes", func() bool {
+		_, err := d.Shell(paths.Binary + " ctl device version")
+		return err == nil
+	})
+}
+
+// init disables a service whose program was missing when it tried to start it.
+var placedServices = []string{layout.SurfaceService, layout.CameraService}
+
+func Down(d *adb.Device) []string {
+	var down []string
+	for _, s := range placedServices {
+		if !prop.Running(d, s) {
+			down = append(down, s)
+		}
+	}
+	return down
+}
+
+func poll(ctx context.Context, timeout string, ready func() bool) error {
 	deadline := time.Now().Add(2 * time.Minute)
 	for time.Now().Before(deadline) {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		if prop.Running(d, layout.Service) {
+		if ready() {
 			return nil
 		}
 		select {
@@ -143,5 +169,5 @@ func WaitRunning(ctx context.Context, d *adb.Device) error {
 		case <-time.After(time.Second):
 		}
 	}
-	return fmt.Errorf("%s did not start within two minutes", layout.Service)
+	return errors.New(timeout)
 }

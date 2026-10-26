@@ -50,8 +50,12 @@ const (
 
 func PatchesBoot(b board.Board) bool { return b.Name != board.Penghu.Name }
 
-func Preflight(d *adb.Device) ([]Check, error) {
-	if b, err := DetectBoard(d); err == nil && !PatchesBoot(b) {
+func Preflight(d *adb.Device, boardName string) ([]Check, error) {
+	b, err := DetectBoard(d, boardName)
+	if err != nil && boardName != "" {
+		return nil, err
+	}
+	if err == nil && !PatchesBoot(b) {
 		return lockedPreflight(d, b)
 	}
 

@@ -23,7 +23,7 @@ func newBoardCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			b, err := takeover.DetectBoard(d)
+			b, err := takeover.DetectBoard(d, boardName)
 			if err != nil {
 				return err
 			}

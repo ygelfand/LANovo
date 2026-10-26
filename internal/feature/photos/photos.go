@@ -8,6 +8,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
@@ -20,6 +21,10 @@ var get = sync.OnceValue(func() *photos.Library {
 		Settings: config.PhotosSection,
 		Dir:      layout.PhotoDir,
 		DeviceID: component.DeviceScreen,
+		Most: func() int {
+			w, h := display.Get().Native()
+			return max(w, h)
+		},
 	})
 	component.Settings.Add(l.Settings())
 	return l

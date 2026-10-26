@@ -18,6 +18,8 @@ var Opal = Board{
 	Diagonal:       8,
 	Tessera:        Tessera{Board: "jc8012p4a1", Columns: 6, Rows: 4},
 	Touch:          []string{"fts_ts"},
+	SoundCard:      "msm8953-openq624-snd-card",
+	Thermal:        Blueberry.Thermal,
 	AmpPins:        []int{127, 98, 0},
 	MicSensitivity: -27,
 	Stereo:         true,

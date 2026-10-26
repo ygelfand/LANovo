@@ -8,7 +8,10 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/host/prompt"
 )
 
-var serial string
+var (
+	serial    string
+	boardName string
+)
 
 func newRoot() *cobra.Command {
 	root := &cobra.Command{
@@ -21,6 +24,8 @@ func newRoot() *cobra.Command {
 
 	root.PersistentFlags().
 		StringVar(&serial, "serial", "", "device to act on, when more than one is attached")
+	root.PersistentFlags().
+		StringVar(&boardName, "board", "", "board to treat the device as, such as penghu, instead of detecting it")
 
 	root.AddCommand(newCheckCmd())
 	root.AddCommand(newInstallCmd())

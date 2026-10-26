@@ -9,11 +9,15 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/alarmcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/callcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/castcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/doorbellcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/homealarmcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 
 	"github.com/ygelfand/LANovo/internal/feature/alarm"
 	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
+	"github.com/ygelfand/LANovo/internal/feature/doorbell"
+	"github.com/ygelfand/LANovo/internal/feature/homealarm"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/nws"
@@ -37,6 +41,8 @@ func (c *Control) tree() *cobra.Command {
 	t.Top(homeAssistant()...)
 	t.Top(calling()...)
 	t.Top(castcmd.Command(chromecast.Page))
+	t.Top(doorbellcmd.Command(doorbell.Get))
+	t.Top(homealarmcmd.Command(homealarm.Get, homealarm.Shown))
 	return t.Root()
 }
 

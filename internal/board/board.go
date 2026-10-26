@@ -22,6 +22,11 @@ type Tessera struct {
 	Columns, Rows int
 }
 
+type Thermal struct {
+	CPU, GPU  []string
+	PerDegree float64
+}
+
 type Board struct {
 	NativeAPI int
 
@@ -51,6 +56,8 @@ type Board struct {
 
 	Touch     []string
 	SoundCard string
+
+	Thermal Thermal
 
 	Buttons []Button
 

@@ -13,6 +13,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/host/wifisetup"
 
 	"github.com/ygelfand/LANovo/internal/host/takeover"
+	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 func newInstallCmd() *cobra.Command {
@@ -77,7 +78,7 @@ func newInstallCmd() *cobra.Command {
 				fmt.Fprintf(out, "  %-18s %s\n", "selinux", styleDone.Render("permissive"))
 			}
 
-			checks, err := takeover.Preflight(d)
+			checks, err := takeover.Preflight(d, boardName)
 			if err != nil {
 				return err
 			}
@@ -111,7 +112,7 @@ func newInstallCmd() *cobra.Command {
 				}
 				fmt.Fprintf(out, "  %-18s %s\n", "dm-verity", styleDone.Render(state))
 
-				if checks, err = takeover.Preflight(d); err != nil {
+				if checks, err = takeover.Preflight(d, boardName); err != nil {
 					return err
 				}
 				if blocked := takeover.Blocked(checks); len(blocked) > 0 {
@@ -119,7 +120,7 @@ func newInstallCmd() *cobra.Command {
 				}
 			}
 
-			detected, err := takeover.DetectBoard(d)
+			detected, err := takeover.DetectBoard(d, boardName)
 			if err != nil {
 				return err
 			}
@@ -255,7 +256,7 @@ func newInstallCmd() *cobra.Command {
 				return err
 			}
 
-			return finish(ctx, out, d, settles, choice, genKey)
+			return finish(ctx, out, d, paths, settles, choice, genKey)
 		},
 	}
 
@@ -295,6 +296,7 @@ func finish(
 	ctx context.Context,
 	out io.Writer,
 	d *adb.Device,
+	paths layout.Paths,
 	settles bool,
 	choice rebootChoice,
 	genKey bool,
@@ -303,6 +305,19 @@ func finish(
 		return err
 	}
 	fmt.Fprintf(out, "  %-18s %s\n", "started", styleDone.Render("lanovod running"))
+
+	if err := takeover.WaitParts(ctx, d, paths); err != nil {
+		return err
+	}
+	if down := takeover.Down(d); len(down) > 0 {
+		fmt.Fprintf(
+			out,
+			"  %-18s %s\n",
+			"not running",
+			styleDetail.Render(strings.Join(down, ", ")),
+		)
+		settles = true
+	}
 
 	if !settles || choice == rebootNo {
 		reportKey(ctx, out, d, genKey)

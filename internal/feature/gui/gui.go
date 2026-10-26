@@ -4,6 +4,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ygelfand/LANovo/internal/hardware/gpu"
+
 	gogui "github.com/go-gui-org/go-gui/gui"
 	sharedalarm "github.com/ygelfand/libcountertop/pkg/assistant/alarm"
 	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
@@ -12,7 +14,10 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/callview"
 	"github.com/ygelfand/libcountertop/pkg/display/cameraview"
 	"github.com/ygelfand/libcountertop/pkg/display/dawnview"
+	"github.com/ygelfand/libcountertop/pkg/display/doorbellview"
+	"github.com/ygelfand/libcountertop/pkg/display/homealarmview"
 	"github.com/ygelfand/libcountertop/pkg/display/mirror"
+	"github.com/ygelfand/libcountertop/pkg/display/photosview"
 	"github.com/ygelfand/libcountertop/pkg/display/radarview"
 	"github.com/ygelfand/libcountertop/pkg/display/screens"
 	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
@@ -39,8 +44,10 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/configsync"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
+	"github.com/ygelfand/LANovo/internal/feature/doorbell"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
 	"github.com/ygelfand/LANovo/internal/feature/firmware"
+	"github.com/ygelfand/LANovo/internal/feature/homealarm"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/idle"
@@ -48,6 +55,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/nws"
+	"github.com/ygelfand/LANovo/internal/feature/photos"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/radar"
@@ -85,6 +93,18 @@ var Get = sync.OnceValue(func() *screens.App {
 	})
 	apps.Get().Add(calls.App())
 	apps.Get().Add(cameras.Get().App())
+	apps.Get().Add(doorbell.View().App())
+	photosApp := photosview.New(photosview.Options{
+		Shell:    featureshell.Get(),
+		Photos:   photos.Get(),
+		Settings: config.PhotosSection,
+		Page:     func() shell.View { return settings.Visuals().Photos() },
+		GPU:      gpu.Get(),
+		Display:  display.Get(),
+	})
+	apps.Get().Add(photosApp.App())
+	alarmPanel := homealarm.NewView(look)
+	apps.Get().Add(alarmPanel.App())
 	for _, a := range homecontrol.Get().Apps() {
 		apps.Get().Add(a)
 	}
@@ -193,6 +213,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		Offering: web.Get().Offering,
 
 		Display:   display.Get(),
+		GPU:       gpu.Get(),
 		Touch:     hwtouch.Get(),
 		Turned:    &sensors.Get().Turned,
 		Shell:     featureshell.Get(),
@@ -204,10 +225,11 @@ var Get = sync.OnceValue(func() *screens.App {
 		Poster:    poster.Get(),
 		Drawer:    drawer.Get(),
 		Tabs:      dashboard.Tabs(),
-		Boards: map[string]screens.Board{cameraview.TabKind: {
-			Glyph: cameras.Get().Glyph,
-			Draw:  cameras.Get().Board,
-		}},
+		Boards: map[string]screens.Board{
+			cameraview.TabKind:    {Glyph: cameras.Get().Glyph, Draw: cameras.Get().Board},
+			doorbellview.TabKind:  {Glyph: doorbell.View().Glyph, Draw: doorbell.View().Board},
+			homealarmview.TabKind: {Glyph: alarmPanel.Glyph, Draw: alarmPanel.Board},
+		},
 		Home:    homecontrol.Get(),
 		HomeHA:  homeassistant.Get(),
 		Saver:   idle.Get(),
@@ -230,6 +252,8 @@ var Get = sync.OnceValue(func() *screens.App {
 		Todo:            todo.Get().Todo,
 		Calendar:        calendar.Get().Calendar,
 		CamerasPage:     func() shell.View { return cameras.Get().Page() },
+		DoorbellPage:    func() shell.View { return doorbell.View().Page() },
+		HomeAlarmPage:   func() shell.View { return alarmPanel.Page() },
 		Player:          media.Get(),
 		PlayerPage:      media.Page,
 		MediaVolume:     sharedvolume.For(volume.Get(), config.StreamMedia),
@@ -261,6 +285,9 @@ var Get = sync.OnceValue(func() *screens.App {
 			dial.Screen,
 			sky.Screen,
 			cameras.Get().Screen,
+			doorbell.View().Screen,
+			photosApp.Screen,
+			alarmPanel.Screen,
 			apps.Get().Screens(look),
 		}, mirrors...),
 	})

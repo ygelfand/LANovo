@@ -22,6 +22,8 @@ var (
 	HomeSection      = sections.Home
 	PosterSection    = sections.Poster
 	PhotosSection    = sections.Photos
+	DoorbellSection  = sections.Doorbell
+	HomeAlarmSection = sections.HomeAlarm
 	CamerasSection   = sections.Cameras
 	CertsSection     = sections.Certs
 	FrontendSection  = sections.Frontend

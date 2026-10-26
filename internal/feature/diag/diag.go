@@ -6,6 +6,7 @@ import (
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/system/diag"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
@@ -22,10 +23,19 @@ func init() {
 	)
 }
 
-// deca-cpu-max-step is the SoC's hottest-core reading; throttling follows it.
-var zones = []diag.Zone{
-	{ID: "cpu_temperature", Name: "CPU temperature", Zone: "deca-cpu-max-step"},
-	{ID: "gpu_temperature", Name: "GPU temperature", Zone: "gpu0-usr"},
+func zones() []diag.Zone {
+	t := board.Current().Thermal
+	var out []diag.Zone
+	for _, z := range []diag.Zone{
+		{ID: "cpu_temperature", Name: "CPU temperature", Zones: t.CPU},
+		{ID: "gpu_temperature", Name: "GPU temperature", Zones: t.GPU},
+	} {
+		if len(z.Zones) > 0 {
+			z.PerDegree = t.PerDegree
+			out = append(out, z)
+		}
+	}
+	return out
 }
 
 type componentDiag struct{ *diag.Diag }
@@ -37,9 +47,10 @@ var get = sync.OnceValue(func() *diag.Diag {
 		Settings: config.DiagSection,
 		StateDir: layout.StateDir,
 		Version:  layout.VersionString(),
-		Zones:    zones,
+		Zones:    zones(),
 		Cache:    wake.Lib().CacheEntities(inUse),
 		Network:  wifi.Get().Network,
+		Signal:   wifi.Get().Signal,
 		LogTag:   layout.LogTag,
 	})
 	component.Settings.Add(d.Controls())

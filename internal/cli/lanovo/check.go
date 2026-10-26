@@ -24,7 +24,7 @@ func newCheckCmd() *cobra.Command {
 			}
 			out := cmd.OutOrStdout()
 
-			checks, err := takeover.Preflight(d)
+			checks, err := takeover.Preflight(d, boardName)
 			if err != nil {
 				return err
 			}

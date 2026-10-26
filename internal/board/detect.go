@@ -69,7 +69,10 @@ func (b Board) fits(f Facts) bool {
 }
 
 func (b Board) hasTouch(inputs []string) bool {
-	return slices.ContainsFunc(b.Touch, func(name string) bool { return slices.Contains(inputs, name) })
+	return slices.ContainsFunc(
+		b.Touch,
+		func(name string) bool { return slices.Contains(inputs, name) },
+	)
 }
 
 func (b Board) hasSoundCard(inputs []string) bool {

@@ -6,6 +6,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/ygelfand/LANovo/internal/feature/message"
+
 	"github.com/ygelfand/libcountertop/pkg/audio/resample"
 	"github.com/ygelfand/libcountertop/pkg/display/surface"
 	"github.com/ygelfand/libcountertop/pkg/display/video"
@@ -116,6 +118,9 @@ func build() *castreceiver.Receiver {
 				}),
 			},
 			Preferences: Preferences,
+			Notice: func(title, body string) {
+				message.Get().Quiet(title, body, castreceiver.NoticeFor)
+			},
 		},
 	})
 	r.Settings().Table = r.Settings().Table.Without("youtube.lounge")
