@@ -3,7 +3,6 @@ package network
 import (
 	"sync"
 
-	"github.com/ygelfand/libcountertop/pkg/fetch"
 	"github.com/ygelfand/libcountertop/pkg/network/policy"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
@@ -12,7 +11,6 @@ import (
 )
 
 func init() {
-	fetch.UseAsDefault()
 	component.Register(sharedcomponent.Network, Get, sharedcomponent.Order(5))
 }
 
