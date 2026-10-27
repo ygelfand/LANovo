@@ -38,7 +38,13 @@ AirPlay runs only while the switch is on.
 ## Chromecast
 
 Turn on **Cast receiver** and the display shows up as a cast target in apps and in Google Home.
+
 Each app runs its own receiver page, as it would on a Chromecast.
+
+The first cast downloads the receiver engine, so it takes longer than the ones after it. While an
+app without its own logo loads, the screen says **Starting …**; an app that closes itself straight away shows
+"Chromecast: … can't play on this device". During an app's ad breaks the player shows **Ad**, or
+**Ad 2 of 3**.
 
 YouTube skips [SponsorBlock](https://sponsor.ajay.app) segments; pick which kinds under
 **Cast receiver → Skip segments**, listed on [Settings on the screen](/use/settings/#cast-receiver).
@@ -54,8 +60,8 @@ cover art, and you can skip and pause from the screen.
 
 ## Sound machine
 
-Two layers of steady sound, from Home Assistant: **Sound machine layer 1** and **layer 2**
-(`noise_layer_1`, `noise_layer_2`). Choose Off, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire,
+Two layers of steady sound, from Home Assistant: **White noise layer 1** and **layer 2**
+(`noise_layer_1`, `noise_layer_2`). Choose None, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire,
 Crickets, Fan or Cabin for each; they mix together and duck for everything else. They don't survive
 a restart.
 
@@ -64,4 +70,4 @@ a restart.
 A mini player shows on the dashboard while something plays. Tap it, or **Media** in the dock, for
 the full player. Cast and AirPlay video play full screen; tap for controls.
 
-**Settings → Display → Dashboard → Close paused player after** closes a paused player.
+**Settings → Dashboard → Close paused player after** closes a paused player.

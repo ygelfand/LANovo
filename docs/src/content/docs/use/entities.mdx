@@ -23,7 +23,7 @@ and **portrait** (Tessera).
 |---|---|---|---|---|
 | `media_player.<device>_speaker` | Speaker | The media player: announcements, TTS, music, volume | | |
 | `number.<device>_playback_music_ducking` | Music ducking | How far music drops while the assistant listens or talks | −40 to −3 dB | −15 dB |
-| `select.<device>_playback_sound_machine_layer_1`, `select.<device>_playback_sound_machine_layer_2` | Sound machine layer 1, 2 | Two layers of steady sound, mixed, ducking under everything else | Off, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | Off |
+| `select.<device>_playback_white_noise_layer_1`, `select.<device>_playback_white_noise_layer_2` | White noise layer 1, 2 | Two layers of steady sound, mixed, ducking under everything else | None, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | None |
 | `volume_*` | Volumes | The same sliders as Settings → Sound | 0–100 % | |
 
 
@@ -99,7 +99,7 @@ The voice actions and commands have their switches on the **voice triggers** sub
 | `button.<device>_check_for_updates` | Check for an update now |
 | `button.<device>_install_selected_version` | Install the version picked in `install_version` ([Other versions](/features/updates/#other-versions)) |
 | `button.<device>_purge_cache`, with sensor `sensor.<device>_cached_data` | Delete cached wake word models; they download again when needed |
-| `button.<device>_screen_next_poster` | Show the next wallpaper photo |
+| `button.<device>_screen_next_wallpaper` | Show the next wallpaper photo |
 | `button.<device>_camera_reset_camera_settings` | Put every camera setting back to its default |
 
 ## Sensors

@@ -1,0 +1,44 @@
+---
+title: Questions and answers
+description: Common questions, and where to find the answers.
+---
+
+## How do I add my own wake word?
+
+The display runs microWakeWord and openWakeWord models in TensorFlow Lite format: a `.tflite`
+file. Other formats, such as `.onnx`, don't work; download the `.tflite` version.
+
+### Find or make one
+
+Two community libraries have hundreds of ready-made wake words, and both let you train your own:
+
+- [microWakeWord library](https://microwakeword.com/library)
+- [openWakeWord library](https://openwakeword.com/library)
+
+### Add it to Home Assistant
+
+**With the [EchoLocal integration](/start/integration/):** open the EchoLocal dashboard in the
+sidebar, go to **Wake words**, and drop the `.tflite` file onto it. It's offered to every
+display straight away, with no restart.
+
+**By hand**, the same way ESPHome devices take them:
+
+1. In your Home Assistant config directory, create a folder named `custom_wake_words`.
+2. Copy the `.tflite` file into it.
+3. Next to it, add a `.json` file with the same name. If the model came with one, use that.
+   Otherwise write one like this, with the phrase you'll say and the model's file name:
+
+   ```json
+   {
+     "type": "micro",
+     "wake_word": "Hey Computer",
+     "model": "hey_computer.tflite"
+   }
+   ```
+
+4. Restart Home Assistant. It only looks in `custom_wake_words` when it starts.
+
+### Use it
+
+Pick it as an assistant's **Wake word**, in Home Assistant or on the display. See
+[Voice assistants](/features/voice/). The display downloads it and starts listening.

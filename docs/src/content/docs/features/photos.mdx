@@ -1,51 +1,174 @@
 ---
 title: Photos and wallpaper
-description: Show photos from Immich behind the dashboard.
+description: Photos from Immich and Google Photos behind the dashboard, on the screen saver and in the Photos app.
 ---
 
 import { Aside, Steps } from '@astrojs/starlight/components';
 
 
-The dashboard can show a photo from your [Immich](https://immich.app) library behind the clock,
-changing on a schedule.
+Photos from your [Immich](https://immich.app) library and from shared Google Photos albums can show
+in three places:
+
+- **Wallpaper**: behind the clock on the native dashboard, changing on a schedule
+- **Screen saver**: pick **Photos** for a screen saver visual slot
+- **Photos app**: full screen, from the Apps screen
+
+Photo settings are on the display under **Settings → Display → Photos**, and in Home Assistant on
+the display's page. Turn on Immich, Google Photos or both; with both on, photos come from each.
 
 ## Connect Immich
 
-The connection is set in Home Assistant, on the display's page:
-
 <Steps>
 
-1. In Immich, create an API key: **Account settings → API keys**.
+1. In Immich, create an API key: **Account settings → API keys**. See
+   [API key permissions](#api-key-permissions) for which permissions it needs.
 
-2. Set **Immich server** (`photos_server`) to Immich's address, for example
-   `http://192.168.1.20:2283`, and **Immich API key** (`photos_key`) to the key.
+2. On the display, open **Settings → Display → Photos → Immich**, turn on **Enable**, and set
+   **Server** to Immich's address, for example `http://192.168.1.20:2283`, and **API key** to the key.
+   In Home Assistant these are **Immich photos** (`photos_immich_enabled`), **Immich server**
+   (`photos_immich_server`) and **Immich API key** (`photos_immich_key`).
 
 3. Narrow down which photos to show, or leave these empty for the whole library:
 
    | Setting | Entity | |
    |---|---|---|
-   | Photo albums | `photos_albums` | Album names or ids, separated by commas |
-   | Photo tags | `photos_tags` | Tag names or ids, separated by commas |
-   | Photo people | `photos_people` | People's names or ids, separated by commas |
-   | Photos favorites only | `photos_favorites` | Only favorites (default off) |
-   | Photo memories first | `photos_memories` | Prefer Immich's "on this day" memories (default on) |
+   | Albums | `photos_immich_albums` | Album names or ids, separated by commas |
+   | Tags | `photos_immich_tags` | Tag names or ids, separated by commas |
+   | People | `photos_immich_people` | People's names or ids, separated by commas |
+   | Favorites only | `photos_immich_favorites` | Only favorites (default off) |
+   | Memories first | `photos_immich_memories` | Prefer Immich's "on this day" memories (default on) |
+   | Quality | `photos_immich_quality` | **Preview** (default) or **Full size** |
 
-   Names match in any case. A name Immich doesn't know shows as "Nothing named …" in the status.
+   Names match in any case. Within one setting any match counts: two albums means photos from either.
+   A name Immich doesn't know shows as "Nothing named …" in the status.
 
-4. On the display, turn on **Settings → Display → Dashboard → Wallpaper → Show wallpaper**.
+4. Turn on **Settings → Display → Photos → Show wallpaper**.
 
 </Steps>
 
-**Photos status** (`photos_status`) says whether the connection works, and what's wrong if it
-doesn't. Immich 3.2 or newer is needed.
+The **Status** row on the Immich page, and **Photos Immich status** (`photos_immich_status`) in
+Home Assistant, say whether the connection works and what's wrong if it doesn't. Immich 3.2 or
+newer is needed.
+
+## API key permissions
+
+Immich API keys can be limited to specific permissions. The display only reads from Immich; it
+never changes anything. A key needs:
+
+| Permission | Needed when |
+|---|---|
+| `server.about` | Always |
+| `asset.read` | Always |
+| `asset.view` | Always |
+| `memory.read` | **Memories first** is on |
+| `album.read` | **Albums** is filled in |
+| `tag.read` | **Tags** is filled in |
+| `person.read` | **People** is filled in |
+
+With no filters and **Memories first** off, the first three are enough. A key with all permissions
+also works.
+
+If the key is missing a permission the current settings need, the status names it, for example
+"API key needs memory.read". "Wrong API key" means Immich refused the key itself.
+
+<Aside>
+The key sees only what its Immich user can see. To limit the display to some photos, create the
+key under a user that has just those albums shared with it, or use **Albums**.
+</Aside>
+
+## Google Photos
+
+Google Photos albums are read from their share links; no Google account is signed in on the
+display.
+
+<Steps>
+
+1. In Google Photos, open the album, tap **Share** and create a link. It looks like
+   `https://photos.app.goo.gl/…`.
+
+2. On the display, open **Settings → Display → Photos → Google Photos**, turn on **Enable**, and
+   paste the link into **Album 1 link**.
+
+3. Add up to three more albums in **Album 2 link** to **Album 4 link**.
+
+</Steps>
+
+Each album's **Share** (0–10, default 5) sets how often its photos come up compared with the other
+albums: an album at 10 shows up twice as often as one at 5. At 0 the album is left out. The albums
+are read again every 6 hours, so new photos in them show up on their own.
+
+| Setting | Entity | |
+|---|---|---|
+| Enable | `switch.<device>_screen_google_photos` | Off by default |
+| Album 1 link … Album 4 link | `text.<device>_screen_google_photos_album_1_link` … `text.<device>_screen_google_photos_album_4_link` | Share links |
+| Album 1 share … Album 4 share | `number.<device>_screen_google_photos_album_1_share` … `number.<device>_screen_google_photos_album_4_share` | 0–10, default 5 |
+
+The **Status** row on the Google Photos page, and **Photos Google Photos status**
+(`photos_google_status`) in Home Assistant, say whether the albums could be read.
+
+## Screen saver
+
+Pick **Photos** as **Visual 1** or **Visual 2** under **Settings → Display → Screen saver**. Three
+more settings then appear on that page:
+
+| Setting | Entity | Choices | Default |
+|---|---|---|---|
+| Next photo every | `select.<device>_screen_screen_saver_next_photo_every` | 10 s, 15 s, 30 s, 1 min, 2 min, 5 min | 30 s |
+| Photo fit | `select.<device>_screen_screen_saver_photo_fit` | See [Fit](#fit) | Slow pan |
+| Transition | `select.<device>_screen_screen_saver_photo_transition` | See [Transition](#transition) | Fade |
+
+## Photos app
+
+**Photos** on the Apps screen shows your photos full screen. Tap the left or right edge for the
+previous or next photo. The corner buttons close it and open the photo settings.
+
+| Setting | Entity | Choices | Default |
+|---|---|---|---|
+| Photos app next photo every | `select.<device>_screen_photos_app_next_photo_every` | 5 s, 10 s, 15 s, 30 s, 1 min, 2 min, 5 min, Never | 15 s |
+| Photos app fit | `select.<device>_screen_photos_app_fit` | See [Fit](#fit) | Slow pan |
+| Photos app transition | `select.<device>_screen_photos_app_transition` | See [Transition](#transition) | Fade |
 
 ## Wallpaper settings
 
 | Setting | Entity | Choices | Default |
 |---|---|---|---|
-| Show wallpaper | `switch.<device>_screen_poster` | | Off |
-| Change every | `select.<device>_screen_poster_changes` | Never, On each wake, Hourly, Daily | Hourly |
-| Change now | `button.<device>_screen_next_poster` (button) | | |
+| Show wallpaper | `switch.<device>_screen_wallpaper` | | Off |
+| Change every | `select.<device>_screen_wallpaper_changes` | On each wake, 10 s, 15 s, 30 s, 1 min, 2 min, 5 min, 15 min, Hourly, Daily, Never | Hourly |
+| Fit | `select.<device>_screen_wallpaper_fit` | See [Fit](#fit) | Auto |
+| Transition | `select.<device>_screen_wallpaper_transition` | See [Transition](#transition) | Fade |
+| Next wallpaper | `button.<device>_screen_next_wallpaper` (button) | | |
+| Previous wallpaper | `button.<device>_screen_previous_wallpaper` (button) | | |
+
+## Fit
+
+The wallpaper, the screen saver's photo slots (`idle_photo_fit`) and the Photos app
+(`photos_app_fit`) each have their own **Fit**:
+
+| Fit | Shows |
+|---|---|
+| Auto | Fill when the photo's shape is close to the screen's, otherwise Fit, blurred edges |
+| Fill | Fills the screen, cropping what doesn't fit |
+| Fit, blurred edges | The whole photo, over a blurred, darkened copy of itself |
+| Fit, plain edges | The whole photo, on the theme's background |
+| Framed | The whole photo in a light mat with a shadow, over a blurred copy |
+| Slow pan | Fills the screen and slowly zooms and pans across the photo, turning back every 30 seconds |
+
+The wallpaper defaults to Auto; the screen saver and the Photos app default to Slow pan.
+
+## Transition
+
+The same three places each pick how one photo gives way to the next: `poster_transition`,
+`idle_photo_transition` and `photos_app_transition`.
+
+| Transition | Shows |
+|---|---|
+| None | The next photo replaces the last at once |
+| Fade | The last photo fades into the next |
+| Slide | The next photo slides in from the right |
+| Zoom | The next photo grows into place as the last fades |
+| Wipe | A soft edge sweeps across from left to right |
+| Dissolve | The next photo appears in scattered specks |
+
+All three default to Fade.
 
 [Config sync](/use/configuration/#config-sync) copies the key along with the other photo settings. Home Assistant shows it only as set or not set.
-

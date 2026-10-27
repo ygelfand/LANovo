@@ -129,6 +129,14 @@ export default defineConfig({
 							"slug": "features/photos"
 						},
 						{
+							"label": "Doorbell",
+							"slug": "features/doorbell"
+						},
+						{
+							"label": "Home alarm",
+							"slug": "features/home-alarm"
+						},
+						{
 							"label": "Camera",
 							"slug": "features/camera"
 						},
@@ -139,6 +147,15 @@ export default defineConfig({
 						{
 							"label": "Updates",
 							"slug": "features/updates"
+						}
+					]
+				},
+				{
+					"label": "Help",
+					"items": [
+						{
+							"label": "Questions and answers",
+							"slug": "use/faq"
 						}
 					]
 				}

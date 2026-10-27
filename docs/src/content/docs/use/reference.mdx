@@ -17,6 +17,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Brightness | 70 % | 0 to 100 % | `number.<device>_screen_brightness` |
 | Hide dock after | Never | 5 seconds, 10 seconds, 15 seconds, 30 seconds, 1 minute, Never | `select.<device>_screen_hide_dock_after` |
 | Dock location | Right | Left, Right, Top, Bottom | `select.<device>_screen_dock_location` |
+| Settings Lock | — | 4 to 8 digits | `text.<device>_settings_lock` |
 | Privacy marks | On | On, Off | `switch.<device>_screen_privacy_marks` |
 | Alert style | Banner | Banner, Card, Full screen, Toast | `select.<device>_screen_alert_style` |
 | Keyboard size | Compact | Compact, Standard, Large | `select.<device>_screen_keyboard_size` |
@@ -39,8 +40,11 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 |---|---|---|---|
 | Idle screen after | 1 minute | 30 seconds, 1 minute, 2 minutes, 5 minutes, 15 minutes, Never | `select.<device>_screen_idle_screen_after` |
 | Idle clock horizontal position | Random | Left, Center, Right, Random | `select.<device>_screen_idle_clock_horizontal_position` |
-| Idle clock face | Plain | None, Plain, Stack, Cards, Analog, Analog seconds, Segments, Words, Overlap | `select.<device>_screen_idle_clock_face` |
+| Idle clock face | Plain | None, Plain, Stack, Cards, Flip, Analog and 16 more | `select.<device>_screen_idle_clock_face` |
 | Close paused player after | 5 minutes | 1 minute, 3 minutes, 5 minutes, 10 minutes, 15 minutes, Never | `select.<device>_screen_close_paused_player_after` |
+| Screen saver next photo every | 30 seconds | 10 seconds, 15 seconds, 30 seconds, 1 minute, 2 minutes, 5 minutes | `select.<device>_screen_screen_saver_next_photo_every` |
+| Screen saver photo fit | Slow pan | Auto, Fill, Fit, blurred edges, Fit, plain edges, Framed, Slow pan | `select.<device>_screen_screen_saver_photo_fit` |
+| Screen saver photo transition | Fade | None, Fade, Slide, Zoom, Wipe, Dissolve | `select.<device>_screen_screen_saver_photo_transition` |
 | Idle clock vertical position | Random | Top, Center, Bottom, Random | `select.<device>_screen_idle_clock_vertical_position` |
 | Screen saver mode | Native | Native, Tessera | `select.<device>_screen_screen_saver_mode` |
 | Idle clock size | Large | Nano, Micro, Mini, Small, Medium, Large | `select.<device>_screen_idle_clock_size` |
@@ -59,7 +63,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Clock horizontal position | Center | Left, Center, Right | `select.<device>_screen_clock_horizontal_position` |
 | Clock color | Theme | Theme, Amber, Red, Green, Cyan, Blue, Violet, Pink | `select.<device>_screen_clock_color` |
 | Clock date | On | On, Off | `switch.<device>_screen_clock_date` |
-| Clock face | Plain | Plain, Stack, Cards, Analog, Analog seconds, Segments, Words, Overlap | `select.<device>_screen_clock_face` |
+| Clock face | Plain | Plain, Stack, Cards, Flip, Analog, Analog seconds and 15 more | `select.<device>_screen_clock_face` |
 | Clock format | 24 hour | 24 hour, 12 hour | `select.<device>_screen_clock_format` |
 | Clock vertical position | Center | Top, Center, Bottom | `select.<device>_screen_clock_vertical_position` |
 | Clock size | Large | Nano, Micro, Mini, Small, Medium, Large | `select.<device>_screen_clock_size` |
@@ -82,7 +86,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Dashboard weather horizontal position | Right | Left, Center, Right | `select.<device>_screen_dashboard_weather_horizontal_position` |
 | Animate dashboard weather | On | On, Off | `switch.<device>_screen_animate_dashboard_weather` |
 | Weather on dashboard | On | On, Off | `switch.<device>_screen_weather_on_dashboard` |
-| entity | — | Text | On the screen only |
+| Weather entity | — | Text | On the screen only |
 | Dashboard weather look | Compact | Compact, Stack, Icon, Words, Card, Detail | `select.<device>_screen_dashboard_weather_look` |
 | Dashboard weather vertical position | Top | Top, Center, Bottom | `select.<device>_screen_dashboard_weather_vertical_position` |
 | Radar starting range | 200 mi | 50 mi, 100 mi, 200 mi, 300 mi, 400 mi, 600 mi, 800 mi | `select.<device>_screen_radar_starting_range` |
@@ -101,38 +105,50 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
-| Poster | Off | On, Off | `switch.<device>_screen_poster` |
-| Poster changes | Hourly | Never, On each wake, Hourly, Daily | `select.<device>_screen_poster_changes` |
+| Wallpaper | Off | On, Off | `switch.<device>_screen_wallpaper` |
+| Wallpaper changes | Hourly | On each wake, 10 seconds, 15 seconds, 30 seconds, 1 minute, 2 minutes, 5 minutes, 15 minutes, Hourly, Daily, Never | `select.<device>_screen_wallpaper_changes` |
+| Wallpaper fit | Auto | Auto, Fill, Fit, blurred edges, Fit, plain edges, Framed, Slow pan | `select.<device>_screen_wallpaper_fit` |
+| Wallpaper transition | Fade | None, Fade, Slide, Zoom, Wipe, Dissolve | `select.<device>_screen_wallpaper_transition` |
 
 ## Photos
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
-| Photo albums | — | Text | `text.<device>_screen_photo_albums` |
-| Photos favorites only | Off | On, Off | `switch.<device>_screen_photos_favorites_only` |
-| Photo interval | 30 seconds | 10 seconds, 15 seconds, 30 seconds, 1 minute, 2 minutes, 5 minutes | `select.<device>_screen_photo_interval` |
+| Photos app next photo every | 15 seconds | 5 seconds, 10 seconds, 15 seconds, 30 seconds, 1 minute, 2 minutes, 5 minutes, Never | `select.<device>_screen_photos_app_next_photo_every` |
+| Photos app fit | Slow pan | Auto, Fill, Fit, blurred edges, Fit, plain edges, Framed, Slow pan | `select.<device>_screen_photos_app_fit` |
+| Photos app transition | Fade | None, Fade, Slide, Zoom, Wipe, Dissolve | `select.<device>_screen_photos_app_transition` |
+| Google Photos album 1 link | — | Text | `text.<device>_screen_google_photos_album_1_link` |
+| Google Photos album 1 share | 5 | 0 to 10 | `number.<device>_screen_google_photos_album_1_share` |
+| Google Photos album 2 link | — | Text | `text.<device>_screen_google_photos_album_2_link` |
+| Google Photos album 2 share | 5 | 0 to 10 | `number.<device>_screen_google_photos_album_2_share` |
+| Google Photos album 3 link | — | Text | `text.<device>_screen_google_photos_album_3_link` |
+| Google Photos album 3 share | 5 | 0 to 10 | `number.<device>_screen_google_photos_album_3_share` |
+| Google Photos album 4 link | — | Text | `text.<device>_screen_google_photos_album_4_link` |
+| Google Photos album 4 share | 5 | 0 to 10 | `number.<device>_screen_google_photos_album_4_share` |
+| Google Photos | Off | On, Off | `switch.<device>_screen_google_photos` |
+| Immich albums | — | Text | `text.<device>_screen_immich_albums` |
+| Immich photos | Off | On, Off | `switch.<device>_screen_immich_photos` |
+| Immich favorites only | Off | On, Off | `switch.<device>_screen_immich_favorites_only` |
 | Immich API key | — | Text | `text.<device>_screen_immich_api_key` |
-| Photo memories first | On | On, Off | `switch.<device>_screen_photo_memories_first` |
-| Photos app motion | On | On, Off | `switch.<device>_screen_photos_app_motion` |
-| Wallpaper motion | Off | On, Off | `switch.<device>_screen_wallpaper_motion` |
-| Photo screen saver motion | On | On, Off | `switch.<device>_screen_photo_screen_saver_motion` |
-| Photo people | — | Text | `text.<device>_screen_photo_people` |
+| Immich memories first | On | On, Off | `switch.<device>_screen_immich_memories_first` |
+| Immich people | — | Text | `text.<device>_screen_immich_people` |
+| Immich quality | Preview | Preview, Full size | `select.<device>_screen_immich_quality` |
 | Immich server | — | Text | `text.<device>_screen_immich_server` |
-| Photo tags | — | Text | `text.<device>_screen_photo_tags` |
+| Immich tags | — | Text | `text.<device>_screen_immich_tags` |
 
 ## Calendar
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
-| entities | — | Text | On the screen only |
-| span | 7 days | On, Off | On the screen only |
+| Calendars | — | Text | On the screen only |
+| Days to show | 7 days | On, Off | On the screen only |
 
 ## Shopping list
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
-| completed | off | On, Off | On the screen only |
-| entity | — | Text | On the screen only |
+| Show completed items | off | On, Off | On the screen only |
+| To-do list | — | Text | On the screen only |
 
 ## Cameras
 
@@ -144,25 +160,65 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Dashboard tab | Off | On, Off | `switch.<device>_dashboard_tab` |
 | Home Assistant URL | — | Text | `text.<device>_home_assistant_url` |
 
+## Doorbell
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Doorbell ring sound | Ring | None, Chirp, Ding, Rise, Timer, Trouble, Ring | `select.<device>_camera_doorbell_ring_sound` |
+| Doorbell 1 event source | Automatic | Automatic, Reolink, ONVIF, Home Assistant | `select.<device>_camera_doorbell_1_event_source` |
+| Doorbell 1 name | — | Text | `text.<device>_camera_doorbell_1_name` |
+| Doorbell 1 talkback source | Automatic | Automatic, Reolink, ONVIF | `select.<device>_camera_doorbell_1_talkback_source` |
+| Doorbell 1 video source | Automatic | Automatic, Reolink, RTSP, Home Assistant | `select.<device>_camera_doorbell_1_video_source` |
+| Doorbell 2 event source | Automatic | Automatic, Reolink, ONVIF, Home Assistant | `select.<device>_camera_doorbell_2_event_source` |
+| Doorbell 2 name | — | Text | `text.<device>_camera_doorbell_2_name` |
+| Doorbell 2 talkback source | Automatic | Automatic, Reolink, ONVIF | `select.<device>_camera_doorbell_2_talkback_source` |
+| Doorbell 2 video source | Automatic | Automatic, Reolink, RTSP, Home Assistant | `select.<device>_camera_doorbell_2_video_source` |
+| Doorbell 3 event source | Automatic | Automatic, Reolink, ONVIF, Home Assistant | `select.<device>_camera_doorbell_3_event_source` |
+| Doorbell 3 name | — | Text | `text.<device>_camera_doorbell_3_name` |
+| Doorbell 3 talkback source | Automatic | Automatic, Reolink, ONVIF | `select.<device>_camera_doorbell_3_talkback_source` |
+| Doorbell 3 video source | Automatic | Automatic, Reolink, RTSP, Home Assistant | `select.<device>_camera_doorbell_3_video_source` |
+| Doorbell 4 event source | Automatic | Automatic, Reolink, ONVIF, Home Assistant | `select.<device>_camera_doorbell_4_event_source` |
+| Doorbell 4 name | — | Text | `text.<device>_camera_doorbell_4_name` |
+| Doorbell 4 talkback source | Automatic | Automatic, Reolink, ONVIF | `select.<device>_camera_doorbell_4_talkback_source` |
+| Doorbell 4 video source | Automatic | Automatic, Reolink, RTSP, Home Assistant | `select.<device>_camera_doorbell_4_video_source` |
+| Doorbell notification sound | Ding | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_camera_doorbell_notification_sound` |
+| Doorbell ring for | 30 seconds | Never, 5 seconds, 10 seconds, 15 seconds, 30 seconds, 45 seconds, 1 minute, 2 minutes, 3 minutes, 5 minutes | `select.<device>_camera_doorbell_ring_for` |
+| Doorbell notification style | Same as screen | Same as screen, None, Banner, Card, Full screen, Toast | `select.<device>_camera_doorbell_notification_style` |
+| Doorbell dashboard tab | Off | On, Off | `switch.<device>_camera_doorbell_dashboard_tab` |
+| Doorbell ring style | Auto answer | Auto answer, Same as screen, None, Banner, Card, Full screen, Toast | `select.<device>_camera_doorbell_ring_style` |
+
+## Home alarm
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Home alarm show while arming | Off | On, Off | `switch.<device>_screen_home_alarm_show_while_arming` |
+| Home alarm arming sound | None | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_screen_home_alarm_arming_sound` |
+| Alarm panel | — | Text | On the screen only |
+| Home alarm look | Keypad | Keypad, Shield, Card, Ring, Dial, Neon, Hardware, Flip board, Terminal, Console, Blueprint, Matrix, Vault, Minimal | `select.<device>_screen_home_alarm_look` |
+| Home alarm show during entry delay | On | On, Off | `switch.<device>_screen_home_alarm_show_during_entry_delay` |
+| Home alarm entry delay sound | Timer | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_screen_home_alarm_entry_delay_sound` |
+| Home alarm hide after | 5 seconds | 5 seconds, 10 seconds, 15 seconds, 30 seconds, 1 minute, 2 minutes, Never | `select.<device>_screen_home_alarm_hide_after` |
+| Home alarm show when armed or disarmed | Off | On, Off | `switch.<device>_screen_home_alarm_show_when_armed_or_disarmed` |
+| Home alarm armed and disarmed sound | None | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_screen_home_alarm_armed_and_disarmed_sound` |
+| Home alarm dashboard tab | Off | On, Off | `switch.<device>_screen_home_alarm_dashboard_tab` |
+| Home alarm show when triggered | On | On, Off | `switch.<device>_screen_home_alarm_show_when_triggered` |
+| Home alarm triggered sound | Trouble | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_screen_home_alarm_triggered_sound` |
+
 ## Apps
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
-| dock | player,calls | Text | On the screen only |
-| order | — | Text | On the screen only |
+| Apps in the dock | player,calls | Text | On the screen only |
+| App order | — | Text | On the screen only |
 
 ## Media
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
+| AirPlay | Off | On, Off | `switch.<device>_playback_airplay` |
 | Music ducking | -15 dB | -40 to -3 dB | `number.<device>_playback_music_ducking` |
-| Volume buttons | What's playing | Main volume, What's playing | `select.<device>_playback_volume_buttons` |
-
-## Sendspin
-
-| Setting | Default | Choices | Entity |
-|---|---|---|---|
 | Sendspin | Off | On, Off | `switch.<device>_playback_sendspin` |
+| Volume buttons | What's playing | Main volume, What's playing | `select.<device>_playback_volume_buttons` |
 
 ## Cast receiver
 
@@ -170,12 +226,6 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 |---|---|---|---|
 | Cast receiver | Off | On, Off | `switch.<device>_cast_receiver` |
 | YouTube SponsorBlock categories | sponsor | Text | `text.<device>_youtube_sponsorblock_categories` |
-
-## AirPlay
-
-| Setting | Default | Choices | Entity |
-|---|---|---|---|
-| AirPlay | Off | On, Off | `switch.<device>_playback_airplay` |
 
 ## Bluetooth
 
@@ -250,6 +300,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
+| Stop word sensitivity | 70 | 50 to 100 % | On the screen only |
 | Follow-up time | 0 s | 0 to 30 s | `number.<device>_assistant_N_follow_up_time` |
 | Recordings kept | 0 | 0 to 10 | `number.<device>_assistant_N_recordings_kept` |
 | Max listening time | 15 s | 5 to 60 s | `number.<device>_assistant_N_max_listening_time` |
@@ -296,13 +347,19 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
-| Sound machine layer 1 | Off | Off, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | `select.<device>_playback_sound_machine_layer_1` |
-| Sound machine layer 2 | Off | Off, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | `select.<device>_playback_sound_machine_layer_2` |
+| White noise layer 1 | None | None, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | `select.<device>_playback_white_noise_layer_1` |
+| White noise layer 2 | None | None, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | `select.<device>_playback_white_noise_layer_2` |
 | Alerts volume | 100 % | 0 to 100 % | `number.<device>_playback_alerts_volume` |
 | Feedback volume | 100 % | 0 to 100 % | `number.<device>_playback_feedback_volume` |
 | Main volume | 40 % | 0 to 100 % | `number.<device>_playback_main_volume` |
 | Media volume | 100 % | 0 to 100 % | `number.<device>_playback_media_volume` |
 | Voice volume | 100 % | 0 to 100 % | `number.<device>_playback_voice_volume` |
+
+## Diagnostics
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Metrics interval | 60 s | 10 to 3600 s | `number.<device>_metrics_interval` |
 
 ## Network
 
@@ -310,12 +367,6 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 |---|---|---|---|
 | Home key | — | Text | `text.<device>_home_key` |
 | Verify certificates | On | On, Off | `switch.<device>_verify_certificates` |
-
-## Web access
-
-| Setting | Default | Choices | Entity |
-|---|---|---|---|
-| Admin password | — | Text | `text.<device>_frontend_admin_password` |
 
 ## Certificate
 
@@ -330,6 +381,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
+| Admin password | — | Text | `text.<device>_frontend_admin_password` |
 | ADB over network | Off | On, Off | `switch.<device>_adb_over_network` |
 
 ## Presence
@@ -346,8 +398,6 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Cast bundle | — | Text | `text.<device>_cast_bundle` |
 | Cast oracle | — | Text | `text.<device>_cast_oracle` |
 | Install version | Select for rollback | The available versions | `select.<device>_install_version` |
-| Settings Lock | — | 4 to 8 digits | `text.<device>_settings_lock` |
-| Metrics interval | 60 s | 10 to 3600 s | `number.<device>_metrics_interval` |
 | Time zone | Home Assistant | Home Assistant, UTC, Europe/London, Europe/Lisbon, Europe/Paris, Europe/Berlin and 34 more | `select.<device>_time_zone` |
 | Update channel | stable | stable, dev | `select.<device>_update_channel` |
 

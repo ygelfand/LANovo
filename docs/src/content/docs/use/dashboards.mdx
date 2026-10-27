@@ -11,31 +11,53 @@ import lights from '../../../assets/screens/home-lights.webp';
 import rotate from '../../../assets/screens/rotate.webp';
 
 
-The dashboard is what the display shows when you're using it. There are two kinds, and you pick one
-in **Settings → Display → Dashboard**:
+The dashboard is what the display shows when you're using it. Pick one with **Mode** in
+**Settings → Dashboard**:
 
-- **Native**: a big clock, the weather, and tabs for your lights, switches and cameras
-- **Tessera**: pages of tiles you lay out in Home Assistant
+- **Native**: a big clock, the weather, and tabs for your lights, switches, cameras, doorbells and
+  alarm panel
+- **Tessera native**: pages of tiles you lay out in Tessera in Home Assistant, drawn by LANovo
+  in your style and theme
+- **Tessera embedded**: the same Tessera pages, drawn by Tessera's own screen software running on
+  the display
+
+**Mode** shows when home control is on and Home Assistant actions are allowed; otherwise the
+dashboard is native. The button beside it reloads the dashboard from Home Assistant.
 
 ## Native
 
-The native dashboard is a clock with the date, an optional weather card, and optional
-[wallpaper from Immich](/features/photos/) behind it. Pick the clock face, position, size and color
-under **Settings → Display → Dashboard → Clock**.
+The native dashboard is a clock with the date, an optional weather card, and an optional
+[wallpaper](/features/photos/) behind it. Pick the clock face, position, size and color under
+**Settings → Dashboard → Clock**. There are 21 faces: Plain, Stack, Cards, Flip, Analog, Analog
+seconds, Roman, Railway, Octagon, Atomic, Spoken, Math, Smiley, Neon, Bars, Reel, Binary, Segments,
+Nixie, Words and Overlap.
 <div class="carousel">
-	<img src="/carousel/faces-0.png" alt="A clock face, 1 of 8" loading="lazy" />
-	<img src="/carousel/faces-1.png" alt="A clock face, 2 of 8" loading="lazy" />
-	<img src="/carousel/faces-2.png" alt="A clock face, 3 of 8" loading="lazy" />
-	<img src="/carousel/faces-3.png" alt="A clock face, 4 of 8" loading="lazy" />
-	<img src="/carousel/faces-4.png" alt="A clock face, 5 of 8" loading="lazy" />
-	<img src="/carousel/faces-5.png" alt="A clock face, 6 of 8" loading="lazy" />
-	<img src="/carousel/faces-6.png" alt="A clock face, 7 of 8" loading="lazy" />
-	<img src="/carousel/faces-7.png" alt="A clock face, 8 of 8" loading="lazy" />
+	<img src="/carousel/faces-0.png" alt="A clock face, 1 of 21" loading="lazy" />
+	<img src="/carousel/faces-1.png" alt="A clock face, 2 of 21" loading="lazy" />
+	<img src="/carousel/faces-2.png" alt="A clock face, 3 of 21" loading="lazy" />
+	<img src="/carousel/faces-3.png" alt="A clock face, 4 of 21" loading="lazy" />
+	<img src="/carousel/faces-4.png" alt="A clock face, 5 of 21" loading="lazy" />
+	<img src="/carousel/faces-5.png" alt="A clock face, 6 of 21" loading="lazy" />
+	<img src="/carousel/faces-6.png" alt="A clock face, 7 of 21" loading="lazy" />
+	<img src="/carousel/faces-7.png" alt="A clock face, 8 of 21" loading="lazy" />
+	<img src="/carousel/faces-8.png" alt="A clock face, 9 of 21" loading="lazy" />
+	<img src="/carousel/faces-9.png" alt="A clock face, 10 of 21" loading="lazy" />
+	<img src="/carousel/faces-10.png" alt="A clock face, 11 of 21" loading="lazy" />
+	<img src="/carousel/faces-11.png" alt="A clock face, 12 of 21" loading="lazy" />
+	<img src="/carousel/faces-12.png" alt="A clock face, 13 of 21" loading="lazy" />
+	<img src="/carousel/faces-13.png" alt="A clock face, 14 of 21" loading="lazy" />
+	<img src="/carousel/faces-14.png" alt="A clock face, 15 of 21" loading="lazy" />
+	<img src="/carousel/faces-15.png" alt="A clock face, 16 of 21" loading="lazy" />
+	<img src="/carousel/faces-16.png" alt="A clock face, 17 of 21" loading="lazy" />
+	<img src="/carousel/faces-17.png" alt="A clock face, 18 of 21" loading="lazy" />
+	<img src="/carousel/faces-18.png" alt="A clock face, 19 of 21" loading="lazy" />
+	<img src="/carousel/faces-19.png" alt="A clock face, 20 of 21" loading="lazy" />
+	<img src="/carousel/faces-20.png" alt="A clock face, 21 of 21" loading="lazy" />
 </div>
 
 ### Lights and switches
 
-Open **Settings → Home control → Native → Lights** (or **Switches**) and turn on **Enable**; the
+Open **Settings → Dashboard → Lights** (or **Switches**) and turn on **Enable**; the
 dashboard gains a **Lights** (or **Switches**) tab. **Select devices** picks what goes on it by
 label, by area or one by one, and **Group by area** sets how it's grouped:
 
@@ -53,6 +75,12 @@ Turn on **Settings → Home control → Cameras → Dashboard tab** and the dash
 tab with the pictures from the [Cameras app](/features/apps/#cameras). Tap a camera to watch it full
 screen.
 
+### Doorbell and Home alarm
+
+**Settings → Home control → Doorbell → Dashboard tab** adds a **Doorbell** tab once a
+[doorbell](/features/doorbell/) is set up. **Settings → Home control → Home alarm → Dashboard tab**
+adds a **Home alarm** tab once an [alarm panel](/features/home-alarm/) is picked.
+
 ### Weather
 
 Pick a Home Assistant weather entity under **Settings → Home control → Weather**, then choose how it
@@ -67,9 +95,16 @@ Service until you dismiss them. Every weather setting is on
 ## Tessera
 
 [Tessera](https://github.com/MaxGramser/homeassistant_espscreen) is a Home Assistant integration
-with a drag-and-drop editor for touch screens. LANovo speaks its screen protocol, so the
-display shows up in Tessera like any other screen. Lay out the pages there; the display draws
-them in your style and theme.
+with a drag-and-drop editor for touch screens. The display shows up in Tessera like any other
+screen; lay out the pages there. There are two ways to show them:
+
+- **Tessera native**: LANovo speaks Tessera's screen protocol and draws the tiles in your style
+  and theme.
+- **Tessera embedded**: the display runs Tessera's own screen software, so pages look and behave
+  as they do on Tessera's screens. Its own settings appear as entities on the display's Tessera
+  sub-devices in Home Assistant.
+
+Both use the same Tessera screens, so a layout works in either mode.
 
 <Image src={tessera} alt="A Tessera page with climate, weather, a clock, the sun, energy flow, lights and locks" class="screen" />
 <div class="carousel">
@@ -93,7 +128,8 @@ Most of Tessera's tiles and features are supported.
 1. Install Tessera in Home Assistant from its
    [GitHub page](https://github.com/MaxGramser/homeassistant_espscreen).
 
-2. On the display, set **Settings → Display → Dashboard** to **Tessera**.
+2. On the display, set **Settings → Dashboard → Mode** to **Tessera native** or **Tessera
+   embedded**.
 
 3. The display appears in Tessera as a screen. Without tiles it shows:
 
@@ -107,9 +143,21 @@ The Smart Display 10, Smart Display 8 and ThinkSmart View appear as two screens,
 and one for portrait, so you can lay each out for the way the display is standing. The others
 appear as one.
 
-**Settings → Home control → Tessera** sets the tile grid, which orientations to offer, and whether
-the display goes back to the first page after the screen saver. The screen saver can be a Tessera
-page too: **Settings → Display → Screen saver → Mode**.
+In a Tessera mode, **Settings → Dashboard** has:
+
+| Setting | What it does |
+|---|---|
+| Screen saver | **Native**, or Tessera's screen saver |
+| Grid | Tiles along the long side and the short side |
+| Go back to the home page after the screensaver | Return to the first page when the display wakes |
+| Enable landscape, Enable portrait | Which orientations to offer (Tessera native, on displays that rotate) |
+| Swipe up from the bottom | Tessera embedded: what a swipe up from the bottom edge opens: **Page panel** (the default), **Home page** or **Nothing** |
+| Use this device's theme | Tessera embedded: draw in the display's theme colors (on by default) |
+| Page transition | Tessera embedded: None, Slide, Cover, Reveal, Deck, Zoom or Fade (Slide by default) |
+| Page follows finger | Tessera embedded: the page moves with your finger while you swipe (on by default) |
+
+With Tessera embedded, Tessera's screen saver also needs **Auto standby** turned on in Tessera's own
+screen settings; the Screen saver row says so until it is.
 
 <Aside type="tip">
 Turn on **Allow the device to perform Home Assistant actions** on the display's ESPHome device in

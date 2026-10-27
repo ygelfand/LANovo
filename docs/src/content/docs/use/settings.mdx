@@ -86,41 +86,62 @@ from the one the display had before, the display takes the new one.
 | Custom colors | The custom theme's Background, Cards, Text, Secondary text, Accent and Second accent ([Custom theme](/use/styles/#custom-theme)) | `#rrggbb` | Paper's colors | `text.<device>_screen_custom_theme_background`, `text.<device>_screen_custom_theme_cards`, `text.<device>_screen_custom_theme_text`, `text.<device>_screen_custom_theme_secondary_text`, `text.<device>_screen_custom_theme_accent`, `text.<device>_screen_custom_theme_second_accent` |
 | Style → | How controls are drawn | Standard, Material You, Glass, E-ink, Metro, Terminal, Hi-fi, Neon, Skeuo | Standard | `select.<device>_screen_style` |
 | Size | How big everything is | Mini, Compact, Medium, Large, Extra large | Depends on the display | `select.<device>_screen_size` |
-| Dashboard → | [Below](#dashboard) | | | |
 | Screen saver → | [Below](#screen-saver) | | | |
 | Dock position | Edge the dock sits on | Left, Right, Top, Bottom | Right | `select.<device>_screen_dock_location` |
 | Hide dock after | Slide the dock away when untouched | 5, 10, 15, 30 s, 1 min, Never | Never | `select.<device>_screen_hide_dock_after` |
 | Volume panel position | Side the volume panel slides in from | Left, Right | Right | — |
 | Privacy indicators | Show marks when the microphone is muted or the camera covered | | On | `switch.<device>_screen_privacy_marks` |
+| Photos → | Wallpaper, Photos app, Immich and Google Photos ([below](#photos)) | | | |
 
 <div class="pair even">
 	<Image src={theme} alt="The theme picker" class="screen" />
 </div>
 
-### Dashboard
-
+### Photos
 
 | Setting | What it does | Choices | Default | Entity |
 |---|---|---|---|---|
-| Dashboard | The native dashboard or [Tessera](/use/dashboards/#tessera). Shown when home control is on and Home Assistant actions are allowed | Native, Tessera | Native | — |
-| Clock → | Face, placement, size, color, date ([below](#clock)) | | | |
-| Weather → | The weather card ([below](#weather)) | | | |
-| Wallpaper → | A photo behind the dashboard ([Photos and wallpaper](/features/photos/)) | | | |
-| Close paused player after | Close the player card when paused this long | 1, 3, 5, 10, 15 min, Never | 5 min | `select.<device>_screen_close_paused_player_after` |
+| Show wallpaper | A photo behind the native dashboard | | Off | `switch.<device>_screen_wallpaper` |
+| Change every | | On each wake, 10 s to 15 min, Hourly, Daily, Never | Hourly | `select.<device>_screen_wallpaper_changes` |
+| Fit, Transition | How the wallpaper fills the screen and changes | [Fit](/features/photos/#fit), [Transition](/features/photos/#transition) | Auto, Fade | `select.<device>_screen_wallpaper_fit`, `select.<device>_screen_wallpaper_transition` |
+| Photos app next photo every | | 5 s to 5 min, Never | 15 s | `select.<device>_screen_photos_app_next_photo_every` |
+| Photos app fit, Photos app transition | | | Slow pan, Fade | `select.<device>_screen_photos_app_fit`, `select.<device>_screen_photos_app_transition` |
+| Immich → | Server, API key and which photos ([Photos](/features/photos/#connect-immich)) | | Off | `switch.<device>_screen_immich_photos` |
+| Google Photos → | Up to four shared album links ([Photos](/features/photos/#google-photos)) | | Off | `switch.<device>_screen_google_photos` |
 
-#### Clock
+**Next wallpaper** and **Previous wallpaper** (`poster_next`, `poster_previous`) are buttons in Home
+Assistant only.
+
+## Dashboard
+
+
+What the page holds depends on the mode ([Dashboards](/use/dashboards/)).
+
+| Setting | What it does | Choices | Default | Entity |
+|---|---|---|---|---|
+| Close paused player after | Close the player card when paused this long | 1, 3, 5, 10, 15 min, Never | 5 min | `select.<device>_screen_close_paused_player_after` |
+| Mode | The native dashboard or [Tessera](/use/dashboards/#tessera). Shown when home control is on and Home Assistant actions are allowed | Native, Tessera native, Tessera embedded | Native | — |
+| Clock → | Native: face, placement, size, color, date ([below](#clock)) | | | |
+| Weather → | Native: the weather card ([below](#weather)) | | | |
+| Lights, Switches → | Native: **Enable**, then **Select devices** by label or by hand, **Group by area** from N devices (0–5, default 2), and **Include switches** in the lights view ([Lights and switches](/use/dashboards/#lights-and-switches)) | | Off | — |
+| Screen saver | Tessera: the native screen saver or Tessera's | Native, Tessera | Native | `select.<device>_screen_screen_saver_mode` |
+| Grid, Go back to the home page after the screensaver | Tessera: tiles along the long and short side (1–12), and returning to the first page on waking | | The display's grid | — |
+| Enable landscape, Enable portrait | Tessera native, on displays that rotate | | On | — |
+| Swipe up from the bottom, Use this device's theme, Page transition, Page follows finger | Tessera embedded ([Tessera](/use/dashboards/#tessera)) | | Page panel, On, Slide, On | — |
+
+### Clock
 
 
 | Setting | Choices | Default | Entity |
 |---|---|---|---|
-| Clock face | Plain, Stack, Cards, Analog, Analog seconds, Segments, Words, Overlap | Plain | `select.<device>_screen_clock_face` |
+| Clock face | Plain, Stack, Cards, Flip, Analog, Analog seconds, Roman, Railway, Octagon, Atomic, Spoken, Math, Smiley, Neon, Bars, Reel, Binary, Segments, Nixie, Words, Overlap | Plain | `select.<device>_screen_clock_face` |
 | Vertical position | Top, Center, Bottom | Center | `select.<device>_screen_clock_vertical_position` |
 | Horizontal position | Left, Center, Right | Center | `select.<device>_screen_clock_horizontal_position` |
 | Size | Nano, Micro, Mini, Small, Medium, Large | Large | `select.<device>_screen_clock_size` |
 | Color | Theme, Amber, Red, Green, Cyan, Blue, Violet, Pink | Theme | `select.<device>_screen_clock_color` |
 | Show date | | On | `switch.<device>_screen_clock_date` |
 
-#### Weather
+### Weather
 
 
 The card needs a weather entity, picked under [Home control → Weather](#home-control).
@@ -136,17 +157,9 @@ The card needs a weather entity, picked under [Home control → Weather](#home-c
 | Themed colors | Use the theme's colors instead of weather colors | | Off | `switch.<device>_screen_themed_dashboard_weather_colors` |
 | Vertical position, Horizontal position, Size | Where the card sits | Top/Center/Bottom, Left/Center/Right, Nano–Large | Top, Right, Small | `select.<device>_screen_dashboard_weather_vertical_position`, `select.<device>_screen_dashboard_weather_horizontal_position`, `select.<device>_screen_dashboard_weather_size` |
 
-#### Wallpaper
+## Screen saver
 
-| Setting | What it does | Choices | Default | Entity |
-|---|---|---|---|---|
-| Show wallpaper | A photo from Immich behind the dashboard | | Off | `switch.<device>_screen_poster` |
-| Change now | Show the next photo | | | `button.<device>_screen_next_poster` (button) |
-| Change every | | Never, On each wake, Hourly, Daily | Hourly | `select.<device>_screen_poster_changes` |
-
-Where the photos come from is set in Home Assistant; see [Photos and wallpaper](/features/photos/).
-
-### Screen saver
+Under **Settings → Display → Screen saver**.
 
 
 | Setting | What it does | Choices | Default | Entity |
@@ -154,8 +167,8 @@ Where the photos come from is set in Home Assistant; see [Photos and wallpaper](
 | Start after | Idle time before the screen saver | 30 s, 1, 2, 5, 15 min, Never | 1 min | `select.<device>_screen_idle_screen_after` |
 | Wake on motion | Wake when someone walks up | | Off | `switch.<device>_wake_on_motion` |
 | Detection range | How far away counts | 1–5 | 3 | `number.<device>_detection_range` |
-| Mode | The native screen saver or a Tessera page. Shown when home control is on and Home Assistant actions are allowed | Native, Tessera | Native | `select.<device>_screen_screen_saver_mode` |
-| Visual 1, Visual 2 | Up to two [visuals](/use/visuals/), drawn together | None or any of the 33 | None | `select.<device>_screen_idle_visual_1`, `select.<device>_screen_idle_visual_2` |
+| Visual 1, Visual 2 | Up to two [visuals](/use/visuals/), drawn together, or [Photos](/features/photos/#screen-saver) | None, Photos or any of the 33 | None | `select.<device>_screen_idle_visual_1`, `select.<device>_screen_idle_visual_2` |
+| Next photo every, Photo fit, Transition | Shown when a slot is Photos | 10 s to 5 min | 30 s, Slow pan, Fade | `select.<device>_screen_screen_saver_next_photo_every`, `select.<device>_screen_screen_saver_photo_fit`, `select.<device>_screen_screen_saver_photo_transition` |
 | Visual 1 audio, Visual 2 audio | What each visual reacts to | Microphone and speaker, Microphone, Speaker | Both | `select.<device>_screen_idle_visual_1_listens_to`, `select.<device>_screen_idle_visual_2_listens_to` |
 | Clock face | | None or a face | Plain | `select.<device>_screen_idle_clock_face` |
 | Vertical position, Horizontal position | | Top/Center/Bottom or Random; Left/Center/Right or Random | Random, Random | `select.<device>_screen_idle_clock_vertical_position`, `select.<device>_screen_idle_clock_horizontal_position` |
@@ -164,7 +177,7 @@ Where the photos come from is set in Home Assistant; see [Photos and wallpaper](
 | Visual label | Text some visuals show, up to 32 characters | | LANovo | `text.<device>_screen_visual_label` |
 | Night mode → | [Below](#night-mode) | | | |
 
-#### Night mode
+### Night mode
 
 | Setting | What it does | Choices | Default | Entity |
 |---|---|---|---|---|
@@ -175,18 +188,19 @@ Where the photos come from is set in Home Assistant; see [Photos and wallpaper](
 ## Home control
 
 
-Apart from Screen saver (`idle_saver`), none of these are Home Assistant entities.
+The rows below **Enable home control** show when Home Assistant actions are allowed for the
+display. Apart from the Cameras, Doorbell and Home alarm settings, none of these are Home
+Assistant entities.
 
 | Setting | What it does | Default |
 |---|---|---|
-| Enable home control | Show your lights and switches on the display | On |
-| Screen saver, Dashboard | Native or Tessera, as above | Native |
-| Native → Lights, Switches | **Enable**, then **Select devices** by label or by hand, **Group by area** from N devices (0–5, default 2), and **Include switches** in the lights view | Off |
-| Tessera → | Tiles along the long and short side (1–12), go back to the home page after the screen saver, enable landscape and portrait ([Tessera](/use/dashboards/#tessera)) | The display's grid |
+| Enable home control | Use Home Assistant for the dashboard, lights, cameras and the rest of this page | On |
 | Weather | The Home Assistant weather entity for the weather card and alerts | None |
 | Shopping list | A Home Assistant to-do list, and **Show completed items** | None, Off |
 | Calendar | Calendars to show, and **Days to show**: 3, 7 or 14 | None, 7 |
 | Cameras | The [Cameras app](/features/apps/#cameras): a dashboard tab, which cameras, thumbnail size, refresh, auto paginate and Home Assistant URL. These are Home Assistant entities | Off, all cameras |
+| Doorbell | Your doorbells, how a ring and a detection appear, and a dashboard tab ([Doorbell](/features/doorbell/)) | Auto answer |
+| Home alarm | The alarm panel, its look, zones, when it takes over the screen, and a dashboard tab ([Home alarm](/features/home-alarm/)) | Keypad |
 
 ## Sound
 
@@ -292,6 +306,10 @@ The lock covers the screen only. If you forget the PIN, clear **Settings Lock** 
 | Visuals | A full-screen gallery of every visual | | `select.<device>_screen_visual` |
 | Visual frame rate limit | Cap the visuals' frame rate | 60 | `select.<device>_screen_visual_frame_cap` |
 | Visual seed | Fix a visual's random layout (0 is random) | 0 | `number.<device>_screen_visual_seed` |
+| Low memory mode | Run cast apps' receiver pages in the browser's low-memory mode | Off | — |
+| Page memory limit | Cap how much memory a cast app's receiver page may use: 128, 192, 256, 384 or 512 MB, or No limit | No limit | — |
+
+Changing **Low memory mode** or **Page memory limit** restarts the cast receiver.
 
 ## About
 
