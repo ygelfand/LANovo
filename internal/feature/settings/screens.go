@@ -39,6 +39,7 @@ func root() *sharedshell.Page {
 		Assistants:   assistantPages(),
 		Home:         homecontrol.Get(),
 		Shell:        shell.Get(),
+		SearchQuery:  &Get().SearchQuery,
 		Version:      layout.Version,
 		Volume:       sharedvolume.For(volume.Get(), config.StreamMedia),
 		NetworkPage:  func() sharedshell.View { return networkPage() },

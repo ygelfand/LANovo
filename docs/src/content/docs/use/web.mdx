@@ -84,6 +84,40 @@ adopted the display, an **Add to Home Assistant** button opens Home Assistant's 
 Beside them is the screen as it looks right now, refreshed every three seconds while the page is
 open.
 
+### Screen control
+
+On screened devices, choose **Take control** over the preview to start live video and input.
+Click or tap to press, and drag to swipe. On a computer, open a text field on the remote screen
+and type with your keyboard; there is no separate typing box. Click the remote screen again if
+typing stops reaching it.
+
+**Fullscreen** uses the whole browser viewport, with controls over the picture. **Exit fullscreen**
+or <kbd>Esc</kbd> leaves fullscreen; **Release control** returns to the preview. Only one remote
+controller can connect at a time. Two minutes without input, or switching away from the browser
+tab, returns to the preview and stops video. Choose **Take control** again to resume.
+
+Remote control works only on the local network and does not send audio. Live video starts only
+after **Take control**; opening the page or scanning a pairing code does not start it.
+
+### Control from another device
+
+Choose **Control on another device** and scan the QR code with a phone or another computer on
+the same network. It opens a screen-control page without asking for the admin password. Choose
+**Take control** there to connect; release any existing controller first.
+
+The code can be scanned more than once during its two-minute lifetime. **Refresh code** replaces
+it and invalidates the old code. Each paired browser gets its own 15-minute session; the QR code
+expiring does not end a session already paired. Pair again when the page reports that access has
+expired or been revoked. For a connection failure, check the network and use the page's retry button.
+
+Pairing grants access to the screen and its input, not the admin settings or other admin APIs.
+Keep the QR code private. The link uses the address currently open in your browser; that address
+must also be reachable from the device scanning it. See [Signing in](#signing-in) if its browser
+shows a certificate warning.
+
+For typing into just one field with a phone's keyboard, use the
+[QR button on the on-screen keyboard](/use/settings/#typing-with-a-phone) instead.
+
 ## Alarms
 
 The display's [alarms](/features/messages/#alarms): add one, change it, turn it on or off, or
@@ -117,6 +151,12 @@ display and on every other device in this home, like a
 
 - **Log** and **Diagnostics** download the display's log and a JSON file of every entity with its
   current value. Attach both to a bug report; check them for anything you'd rather not share first.
+- **Export settings** downloads portable settings as `settings.json`, including dashboard mode and
+  the other settings available to Fleet sync. Store the file privately: it may contain passwords
+  and credentials. Device-local settings are excluded; this is not a complete device backup.
+- **Import settings** opens a settings JSON file. Confirm the number of settings to apply; matching
+  settings are overwritten and settings absent from the file stay unchanged. The result lists how
+  many changed, skipped settings, and any errors. Unsupported and device-local settings are skipped.
 - **Run** calls any of the display's actions, the same ones Home Assistant has: pick or type one,
   fill in its fields, and run it. An action that answers shows the answer below.
 - **Readings** lists every sensor with its current value. Type in **Filter** to find one.

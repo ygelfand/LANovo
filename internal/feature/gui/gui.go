@@ -27,6 +27,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/tuner"
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 	tesseraview "github.com/ygelfand/libcountertop/pkg/tessera/widgets"
 
@@ -47,6 +48,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/doorbell"
 	"github.com/ygelfand/LANovo/internal/feature/drawer"
 	"github.com/ygelfand/LANovo/internal/feature/firmware"
+	"github.com/ygelfand/LANovo/internal/feature/frontend"
 	"github.com/ygelfand/LANovo/internal/feature/homealarm"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
@@ -78,7 +80,8 @@ import (
 )
 
 func init() {
-	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(36))
+	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(36),
+		sharedcomponent.Supervise(service.Restart(time.Second, time.Minute)))
 }
 
 var Get = sync.OnceValue(func() *screens.App {
@@ -205,12 +208,14 @@ var Get = sync.OnceValue(func() *screens.App {
 				Weather: c.Weather,
 			}
 		},
-		UI:       look,
-		Weather:  config.WeatherSection,
-		Brand:    theme.Brand,
-		Logo:     lanovoui.Logo().Light,
-		Night:    lanovoui.Logo().Dark,
-		Offering: web.Get().Offering,
+		UI:           look,
+		Weather:      config.WeatherSection,
+		Brand:        theme.Brand,
+		Logo:         lanovoui.Logo().Light,
+		Night:        lanovoui.Logo().Dark,
+		Offering:     web.Get().Offering,
+		Input:        frontend.Get().Input(),
+		KeyboardPair: frontend.Get().KeyboardPair,
 
 		Display:   display.Get(),
 		GPU:       gpu.Get(),

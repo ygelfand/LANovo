@@ -68,6 +68,7 @@ func (c *Control) touching() []*cobra.Command {
 
 func showing() []*cobra.Command {
 	return []*cobra.Command{
+		screencmd.Record(display.Get),
 		says(&cobra.Command{
 			Use:   "shot [PATH]",
 			Short: "Take a screenshot",

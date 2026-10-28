@@ -18,7 +18,7 @@ func init() {
 	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(36))
 }
 
-type Settings struct{}
+type Settings struct{ SearchQuery string }
 
 var (
 	once   sync.Once
