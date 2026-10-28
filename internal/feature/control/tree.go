@@ -10,6 +10,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/callcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/castcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/doorbellcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/firmwarecmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/homealarmcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/doorbell"
+	"github.com/ygelfand/LANovo/internal/feature/firmware"
 	"github.com/ygelfand/LANovo/internal/feature/homealarm"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
@@ -38,6 +40,7 @@ func (c *Control) tree() *cobra.Command {
 	t.Add(harness.DisplayTask, showing()...)
 	t.Add(harness.AudioTask, sounding()...)
 	t.Top(settingsCommand(), camera())
+	t.Top(firmwarecmd.Command(firmware.Get))
 	t.Top(radios()...)
 	t.Top(homeAssistant()...)
 	t.Top(calling()...)

@@ -37,3 +37,23 @@ the running one marked **Installed**. Tap one and confirm; it installs and LANov
 In Home Assistant, pick the version in **Install version** (`select.<device>_install_version`) and
 press **Install selected version** (`button.<device>_install_selected_version`). Picking alone
 installs nothing.
+
+## From ADB
+
+With ADB connected, list releases for the display or install a particular release tag:
+
+```sh
+adb -s <serial> shell lanovod ctl firmware list
+adb -s <serial> shell lanovod ctl firmware install <version>
+```
+
+Use the exact version tag. Older releases can be installed without changing the update channel.
+Installing restarts the display; the control connection may close during restart. Check the
+running version after it returns:
+
+```sh
+adb -s <serial> shell lanovod ctl device version
+```
+
+These commands need a running lanovod and network access to download the release. They do not
+need the screen or Home Assistant. If the daemon cannot start, reinstall through the host CLI.

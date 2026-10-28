@@ -93,3 +93,12 @@ func TestATreeOnItsOwnIsHelp(t *testing.T) {
 		}
 	}
 }
+
+func TestFirmwareCommandsAreTopLevel(t *testing.T) {
+	for _, command := range []string{"firmware --help", "firmware list --help", "firmware install --help"} {
+		out := spoken(t, command)
+		if strings.Contains(out, "error: ") || !strings.Contains(out, "firmware") {
+			t.Fatalf("%s: %q", command, out)
+		}
+	}
+}
