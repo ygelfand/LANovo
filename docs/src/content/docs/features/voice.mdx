@@ -1,16 +1,17 @@
 ---
 title: Voice assistants
-description: Two wake words, each with its own Assist pipeline, and everything you can tune.
+description: Wake words, Assist pipelines, voice commands, alarms and call controls.
 ---
 
-import { Aside, Steps } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
 
-Wake words run on the display. Audio goes only where your Assist pipeline sends it.
+Wake-word detection runs on the display. Home Assistant processes speech and replies through
+the selected Assist pipeline.
 
 ## Two assistants
 
 **Assistant 1** and **Assistant 2** each have their own wake word, Assist pipeline, sensitivity,
-sounds and timing. Use one for Home Assistant's own assistant and the other for, say, a cloud LLM.
+sounds and timing. Assign different pipelines to the two wake words, including local and cloud pipelines.
 A slot with no wake word is off.
 
 ## Set it up
@@ -20,9 +21,9 @@ A slot with no wake word is off.
 1. In Home Assistant, open the display's **Assistant 1** device.
 
 2. Pick an **Assistant** (Assist pipeline) and a **Wake word**. Custom wake words added to Home
-   Assistant are listed too.
+   Assistant are listed too. The [EchoLocal integration](/start/integration/) adds a wake word library for managing them.
 
-3. The display downloads the wake word and starts listening.
+3. Repeat for **Assistant 2** to configure the second wake word and pipeline.
 
 </Steps>
 
@@ -53,15 +54,17 @@ without it the row is dimmed.
 
 ## Timing, follow-up and recordings
 
-These are only in Home Assistant, on each assistant's device:
+Find these in Home Assistant on each assistant's device, in the
+[EchoLocal card](/start/integration/#the-card)'s assistant panel, or in the display's
+[web page](/use/web/):
 
 | Setting | What it does | Default |
 |---|---|---|
 | **Follow-up time** | Keep listening after a reply, so you can ask again without the wake word (0–30 s) | 0 |
 | **Max listening time** | Stop listening after this long (5–60 s) | 15 s |
-| **Max thinking time** | Give up waiting for Home Assistant after this long (5–300 s) | 90 s |
+| **Max thinking time** | Timeout for a Home Assistant response (5–300 s) | 90 s |
 | **Reply buffer** | How much of a streamed reply to collect before playing (0–3000 ms) | 650 ms |
-| **Recordings kept** | Keep the audio of the last N requests (0–10) | 0 |
+| **Recordings kept** | Keep the audio of the last N requests (0–10), for the integration's Activity tab | 0 |
 
 The **Last wake word**, **Last heard** and **Last reply** sensors show the most recent turn.
 
@@ -70,8 +73,8 @@ The **Last wake word**, **Last heard** and **Last reply** sensors show the most 
 
 Say **"stop"**, no wake word needed, or tap the screen. It stops, in order: a ringing alarm or timer, the assistant, an announcement, then pauses music.
 
-**Stop word sensitivity** in Home Assistant (0.5–1, default 0.7) sets how sure it has to be; 1 turns
-it off.
+**Stop word sensitivity** in Home Assistant sets the detection threshold (0.5–1, default 0.7).
+Set it to 1 to disable stop-word detection.
 
 ## Voice triggers
 
@@ -138,14 +141,9 @@ and **Hang up a call**. To use voice hang-up during a connected call, turn off
 
 Home Assistant can also call `esphome.<node>_call_answer` with `video: false` for audio-only or
 `video: true` for video, and `esphome.<node>_call_hangup` with no arguments. These act on the current
-call, including peer calls; they are separate from the browser-call signalling actions.
+call, including calls between devices.
 
 ## Timers
 
 "Set a timer for ten minutes" starts a timer and shows a countdown. See
 [Messages, timers and alarms](/features/messages/).
-
-<Aside type="tip">
-If the wake word triggers too often or not enough, see [Microphones](/features/microphones/) as well
-as the sensitivity.
-</Aside>

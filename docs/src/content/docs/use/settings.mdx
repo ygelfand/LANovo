@@ -5,8 +5,9 @@ description: Every page of the Settings menu, what each setting does, its choice
 
 import { Aside } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
-import settings from '../../../assets/screens/settings.webp';
-import theme from '../../../assets/screens/bb-theme.png';
+import nativePhotos from '../../../assets/screens/native-photos.webp';
+import settings from '../../../assets/screens/native-settings.webp';
+import theme from '../../../assets/screens/themes.webp';
 
 The gear in the dock opens **Settings**. Every setting here is also an entity on the display in
 Home Assistant unless the table says otherwise, and a change in either place shows up in the other.
@@ -40,14 +41,13 @@ not grant screen control or admin access. If the field changes elsewhere, reload
 if access ends, open the keyboard's QR code again and pair with the current field.
 
 The phone opens the display's local HTTPS address. See
-[Signing in](/use/web/#signing-in) for browser certificate warnings; no admin password is needed
+[The certificate](/use/web/#the-certificate) for browser certificate warnings; no admin password is needed
 for this paired field.
 
 ## Network & internet
 
 The Wi‑Fi network, IP and MAC address, router and DHCP lease, all read-only. Change networks with
-[`./lanovo wifi`](/start/install/#changing-wifi-later). When the router offers a different address
-from the one the display had before, the display takes the new one.
+[`./lanovo wifi`](/start/install/#changing-wifi-later).
 
 | Setting | What it does | Default | Entity |
 |---|---|---|---|
@@ -124,6 +124,8 @@ from the one the display had before, the display takes the new one.
 
 ### Photos
 
+<Image src={nativePhotos} alt="The on-screen Photos settings page" />
+
 | Setting | What it does | Choices | Default | Entity |
 |---|---|---|---|---|
 | Show wallpaper | A photo behind the native dashboard | | Off | `switch.<device>_screen_wallpaper` |
@@ -191,7 +193,7 @@ Under **Settings → Display → Screen saver**.
 |---|---|---|---|---|
 | Start after | Idle time before the screen saver | 30 s, 1, 2, 5, 15 min, Never | 1 min | `select.<device>_screen_idle_screen_after` |
 | Wake on motion | Wake when someone walks up | | Off | `switch.<device>_wake_on_motion` |
-| Detection range | How far away counts | 1–5 | 3 | `number.<device>_detection_range` |
+| Detection range | Motion detection sensitivity, not a distance measurement | 1–5 | 3 | `number.<device>_detection_range` |
 | Visual 1, Visual 2 | Up to two [visuals](/use/visuals/), drawn together, or [Photos](/features/photos/#screen-saver) | None, Photos or any of the 33 | None | `select.<device>_screen_idle_visual_1`, `select.<device>_screen_idle_visual_2` |
 | Next photo every, Photo fit, Transition | Shown when a slot is Photos | 10 s to 5 min | 30 s, Slow pan, Fade | `select.<device>_screen_screen_saver_next_photo_every`, `select.<device>_screen_screen_saver_photo_fit`, `select.<device>_screen_screen_saver_photo_transition` |
 | Visual 1 audio, Visual 2 audio | What each visual reacts to | Microphone and speaker, Microphone, Speaker | Both | `select.<device>_screen_idle_visual_1_listens_to`, `select.<device>_screen_idle_visual_2_listens_to` |
@@ -307,7 +309,7 @@ the display; [config sync](/use/configuration/#config-sync) doesn't copy them.
 
 | Setting | What it does | Default | Entity |
 |---|---|---|---|
-| Language | English for now | English | `select.<device>_screen_language` |
+| Language | Interface language | English | `select.<device>_screen_language` |
 | Date & time | Time zone (or follow Home Assistant) and 24-hour format | 24-hour | `select.<device>_time_zone`, `select.<device>_screen_clock_format` |
 | Keyboard size | The on-screen keyboard | Compact | `select.<device>_screen_keyboard_size` |
 | Restart | Restart the app or the whole display | | `button.<device>_restart` (button) |
@@ -318,9 +320,9 @@ the display; [config sync](/use/configuration/#config-sync) doesn't copy them.
 
 ### Settings Lock
 
-**Set PIN** asks for 4 to 8 digits, twice. From then on the gear asks for the PIN before Settings
-opens; **Change PIN** and **Remove PIN** are on the same page. After five wrong PINs it makes you
-wait 30 seconds, doubling with each wrong PIN after that, up to an hour.
+**Set PIN** asks for 4 to 8 digits, twice. Opening Settings then requires the PIN.
+**Change PIN** and **Remove PIN** are on the same page. After five wrong entries, the next attempt
+requires a 30-second wait. Each further wrong entry doubles the wait, up to an hour.
 
 The lock covers the screen only. If you forget the PIN, clear **Settings Lock** in Home Assistant.
 

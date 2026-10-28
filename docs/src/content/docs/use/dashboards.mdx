@@ -3,7 +3,9 @@ title: Dashboards
 description: LANovo's own clock and home control, or a Tessera dashboard from Home Assistant.
 ---
 
-import { Aside, Steps } from '@astrojs/starlight/components';
+import OptionGallery from '../../../components/OptionGallery.astro';
+
+import { Steps } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import setup from '../../../assets/screens/tessera-setup.webp';
 import tessera from '../../../assets/screens/tessera.webp';
@@ -11,7 +13,7 @@ import lights from '../../../assets/screens/home-lights.webp';
 import rotate from '../../../assets/screens/rotate.webp';
 
 
-The dashboard is what the display shows when you're using it. Pick one with **Mode** in
+The dashboard is the display's home screen. Choose its **Mode** in
 **Settings → Dashboard**:
 
 - **Native**: a big clock, the weather, and tabs for your lights, switches, cameras, doorbells and
@@ -31,29 +33,8 @@ The native dashboard is a clock with the date, an optional weather card, and an 
 **Settings → Dashboard → Clock**. There are 21 faces: Plain, Stack, Cards, Flip, Analog, Analog
 seconds, Roman, Railway, Octagon, Atomic, Spoken, Math, Smiley, Neon, Bars, Reel, Binary, Segments,
 Nixie, Words and Overlap.
-<div class="carousel">
-	<img src="/carousel/faces-0.png" alt="A clock face, 1 of 21" loading="lazy" />
-	<img src="/carousel/faces-1.png" alt="A clock face, 2 of 21" loading="lazy" />
-	<img src="/carousel/faces-2.png" alt="A clock face, 3 of 21" loading="lazy" />
-	<img src="/carousel/faces-3.png" alt="A clock face, 4 of 21" loading="lazy" />
-	<img src="/carousel/faces-4.png" alt="A clock face, 5 of 21" loading="lazy" />
-	<img src="/carousel/faces-5.png" alt="A clock face, 6 of 21" loading="lazy" />
-	<img src="/carousel/faces-6.png" alt="A clock face, 7 of 21" loading="lazy" />
-	<img src="/carousel/faces-7.png" alt="A clock face, 8 of 21" loading="lazy" />
-	<img src="/carousel/faces-8.png" alt="A clock face, 9 of 21" loading="lazy" />
-	<img src="/carousel/faces-9.png" alt="A clock face, 10 of 21" loading="lazy" />
-	<img src="/carousel/faces-10.png" alt="A clock face, 11 of 21" loading="lazy" />
-	<img src="/carousel/faces-11.png" alt="A clock face, 12 of 21" loading="lazy" />
-	<img src="/carousel/faces-12.png" alt="A clock face, 13 of 21" loading="lazy" />
-	<img src="/carousel/faces-13.png" alt="A clock face, 14 of 21" loading="lazy" />
-	<img src="/carousel/faces-14.png" alt="A clock face, 15 of 21" loading="lazy" />
-	<img src="/carousel/faces-15.png" alt="A clock face, 16 of 21" loading="lazy" />
-	<img src="/carousel/faces-16.png" alt="A clock face, 17 of 21" loading="lazy" />
-	<img src="/carousel/faces-17.png" alt="A clock face, 18 of 21" loading="lazy" />
-	<img src="/carousel/faces-18.png" alt="A clock face, 19 of 21" loading="lazy" />
-	<img src="/carousel/faces-19.png" alt="A clock face, 20 of 21" loading="lazy" />
-	<img src="/carousel/faces-20.png" alt="A clock face, 21 of 21" loading="lazy" />
-</div>
+
+<OptionGallery items={[{"src":"/carousel/faces-0.png","label":"Plain","alt":"Plain clock face on the native dashboard"},{"src":"/carousel/faces-1.png","label":"Stack","alt":"Stack clock face on the native dashboard"},{"src":"/carousel/faces-2.png","label":"Cards","alt":"Cards clock face on the native dashboard"},{"src":"/carousel/faces-3.png","label":"Analog","alt":"Analog clock face on the native dashboard"},{"src":"/carousel/faces-4.png","label":"Segments","alt":"Segments clock face on the native dashboard"},{"src":"/carousel/faces-5.png","label":"Words","alt":"Words clock face on the native dashboard"},{"src":"/carousel/faces-6.png","label":"Overlap","alt":"Overlap clock face on the native dashboard"},{"src":"/carousel/faces-7.png","label":"Analog seconds","alt":"Analog seconds clock face on the native dashboard"},{"src":"/carousel/faces-8.png","label":"Flip","alt":"Flip clock face on the native dashboard"},{"src":"/carousel/faces-9.png","label":"Roman","alt":"Roman clock face on the native dashboard"},{"src":"/carousel/faces-10.png","label":"Railway","alt":"Railway clock face on the native dashboard"},{"src":"/carousel/faces-11.png","label":"Octagon","alt":"Octagon clock face on the native dashboard"},{"src":"/carousel/faces-12.png","label":"Atomic","alt":"Atomic clock face on the native dashboard"},{"src":"/carousel/faces-13.png","label":"Spoken","alt":"Spoken clock face on the native dashboard"},{"src":"/carousel/faces-14.png","label":"Math","alt":"Math clock face on the native dashboard"},{"src":"/carousel/faces-15.png","label":"Smiley","alt":"Smiley clock face on the native dashboard"},{"src":"/carousel/faces-16.png","label":"Neon","alt":"Neon clock face on the native dashboard"},{"src":"/carousel/faces-17.png","label":"Bars","alt":"Bars clock face on the native dashboard"},{"src":"/carousel/faces-18.png","label":"Reel","alt":"Reel clock face on the native dashboard"},{"src":"/carousel/faces-19.png","label":"Binary","alt":"Binary clock face on the native dashboard"},{"src":"/carousel/faces-20.png","label":"Nixie","alt":"Nixie clock face on the native dashboard"}]} layout="strip" label={"A clock face"} width={420} height={672} />
 
 ### Lights and switches
 
@@ -88,9 +69,50 @@ looks on the dashboard and on the screen saver: Compact, Stack, Card, Detail, Ic
 or without animation, in the weather's colors or the theme's, and where it sits. The dashboard and
 the screen saver each have their own layout.
 
-**Weather alerts** replaces the card with severe and extreme US warnings from the National Weather
-Service until you dismiss them. Every weather setting is on
-[Settings on the screen](/use/settings/#weather).
+Every weather setting is on [Settings on the screen](/use/settings/#weather).
+
+#### Severe-weather alerts
+
+Turn on **Settings → Dashboard → Weather → Weather alerts** (`weather_alerts` in Home Assistant).
+It is off by default. The display checks the National Weather Service for **Severe** and
+**Extreme** alerts covering the location of Home Assistant's **Home** zone (`zone.home`), not the
+weather entity's location. This is a US service and requires internet access.
+
+Allow **the device to perform Home Assistant actions** in its ESPHome integration options; this
+lets it request the Home zone's coordinates. Set the Home zone's location correctly in Home
+Assistant before enabling alerts.
+
+A warning replaces the weather card with its event name, hazard picture and end time. Tap the card
+to open Radar focused on the warning, or **Dismiss** to hide it. Dismissal is saved across restarts
+and also hides updates that refer to that warning. If several warnings are active, the most severe
+undismissed one appears first.
+
+Alerts use the native dashboard's weather card, not Tessera tiles: keep **Show on dashboard** on
+and open the clock tab to see them there. For the screen saver,
+turn on **Settings → Display → Screen saver → Weather → Show on screen saver**. They are not a
+full-screen alarm or a spoken announcement. Checks run every five minutes; use official emergency
+alerts for time-critical warnings.
+
+### Presence and room sensors
+
+Turn on **Settings → Display → Screen saver → Wake on motion** to wake the display when someone
+approaches. Presence also keeps the screen awake while the sensor continues to detect someone.
+This is off by default. **Detection range** runs from **1** (least sensitive) to **5** (most
+sensitive), with **3** as the default; these are sensitivity levels, not distances in metres.
+
+Home Assistant gets **Presence** (`presence`), **Proximity** (`proximity`), **Ambient light**
+(`ambient_light`) and **Orientation** (`orientation`). Presence uses the proximity sensor, not the
+camera or a microphone. It reports nearby occupancy after a rise over the background reading,
+and clears after the reading stays low for ten seconds. Use it for an approach-triggered
+automation, not as a guarantee that the whole room is empty.
+
+For example, trigger a Home Assistant automation when the display's **Presence** entity turns
+on, then turn on a nearby light. Select the actual device entity in the automation editor;
+**Wake on motion** only controls the screen and does not disable the Presence entity.
+
+**Ambient light** reports lux and feeds [automatic brightness](/use/settings/#display).
+**Proximity** is a raw sensor reading, not a distance measurement. Automatic orientation follows
+the accelerometer on displays that support rotation.
 
 ## Tessera
 
@@ -107,19 +129,8 @@ screen; lay out the pages there. There are two ways to show them:
 Both use the same Tessera screens, so a layout works in either mode.
 
 <Image src={tessera} alt="A Tessera page with climate, weather, a clock, the sun, energy flow, lights and locks" class="screen" />
-<div class="carousel">
-	<img src="/carousel/styles-0.png" alt="The same Tessera page in a style, 1 of 9" loading="lazy" />
-	<img src="/carousel/styles-1.png" alt="The same Tessera page in a style, 2 of 9" loading="lazy" />
-	<img src="/carousel/styles-2.png" alt="The same Tessera page in a style, 3 of 9" loading="lazy" />
-	<img src="/carousel/styles-3.png" alt="The same Tessera page in a style, 4 of 9" loading="lazy" />
-	<img src="/carousel/styles-4.png" alt="The same Tessera page in a style, 5 of 9" loading="lazy" />
-	<img src="/carousel/styles-5.png" alt="The same Tessera page in a style, 6 of 9" loading="lazy" />
-	<img src="/carousel/styles-6.png" alt="The same Tessera page in a style, 7 of 9" loading="lazy" />
-	<img src="/carousel/styles-7.png" alt="The same Tessera page in a style, 8 of 9" loading="lazy" />
-	<img src="/carousel/styles-8.png" alt="The same Tessera page in a style, 9 of 9" loading="lazy" />
-</div>
 
-Most of Tessera's tiles and features are supported.
+<OptionGallery items={[{"src":"/carousel/styles-0.png","label":"Standard","alt":"Tessera dashboard in the Standard style"},{"src":"/carousel/styles-1.png","label":"Material You","alt":"Tessera dashboard in the Material You style"},{"src":"/carousel/styles-2.png","label":"Glass","alt":"Tessera dashboard in the Glass style"},{"src":"/carousel/styles-3.png","label":"E-ink","alt":"Tessera dashboard in the E-ink style"},{"src":"/carousel/styles-4.png","label":"Metro","alt":"Tessera dashboard in the Metro style"},{"src":"/carousel/styles-5.png","label":"Terminal","alt":"Tessera dashboard in the Terminal style"},{"src":"/carousel/styles-6.png","label":"Hi-fi","alt":"Tessera dashboard in the Hi-fi style"},{"src":"/carousel/styles-7.png","label":"Neon","alt":"Tessera dashboard in the Neon style"},{"src":"/carousel/styles-8.png","label":"Skeuo","alt":"Tessera dashboard in the Skeuo style"}]} layout="strip" label={"The same Tessera page in a style"} width={420} height={672} />
 
 ### Set it up
 
@@ -156,13 +167,11 @@ In a Tessera mode, **Settings → Dashboard** has:
 | Page transition | Tessera embedded: None, Slide, Cover, Reveal, Deck, Zoom or Fade (Slide by default) |
 | Page follows finger | Tessera embedded: the page moves with your finger while you swipe (on by default) |
 
-With Tessera embedded, Tessera's screen saver also needs **Auto standby** turned on in Tessera's own
-screen settings; the Screen saver row says so until it is.
+With Tessera embedded, also turn on **Auto standby** in Tessera's own screen settings to use its
+screen saver.
 
-<Aside type="tip">
-Turn on **Allow the device to perform Home Assistant actions** on the display's ESPHome device in
-Home Assistant, or taps on tiles won't do anything. The Home control page reminds you if it's off.
-</Aside>
+Tile controls require **Allow the device to perform Home Assistant actions** in the display's
+ESPHome integration options. Check this permission if tiles appear but do not respond to taps.
 
 ## Rotation
 

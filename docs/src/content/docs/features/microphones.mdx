@@ -3,9 +3,8 @@ title: Microphones
 description: What each microphone setting does and how to tune for your room.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
-The microphone settings are only in Home Assistant. They stay on
+Find the microphone settings in Home Assistant on the device's **microphone** sub-device or in
+the display's [web page](/use/web/). They stay on
 the display: [config sync](/use/configuration/#config-sync) doesn't copy them.
 
 | Setting | Entity | What it does | Range | Default |
@@ -15,18 +14,18 @@ the display: [config sync](/use/configuration/#config-sync) doesn't copy them.
 | **Noise suppression** | `switch.<device>_microphone_noise_suppression` | Takes the room's steady noise (a fan, traffic) out of what the microphones hear | On, Off | On |
 | **Room sensitivity** | `number.<device>_microphone_room_sensitivity` | How much louder than the room's background noise a sound has to be before the listening visual reacts | 4–20 dB | 8 dB |
 
-The room's sound level and noise floor are sensors (`room_level`, `room_floor`), which help when
-tuning.
+The **Room level** (`room_level`) and **Room floor** (`room_floor`) sensors report the current sound
+level and background noise floor.
 
 ## Tuning
 
 - **The wake word misses you from across the room.** Make the wake word easier to trigger first:
   lower **Wake word sensitivity** in Home Assistant, or raise its slider on the screen; then raise **Microphone gain** a few dB at a time. Keep **Microphone
   leveling** on.
-- **It wakes on its own, or on the TV.** Make the wake word harder to trigger: raise **Wake word sensitivity** in Home Assistant, or lower
+- **It wakes without a wake word, or on the TV.** Make the wake word harder to trigger: raise **Wake word sensitivity** in Home Assistant, or lower
   its slider on the screen.
-- **It cuts you off, or keeps listening too long.** Adjust **Max listening time**, and **Room
-  sensitivity** if the room is loud.
+- **It cuts you off, or keeps listening too long.** Adjust **Max listening time** to change the
+  time limit. **Room sensitivity** changes the visual response, not when listening ends.
 - **Voices sound distorted in the recordings.** Lower **Microphone gain**.
 
 ## What the visuals hear

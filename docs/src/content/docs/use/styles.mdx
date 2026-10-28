@@ -3,25 +3,20 @@ title: Styles and themes
 description: Nine UI styles and eighteen color themes.
 ---
 
+import OptionGallery from '../../../components/OptionGallery.astro';
+
 import { Image } from 'astro:assets';
 import neon from '../../../assets/screens/tessera-neon.webp';
 import terminal from '../../../assets/screens/tessera-terminal.webp';
 import skeuo from '../../../assets/screens/tessera-skeuo.webp';
-import theme from '../../../assets/screens/bb-theme.png';
+import theme from '../../../assets/screens/themes.webp';
 
 **Style** sets shapes, borders, shadows and type. **Theme** sets colors. Both apply to everything on
 the display and are under **Settings → Display** and in Home Assistant.
-<div class="carousel">
-	<img src="/carousel/styles-0.png" alt="One Tessera page in a style, 1 of 9" loading="lazy" />
-	<img src="/carousel/styles-1.png" alt="One Tessera page in a style, 2 of 9" loading="lazy" />
-	<img src="/carousel/styles-2.png" alt="One Tessera page in a style, 3 of 9" loading="lazy" />
-	<img src="/carousel/styles-3.png" alt="One Tessera page in a style, 4 of 9" loading="lazy" />
-	<img src="/carousel/styles-4.png" alt="One Tessera page in a style, 5 of 9" loading="lazy" />
-	<img src="/carousel/styles-5.png" alt="One Tessera page in a style, 6 of 9" loading="lazy" />
-	<img src="/carousel/styles-6.png" alt="One Tessera page in a style, 7 of 9" loading="lazy" />
-	<img src="/carousel/styles-7.png" alt="One Tessera page in a style, 8 of 9" loading="lazy" />
-	<img src="/carousel/styles-8.png" alt="One Tessera page in a style, 9 of 9" loading="lazy" />
-</div>
+
+<OptionGallery items={[{"src":"/carousel/styles-0.png","label":"Standard","alt":"Tessera dashboard in the Standard style"},{"src":"/carousel/styles-1.png","label":"Material You","alt":"Tessera dashboard in the Material You style"},{"src":"/carousel/styles-2.png","label":"Glass","alt":"Tessera dashboard in the Glass style"},{"src":"/carousel/styles-3.png","label":"E-ink","alt":"Tessera dashboard in the E-ink style"},{"src":"/carousel/styles-4.png","label":"Metro","alt":"Tessera dashboard in the Metro style"},{"src":"/carousel/styles-5.png","label":"Terminal","alt":"Tessera dashboard in the Terminal style"},{"src":"/carousel/styles-6.png","label":"Hi-fi","alt":"Tessera dashboard in the Hi-fi style"},{"src":"/carousel/styles-7.png","label":"Neon","alt":"Tessera dashboard in the Neon style"},{"src":"/carousel/styles-8.png","label":"Skeuo","alt":"Tessera dashboard in the Skeuo style"}]} layout="strip" label={"One Tessera page in a style"} width={420} height={672} />
+
+Scroll through all nine styles above, or [compare them in a grid](/use/gallery/#ui-styles).
 
 <Image src={theme} alt="The Theme picker" class="screen" />
 
@@ -51,8 +46,8 @@ the display and are under **Settings → Display** and in Home Assistant.
 
 The **Custom** tile is the last in the theme picker. Tap it to use your colors; tap its pencil to
 edit them. The editor has six colors: Background, Cards, Text, Secondary text, Accent and Second
-accent. Pick one, then choose its color on the square and the hue slider. Each color saves a moment
-after you let go, and the screen changes with it. Colors you haven't picked come from Paper.
+accent. Select a color, then adjust it with the square and hue slider. Changes save automatically
+after release and apply to the screen. Unchanged colors use Paper's palette.
 
 Custom counts as a dark theme when its background is dark.
 

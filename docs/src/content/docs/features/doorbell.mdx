@@ -1,19 +1,17 @@
 ---
 title: Doorbell
-description: See who's at the door, hear them and talk back, with Reolink and ONVIF doorbells.
+description: Live video and two-way audio with Reolink and ONVIF doorbells.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
 
-
-When someone rings, the display wakes, rings and shows the door: live video with the doorbell's
-sound, and a button to talk back. Up to four doorbells can be set up. Person, package, vehicle and
+When someone rings, the display wakes, rings and shows live video with the doorbell's
+sound and a microphone button for two-way audio. It supports up to four doorbells. Person, package, vehicle and
 animal detections show as notifications.
 
 ## Add a doorbell
 
 Open **Settings → Home control → Doorbell → Add doorbell**, or the gear on the **Doorbell** app.
-The display looks in Home Assistant first, then offers three ways in:
+Choose one of three setup methods:
 
 | | |
 |---|---|
@@ -25,7 +23,7 @@ A doorbell added with **Auto setup** has no password, so it uses Home Assistant 
 its rings, without talkback. Tap it on the Doorbell page and enter its password to connect to it
 directly, with talkback.
 
-**Save** checks the login first and says **Not saved** with the reason if it fails: a wrong
+Tap **Save** to check the login and save the doorbell. **Not saved** reports a wrong
 password, a different doorbell at that address, or a doorbell it can't reach.
 
 Tap a doorbell on the Doorbell page to change it, see whether its events and video are working, or
@@ -57,15 +55,15 @@ The live view has a speaker button for the doorbell's sound and a microphone but
 talk, tap again to stop. The doorbell's sound is muted while you talk. An auto-answered view closes
 after 2 minutes.
 
-If the screen can't play the doorbell's main stream, it switches to the sub stream and says so.
+If the screen can't play the doorbell's main stream, it uses the sub stream.
 
 The **Doorbell** app shows a picture of each doorbell and the recent events; tap one to watch.
 Recent events are kept until LANovo restarts.
 
 ## Sources
 
-Each doorbell picks where its video, events and talkback come from. **Automatic** suits most
-doorbells; change them on the doorbell's page or in Home Assistant.
+Set the video, event and talkback sources separately on each doorbell's settings page or in
+Home Assistant. Each source defaults to **Automatic**.
 
 | Setting | Entity | Choices |
 |---|---|---|
@@ -85,8 +83,6 @@ The same four entities exist for doorbells 2 to 4.
 **Doorbell status** (`doorbell_status`) in Home Assistant says how many doorbells are connected, or
 what's wrong.
 
-<Aside>
 **Settings → Home control** shows the Doorbell page only when home control is on and **Allow the
 device to perform Home Assistant actions** is turned on for the display in the ESPHome
 integration. Without that, open the doorbell settings from the gear on the **Doorbell** app.
-</Aside>

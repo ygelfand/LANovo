@@ -3,17 +3,16 @@ title: The EchoLocal integration
 description: A card for every display, a dashboard for all of them, Fleet, wake words and custom tones.
 ---
 
-import { Aside, Steps } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import cardPanel from '../../../assets/screens/hacs-card-blueberry.webp';
 import fleet from '../../../assets/screens/hacs-fleet.webp';
 import fleetSync from '../../../assets/screens/hacs-fleet-sync.webp';
 
-The EchoLocal integration was made for LANovo's sister project, [EchoLocal](https://www.echolocal.link), and
-works with LANovo displays too. One integration covers both: Lenovo Smart Displays and Echo devices
-share its dashboard, cards and Fleet, side by side.
+The EchoLocal integration supports both LANovo displays and [EchoLocal](https://www.echolocal.link) devices
+in one dashboard, with cards and Fleet settings management for both.
 
-The display works in Home Assistant without this. The integration is an optional companion that
+The display works in Home Assistant without this optional integration. It
 adds:
 
 - **A card** for each display, with its settings and controls laid out by area
@@ -28,7 +27,7 @@ adds:
 
 ## Install
 
-Needs Home Assistant **2026.8** or newer.
+Requires Home Assistant **2026.8** or newer.
 
 <Steps>
 
@@ -76,8 +75,8 @@ help: true
 
 ### Home
 
-Every display's card on one page, or one section per group. Each group's bar has **Mute all**, **Ring** and **Stop** where its devices have them, which act on every device in it. If only some of them take it, the bar says how
-many did.
+Every display's card on one page, or one section per group. Each group's bar has **Mute all**, **Ring** and **Stop** where supported, which act on every device in it. The bar reports how many devices
+accepted the action.
 
 ### Activity
 
@@ -128,7 +127,7 @@ is greyed out.
 
 ### Tones
 
-Upload a sound, tidy it up, and send it to devices. It then shows up in their sound pickers for
+Upload a sound, trim silence or normalize its loudness, and send it to devices. It appears in their sound pickers for
 chimes, timers, alarms, rings and the wake tone. See [Custom tones](/features/tones/).
 
 ### Health
@@ -143,7 +142,5 @@ address.
 | `echolocal.assign_tone` | Send a tone from the library to devices (`tone`, `device_id`) |
 | `echolocal.unassign_tone` | Remove a tone from devices; it stays in the library |
 
-<Aside>
 Each display's own actions, such as messages, alarms and timers, come from the ESPHome
 integration. See [Messages, timers and alarms](/features/messages/).
-</Aside>

@@ -3,17 +3,23 @@ title: Home alarm
 description: Arm and disarm a Home Assistant alarm panel from the screen, and see its zones.
 ---
 
+import OptionGallery from '../../../components/OptionGallery.astro';
+
+import { Image } from 'astro:assets';
+import alarm from '../../../assets/screens/app-home-alarm.webp';
+
 
 The **Home alarm** app shows an alarm panel from Home Assistant: its state, buttons to arm and
 disarm, a keypad for the code, and the doors, windows and sensors that belong to it. It can also
 take over the screen when the alarm goes off or the entry delay starts.
 
+<Image src={alarm} alt="Home alarm app showing the Home Assistant alarm panel" />
+
 ## Set it up
 
 Open **Settings → Home control → Home alarm** and pick the panel under **Alarm panel**. If Home
-Assistant has only one alarm panel, it's picked for you. This needs home control on and **Allow the
-device to perform Home Assistant actions** turned on for the display in the ESPHome integration;
-every button on the alarm is a Home Assistant action.
+Assistant has only one alarm panel, it is selected automatically. Enable home control and **Allow
+the device to perform Home Assistant actions** in the display's ESPHome integration options.
 
 ## Using it
 
@@ -22,7 +28,7 @@ every button on the alarm is a Home Assistant action.
   or triggered.
 - If the panel needs a code, enter it on the keypad. The Keypad and Vault looks have the keypad on
   the screen; the others ask for it when you press a button.
-- **Emergency** (or **Panic**) triggers the alarm; hold it, a tap only shows **Hold to trigger**. It
+- Hold **Emergency** (or **Panic**) to trigger the alarm. A tap only shows **Hold to trigger**. It
   shows when the panel can be triggered from Home Assistant. If the panel's Home Assistant device
   has its own buttons, such as fire or medical, those appear instead.
 - **Zones** are the door, window, motion, smoke, water and similar sensors on the panel's Home
@@ -34,6 +40,12 @@ every button on the alarm is a Home Assistant action.
 **Look** (`homealarm_look`) picks one of 14 designs: Keypad (the default), Shield, Card, Ring, Dial,
 Neon, Hardware, Flip board, Terminal, Console, Blueprint, Matrix, Vault and Minimal. The picker
 shows each one with the panel's current state.
+
+The examples use rehearsal data, with two open zones. Private zone names are blurred.
+
+<OptionGallery items={[{"src":"/carousel/homealarm-0.webp","label":"Keypad","alt":"Home alarm in the Keypad design with rehearsal data"},{"src":"/carousel/homealarm-1.webp","label":"Shield","alt":"Home alarm in the Shield design with rehearsal data"},{"src":"/carousel/homealarm-2.webp","label":"Card","alt":"Home alarm in the Card design with rehearsal data"},{"src":"/carousel/homealarm-3.webp","label":"Ring","alt":"Home alarm in the Ring design with rehearsal data"},{"src":"/carousel/homealarm-4.webp","label":"Dial","alt":"Home alarm in the Dial design with rehearsal data"},{"src":"/carousel/homealarm-5.webp","label":"Neon","alt":"Home alarm in the Neon design with rehearsal data"},{"src":"/carousel/homealarm-6.webp","label":"Hardware","alt":"Home alarm in the Hardware design with rehearsal data"},{"src":"/carousel/homealarm-7.webp","label":"Flip board","alt":"Home alarm in the Flip board design with rehearsal data"},{"src":"/carousel/homealarm-8.webp","label":"Terminal","alt":"Home alarm in the Terminal design with rehearsal data"},{"src":"/carousel/homealarm-9.webp","label":"Console","alt":"Home alarm in the Console design with rehearsal data"},{"src":"/carousel/homealarm-10.webp","label":"Blueprint","alt":"Home alarm in the Blueprint design with rehearsal data"},{"src":"/carousel/homealarm-11.webp","label":"Matrix","alt":"Home alarm in the Matrix design with rehearsal data"},{"src":"/carousel/homealarm-12.webp","label":"Vault","alt":"Home alarm in the Vault design with rehearsal data"},{"src":"/carousel/homealarm-13.webp","label":"Minimal","alt":"Home alarm in the Minimal design with rehearsal data"}]} layout="stack" label={"Every home-alarm design"} width={1280} height={800} />
+
+Home alarm's **Look** is separate from the display's [style and theme](/use/styles/).
 
 ## Settings
 

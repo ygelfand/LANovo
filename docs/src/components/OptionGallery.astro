@@ -1,0 +1,76 @@
+---
+interface Props {
+	items: { src: string; label: string; alt: string }[];
+	layout?: 'strip' | 'grid' | 'stack';
+	label: string;
+	width?: number;
+	height?: number;
+}
+
+const { items, layout = 'strip', label, width = 420, height = 672 } = Astro.props;
+---
+
+<div class:list={['option-gallery', layout]} role="region" aria-label={label} tabindex={layout === 'strip' ? 0 : undefined}>
+	{items.map((item) => (
+		<figure>
+			<img src={item.src} alt={item.alt} width={width} height={height} loading="lazy" decoding="async" />
+			<figcaption>{item.label}</figcaption>
+		</figure>
+	))}
+</div>
+
+<style>
+	.option-gallery {
+		gap: 1rem;
+		margin-block: 1.5rem;
+	}
+	.option-gallery figure {
+		margin: 0;
+		min-width: 0;
+	}
+	.option-gallery img {
+		display: block;
+		margin: 0;
+		border-radius: 0.5rem;
+		object-fit: contain;
+	}
+	.option-gallery figcaption {
+		margin-top: 0.5rem;
+		font-weight: 600;
+		text-align: center;
+	}
+	.strip {
+		display: flex;
+		overflow-x: auto;
+		scroll-snap-type: x mandatory;
+		padding-bottom: 0.75rem;
+	}
+	.strip figure {
+		flex: 0 0 auto;
+		max-width: 85%;
+		scroll-snap-align: start;
+	}
+	.strip img {
+		height: 22rem;
+		max-height: 60vh;
+		width: auto;
+		max-width: 100%;
+	}
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+	}
+	.grid img {
+		width: 100%;
+		height: auto;
+	}
+	.stack {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: 2rem;
+	}
+	.stack img {
+		width: 100%;
+		height: auto;
+	}
+</style>

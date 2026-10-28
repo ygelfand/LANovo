@@ -1,0 +1,12 @@
+---
+import OptionGallery from './OptionGallery.astro';
+import visuals from '../data/visuals.json';
+
+const items = visuals.map(({ kind, label }) => ({
+	src: `/visuals/${kind}.webp`,
+	label,
+	alt: `${label} audio visualizer`,
+}));
+---
+
+<OptionGallery items={items} layout="grid" label="All audio visuals" width={640} height={400} />

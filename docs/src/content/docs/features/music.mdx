@@ -3,9 +3,12 @@ title: Music and casting
 description: The media player, Sendspin, AirPlay, Chromecast, Bluetooth speaker and the sound machine.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import player from '../../../assets/screens/app-media-demo.webp';
 
-Turn each of these on under **Settings → Connected services**.
+Configure playback services under **Settings → Connected services**, in the
+display's [web page](/use/web/) or in Home Assistant.
+
 
 | Service | Switch | Displays |
 |---|---|---|
@@ -17,6 +20,11 @@ Turn each of these on under **Settings → Connected services**.
 
 ## Media player
 
+<figure>
+<Image src={player} alt="Media player with demonstration artwork and track title" />
+<figcaption>Example artwork and title.</figcaption>
+</figure>
+
 The display is a Home Assistant **media player** called **Speaker**: radio, media sources, TTS
 announcements and Music Assistant. Music ducks while the assistant listens and talks; **Music
 ducking** (`media_duck_level`, −40 to −3 dB, default −15) in Home Assistant sets how far.
@@ -24,8 +32,28 @@ ducking** (`media_duck_level`, −40 to −3 dB, default −15) in Home Assistan
 
 ## Sendspin
 
-A [Music Assistant](https://music-assistant.io) player for synchronized whole-home audio. Turn on
-**Sendspin** and Music Assistant finds the display on its own; group it with other speakers there.
+Sendspin provides synchronized playback with
+[Music Assistant](https://music-assistant.io).
+
+1. Run Music Assistant on the same network and turn on **Settings → Connected services → Sendspin**
+   on the display, or **Sendspin** (`sendspin`) in Home Assistant.
+2. Select the display by its name in Music Assistant's players and play an album, playlist or
+   radio station. Create the synchronized group in Music Assistant, not in the display's Settings.
+3. On a screen, open **Media** for the track, artist, album and cover art. Play/pause, previous and
+   next send commands back to the Sendspin server; seeking is not offered for Sendspin playback.
+
+**Sendspin state** (`sendspin_state`) in Home Assistant helps check the connection:
+
+| State | Meaning |
+|---|---|
+| `off` | Sendspin is disabled |
+| `waiting` | Enabled and waiting for a server |
+| `joined` | Connected to a server |
+| `playing` | The server has started playback |
+
+The state is a connection/playback diagnostic; a paused group can retain the `playing` state.
+If it stays at `waiting`, check discovery between Music Assistant and the display. Turning
+**Sendspin** off disconnects it and removes its network advertisement.
 
 ## AirPlay
 
@@ -33,37 +61,25 @@ Mirror a Mac, iPhone or iPad's screen and sound. Turn on **AirPlay**, then on th
 **Screen Mirroring** and pick the display by its name. The picture is sized to fit the screen and
 turns with it. Stop mirroring from the Mac or phone, or turn AirPlay off.
 
-AirPlay runs only while the switch is on.
-
 ## Chromecast
 
-Turn on **Cast receiver** and the display shows up as a cast target in apps and in Google Home.
+Turn on **Cast receiver**, open the Cast menu in a supported app, and select the display by name.
 
-Each app runs its own receiver page, as it would on a Chromecast.
-
-The first cast downloads the receiver engine, so it takes longer than the ones after it. While an
-app without its own logo loads, the screen says **Starting …**; an app that closes itself straight away shows
-"Chromecast: … can't play on this device". During an app's ad breaks the player shows **Ad**, or
-**Ad 2 of 3**.
 
 YouTube skips [SponsorBlock](https://sponsor.ajay.app) segments; pick which kinds under
 **Cast receiver → Skip segments**, listed on [Settings on the screen](/use/settings/#cast-receiver).
 
-<Aside type="caution" title="Experimental">
-Apps that protect their video with DRM may not play.
-</Aside>
-
 ## Bluetooth speaker
 
-The display shows up under its own name. Pair a phone and play; the player shows the track and
-cover art, and you can skip and pause from the screen.
+Pair the display in your phone's Bluetooth settings. Track information, cover art and playback
+controls appear in **Media**.
 
 ## Sound machine
 
-Two layers of steady sound, from Home Assistant: **White noise layer 1** and **layer 2**
+Play two background sounds together using **White noise layer 1** and **layer 2** in Home Assistant
 (`noise_layer_1`, `noise_layer_2`). Choose None, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire,
-Crickets, Fan or Cabin for each; they mix together and duck for everything else. They don't survive
-a restart.
+Crickets, Fan or Cabin for each. Other audio reduces the background volume. Background sounds stop
+when the display restarts.
 
 ## Player
 

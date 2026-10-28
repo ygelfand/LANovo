@@ -1,0 +1,137 @@
+---
+title: Interface gallery
+description: Dashboards, apps, media, photo options, alarm designs, settings, remote control and every pictured appearance option.
+---
+
+import OptionGallery from '../../../components/OptionGallery.astro';
+
+import VisualGallery from '../../../components/VisualGallery.astro';
+import ScreenGallery from '../../../components/ScreenGallery.astro';
+import { Image } from 'astro:assets';
+import themes from '../../../assets/screens/themes.webp';
+import native from '../../../assets/screens/ivy-dash.png';
+import saver from '../../../assets/screens/jbl-light-cycles.webp';
+
+Browse the interface by function. Select an image to enlarge it.
+
+
+## Dashboards
+
+Choose the native clock and home-control tabs, or custom pages designed in Home Assistant with
+Tessera. [Dashboard modes and setup](/use/dashboards/).
+
+<figure>
+<Image src={native} alt="Native clock and weather dashboard" />
+<figcaption>Native dashboard</figcaption>
+</figure>
+
+<ScreenGallery group="dashboards" />
+
+## Apps and home control
+
+The launcher, shopping list and home-alarm panel. [Every app and its setup](/features/apps/).
+
+<ScreenGallery group="apps" />
+
+## Media
+
+[Music, Sendspin, Bluetooth and casting](/features/music/). The player example uses demonstration
+artwork and a sample title.
+
+<ScreenGallery group="media" />
+
+## Photos and wallpaper
+
+On-screen photo settings, every fit and transition choice, and both library providers.
+[Photo setup and options](/features/photos/).
+
+<ScreenGallery group="photos" />
+
+## Saved alarms
+
+Saved wake-up alarms are separate from the Home Assistant security panel.
+[Alarms, timers and messages](/features/messages/).
+
+<ScreenGallery group="alarms" />
+
+## Home-alarm designs
+
+Every design at full width, using silent rehearsal data. Private zone names are blurred.
+[Home alarm setup and controls](/features/home-alarm/).
+
+<OptionGallery items={[{"src":"/carousel/homealarm-0.webp","label":"Keypad","alt":"Home alarm in the Keypad design with rehearsal data"},{"src":"/carousel/homealarm-1.webp","label":"Shield","alt":"Home alarm in the Shield design with rehearsal data"},{"src":"/carousel/homealarm-2.webp","label":"Card","alt":"Home alarm in the Card design with rehearsal data"},{"src":"/carousel/homealarm-3.webp","label":"Ring","alt":"Home alarm in the Ring design with rehearsal data"},{"src":"/carousel/homealarm-4.webp","label":"Dial","alt":"Home alarm in the Dial design with rehearsal data"},{"src":"/carousel/homealarm-5.webp","label":"Neon","alt":"Home alarm in the Neon design with rehearsal data"},{"src":"/carousel/homealarm-6.webp","label":"Hardware","alt":"Home alarm in the Hardware design with rehearsal data"},{"src":"/carousel/homealarm-7.webp","label":"Flip board","alt":"Home alarm in the Flip board design with rehearsal data"},{"src":"/carousel/homealarm-8.webp","label":"Terminal","alt":"Home alarm in the Terminal design with rehearsal data"},{"src":"/carousel/homealarm-9.webp","label":"Console","alt":"Home alarm in the Console design with rehearsal data"},{"src":"/carousel/homealarm-10.webp","label":"Blueprint","alt":"Home alarm in the Blueprint design with rehearsal data"},{"src":"/carousel/homealarm-11.webp","label":"Matrix","alt":"Home alarm in the Matrix design with rehearsal data"},{"src":"/carousel/homealarm-12.webp","label":"Vault","alt":"Home alarm in the Vault design with rehearsal data"},{"src":"/carousel/homealarm-13.webp","label":"Minimal","alt":"Home alarm in the Minimal design with rehearsal data"}]} layout="stack" label={"Every home-alarm design"} width={1280} height={800} />
+
+## Calls and broadcasts
+
+The shared device directory, browser calls and recorded announcements.
+[Intercom setup](/features/intercom/).
+
+<ScreenGallery group="calls" />
+
+## On-screen settings
+
+Search settings and configure the display. [Settings menu guide](/use/settings/).
+
+<ScreenGallery group="settings" />
+
+## Browser controls
+
+Settings, alarms, diagnostics and screen control from the device's own web interface.
+[Browser access and controls](/use/web/).
+
+<ScreenGallery group="browser" />
+
+## Home Assistant and Fleet
+
+The optional integration adds device cards, activity and shared management.
+[Integration setup and Fleet](/start/integration/).
+
+<ScreenGallery group="fleet" />
+
+
+## Clock faces
+
+Every clock face. Choose one under **Settings → Dashboard → Clock**; the screen saver has an
+independent clock selection. [Clock settings](/use/dashboards/).
+
+<OptionGallery items={[{"src":"/carousel/faces-0.png","label":"Plain","alt":"Plain clock face on the native dashboard"},{"src":"/carousel/faces-1.png","label":"Stack","alt":"Stack clock face on the native dashboard"},{"src":"/carousel/faces-2.png","label":"Cards","alt":"Cards clock face on the native dashboard"},{"src":"/carousel/faces-3.png","label":"Analog","alt":"Analog clock face on the native dashboard"},{"src":"/carousel/faces-4.png","label":"Segments","alt":"Segments clock face on the native dashboard"},{"src":"/carousel/faces-5.png","label":"Words","alt":"Words clock face on the native dashboard"},{"src":"/carousel/faces-6.png","label":"Overlap","alt":"Overlap clock face on the native dashboard"},{"src":"/carousel/faces-7.png","label":"Analog seconds","alt":"Analog seconds clock face on the native dashboard"},{"src":"/carousel/faces-8.png","label":"Flip","alt":"Flip clock face on the native dashboard"},{"src":"/carousel/faces-9.png","label":"Roman","alt":"Roman clock face on the native dashboard"},{"src":"/carousel/faces-10.png","label":"Railway","alt":"Railway clock face on the native dashboard"},{"src":"/carousel/faces-11.png","label":"Octagon","alt":"Octagon clock face on the native dashboard"},{"src":"/carousel/faces-12.png","label":"Atomic","alt":"Atomic clock face on the native dashboard"},{"src":"/carousel/faces-13.png","label":"Spoken","alt":"Spoken clock face on the native dashboard"},{"src":"/carousel/faces-14.png","label":"Math","alt":"Math clock face on the native dashboard"},{"src":"/carousel/faces-15.png","label":"Smiley","alt":"Smiley clock face on the native dashboard"},{"src":"/carousel/faces-16.png","label":"Neon","alt":"Neon clock face on the native dashboard"},{"src":"/carousel/faces-17.png","label":"Bars","alt":"Bars clock face on the native dashboard"},{"src":"/carousel/faces-18.png","label":"Reel","alt":"Reel clock face on the native dashboard"},{"src":"/carousel/faces-19.png","label":"Binary","alt":"Binary clock face on the native dashboard"},{"src":"/carousel/faces-20.png","label":"Nixie","alt":"Nixie clock face on the native dashboard"}]} layout="grid" label={"Every clock face"} width={420} height={672} />
+
+## UI styles
+
+Every style on the same Tessera layout. Styles change shapes and typography; themes change
+colors. [Styles and themes](/use/styles/).
+
+<OptionGallery items={[{"src":"/carousel/styles-0.png","label":"Standard","alt":"Tessera dashboard in the Standard style"},{"src":"/carousel/styles-1.png","label":"Material You","alt":"Tessera dashboard in the Material You style"},{"src":"/carousel/styles-2.png","label":"Glass","alt":"Tessera dashboard in the Glass style"},{"src":"/carousel/styles-3.png","label":"E-ink","alt":"Tessera dashboard in the E-ink style"},{"src":"/carousel/styles-4.png","label":"Metro","alt":"Tessera dashboard in the Metro style"},{"src":"/carousel/styles-5.png","label":"Terminal","alt":"Tessera dashboard in the Terminal style"},{"src":"/carousel/styles-6.png","label":"Hi-fi","alt":"Tessera dashboard in the Hi-fi style"},{"src":"/carousel/styles-7.png","label":"Neon","alt":"Tessera dashboard in the Neon style"},{"src":"/carousel/styles-8.png","label":"Skeuo","alt":"Tessera dashboard in the Skeuo style"}]} layout="grid" label={"Every UI style"} width={420} height={672} />
+
+## Theme palettes
+
+The Default palette, every built-in dark and light theme, and Custom.
+[Custom color settings](/use/styles/#custom-theme).
+
+<Image src={themes} alt="The complete theme picker, including Default, built-in palettes and Custom" />
+
+## Message layouts
+
+Banner, Card, Toast and Full screen. [Message actions and layout settings](/features/messages/#messages).
+
+<OptionGallery items={[{"src":"/carousel/alerts-0.png","label":"Banner","alt":"Message displayed in the Banner alert style"},{"src":"/carousel/alerts-1.png","label":"Card","alt":"Message displayed in the Card alert style"},{"src":"/carousel/alerts-2.png","label":"Toast","alt":"Message displayed in the Toast alert style"},{"src":"/carousel/alerts-3.png","label":"Full screen","alt":"Message displayed in the Full screen alert style"}]} layout="grid" label={"Every message layout"} width={420} height={672} />
+
+## Timer layouts
+
+Every countdown layout. [Timer controls and settings](/features/messages/#timers).
+
+<OptionGallery items={[{"src":"/carousel/timers-0.png","label":"Bar","alt":"Running timer displayed in the Bar style"},{"src":"/carousel/timers-1.png","label":"Banner","alt":"Running timer displayed in the Banner style"},{"src":"/carousel/timers-2.png","label":"Corner","alt":"Running timer displayed in the Corner style"},{"src":"/carousel/timers-3.png","label":"Dial","alt":"Running timer displayed in the Dial style"},{"src":"/carousel/timers-4.png","label":"Clock face","alt":"Running timer displayed in the Clock face style"},{"src":"/carousel/timers-5.png","label":"Full screen","alt":"Running timer displayed in the Full screen style"}]} layout="grid" label={"Every timer layout"} width={420} height={672} />
+
+## Screen savers
+
+Combine a clock with one or two visuals, or use photos. Clock placement and visual sources are
+independent of the dashboard. [Screen saver and night mode](/use/screen-saver/).
+
+<Image src={saver} alt="Screen saver combining a clock and audio-reactive visual" />
+
+## Audio visuals
+
+Every visual with its picker name. Choose them for screen savers and assistant feedback.
+[Visual settings and audio sources](/use/visuals/).
+
+<VisualGallery />

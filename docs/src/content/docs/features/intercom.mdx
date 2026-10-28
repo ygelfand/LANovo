@@ -15,7 +15,8 @@ your network, found automatically. Open it from the dock or the Apps screen.
 ## Calls
 
 Tap the phone button for audio or the camera button for video. Video needs a camera on both ends.
-During a call: mute, camera off, hang up.
+During a call, use the microphone, camera and hang-up buttons to mute audio, turn off video or end
+the call.
 
 
 ## Answering
@@ -40,15 +41,15 @@ from Home Assistant with the `call` action.
 
 ## Calling from Home Assistant
 
-With the [EchoLocal integration](https://www.echolocal.link/start/integration/), the display's card
+With the [EchoLocal integration](/start/integration/), the display's card
 has a phone button: call the display from a dashboard in a browser or the Home Assistant app, with
 audio or video. Sound and video go straight between the browser and the display, so the browser has
 to be on the same network.
 
 During a video call, the button beside hang-up, or a double-click on the picture, goes full screen.
 
-The display sees who is calling by their Home Assistant user. To have it answer some of them on its
-own, set **Answer from** to **Selected** and pick them under **Users**. The list shows the people in
+Calls identify the caller by their Home Assistant user. To auto-answer selected users, enable
+**Auto-answer**, set **Answer from** to **Selected** and pick them under **Users**. The list shows the people in
 Home Assistant that are linked to a user, under **Settings → People**.
 
 ## Device details
@@ -73,8 +74,8 @@ first.
 
 A broadcast is a short voice message played on every other device in this home at once. Say
 "broadcast" to your assistant and speak after the tone; it stops when you go quiet, after at most
-30 seconds. Or say "broadcast dinner is ready" and the words are spoken for you. A ding says it was
-sent, the failure sound that it wasn't.
+30 seconds. Or say "broadcast dinner is ready" to send the words as speech. A ding confirms the
+broadcast was sent; the failure sound indicates it failed.
 
 The receiving devices chime, show who it's from, and play it. A device on a call or ringing an
 alarm skips it. Turn **Receive broadcasts** (`switch.<device>_receive_broadcasts`, on by default)

@@ -12,6 +12,10 @@ import alarms from '../../../assets/screens/web-alarms.webp';
 import call from '../../../assets/screens/web-call.webp';
 import broadcast from '../../../assets/screens/web-broadcast.webp';
 import developer from '../../../assets/screens/web-developer.webp';
+import display from '../../../assets/screens/web-settings-display.webp';
+import photos from '../../../assets/screens/web-settings-photos.webp';
+import remote from '../../../assets/screens/web-remote-control.webp';
+import pairing from '../../../assets/screens/web-control-pairing.webp';
 
 Every display has its own web page. Open its address in a browser on the same network:
 
@@ -19,13 +23,13 @@ Every display has its own web page. Open its address in a browser on the same ne
 https://192.168.1.50/
 ```
 
-The plain `http://` address sends the browser on to it.
+The `http://` address redirects to HTTPS.
 
 <Image src={overview} alt="The Overview page: a live picture of the screen beside the device's status" class="screen-wide" />
 
 ## Signing in
 
-The page asks for the **admin password**. The display makes one up the first time it starts.
+Sign in with the **admin password**, generated on the display's first startup.
 Find it on the display under **Settings → Network & internet → Web access**, along with the address.
 Tap the eye to show it, or type a new one there. The same password is the **Admin password**
 (`frontend_password`) entity in Home Assistant, hidden until you reveal it.
@@ -38,10 +42,10 @@ Scripts sign in too; see [the API](#api).
 
 ## The certificate
 
-Out of the box the display uses a certificate it made itself, so the browser warns that the
-connection isn't private the first time. Accept it once and the warning stays away for that browser.
+The display uses a self-signed certificate by default. Your browser may warn that the connection
+isn't private. Confirm that the address belongs to your display before accepting the certificate.
 
-To get rid of the warning, give the display a real certificate from
+To use a trusted certificate, configure
 [Cert Warden](https://www.certwarden.com/). Set these on the **Network & internet** page in the
 browser, or in Home Assistant:
 
@@ -52,7 +56,7 @@ browser, or in Home Assistant:
 | Certificate API key | The certificate's API key | `text.<device>_frontend_cert_warden_certificate_api_key` |
 | Key API key | The private key's API key | `text.<device>_frontend_cert_warden_key_api_key` |
 
-The **Certificate** sensor (`certificate_status`), also shown on **Web access**, says how it went:
+The **Certificate** sensor (`certificate_status`), also shown on **Web access**, reports:
 **Self-signed**, **Fetching**, the certificate's name and expiry date, **Wrong API key**, **Can't
 reach Cert Warden** or **Expired**.
 
@@ -61,6 +65,8 @@ reach Cert Warden** or **Expired**.
 ## Settings
 
 ### Changing settings
+
+<Image src={display} alt="Display settings in the browser: brightness, style, size, theme, dock, layouts and custom colors" />
 
 The sidebar has the same pages as the Settings menu on the screen, with the same names; open one to
 jump between its sections. Passwords, PINs and keys stay hidden until you tap the eye, and empty
@@ -74,17 +80,21 @@ them; text saves when you press <kbd>Enter</kbd> or leave the field.
 The pulse button at the top opens **Events**: settings and readings as they change, newest first.
 The screen button picks **Light**, **Dark** or **Auto**, which follows the computer.
 
+<Image src={photos} alt="Photo timing, fit, transitions and library settings in the browser" />
+
 ## Overview
 
-The display's name and model, with what it's doing: whether the microphone is muted and the
+Overview shows the display's name, model and status: whether the microphone is muted and the
 camera covered, the light in the room, the call in progress, what's playing, the temperature and how
 long it has been running. Each line appears when the display has it. Until Home Assistant has
 adopted the display, an **Add to Home Assistant** button opens Home Assistant's ESPHome setup.
 
-Beside them is the screen as it looks right now, refreshed every three seconds while the page is
+The screen preview beside the status refreshes every three seconds while the page is
 open.
 
 ### Screen control
+
+<Image src={remote} alt="Live screen control with Release control and Fullscreen buttons" />
 
 On screened devices, choose **Take control** over the preview to start live video and input.
 Click or tap to press, and drag to swipe. On a computer, open a text field on the remote screen
@@ -101,6 +111,8 @@ after **Take control**; opening the page or scanning a pairing code does not sta
 
 ### Control from another device
 
+<Image src={pairing} alt="The QR pairing dialog; the pictured code has been invalidated" />
+
 Choose **Control on another device** and scan the QR code with a phone or another computer on
 the same network. It opens a screen-control page without asking for the admin password. Choose
 **Take control** there to connect; release any existing controller first.
@@ -112,7 +124,7 @@ expired or been revoked. For a connection failure, check the network and use the
 
 Pairing grants access to the screen and its input, not the admin settings or other admin APIs.
 Keep the QR code private. The link uses the address currently open in your browser; that address
-must also be reachable from the device scanning it. See [Signing in](#signing-in) if its browser
+must also be reachable from the device scanning it. See [The certificate](#the-certificate) if its browser
 shows a certificate warning.
 
 For typing into just one field with a phone's keyboard, use the
@@ -165,7 +177,7 @@ display and on every other device in this home, like a
 
 ## API
 
-Everything the page does goes through `/api/v1/` on the same address, so a script can do it too.
+Scripts can use the web page's API at `/api/v1/` on the same address.
 Sign in one of two ways:
 
 - **Basic authentication** on every request, with the admin password. The username is ignored.
@@ -203,5 +215,5 @@ curl -k -u :PASSWORD -X POST https://192.168.1.50/api/v1/actions/show_message \
 
 <Aside type="caution">
 Anyone with the admin password can change every setting, call the display and run its actions.
-Keep the password to people you'd hand the display itself.
+Share the password only with trusted administrators.
 </Aside>

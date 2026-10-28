@@ -1,0 +1,96 @@
+---
+import { Image } from 'astro:assets';
+import apps from '../assets/screens/apps.webp';
+import shopping from '../assets/screens/app-shopping.webp';
+import radio from '../assets/screens/app-radio-browse.webp';
+import media from '../assets/screens/app-media-demo.webp';
+import nativeSettings from '../assets/screens/native-settings.webp';
+import nativeDisplay from '../assets/screens/native-display.webp';
+import photoSettings from '../assets/screens/native-photos.webp';
+import photoFit from '../assets/screens/native-photo-fit.webp';
+import photoTransition from '../assets/screens/native-photo-transition.webp';
+import immich from '../assets/screens/native-immich.webp';
+import googlePhotos from '../assets/screens/native-google-photos.webp';
+import alarm from '../assets/screens/app-home-alarm.webp';
+import alarmEditor from '../assets/screens/app-alarm-editor.webp';
+import intercom from '../assets/screens/app-intercom.webp';
+import lights from '../assets/screens/home-lights.webp';
+import tessera from '../assets/screens/tessera.webp';
+import fleet from '../assets/screens/hacs-fleet.webp';
+import sync from '../assets/screens/hacs-fleet-sync.webp';
+import overview from '../assets/screens/web-overview.webp';
+import search from '../assets/screens/web-search.webp';
+import browserAlarms from '../assets/screens/web-alarms.webp';
+import browserCall from '../assets/screens/web-call.webp';
+import broadcast from '../assets/screens/web-broadcast.webp';
+import developer from '../assets/screens/web-developer.webp';
+import webDisplay from '../assets/screens/web-settings-display.webp';
+import webPhotos from '../assets/screens/web-settings-photos.webp';
+import webImmich from '../assets/screens/web-settings-immich.webp';
+import remote from '../assets/screens/web-remote-control.webp';
+import pairing from '../assets/screens/web-control-pairing.webp';
+
+interface Props {
+	group: 'dashboards' | 'apps' | 'media' | 'photos' | 'settings' | 'alarms' | 'calls' | 'browser' | 'fleet';
+}
+
+const groups = {
+	dashboards: [
+		{ image: lights, title: 'Native home control', detail: 'Lights grouped by room on the native dashboard.', href: '/use/dashboards/#lights-and-switches' },
+		{ image: tessera, title: 'Tessera', detail: 'Custom pages with climate, weather, energy, media and home-control tiles.', href: '/use/dashboards/#tessera' },
+	],
+	apps: [
+		{ image: apps, title: 'Apps', detail: 'The complete app launcher; stars keep favourites in the dock.', href: '/features/apps/' },
+		{ image: shopping, title: 'Shopping list', detail: 'Add and check off items in a Home Assistant to-do list.', href: '/features/apps/#shopping-list' },
+		{ image: alarm, title: 'Home alarm', detail: 'Alarm state, zones, keypad and supported panel actions.', href: '/features/home-alarm/' },
+	],
+	media: [
+		{ image: media, title: 'Media player', detail: 'Demonstration artwork and track title.', href: '/features/music/#media-player' },
+		{ image: radio, title: 'Internet radio', detail: 'Popular stations from Radio Browser.', href: '/features/apps/#radio' },
+	],
+	photos: [
+		{ image: photoSettings, title: 'Photo settings', detail: 'Wallpaper, Photos app timing, fit and transitions.', href: '/features/photos/' },
+		{ image: photoFit, title: 'Photo fit', detail: 'Every fit option in the on-screen picker.', href: '/features/photos/#fit' },
+		{ image: photoTransition, title: 'Photo transitions', detail: 'Every transition in the on-screen picker.', href: '/features/photos/#transition' },
+		{ image: immich, title: 'Immich', detail: 'Server, API key, library filters and image quality.', href: '/features/photos/#connect-immich' },
+		{ image: googlePhotos, title: 'Google Photos', detail: 'Shared albums and relative album weights. Private links are blurred.', href: '/features/photos/#google-photos' },
+	],
+	settings: [
+		{ image: nativeSettings, title: 'On-screen settings', detail: 'Settings categories and search.', href: '/use/settings/' },
+		{ image: nativeDisplay, title: 'Display settings', detail: 'Brightness, theme, style, size, dock and screen-saver controls.', href: '/use/settings/#display' },
+	],
+	alarms: [
+		{ image: alarmEditor, title: 'Saved alarms', detail: 'Time, repeat schedule, sound, snooze, volume and wake light.', href: '/features/messages/#alarms' },
+	],
+	calls: [
+		{ image: intercom, title: 'Intercom directory', detail: 'LANovo and EchoLocal devices together, with audio and video call controls.', href: '/features/intercom/' },
+		{ image: browserCall, title: 'Browser calls', detail: 'Call a device from the browser, or ask it to call another device.', href: '/use/web/#call' },
+		{ image: broadcast, title: 'Broadcasts', detail: 'Record a spoken message in the browser or on the device.', href: '/use/web/#broadcast' },
+	],
+	browser: [
+		{ image: remote, title: 'Live screen control', detail: 'The device screen with an active remote-control session.', href: '/use/web/#screen-control' },
+		{ image: pairing, title: 'QR pairing', detail: 'Pair a second browser. The pictured code has been invalidated.', href: '/use/web/#control-from-another-device' },
+		{ image: webDisplay, title: 'Browser display settings', detail: 'Theme, style, size, brightness and layout controls.', href: '/use/web/#settings' },
+		{ image: webPhotos, title: 'Browser photo settings', detail: 'Photos app timing, fit and transitions.', href: '/features/photos/' },
+		{ image: webImmich, title: 'Browser Immich settings', detail: 'Library connection, filters and image quality.', href: '/features/photos/#connect-immich' },
+		{ image: overview, title: 'Overview and screen control', detail: 'Device status and screen preview, with live remote control on screened devices.', href: '/use/web/#screen-control' },
+		{ image: search, title: 'Settings search', detail: 'Find settings by name without working through the menus.', href: '/use/web/#settings' },
+		{ image: browserAlarms, title: 'Browser alarms', detail: 'Manage saved alarms without using the touchscreen.', href: '/use/web/#alarms' },
+		{ image: developer, title: 'Diagnostics and actions', detail: 'Download diagnostics and run the actions exposed to Home Assistant.', href: '/use/web/#developer' },
+	],
+	fleet: [
+		{ image: fleet, title: 'Fleet', detail: 'Compare and manage LANovo and EchoLocal devices in Home Assistant.', href: '/start/integration/#fleet' },
+		{ image: sync, title: 'Settings sync', detail: 'Review portable settings before applying them to another device.', href: '/start/integration/#fleet' },
+	],
+};
+const items = groups[Astro.props.group];
+---
+
+<div class="screen-gallery">
+	{items.map(({ image, title, detail, href }) => (
+		<figure>
+			<div class="screen-gallery-image"><Image src={image} alt={`${title}: ${detail}`} loading="lazy" /></div>
+			<figcaption><a href={href}>{title}</a><p>{detail}</p></figcaption>
+		</figure>
+	))}
+</div>

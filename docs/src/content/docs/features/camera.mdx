@@ -8,7 +8,7 @@ import { Aside } from '@astrojs/starlight/components';
 
 ## RTSP
 
-Off by default. Turn it on under **Settings → Connected services → Camera stream**, or with the
+RTSP is off by default. Turn it on under **Settings → Connected services → Camera stream**, or with the
 **RTSP server** switch (`rtsp`) in Home Assistant.
 
 ```text
@@ -16,7 +16,7 @@ rtsp://192.168.1.50:8554/main
 rtsp://192.168.1.50:8554/sub
 ```
 
-`main` is full resolution, `sub` is a smaller stream for previews and motion detection. Turn either
+`main` is the main camera stream; `sub` is a smaller stream for previews and motion detection. Turn either
 off, and set their resolutions, under **Settings → Camera → Streams**.
 
 | Device | Main resolutions | Sub stream widths |
@@ -31,11 +31,11 @@ ONVIF discovery is supported.
 ## Password
 
 Set a password under **Settings → Connected services → Camera stream**, or with **RTSP password**
-(`rtsp_password`) in Home Assistant. The stream, ONVIF and the snapshot then all ask for it, with
+(`rtsp_password`) in Home Assistant. RTSP, ONVIF and the ONVIF snapshot endpoint then ask for it, with
 the username `admin` unless you change it (`rtsp_username`). Leave the password empty to turn it off.
 
-Give a recorder or Home Assistant's ONVIF integration the same username and password. A player that
-takes a plain address needs them in it:
+Use the same username and password in your recorder or Home Assistant's ONVIF integration.
+For a player that takes credentials in the stream URL:
 
 ```text
 rtsp://admin:password@192.168.1.50:8554/main
@@ -43,7 +43,28 @@ rtsp://admin:password@192.168.1.50:8554/main
 
 ## Snapshot
 
-Home Assistant gets a camera entity with still pictures.
+Home Assistant gets a **Camera** entity (`camera`) with JPEG still pictures. It uses the ESPHome
+connection and does not require the RTSP server to be on. Add that camera entity to a Home Assistant
+dashboard to see the display's camera there.
+
+This ESPHome camera entity does not use the RTSP username or password.
+
+To save a picture from a Home Assistant script or automation, use **Camera: Take snapshot**
+(`camera.snapshot`), select this camera entity and supply a filename in a directory Home Assistant
+can write to. For example:
+
+```yaml
+action: camera.snapshot
+target:
+  entity_id: camera.kitchen_camera
+data:
+  filename: /config/www/kitchen-snapshot.jpg
+```
+
+Replace the entity ID with your camera's actual ID. Files in `/config/www` are served by Home
+Assistant under `/local/`; use a different allowed directory if the picture must not be web-accessible.
+
+With the shutter closed, this entity returns a privacy card instead of a room picture.
 
 ## Picture
 
@@ -55,7 +76,7 @@ aren't copied by config sync.
 ## Shutter
 
 With the shutter closed, the stream, calls, the camera preview and Mirror show **Camera shutter is
-closed** instead of the picture, snapshots fail, and a privacy mark shows on screen. Home
+closed** instead of the picture, and a privacy mark shows on screen. Home
 Assistant's **Camera covered** sensor (`camera_covered`) follows it.
 
 

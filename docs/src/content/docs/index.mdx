@@ -1,185 +1,169 @@
 ---
 title: LANovo
-description: Turn a Lenovo Smart Display into a local Home Assistant device.
+description: Native Home Assistant dashboards, apps, voice, music, casting and video calls on Lenovo Smart Displays.
 template: splash
 hero:
   title: LANovo
-  tagline: Turn a Lenovo Smart Display into a local Home Assistant display, speaker and voice assistant. One program in place of Android, no cloud, no account.
+  tagline: An open-source replacement for Google Assistant on supported smart displays, with Home Assistant Assist, dashboards, touchscreen apps, music, casting and video calls.
   image:
-    file: ../../assets/hero.png
+    file: ../../assets/screens/apps.webp
   actions:
-    - text: Install LANovo
-      link: /start/devices/
-      icon: right-arrow
-    - text: Features
-      link: '#features'
+    - text: Interface gallery
+      link: /use/gallery/
       icon: open-book
+    - text: Supported hardware
+      link: '#hardware-and-installation'
+      icon: right-arrow
       variant: minimal
 ---
 
-import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
-import onboard from '../../assets/devices/sd10-onboard.jpg';
-import hal from '../../assets/devices/sd10-hal.jpg';
-import message from '../../assets/devices/sd10-message.jpg';
-import tallVu from '../../assets/devices/sd10-portrait-vu.jpg';
-import wideVu from '../../assets/devices/sd10-vu.jpg';
-import tallMsg from '../../assets/devices/sd10-portrait-message.jpg';
-import sd7Clock from '../../assets/devices/sd7-clock.jpg';
-import intercom from '../../assets/screens/intercom.webp';
-import rotate from '../../assets/screens/rotate.webp';
+import dashboard from '../../assets/screens/ivy-dash.png';
 import tessera from '../../assets/screens/tessera.webp';
+import apps from '../../assets/screens/apps.webp';
+import alarm from '../../assets/screens/app-home-alarm.webp';
+import intercom from '../../assets/screens/app-intercom.webp';
+import browser from '../../assets/screens/web-overview.webp';
+import fleet from '../../assets/screens/hacs-fleet.webp';
 
-<div class="stats">
-	<div><strong>33</strong><span>visualizers</span></div>
-	<div><strong>9</strong><span>UI styles</span></div>
-	<div><strong>18</strong><span>color themes</span></div>
-	<div><strong>21</strong><span>clock faces</span></div>
-	<div><strong>2</strong><span>wake words at once</span></div>
-	<div><strong>0</strong><span>cloud accounts</span></div>
-</div>
+LANovo uses the display's existing microphones, speakers, camera and sensors. It connects to
+Home Assistant through ESPHome and shares its software with
+[EchoLocal](https://www.echolocal.link).
 
-<img src="/anim/visual-wall.webp" alt="Six visuals: Synthwave, LCARS, Classic VU, Aurora, a Pip-Boy and a koi pond" class="screen-wide" width="978" height="412" />
+**Hardware:** Smart Display 10 (**blueberry**), Smart Display 8 (**amber**), Smart Display 7 (**ivy**),
+JBL Link View (**opal**) and ThinkSmart View (**penghu**).
+Unlocking is required. [Check your model and installation requirements](/start/devices/).
 
-## Visualizers
-
-33 audio visualizers for the screen saver, all GPU shaders at the screen's full resolution. Each
-one reacts to the microphone, to what's playing, or both.
-
-[See all 33 →](/use/visuals/)
-
-## What LANovo is
-
-Lenovo's Smart Displays have a good screen, stereo speakers, two far-field microphones, a camera
-with a shutter, and a proximity sensor. Google stopped updating them.
-
-LANovo replaces the whole Android stack with a single program that drives the screen, speakers,
-microphones, camera and radios directly, and talks only to your Home Assistant.
-
-## Features
+## Native dashboard and Tessera
 
 <div class="showcase">
-	<div>
-		### Tessera dashboards
+<div>
 
-		Lay out pages in [Tessera](https://github.com/MaxGramser/homeassistant_espscreen)'s editor in
-		Home Assistant and the display draws them. Most of Tessera's tiles and features are supported,
-		in every style and theme.
+The [native dashboard](/use/dashboards/) combines your choice of clock face with weather and tabs
+for lights, switches, cameras, doorbells and your home alarm. Add photo wallpaper, choose which
+entities appear, and group controls by room. Sensor-equipped displays can rotate automatically.
 
-		[Dashboards →](/use/dashboards/)
-	</div>
-	<Image src={tessera} alt="A Tessera page" class="screen" />
+[Tessera](/use/dashboards/#tessera) gives you custom pages designed in Home Assistant: climate,
+energy, media, sensors, locks, covers, buttons and other tiles. Choose the native renderer or run
+embedded Tessera firmware.
+
+[Compare the dashboard modes →](/use/dashboards/)
+
 </div>
+<figure>
+<Image src={tessera} alt="A Tessera dashboard with weather, climate, energy and home controls" />
+<figcaption>Tessera; private entity names are blurred.</figcaption>
+</figure>
+</div>
+
+## Apps
+
+<Image src={apps} alt="The app launcher: Media, Alarms, Calendar, Intercom, Cameras, Doorbell, Photos, Home alarm, Lights, Switches, Mirror, Radar, Radio and Shopping list" />
+
+Open a [calendar or shopping list](/features/apps/), browse internet radio, watch animated weather
+radar, control lights and switches, or open your Home Assistant cameras. Keep favourite apps in the
+dock and drag to reorder them.
+
+The [Home alarm](/features/home-alarm/) app includes a keypad, zones, arm/disarm controls and a
+choice of designs. [Doorbells](/features/doorbell/) have event history and on-screen notifications.
+[Photos](/features/photos/) can fill the screen or appear behind the clock, from Immich or Google
+Photos.
+
+[See the apps and their setup →](/features/apps/)
+
+## Voice, music and casting
+
+- **[Assist](/features/voice/):** on-device wake-word detection, independent Home Assistant
+  pipelines, selectable feedback and a stop word without a wake word. Choose local or cloud
+  pipelines; manage custom wake words and review requests with the optional integration.
+- **[Music](/features/music/):** Home Assistant media playback and Music Assistant through
+  Sendspin, with a mini-player and full-screen controls. Use the display as a Bluetooth speaker or
+  mirror audio and video over AirPlay. Chromecast support is experimental.
+- **[Visual feedback](/use/visuals/):** choose visuals for microphone input, speaker output and
+  assistant states, with clocks, photos and visuals available as the screen saver.
+- **[Timers and saved alarms](/features/messages/):** voice controls, repeating schedules, snooze,
+  custom sounds, gentle volume and wake light. Automations can put messages on the screen.
+
+## Calls, cameras and notifications
 
 <div class="showcase flip">
-	<div>
-		### Adding it to Home Assistant
+<div>
 
-		After install the display shows a code. Scan it and submit, and Home Assistant adds it through
-		the ESPHome integration. No YAML, no add-on, no key to copy.
+[Intercom](/features/intercom/) makes audio and video calls between LANovo and EchoLocal devices.
+Call from a browser, set auto-answer rules, or record a broadcast for the household.
 
-		[Adding it →](/start/home-assistant/)
-	</div>
-	<Image src={onboard} alt="A Smart Display 10 showing a code to add it to Home Assistant" class="device" />
+The built-in [camera](/features/camera/) provides RTSP streams, ONVIF discovery and Home Assistant
+snapshots. Physical microphone mute and the camera shutter remain in control.
+
+[Doorbell events](/features/doorbell/), [messages](/features/messages/), timers and alarm-panel
+alerts can appear over what is already on screen.
+
 </div>
+<figure>
+<Image src={intercom} alt="Intercom directory showing LANovo and EchoLocal devices with call controls" />
+<figcaption>One intercom directory for both projects.</figcaption>
+</figure>
+</div>
+
+## Home Assistant and browser controls
 
 <div class="showcase">
-	<div>
-		### Two voice assistants
+<div>
 
-		Two wake words, each with its own Assist pipeline and its own visuals for listening, thinking
-		and answering. "Stop" works without a wake word.
+The [browser interface](/use/web/) manages settings, alarms, calls and broadcasts. Search settings,
+download logs, export or import portable settings, or take live control of the screen. QR pairing
+lets a phone control the screen or type into its keyboard.
 
-		[Voice →](/features/voice/)
-	</div>
-	<Image src={hal} alt="A Smart Display 10 showing the HAL 9000 visual" class="device" />
+ESPHome exposes settings, sensors and actions to Home Assistant. The optional
+[EchoLocal integration](/start/integration/) adds device cards, activity and recordings, custom
+wake words and tones, and Fleet comparison and settings sync across both projects.
+
+The [Bluetooth LE proxy and iBeacon](/features/bluetooth/) support nearby BLE devices and room
+presence. Sensor-equipped models also expose their proximity readings to Home Assistant.
+
+</div>
+<figure>
+<Image src={browser} alt="The browser overview with the device screen and status readings" />
+<figcaption>The device's own web interface.</figcaption>
+</figure>
 </div>
 
-<div class="showcase flip">
-	<div>
-		### Intercom
+## Interface gallery
 
-		Audio and video calls between LANovo displays and EchoLocal devices on your network, with
-		auto-answer for the devices you choose.
+The [interface gallery](/use/gallery/) groups dashboards, apps, media, photo settings, saved alarms,
+home-alarm designs, calls, browser controls and Fleet. It includes clock faces, UI styles, themes,
+message layouts, timer layouts and audio visuals, with names and links to their guides.
 
-		[Intercom →](/features/intercom/)
-	</div>
-	<Image src={intercom} alt="The Intercom directory" class="screen" />
+<div class="home-screenshots">
+<figure><Image src={dashboard} alt="The native clock and weather dashboard" /><figcaption>[Native dashboard](/use/dashboards/)</figcaption></figure>
+<figure><Image src={alarm} alt="Home-alarm keypad and zone status" /><figcaption>[Home alarm](/features/home-alarm/)</figcaption></figure>
+<figure><Image src={fleet} alt="Fleet management for mixed LANovo and EchoLocal devices" /><figcaption>[Fleet management](/start/integration/#fleet)</figcaption></figure>
 </div>
 
-<div class="showcase">
-	<div>
-		### Messages and timers
+## Hardware and installation
 
-		Messages from any automation in four tones and four styles, each with its own chime. Timers in
-		six styles.
+| Display | Codename | Status |
+|---|---|---|
+| Lenovo Smart Display 10 | **blueberry** | Supported |
+| Lenovo Smart Display 8 | **amber** | Supported and tested |
+| Lenovo Smart Display 7 | **ivy** | Supported |
+| JBL Link View | **opal** | Supported |
+| Lenovo ThinkSmart View | **penghu** | Supported; unlock guidance is on Discord |
 
-		[Messages and timers →](/features/messages/)
-	</div>
-	<img src="/carousel/alerts-1.png" alt="A Welcome home message" class="screen" width="420" height="672" />
-</div>
+You need Home Assistant, a supported display and USB access. Unlocking and firmware preparation
+come before installing LANovo.
 
-## Also
+1. [Check the model and unlock requirements](/start/devices/).
+2. [Prepare the display](/start/before/), then [install LANovo](/start/install/).
+3. [Connect it to Home Assistant](/start/home-assistant/).
 
-<CardGrid>
-	<Card title="Audio" icon="seti:audio">
-		A Home Assistant media player, a Sendspin player for Music Assistant, and a Bluetooth speaker.
-	</Card>
-	<Card title="Chromecast" icon="laptop">
-		Each app runs its own receiver page, with SponsorBlock for YouTube. Experimental.
-	</Card>
-	<Card title="Camera" icon="seti:video">
-		RTSP with main and sub streams, ONVIF discovery, and a snapshot camera in Home Assistant.
-	</Card>
-	<Card title="Privacy switches" icon="warning">
-		The microphone switch and camera shutter are physical. Home Assistant sees their state but
-		can't change it.
-	</Card>
-	<Card title="Sensors" icon="star">
-		Proximity wake, adaptive brightness, and night mode when the room is dark.
-	</Card>
-	<Card title="Updates" icon="rocket">
-		From Home Assistant's Updates page or from System on the display. The previous version is kept
-		until the new one runs, and an earlier release can be installed again.
-	</Card>
-</CardGrid>
+Updates and installation of older releases are available through Home Assistant, the display and
+the [control harness](/features/updates/).
 
-## Rotation
+## Source and community
 
-The Smart Display 10, Smart Display 8 and ThinkSmart View rotate automatically. The
-dashboards, settings, camera and everything else turn with them.
+[Source and issues](https://github.com/ygelfand/LANovo) · [Releases](https://github.com/ygelfand/LANovo/releases) ·
+[Discord](https://discord.gg/efWnv89pg2)
 
-<Image src={rotate} alt="The same dashboard in landscape and in portrait" class="screen-wide" />
-
-<div class="pair">
-	<Image src={tallVu} alt="A Smart Display 10 standing upright, showing the VU meters" class="device" />
-	<Image src={wideVu} alt="A Smart Display 10 lying landscape, showing the VU meters" class="device" />
-</div>
-
-<div class="pair">
-	<Image src={tallMsg} alt="An upright Smart Display 10 showing a welcome home message" class="device" />
-	<Image src={message} alt="A Smart Display 10 in landscape showing a front door alert" class="device" />
-</div>
-
-## Other displays
-
-The Smart Display 7 gets a compact layout for its smaller screen. The JBL Link View and the Lenovo
-ThinkSmart View are supported too.
-
-<Image src={sd7Clock} alt="A Smart Display 7 showing the LANovo clock" class="device device-small" />
-
-## The EchoLocal integration
-
-Optional, from HACS, and shared with LANovo's sister project [EchoLocal](https://www.echolocal.link): a card for
-every display, a dashboard with all of them and your Echo devices, Fleet to compare and copy
-settings between them, turn history with recordings, a wake word library, custom tones, groups and
-health.
-
-[The integration →](/start/integration/)
-
-## Get started
-
-<CardGrid>
-	<LinkCard title="Supported devices" description="Which displays LANovo runs on." href="/start/devices/" />
-	<LinkCard title="Install" description="One command, about half an hour the first time." href="/start/install/" />
-</CardGrid>
+LANovo and [EchoLocal](https://www.echolocal.link) use the shared
+[libcountertop](https://github.com/ygelfand/libcountertop) library.

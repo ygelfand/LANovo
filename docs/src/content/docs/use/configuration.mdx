@@ -5,14 +5,14 @@ description: Where to change a setting, and how to copy settings between devices
 
 import { Steps } from '@astrojs/starlight/components';
 
-Every setting is saved on the display itself, and the places that show it stay in step: change
-it in one and the others follow.
+Settings are saved on the display. Changes made on the screen, in a browser or in Home Assistant
+are reflected in the other interfaces.
 
 | Where | What's there |
 |---|---|
 | **On the display**: the gear in the dock | Nearly everything, grouped the way a phone's settings are. [Settings on the screen](/use/settings/) |
 | **In a browser**: the display's own web page | Every setting, plus alarms, calls, broadcasts and troubleshooting. [In a browser](/use/web/) |
-| **In Home Assistant** | An entity for each setting, on the device page and usable in dashboards and automations, plus some that are only there. [Settings in Home Assistant](/use/entities/) |
+| **In Home Assistant** | An entity for each setting, on the device page and usable in dashboards and automations, including settings not on the screen. [Settings in Home Assistant](/use/entities/) |
 
 
 ## Finding a setting
@@ -25,7 +25,7 @@ it in one and the others follow.
 
 ## Settings that stay on one display
 
-Config sync leaves these alone, since they belong to the display and the room it's in:
+Config sync excludes these device-local settings:
 
 - Brightness, auto brightness and display size
 - Microphone tuning: gain, leveling, noise and echo cancellation, sensitivity
@@ -41,7 +41,7 @@ The display's name and Wi‑Fi aren't settings, so they aren't copied either.
 
 ## Config sync
 
-Copy settings from one display to another, so a second one starts out set up the same way.
+Copy shared settings from one display to another.
 It works between any LANovo displays and Echo Shows running EchoLocal on the same network; settings
 the other device doesn't have are skipped.
 

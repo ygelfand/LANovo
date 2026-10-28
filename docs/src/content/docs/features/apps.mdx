@@ -1,11 +1,19 @@
 ---
 title: Apps
-description: The Apps screen, dock favorites, and each app.
+description: The complete app launcher, with media, home control, calendars, lists, radio, radar, cameras, photos and alarm tools.
 ---
+
+import { Image } from 'astro:assets';
+import apps from '../../../assets/screens/apps.webp';
+import shopping from '../../../assets/screens/app-shopping.webp';
+import radio from '../../../assets/screens/app-radio-browse.webp';
+import alarms from '../../../assets/screens/app-alarm-editor.webp';
 
 
 The grid in the dock opens the Apps screen. Tap the star on an app to keep it in the dock; drag to
 reorder. **Media** and **Intercom** are in the dock to start with.
+
+<Image src={apps} alt="All apps in the launcher, with stars for dock favourites" />
 
 | App | |
 |---|---|
@@ -23,10 +31,35 @@ reorder. **Media** and **Intercom** are in the dock to start with.
 | **Doorbell** | Your [doorbells](/features/doorbell/) and their recent events |
 | **Home alarm** | Your [alarm panel](/features/home-alarm/) from Home Assistant |
 
+## Media
+
+Open **Media** for the full player: artwork, track information, playback controls and volume.
+The mini-player keeps playback controls available while you use other screens. See
+[Music and casting](/features/music/) for Home Assistant playback, Sendspin, Bluetooth and casting.
+
+## Alarms
+
+Create one-time or repeating alarms, choose a sound, set snooze and volume, or add a wake light.
+The saved list is shared with the [browser alarm page](/use/web/#alarms) and the
+[alarm voice commands](/features/voice/#alarm-and-call-controls).
+
+<Image src={alarms} alt="Alarm editor with time, repeat, sound, snooze, volume and wake-light settings" />
+
+## Intercom
+
+The directory shows other LANovo and EchoLocal devices, with audio and video call buttons where
+available. Open a device's information for more detail. See [Intercom](/features/intercom/) for
+calls, broadcasts, auto-answer and browser calling.
+
 ## Radio
 
 Stations come from the **Radio Browser** integration, which you add in Home Assistant first. The
 radio opens on **Local** and **Popular** stations; star a station to put it on the dial.
+
+The dial has playback and next/previous controls. **Local stations** and **Popular** open the
+station browsers; choosing a station starts playback.
+
+<Image src={radio} alt="The Radio app's Popular station browser" />
 
 ## Radar
 
@@ -42,10 +75,40 @@ With the **Radar** [voice command](/features/voice/#commands) on, saying "radar"
 
 Pick the calendars and **Days to show** (3, 7 or 14) under **Settings → Home control → Calendar**.
 
+The app displays upcoming events from those Home Assistant calendars. Calendar selection and the
+date range control what appears; event editing stays in your calendar service.
+
 ## Shopping list
 
 Pick the to-do list under **Settings → Home control → Shopping list**. Add items with the on-screen
 keyboard, tap to check them off, and turn on **Show completed items** to see the checked ones.
+
+The list is shared with Home Assistant, not stored separately on the display. A phone can type
+into **Add an item** through the [QR keyboard](/use/settings/#typing-with-a-phone).
+
+<Image src={shopping} alt="Shopping list with an Add an item field and unchecked list items" />
+
+## Lights and switches
+
+These open the home-control lists full screen. Choose which entities appear under **Settings →
+Home control**. The same selection feeds their [native dashboard tabs](/use/dashboards/#lights-and-switches).
+
+## Photos
+
+Browse the configured photo source full screen. The source can also supply wallpaper behind the
+clock. See [Photos and wallpaper](/features/photos/) for Immich and Google Photos, fit modes and
+transitions.
+
+## Doorbell
+
+Open the doorbell view and recent events. Notification behaviour and which doorbells appear are
+configured under **Settings → Home control → Doorbell**. See [Doorbell](/features/doorbell/).
+
+## Home alarm
+
+Open the selected Home Assistant alarm panel, including its zones, keypad and supported actions.
+The [Home alarm guide](/features/home-alarm/) shows the panel and every design in its picker.
+Opening the app does not arm or disarm the panel.
 
 ## Mirror
 

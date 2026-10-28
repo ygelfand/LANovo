@@ -3,11 +3,11 @@ title: Add it to Home Assistant
 description: Scan the code on the screen to add the display.
 ---
 
-import { Aside, Steps } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
 import { Image } from 'astro:assets';
 import onboard from '../../../assets/screens/bb-onboard.png';
 
-Until Home Assistant adds it, the display shows this:
+Before setup is complete, the display shows its address and a QR code for Home Assistant:
 
 <Image src={onboard} alt="The onboarding card, with a QR code and the display's address" class="screen" />
 
@@ -19,18 +19,21 @@ Until Home Assistant adds it, the display shows this:
 
 2. **Enter the address** shown under the code, like `192.168.1.50:6053`.
 
-3. **Submit.** No password or key; the display and Home Assistant set up the key themselves.
+3. **Submit.** The display and Home Assistant set up encryption automatically; the default
+   installation does not require you to enter a password or key.
+
+4. Open the ESPHome integration's options for the display and turn on **Allow the device to perform
+   Home Assistant actions**. This is needed for Tessera, home control and picking wake words on
+   the screen.
 
 </Steps>
 
-<Aside type="tip">
-Home Assistant often discovers the display on its own. Check **Settings → Devices & services**
-first.
-</Aside>
+If Home Assistant has already discovered the display, open **Settings → Devices & services** and
+add the discovered ESPHome device instead.
 
 ## In Home Assistant
 
-The display is one device with these parts:
+The display's entities are grouped into sub-devices:
 
 | Part | Contents |
 |---|---|
@@ -42,10 +45,8 @@ The display is one device with these parts:
 | **Voice triggers** | Switches for the [voice actions and commands](/features/voice/#voice-triggers) |
 | **Dashboard**, **Landscape**, **Portrait** | Tessera, when it's in use |
 
-The media player and the privacy switch sensors sit on the display itself.
-
-Plus sensors for ambient light, presence, the privacy switches, temperature, memory and Wi‑Fi
-signal.
+The main device contains the media player and privacy switch sensors. Additional sensors report
+ambient light, presence, temperature, memory and Wi‑Fi signal.
 
 ## Encryption key
 

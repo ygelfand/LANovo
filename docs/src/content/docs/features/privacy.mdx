@@ -1,9 +1,10 @@
 ---
 title: Privacy switches
-description: The microphone mute and the camera shutter.
+description: The microphone mute, camera shutter and Settings PIN.
 ---
 
-Both are physical switches. Neither LANovo nor Home Assistant can change them.
+The microphone mute and camera shutter are physical switches. Neither LANovo nor Home Assistant
+can change them.
 
 ## Microphone switch
 
@@ -11,11 +12,26 @@ Mutes the microphones. **Mute sound** and **Unmute sound** (Settings → Sound) 
 
 ## Camera shutter
 
-Stops the camera: no stream, no snapshots.
+Stops the camera picture. Streams and the Home Assistant camera show a privacy card instead.
 
 ## Indicators
 
-while either is off, a red mark shows in a top corner: microphone on the left, camera on the right.
-Turn them off with **Settings → Display → Privacy indicators**.
+The indicators appear
+when the microphones are muted or the camera shutter is closed: a red microphone mark in the top
+left corner and a camera mark in the top right.
+Hide these marks with **Settings → Display → Privacy indicators**.
 
 Home Assistant gets **Microphone muted** and **Camera covered** sensors.
+
+## Lock Settings with a PIN
+
+Open **Settings → System → Settings Lock → Set PIN**. Enter 4 to 8 digits, then enter them again.
+Opening Settings now asks for the PIN. Return to **Settings Lock** for **Change PIN** or **Remove
+PIN**.
+
+Five wrong entries start a 30-second wait. Each further wrong entry doubles the wait, up to one
+hour. If you forget the PIN, clear **Settings Lock** (`lock_pin`) in Home Assistant.
+
+This locks the on-screen Settings menu, not the dashboard, apps, Home Assistant controls or the
+web page. Browser access uses its own generated **Admin password**, found under **Settings →
+Network & internet → Web access**; see [Web page](/use/web/).

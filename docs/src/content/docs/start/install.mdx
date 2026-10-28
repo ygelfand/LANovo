@@ -3,7 +3,7 @@ title: Install LANovo
 description: Put LANovo on your display with one command.
 ---
 
-import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 `lanovo` installs LANovo on the display over USB and connects it to your Wi‑Fi.
 
@@ -50,7 +50,7 @@ Plug the display in over USB and run:
 ./lanovo install
 ```
 
-What it does, in order:
+The installation steps are:
 
 1. Turns off dm-verity, if it's on, and reboots.
 2. Asks for a name for the display.
@@ -63,9 +63,11 @@ The display reboots up to three times. Leave the cable in until `lanovo` finishe
 
 Renaming the display later makes Home Assistant see it as a new device, so pick a name you'll keep.
 
-<Aside type="tip" title="More than one display">
-`./lanovo install --name "Bedroom Display" --ssid MyWiFi --password 'your-password' --yes --reboot`
-</Aside>
+To supply the name, network and confirmations on the command line:
+
+```sh
+./lanovo install --name "Bedroom Display" --ssid MyWiFi --password 'your-password' --yes --reboot
+```
 
 ## Options
 

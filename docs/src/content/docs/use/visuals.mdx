@@ -3,21 +3,16 @@ title: Visuals
 description: Every audio visualizer LANovo ships.
 ---
 
-import visuals from '../../../data/visuals.json';
+import VisualGallery from '../../../components/VisualGallery.astro';
 
 Each visual reacts to the microphone, the speaker, or both. Run one full screen, or two side by
 side.
 
-<div class="gallery">
-	{visuals.map((v) => (
-		<figure>
-			<img src={`/visuals/${v.kind}.webp`} alt={`The ${v.label} visual`} loading="lazy" width="640" height="400" />
-			<figcaption>{v.label}</figcaption>
-		</figure>
-	))}
-</div>
+<VisualGallery />
 
-## Use one
+Compare clock faces, UI styles, alerts and timers in the [visual gallery](/use/gallery/).
+
+## Choose a visual
 
 Pick a visual in **Settings → Display → Screen saver → Visual 1** and its source in
 **Visual 1 audio**. Add a second in **Visual 2** to split the screen. These are also in Home

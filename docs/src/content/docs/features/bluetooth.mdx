@@ -1,0 +1,49 @@
+---
+title: Bluetooth LE proxy
+description: Bring nearby Bluetooth advertisements into Home Assistant and advertise an iBeacon.
+---
+
+The display can relay nearby Bluetooth Low Energy advertisements to Home Assistant over its
+ESPHome connection. This is separate from the [Bluetooth speaker](/features/music/#bluetooth-speaker).
+You do not pair the sensors to the display.
+
+
+## Set it up
+
+1. [Connect the display to Home Assistant](/start/home-assistant/).
+2. Turn on **Settings → Connected services → Bluetooth proxy**, or the **Bluetooth proxy** switch
+   (`bluetooth_proxy`) in Home Assistant.
+   
+3. Bring an advertising BLE sensor within range. Home Assistant receives its advertisements through
+   the display; add or configure the sensor's own integration in Home Assistant.
+
+The proxy is off by default. It forwards advertisements, not GATT connections: devices that need a
+Bluetooth connection to read or control them cannot use this proxy for that connection. Discovery
+also depends on Home Assistant having an integration for the advertising device.
+
+## Scanning time
+
+**Bluetooth scanning** (`bluetooth_scan`) in Home Assistant chooses how much radio time scanning
+takes: **9%**, **5%**, **2%** or **1%**. The default is **9%**. Lower values listen less often; a sensor
+that advertises infrequently may take longer to appear or update.
+
+Turning the proxy off stops scanning and its iBeacon advertisement. Changing a proxy setting
+reconnects the ESPHome connection; allow Home Assistant a moment to reconnect.
+
+## iBeacon
+
+While the proxy is on, the display also advertises an iBeacon. A phone or another receiver can use
+it as a fixed room marker. The beacon does not detect people by itself, and it does not create an
+occupancy entity for a phone.
+
+| Field | Value |
+|---|---|
+| UUID | `9c5fa6f1-91c4-4f56-bb9f-d92acfd9d40b` |
+| Major | `1` |
+| Minor | The last two bytes of the device's MAC address, interpreted as a hexadecimal number and converted to decimal |
+| Measured power | −59 dBm |
+
+The minor comes from the Wi-Fi MAC address.
+For example, a MAC ending in `12:34` gives minor `4660`. Identify a beacon by all three fields:
+UUID, major and minor. These values are automatic; there is no separate beacon switch or beacon
+identity editor.

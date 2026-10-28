@@ -3,7 +3,13 @@ title: Photos and wallpaper
 description: Photos from Immich and Google Photos behind the dashboard, on the screen saver and in the Photos app.
 ---
 
-import { Aside, Steps } from '@astrojs/starlight/components';
+import { Steps } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import settings from '../../../assets/screens/native-photos.webp';
+import immich from '../../../assets/screens/native-immich.webp';
+import google from '../../../assets/screens/native-google-photos.webp';
+import fit from '../../../assets/screens/native-photo-fit.webp';
+import transition from '../../../assets/screens/native-photo-transition.webp';
 
 
 Photos from your [Immich](https://immich.app) library and from shared Google Photos albums can show
@@ -15,6 +21,8 @@ in three places:
 
 Photo settings are on the display under **Settings → Display → Photos**, and in Home Assistant on
 the display's page. Turn on Immich, Google Photos or both; with both on, photos come from each.
+
+<Image src={settings} alt="On-screen photo settings for wallpaper, the Photos app, fit, transitions and library providers" />
 
 ## Connect Immich
 
@@ -39,7 +47,7 @@ the display's page. Turn on Immich, Google Photos or both; with both on, photos 
    | Memories first | `photos_immich_memories` | Prefer Immich's "on this day" memories (default on) |
    | Quality | `photos_immich_quality` | **Preview** (default) or **Full size** |
 
-   Names match in any case. Within one setting any match counts: two albums means photos from either.
+   Names are case-insensitive. Within one setting, any match counts: two albums selects photos from either.
    A name Immich doesn't know shows as "Nothing named …" in the status.
 
 4. Turn on **Settings → Display → Photos → Show wallpaper**.
@@ -49,6 +57,8 @@ the display's page. Turn on Immich, Google Photos or both; with both on, photos 
 The **Status** row on the Immich page, and **Photos Immich status** (`photos_immich_status`) in
 Home Assistant, say whether the connection works and what's wrong if it doesn't. Immich 3.2 or
 newer is needed.
+
+<Image src={immich} alt="Immich settings: server, API key, albums, tags, people, favourites, memories and quality" />
 
 ## API key permissions
 
@@ -71,10 +81,9 @@ also works.
 If the key is missing a permission the current settings need, the status names it, for example
 "API key needs memory.read". "Wrong API key" means Immich refused the key itself.
 
-<Aside>
-The key sees only what its Immich user can see. To limit the display to some photos, create the
-key under a user that has just those albums shared with it, or use **Albums**.
-</Aside>
+The key can access only its Immich user's photos. For restricted access, create it under a user
+with only the intended albums shared. The **Albums** setting filters which photos are displayed
+without restricting the key's access.
 
 ## Google Photos
 
@@ -94,8 +103,8 @@ display.
 </Steps>
 
 Each album's **Share** (0–10, default 5) sets how often its photos come up compared with the other
-albums: an album at 10 shows up twice as often as one at 5. At 0 the album is left out. The albums
-are read again every 6 hours, so new photos in them show up on their own.
+albums: an album at 10 shows up twice as often as one at 5. At 0 the album is left out. Albums
+refresh every 6 hours to include new photos.
 
 | Setting | Entity | |
 |---|---|---|
@@ -105,6 +114,8 @@ are read again every 6 hours, so new photos in them show up on their own.
 
 The **Status** row on the Google Photos page, and **Photos Google Photos status**
 (`photos_google_status`) in Home Assistant, say whether the albums could be read.
+
+<Image src={google} alt="Google Photos settings with four album slots and relative album weights; the private link is blurred" />
 
 ## Screen saver
 
@@ -155,9 +166,11 @@ The wallpaper, the screen saver's photo slots (`idle_photo_fit`) and the Photos 
 
 The wallpaper defaults to Auto; the screen saver and the Photos app default to Slow pan.
 
+<Image src={fit} alt="Every photo fit option: Auto, Fill, blurred edges, plain edges, Framed and Slow pan" />
+
 ## Transition
 
-The same three places each pick how one photo gives way to the next: `poster_transition`,
+Wallpaper, screen saver and the Photos app each have a transition setting: `poster_transition`,
 `idle_photo_transition` and `photos_app_transition`.
 
 | Transition | Shows |
@@ -171,4 +184,6 @@ The same three places each pick how one photo gives way to the next: `poster_tra
 
 All three default to Fade.
 
-[Config sync](/use/configuration/#config-sync) copies the key along with the other photo settings. Home Assistant shows it only as set or not set.
+<Image src={transition} alt="Every photo transition: None, Fade, Slide, Zoom, Wipe and Dissolve" />
+
+[Config sync](/use/configuration/#config-sync) copies the Immich API key along with the other photo settings. Home Assistant shows the key only as set or not set.
