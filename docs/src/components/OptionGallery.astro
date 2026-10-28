@@ -7,7 +7,7 @@ interface Props {
 	height?: number;
 }
 
-const { items, layout = 'strip', label, width = 420, height = 672 } = Astro.props;
+const { items, layout = 'strip', label, width = 1280, height = 800 } = Astro.props;
 ---
 
 <div class:list={['option-gallery', layout]} role="region" aria-label={label} tabindex={layout === 'strip' ? 0 : undefined}>
@@ -47,18 +47,17 @@ const { items, layout = 'strip', label, width = 420, height = 672 } = Astro.prop
 	}
 	.strip figure {
 		flex: 0 0 auto;
-		max-width: 85%;
+		width: min(36rem, 85%);
 		scroll-snap-align: start;
 	}
 	.strip img {
-		height: 22rem;
-		max-height: 60vh;
-		width: auto;
+		height: auto;
+		width: 100%;
 		max-width: 100%;
 	}
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(min(100%, 12rem), 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
 	}
 	.grid img {
 		width: 100%;

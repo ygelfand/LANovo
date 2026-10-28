@@ -7,14 +7,11 @@ import OptionGallery from '../../../components/OptionGallery.astro';
 
 import { Image } from 'astro:assets';
 import alarmEditor from '../../../assets/screens/app-alarm-editor.webp';
-import message from '../../../assets/screens/bb-message.png';
 
 ## Messages
 
 
-<Image src={message} alt="A message on the screen" class="screen" />
-
-<OptionGallery items={[{"src":"/carousel/alerts-0.png","label":"Banner","alt":"Message displayed in the Banner alert style"},{"src":"/carousel/alerts-1.png","label":"Card","alt":"Message displayed in the Card alert style"},{"src":"/carousel/alerts-2.png","label":"Toast","alt":"Message displayed in the Toast alert style"},{"src":"/carousel/alerts-3.png","label":"Full screen","alt":"Message displayed in the Full screen alert style"}]} layout="strip" label={"A message as a banner, a card, a toast and full screen"} width={420} height={672} />
+<OptionGallery items={[{"src":"/carousel/alerts-0.png","label":"Banner","alt":"Message displayed in the Banner alert style"},{"src":"/carousel/alerts-1.png","label":"Card","alt":"Message displayed in the Card alert style"},{"src":"/carousel/alerts-2.png","label":"Toast","alt":"Message displayed in the Toast alert style"},{"src":"/carousel/alerts-3.png","label":"Full screen","alt":"Message displayed in the Full screen alert style"}]} layout="strip" label={"A message as a banner, a card, a toast and full screen"} width={1280} height={800} />
 
 Use the display's **show message** action:
 
@@ -52,7 +49,7 @@ Timers set by voice appear on screen.
 
 Choose their layout under **Settings → Alerts & Alarms → Timer style**:
 
-<OptionGallery items={[{"src":"/carousel/timers-0.png","label":"Bar","alt":"Running timer displayed in the Bar style"},{"src":"/carousel/timers-1.png","label":"Banner","alt":"Running timer displayed in the Banner style"},{"src":"/carousel/timers-2.png","label":"Corner","alt":"Running timer displayed in the Corner style"},{"src":"/carousel/timers-3.png","label":"Dial","alt":"Running timer displayed in the Dial style"},{"src":"/carousel/timers-4.png","label":"Clock face","alt":"Running timer displayed in the Clock face style"},{"src":"/carousel/timers-5.png","label":"Full screen","alt":"Running timer displayed in the Full screen style"}]} layout="strip" label={"A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen"} width={420} height={672} />
+<OptionGallery items={[{"src":"/carousel/timers-0.png","label":"Bar","alt":"Running timer displayed in the Bar style"},{"src":"/carousel/timers-1.png","label":"Banner","alt":"Running timer displayed in the Banner style"},{"src":"/carousel/timers-2.png","label":"Corner","alt":"Running timer displayed in the Corner style"},{"src":"/carousel/timers-3.png","label":"Dial","alt":"Running timer displayed in the Dial style"},{"src":"/carousel/timers-4.png","label":"Clock face","alt":"Running timer displayed in the Clock face style"},{"src":"/carousel/timers-5.png","label":"Full screen","alt":"Running timer displayed in the Full screen style"}]} layout="strip" label={"A timer as a bar, a banner, a corner badge, a dial, the clock face and full screen"} width={1280} height={800} />
 
 | Style | |
 |---|---|

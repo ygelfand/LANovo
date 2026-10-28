@@ -3,6 +3,10 @@ const groups = {
 		alt: (label) => `${label} clock face on the native dashboard`,
 		labels: ['Plain', 'Stack', 'Cards', 'Analog', 'Segments', 'Words', 'Overlap', 'Analog seconds', 'Flip', 'Roman', 'Railway', 'Octagon', 'Atomic', 'Spoken', 'Math', 'Smiley', 'Neon', 'Bars', 'Reel', 'Binary', 'Nixie'],
 	},
+	placements: {
+		alt: (label) => `${label} over Google Photos wallpaper`,
+		labels: ['Small, bottom right', 'Medium, left', 'Medium, right'],
+	},
 	styles: {
 		alt: (label) => `Tessera dashboard in the ${label} style`,
 		values: ['standard', 'material', 'glass', 'eink', 'metro', 'terminal', 'hifi', 'neon', 'skeuo'],
@@ -32,7 +36,7 @@ export const gallery = Object.fromEntries(Object.entries(groups).map(([name, gro
 		label,
 		value: group.values?.[index] ?? label,
 		alt: group.alt(label),
-		width: group.width ?? 420,
-		height: group.height ?? 672,
+		width: group.width ?? 1280,
+		height: group.height ?? 800,
 	})),
 ]));

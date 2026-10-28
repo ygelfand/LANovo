@@ -7,14 +7,27 @@
 <a href="https://discord.gg/efWnv89pg2"><img src="https://img.shields.io/badge/Join_the_community-5865f2?style=for-the-badge&logo=discord&logoColor=fff" alt="Join the community on Discord"></a>
 <a href="https://www.lanovo.link"><img src="https://img.shields.io/badge/Docs-www.lanovo.link-2f8cff?style=for-the-badge" alt="Documentation"></a>
 
-Turn a Lenovo Smart Display into a local Home Assistant display, speaker and voice assistant.
+An open-source replacement for Google Assistant on Lenovo Smart Displays, JBL Link View and
+ThinkSmart View, with Home Assistant Assist, dashboards, apps, music and video calls.
 
-A pure-Go replacement for what Lenovo and Google shipped. It speaks the ESPHome native API, so Home
-Assistant discovers it the way it discovers any ESPHome device.
+Uses the display's existing microphones, speakers, camera and sensors. Home Assistant discovers it
+through the ESPHome native API.
 
 <p align="center">
-  <img src="assets/readme/visual-wall.webp" alt="Six of LANovo's visuals: Synthwave, LCARS, Classic VU, Aurora, a Pip-Boy, and a koi pond" width="720">
+  <a href="https://www.lanovo.link/use/visuals/"><img src="docs/public/visuals/lcars.webp" alt="Animated LCARS audio visual" width="230"></a>
+  <a href="https://www.lanovo.link/use/visuals/"><img src="docs/public/visuals/koi-pond.webp" alt="Animated koi pond audio visual" width="230"></a>
+  <a href="https://www.lanovo.link/use/visuals/"><img src="docs/public/visuals/synthwave.webp" alt="Animated Synthwave audio visual" width="230"></a>
 </p>
+
+| Nixie clock | Hardware alarm panel |
+|:---:|:---:|
+| <img src="docs/public/carousel/faces-20.png" alt="Nixie clock in the Amber theme, in landscape" width="350"> | <img src="docs/public/carousel/homealarm-6.webp" alt="Hardware alarm-panel design with rehearsal data" width="350"> |
+
+| Tessera in Neon | Photos |
+|:---:|:---:|
+| <img src="docs/public/carousel/styles-7.png" alt="Landscape Tessera dashboard in the Neon style" width="350"> | <img src="docs/src/assets/screens/app-photos.webp" alt="Full-screen Photos app showing a Google Photos album" width="350"> |
+
+[Interface gallery](https://www.lanovo.link/use/gallery/) · [Setup guide](https://www.lanovo.link/start/devices/) · [Releases](https://github.com/ygelfand/LANovo/releases)
 
 ## Devices
 
@@ -47,23 +60,17 @@ a lava lamp, rain on glass, light cycles, four Pip-Boys, studio VU meters and mo
 
 ### Native dashboard
 
-A clock in one of eight faces, the weather, and tabs for your Home Assistant lights and switches,
-picked by area or label.
+A clock in one of 21 faces, photo wallpaper, weather, and tabs for Home Assistant lights, switches,
+cameras, doorbells and your alarm panel. Pick lights and switches by area, label or entity.
 
 <p align="center">
-  <img src="assets/readme/faces.webp" alt="Eight clock faces: Plain, Stack, Cards, Analog, Segments, Words, Overlap and Analog seconds" width="260">
   <img src="assets/readme/home-lights.webp" alt="The Lights tab, with room cards" width="360">
 </p>
 
 ### Tessera dashboards
 
-LANovo speaks the [Tessera](https://github.com/MaxGramser/homeassistant_espscreen) screen protocol.
-Lay out pages in Tessera's editor in Home Assistant and the display draws them. Most of Tessera's
-tiles and features are supported.
-
-<p align="center">
-  <img src="assets/readme/tessera-styles.webp" alt="One Tessera page in each of the nine styles: Standard, Material You, Glass, E-ink, Metro, Terminal, Hi-fi, Neon and Skeuo" width="360">
-</p>
+Design pages in [Tessera](https://github.com/MaxGramser/homeassistant_espscreen) in Home Assistant.
+Choose LANovo's native renderer or embedded Tessera firmware; both use the same layouts.
 
 ### Styles and themes
 
@@ -103,8 +110,8 @@ Six timer styles. Messages from Home Assistant in four tones and four styles, ea
 chime, including custom sounds.
 
 <p align="center">
-  <img src="assets/readme/timers.webp" alt="A timer in six styles" width="260">
-  <img src="assets/readme/alerts.webp" alt="A message as a banner, a card, a toast and full screen" width="260">
+  <img src="docs/public/carousel/timers-3.png" alt="Dial timer in landscape" width="350">
+  <img src="docs/public/carousel/alerts-1.png" alt="Message card in landscape" width="350">
 </p>
 
 ### Audio
@@ -125,7 +132,7 @@ discovery, and a snapshot camera in Home Assistant. The physical shutter stops t
 - Bluetooth proxy for Home Assistant
 - Proximity wake and adaptive brightness
 - Night mode: dim, dim to a clock, or screen off when the room is dark
-- Immich wallpaper
+- Photos from Immich and Google Photos, as wallpaper, a screen saver or a full-screen app
 - Settings on the display or from Home Assistant, and config sync between displays
 - Updates from Home Assistant or from the display, stable or development channel, and earlier
   versions to go back to
@@ -136,7 +143,8 @@ discovery, and a snapshot camera in Home Assistant. The physical shutter stops t
 ### In a browser
 
 Every display serves its own web page over HTTPS: a live view of the screen, every setting with
-search, alarms, calls and broadcasts, and logs. Behind it is an HTTP API for scripts. The
+search, alarms, calls and broadcasts, and logs. Live screen control includes QR pairing and remote
+keyboard input; portable settings can be exported and imported. Behind it is an HTTP API for scripts. The
 certificate is self-signed, or comes from [Cert Warden](https://www.certwarden.com) if you run one.
 See [In a browser](https://www.lanovo.link/use/web/).
 

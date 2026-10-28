@@ -11,6 +11,8 @@ import photoFit from '../assets/screens/native-photo-fit.webp';
 import photoTransition from '../assets/screens/native-photo-transition.webp';
 import immich from '../assets/screens/native-immich.webp';
 import googlePhotos from '../assets/screens/native-google-photos.webp';
+import photoApp from '../assets/screens/app-photos.webp';
+import wallpaper from '../assets/screens/clock-wallpaper.webp';
 import alarm from '../assets/screens/app-home-alarm.webp';
 import alarmEditor from '../assets/screens/app-alarm-editor.webp';
 import intercom from '../assets/screens/app-intercom.webp';
@@ -37,7 +39,7 @@ interface Props {
 const groups = {
 	dashboards: [
 		{ image: lights, title: 'Native home control', detail: 'Lights grouped by room on the native dashboard.', href: '/use/dashboards/#lights-and-switches' },
-		{ image: tessera, title: 'Tessera', detail: 'Custom pages with climate, weather, energy, media and home-control tiles.', href: '/use/dashboards/#tessera' },
+		{ image: tessera, title: 'Tessera', detail: 'A demonstration layout with weather, a clock, media, sensors and home-control tiles.', href: '/use/dashboards/#tessera' },
 	],
 	apps: [
 		{ image: apps, title: 'Apps', detail: 'The complete app launcher; stars keep favourites in the dock.', href: '/features/apps/' },
@@ -49,6 +51,8 @@ const groups = {
 		{ image: radio, title: 'Internet radio', detail: 'Popular stations from Radio Browser.', href: '/features/apps/#radio' },
 	],
 	photos: [
+		{ image: photoApp, title: 'Photos app', detail: 'A Google Photos album in full-screen photo mode, using Framed fit.', href: '/features/photos/' },
+		{ image: wallpaper, title: 'Photo wallpaper', detail: 'A small corner clock over a Google Photos image.', href: '/features/photos/#wallpaper-settings' },
 		{ image: photoSettings, title: 'Photo settings', detail: 'Wallpaper, Photos app timing, fit and transitions.', href: '/features/photos/' },
 		{ image: photoFit, title: 'Photo fit', detail: 'Every fit option in the on-screen picker.', href: '/features/photos/#fit' },
 		{ image: photoTransition, title: 'Photo transitions', detail: 'Every transition in the on-screen picker.', href: '/features/photos/#transition' },
