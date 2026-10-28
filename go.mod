@@ -32,7 +32,7 @@ require (
 	github.com/tfriedel6/canvas v0.12.1 // indirect
 	github.com/tphakala/go-aac v0.7.0 // indirect
 	github.com/ygelfand/go-esphome-device v0.0.17
-	github.com/ygelfand/libcountertop v0.1.1-0.20261028012119-a1818fff54fc
+	github.com/ygelfand/libcountertop v0.1.1-0.20261028015708-7c398fad5331
 	github.com/zserge/microwakeword v0.0.0-20260330234603-bfaf3840114e // indirect
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 	golang.org/x/image v0.47.0 // indirect
