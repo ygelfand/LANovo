@@ -13,6 +13,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/alarm"
 	"github.com/ygelfand/LANovo/internal/feature/broadcast"
 	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
@@ -27,6 +28,10 @@ var get = sync.OnceValue(func() *Actions {
 	a := &Actions{}
 	a.reg.Add(call.Get().Action(discovery.Get().Peers, board.Current().CameraWidth > 0))
 	a.reg.Add(broadcast.Get().Action())
+	a.reg.Add(alarm.Get().VoiceAction())
+	for _, action := range call.Get().ControlActions() {
+		a.reg.Add(action)
+	}
 	component.Subscribed.Listen(func(struct{}) { a.Declare() })
 	states.Get().Follow(sharedha.VersionEntity, "").Reported.Listen(func(string) { a.Declare() })
 	return a

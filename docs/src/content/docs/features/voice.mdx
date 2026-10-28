@@ -105,6 +105,41 @@ Actions need the companion Home Assistant integration, installed through HACS. U
 installed and up to date, **Settings → Voice triggers** shows a warning row; tap it for a code to
 scan that opens the integration in HACS.
 
+## Alarm and call controls
+
+These actions are spoken after the wake word and need the companion Home Assistant integration.
+
+
+| Say | Does |
+|---|---|
+| "Set an alarm for seven thirty AM" | Saves an enabled one-time alarm |
+| "Set an alarm called Work for seven thirty AM every weekday" | Saves a named repeating alarm |
+| "List my alarms" | Reads the saved alarms, including disabled ones |
+| "When is my next alarm?" | Reads the next enabled alarm and when it will ring |
+| "Disable the Work alarm", "enable the Work alarm" | Turns that saved alarm off or on |
+| "Delete the Work alarm", "delete the seven thirty AM alarm" | Deletes the matching saved alarm |
+| "Snooze", "snooze my alarm" | Snoozes the ringing alarm for its saved snooze duration |
+| "Stop my alarm", "dismiss the alarm" | Stops the current alarm without deleting its schedule |
+| "Answer the call" | Answers the incoming call with audio only |
+| "Answer the video call" | Answers with video when the incoming call supports it |
+| "Hang up", "end the call", "decline the call" | Ends, cancels or declines the current call |
+
+Use AM/PM or a 24-hour time such as `19:30`. A one-time alarm rings at the next occurrence of that
+time. Repeats accept **every weekday**, **every weekend**, **every day**, or named weekdays such as
+**on Monday and Friday**. New alarms have a five-minute snooze. Change their sound, snooze and other
+options in the alarm editor.
+
+Existing alarm names or identical schedules are not overwritten. Alarm changes match a saved name
+or time; if more than one matches, use its name. **Next** also works: "delete the next alarm".
+
+Each action family has its own switch under **Voice triggers**: **Manage alarms**, **Answer a call**
+and **Hang up a call**. To use voice hang-up during a connected call, turn off
+**Pause wake word during calls**. With it on, use the screen, buttons or HA instead.
+
+Home Assistant can also call `esphome.<node>_call_answer` with `video: false` for audio-only or
+`video: true` for video, and `esphome.<node>_call_hangup` with no arguments. These act on the current
+call, including peer calls; they are separate from the browser-call signalling actions.
+
 ## Timers
 
 "Set a timer for ten minutes" starts a timer and shows a countdown. See
