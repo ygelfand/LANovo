@@ -7,7 +7,7 @@ import (
 
 	"github.com/ygelfand/libcountertop/pkg/display/geometry"
 
-	"github.com/ygelfand/LANovo/internal/hardware/i2c"
+	"github.com/ygelfand/libcountertop/pkg/system/i2c"
 )
 
 type chip struct {

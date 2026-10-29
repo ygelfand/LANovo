@@ -11,11 +11,9 @@ import (
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 
-	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
-	"github.com/ygelfand/LANovo/internal/hardware/display"
 )
 
 func init() {
@@ -60,8 +58,4 @@ func level(args []string) error {
 
 	volume.Get().Set(stream, at)
 	return nil
-}
-
-func picture() (w, h int) {
-	return display.Get().Orientation().Size(board.Current().PanelWidth, board.Current().PanelHeight)
 }

@@ -3,7 +3,7 @@ package light
 import (
 	"fmt"
 
-	"github.com/ygelfand/LANovo/internal/hardware/i2c"
+	"github.com/ygelfand/libcountertop/pkg/system/i2c"
 )
 
 const Address = 0x51

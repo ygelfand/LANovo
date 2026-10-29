@@ -16,12 +16,13 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
+	"github.com/ygelfand/libcountertop/pkg/system/i2c"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/screen"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
-	"github.com/ygelfand/LANovo/internal/hardware/i2c"
 	"github.com/ygelfand/LANovo/internal/hardware/light"
 	"github.com/ygelfand/LANovo/internal/hardware/motion"
 )

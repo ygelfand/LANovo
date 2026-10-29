@@ -23,8 +23,7 @@ PACK ?=
 
 BUILD_DIR := bin
 
-# UPX 5.x packs static ARM executables that fail upx -t.
-UPX_VERSION := 4.2.4
+UPX_VERSION := 5.3.0
 UPX_DIR := $(BUILD_DIR)/upx-$(UPX_VERSION)
 UPX := $(UPX_DIR)/build/upx
 ASSET_DIR := internal/host/assets/payload
@@ -83,7 +82,7 @@ build-lanovo: ## Build the host CLI into ./bin
 	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovo ./cmd/lanovo
 
 .PHONY: build-lanovod
-build-lanovod: build-surface build-camshim build-camera build-voice build-airplay ## Cross-compile lanovod for the display, carrying its native parts (PACK=bin/upx-4.2.4/build/upx to compress it)
+build-lanovod: build-surface build-camshim build-camera build-voice build-airplay ## Cross-compile lanovod for the display, carrying its native parts (PACK=bin/upx-5.3.0/build/upx to compress it)
 	@mkdir -p $(BUILD_DIR) $(PARTS_DIR)
 	cp $(SURFACE_BIN) $(PARTS_DIR)/lanovo-surface
 	cp $(CAMSHIM_BIN) $(PARTS_DIR)/liblanovo-camshim.so

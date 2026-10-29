@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/ygelfand/LANovo/internal/hardware/i2c"
+	"github.com/ygelfand/libcountertop/pkg/system/i2c"
 )
 
 type chip struct {

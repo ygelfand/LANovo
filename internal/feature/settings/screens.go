@@ -131,13 +131,17 @@ func callsPage() *sharedshell.Page { return callPages().Calls() }
 
 func castPage() *sharedshell.Page { return servicePages().Cast() }
 
+func airplayPage() *sharedshell.Page {
+	return sharedsettings.ServicePage(say.T("features.airplay"), airplay.Get().Settings())
+}
+
 func featuresPage() *sharedshell.Page {
 	return sharedsettings.FeaturesPage(func() []sharedsettings.Feature {
 		c := config.Get()
 		return []sharedsettings.Feature{
 			{Key: "features.sendspin", On: c.Sendspin.Enabled, Set: sendspin.Get().SetEnabled},
 			{Key: "features.cast", Page: func() sharedshell.View { return castPage() }},
-			{Key: "features.airplay", On: c.AirPlay.Enabled, Set: airplay.Get().SetEnabled},
+			{Key: "features.airplay", Page: func() sharedshell.View { return airplayPage() }},
 			{Key: "call.settings", Page: func() sharedshell.View { return callsPage() }},
 			{Key: "features.proxy", On: c.Bluetooth.Proxy, Set: bluetooth.Get().SetProxy},
 			{Key: "features.speaker", On: c.Bluetooth.Speaker, Set: a2dp.Get().SetEnabled},

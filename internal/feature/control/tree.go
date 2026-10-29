@@ -7,13 +7,17 @@ import (
 
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/alarmcmd"
-	"github.com/ygelfand/libcountertop/pkg/runtime/control/callcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/castcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/displaycmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/doorbellcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/firmwarecmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/homealarmcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/i2ccmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/mixercmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/playercmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 
+	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/alarm"
 	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
@@ -28,6 +32,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
+	"github.com/ygelfand/LANovo/internal/hardware/gpu"
+	"github.com/ygelfand/LANovo/internal/hardware/speaker"
+	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/logging"
 )
 
@@ -70,75 +77,22 @@ func (c *Control) touching() []*cobra.Command {
 }
 
 func showing() []*cobra.Command {
-	return []*cobra.Command{
+	shared := displaycmd.Commands(displaycmd.Dependencies{
+		Panel:    display.Get,
+		GPU:      gpu.Get,
+		Messages: message.Get,
+		Label:    config.Defaults().Visual.Label,
+		Shot:     layout.StateDir + "/screen.png",
+		Thumbs:   "/data/local/tmp/lanovo-thumbs",
+	})
+	return append(shared,
 		screencmd.Record(display.Get),
-		says(&cobra.Command{
-			Use:   "shot [PATH]",
-			Short: "Take a screenshot",
-			Args:  cobra.MaximumNArgs(1),
-		}, shot),
-		{
-			Use:   "size",
-			Short: "Say how big the picture is",
-			Args:  cobra.NoArgs,
-			RunE: func(cmd *cobra.Command, _ []string) error {
-				w, h := picture()
-				fmt.Fprintf(cmd.OutOrStdout(), "%d %d\n", w, h)
-				return nil
-			},
-		},
-		{
-			Use:   "stats",
-			Short: "How much has been drawn since the start",
-			Args:  cobra.NoArgs,
-			RunE: func(cmd *cobra.Command, _ []string) error {
-				frames, whole, painted := display.Get().Stats()
-				fmt.Fprintf(cmd.OutOrStdout(), "frames %d whole %d painted %d megapixels %.1f\n",
-					frames, whole, painted, float64(painted)/1e6)
-				return nil
-			},
-		},
-		says(&cobra.Command{
-			Use:   "gltime FILE [PASSES AMOUNT RADIUS GLOWPASSES SECONDS]",
-			Short: "Run a shader file on a full-screen GPU layer for timing",
-			Args:  cobra.RangeArgs(1, 6),
-		}, gltime),
-		says(&cobra.Command{
-			Use:   "render KIND FILE [W H [FRAMES]]",
-			Short: "Render one visual offscreen after loud frames (50 by default) into a PNG",
-			Args:  cobra.RangeArgs(2, 5),
-		}, render),
-		says(&cobra.Command{
-			Use:   "wake sunrise|ember|white SHARE FILE",
-			Short: "Render a wake light look offscreen at SHARE (0 to 1) of its window into a PNG",
-			Args:  cobra.ExactArgs(3),
-		}, wake),
-		says(&cobra.Command{
-			Use:   "clip KIND DIR [W H [SECONDS [FPS]]]",
-			Short: "Render a few seconds of one visual offscreen, to a beat, as numbered PNG frames",
-			Args:  cobra.RangeArgs(2, 6),
-		}, clip),
-		says(&cobra.Command{
-			Use:   "thumbs [DIR]",
-			Short: "Render every visual offscreen into picker thumbnails, landscape and portrait",
-			Args:  cobra.MaximumNArgs(1),
-		}, thumbs),
 		says(&cobra.Command{
 			Use:   "boot FILE SECONDS [TRACE HEADER READY] [THEME] [WxH]",
 			Short: "Render one frame of the boot reveal offscreen into a PNG",
 			Args:  cobra.RangeArgs(2, 7),
 		}, bootFrame),
-		says(&cobra.Command{
-			Use:   "fps [FRAMES]",
-			Short: "Measure the frame rate over a run of frames",
-			Args:  cobra.MaximumNArgs(1),
-		}, fps),
-		does(&cobra.Command{
-			Use:   "message TONE SECONDS TITLE : BODY",
-			Short: "Put a message on the panel",
-			Args:  cobra.MinimumNArgs(3),
-		}, say),
-		{
+		&cobra.Command{
 			Use:       "open settings|camera|player",
 			Short:     "Open a settings page on the panel",
 			Args:      cobra.ExactArgs(1),
@@ -160,21 +114,12 @@ func showing() []*cobra.Command {
 		screencmd.Timer(timer.Get),
 		screencmd.Warning(nws.Get),
 		screencmd.Wallpaper(poster.Get),
-		{
-			Use:   "clear",
-			Short: "Take the message away again",
-			Args:  cobra.NoArgs,
-			RunE: func(_ *cobra.Command, _ []string) error {
-				message.Get().Hide()
-				return nil
-			},
-		},
 		says(&cobra.Command{
 			Use:   "stack",
 			Short: "The screens on the shell's stack, top first, and which are held up",
 			Args:  cobra.NoArgs,
 		}, func([]string) (string, error) { return screencmd.Stack(shell.Get()), nil }),
-	}
+	)
 }
 
 func telling() []*cobra.Command {
@@ -191,12 +136,8 @@ func telling() []*cobra.Command {
 			Args:      cobra.MaximumNArgs(1),
 			ValidArgs: []string{"debug", "info", "warn", "error"},
 		}, func(args []string) (string, error) { return harness.LogLevel(&logging.Log.Level, args) }),
-		says(&cobra.Command{
-			Use:   "peers",
-			Short: "Other devices on the network",
-			Args:  cobra.NoArgs,
-		}, func([]string) (string, error) { return callcmd.Peers(discovery.Get().Peers()), nil }),
-		i2cCommand(),
+		harness.PeersCommand(discovery.Get().Peers),
+		i2ccmd.Command(),
 	}
 }
 
@@ -234,27 +175,12 @@ func recording() *cobra.Command {
 func sounding() []*cobra.Command {
 	return []*cobra.Command{
 		recording(),
-		says(&cobra.Command{
-			Use:   "player",
-			Short: "What is playing, and on what",
-			Args:  cobra.NoArgs,
-		}, player),
+		playercmd.Command(func() playercmd.Player { return media.Get() }),
 		does(&cobra.Command{
 			Use:   "volume STREAM LEVEL",
 			Short: "Set a stream's level",
 			Args:  cobra.ExactArgs(2),
 		}, level),
-		says(&cobra.Command{
-			Use:   "mixer NAME [= VALUE]",
-			Short: "Read or change a mixer control",
-			Args:  cobra.MinimumNArgs(1),
-		}, mixer),
+		mixercmd.Command(speaker.Card),
 	}
-}
-
-func verbOf(args []string) string {
-	if len(args) == 0 {
-		return ""
-	}
-	return args[0]
 }

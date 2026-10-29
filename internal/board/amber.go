@@ -1,10 +1,13 @@
 package board
 
+import "github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
+
 var Amber = Board{
 	NativeAPI:    27,
 	Name:         "amber",
 	Model:        "Lenovo Smart Display 8",
 	SoC:          Qualcomm,
+	Bluetooth:    hci.ControllerSetsParams,
 	PanelWidth:   800,
 	PanelHeight:  1280,
 	CameraWidth:  Blueberry.CameraWidth,

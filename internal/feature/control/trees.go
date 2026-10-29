@@ -2,25 +2,17 @@ package control
 
 import (
 	"github.com/spf13/cobra"
-	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/blecmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/btcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/cameracmd"
 
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	"github.com/ygelfand/LANovo/internal/feature/vision"
+	"github.com/ygelfand/LANovo/internal/hardware/ble"
 )
 
 func radios() []*cobra.Command {
-	bt := btcmd.Command(a2dp.Get(), "lanovod")
-
-	ble := group("ble", "The low energy radio", "")
-	ble.AddCommand(says(&cobra.Command{
-		Use:   "sniff [MILLISECONDS]",
-		Short: "Listen for advertisements",
-		Args:  cobra.MaximumNArgs(1),
-	}, harness.Under(radio, "sniff")))
-
-	return []*cobra.Command{bt, ble}
+	return []*cobra.Command{btcmd.Command(a2dp.Get(), "lanovod"), blecmd.Command(ble.Get())}
 }
 
 func camera() *cobra.Command {

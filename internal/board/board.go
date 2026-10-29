@@ -6,6 +6,8 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
+
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/layout"
 )
@@ -33,6 +35,8 @@ type Board struct {
 	Name  string
 	Model string
 	SoC   SoC
+
+	Bluetooth hci.Quirks
 
 	PanelWidth, PanelHeight int
 	Diagonal                float64

@@ -1,10 +1,13 @@
 package board
 
+import "github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
+
 var Opal = Board{
 	NativeAPI:      27,
 	Name:           "opal",
 	Model:          "JBL Link View",
 	SoC:            Qualcomm,
+	Bluetooth:      hci.ControllerSetsParams,
 	PanelWidth:     800,
 	PanelHeight:    1280,
 	CameraWidth:    Blueberry.CameraWidth,

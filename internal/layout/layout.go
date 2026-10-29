@@ -56,6 +56,8 @@ const (
 
 	CastAuthorityPath = StateDir + "/cast-authority.json"
 
+	BondsPath = StateDir + "/bonds.json"
+
 	TesseraDir = StateDir
 
 	TesseraHelper = StateDir + "/bin/lanovo-tessera"

@@ -58,6 +58,7 @@ var inTables = map[string]string{
 	"Cast.YouTube.Skip":         "cast.youtube.skip",
 	"Sendspin.Enabled":          "media.sendspin",
 	"AirPlay.Enabled":           "media.airplay",
+	"AirPlay.Audio":             "media.airplay_audio_mode",
 	"Screen.Backlight":          "screen.backlight",
 	"Screen.Mode":               "screen.auto",
 	"Screen.Theme":              "screen.theme",

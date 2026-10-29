@@ -7,9 +7,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/system/i2c"
+
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/hardware/gpio"
-	"github.com/ygelfand/LANovo/internal/hardware/i2c"
 )
 
 //go:embed tables/*.bin

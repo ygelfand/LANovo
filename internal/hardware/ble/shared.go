@@ -59,7 +59,13 @@ func BringUp() (*hci.Port, hci.Version, error) {
 }
 
 var get = sync.OnceValue(
-	func() *hci.Radio { return hci.NewRadio(hci.RadioOptions{BringUp: BringUp, Power: Power}) },
+	func() *hci.Radio {
+		return hci.NewRadio(hci.RadioOptions{
+			BringUp: BringUp,
+			Power:   Power,
+			Quirks:  board.Current().Bluetooth,
+		})
+	},
 )
 
 func Get() *hci.Radio { return get() }

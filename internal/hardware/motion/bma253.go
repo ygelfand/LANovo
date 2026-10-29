@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math"
 
-	"github.com/ygelfand/LANovo/internal/hardware/i2c"
+	"github.com/ygelfand/libcountertop/pkg/system/i2c"
 )
 
 // The address depends on how SDO is strapped.
