@@ -20,10 +20,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/alerts"
-	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/idle"
+	"github.com/ygelfand/LANovo/internal/feature/product"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/feature/states"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
@@ -34,15 +33,7 @@ func init() {
 }
 
 var Get = sync.OnceValue(func() *shared.Alarm {
-	a := shared.New(shared.Options{
-		Controller: homeassistant.Get(),
-		States:     states.Get(),
-		Settings:   config.HomeAlarmSection,
-		DeviceID:   component.DeviceScreen,
-		Chimes:     alerts.Get().Tones,
-	})
-	component.Settings.Add(a.Settings())
-	return a
+	return shared.Build(product.Get(), config.HomeAlarmSection, alerts.Get().Tones)
 })
 
 var shown atomic.Pointer[homealarmview.View]

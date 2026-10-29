@@ -24,6 +24,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/shell"
 	"github.com/ygelfand/libcountertop/pkg/display/shopping"
 	"github.com/ygelfand/libcountertop/pkg/display/syncview"
+	"github.com/ygelfand/libcountertop/pkg/display/thermostatview"
 	"github.com/ygelfand/libcountertop/pkg/display/tuner"
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
@@ -67,6 +68,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/settings"
 	featureshell "github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/tessera"
+	"github.com/ygelfand/LANovo/internal/feature/thermostat"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
 	"github.com/ygelfand/LANovo/internal/feature/todo"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
@@ -108,6 +110,8 @@ var Get = sync.OnceValue(func() *screens.App {
 	apps.Get().Add(photosApp.App())
 	alarmPanel := homealarm.NewView(look)
 	apps.Get().Add(alarmPanel.App())
+	climate := thermostat.NewView(look)
+	apps.Get().Add(climate.App())
 	for _, a := range homecontrol.Get().Apps() {
 		apps.Get().Add(a)
 	}
@@ -234,6 +238,11 @@ var Get = sync.OnceValue(func() *screens.App {
 			cameraview.TabKind:    {Glyph: cameras.Get().Glyph, Draw: cameras.Get().Board},
 			doorbellview.TabKind:  {Glyph: doorbell.View().Glyph, Draw: doorbell.View().Board},
 			homealarmview.TabKind: {Glyph: alarmPanel.Glyph, Draw: alarmPanel.Board},
+			thermostatview.TabKind: {
+				Glyph:  climate.Glyph,
+				Draw:   climate.Board,
+				Ground: climate.Ground,
+			},
 		},
 		Home:    homecontrol.Get(),
 		HomeHA:  homeassistant.Get(),
@@ -259,6 +268,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		CamerasPage:     func() shell.View { return cameras.Get().Page() },
 		DoorbellPage:    func() shell.View { return doorbell.View().Page() },
 		HomeAlarmPage:   func() shell.View { return alarmPanel.Page() },
+		ThermostatPage:  func() shell.View { return climate.Page() },
 		Player:          media.Get(),
 		PlayerPage:      media.Page,
 		MediaVolume:     sharedvolume.For(volume.Get(), config.StreamMedia),
@@ -293,6 +303,7 @@ var Get = sync.OnceValue(func() *screens.App {
 			doorbell.View().Screen,
 			photosApp.Screen,
 			alarmPanel.Screen,
+			climate.Screen,
 			apps.Get().Screens(look),
 		}, mirrors...),
 	})

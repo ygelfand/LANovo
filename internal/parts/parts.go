@@ -32,7 +32,7 @@ type Part struct {
 
 func (p Part) Data() []byte { return p.data }
 
-func Voice() []byte { return voice }
+func Speech() []byte { return speech }
 
 func AirPlay() []byte { return airplay }
 

@@ -15,6 +15,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/actions"
 	"github.com/ygelfand/LANovo/internal/feature/commands"
+	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 )
 
 func init() { component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(42)) }
@@ -25,7 +26,11 @@ type Triggers struct {
 
 var get = sync.OnceValue(func() *Triggers {
 	t := &Triggers{knobs: &setting.Controls[schema.Voice]{
-		Table:  voice.NewTable(actions.Get().Names(), Commands()),
+		Table: voice.NewTable(
+			actions.Get().Names(),
+			Commands(),
+			voice.LabelChoices(homeassistant.Get()),
+		),
 		Device: component.DeviceVoice,
 		Read:   config.VoiceSection.Read,
 		Save:   save,

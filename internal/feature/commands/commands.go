@@ -9,6 +9,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/call"
+	"github.com/ygelfand/LANovo/internal/feature/discovery"
+	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/layout"
@@ -30,12 +32,18 @@ func (c *Commands) Close() error {
 
 var get = sync.OnceValue(func() *Commands {
 	c := &Commands{voice.NewListener(voice.Options{
-		Helper:   layout.VoiceHelper,
-		Binary:   parts.Voice(),
+		Helper:   layout.SpeechHelper,
+		Binary:   parts.Speech(),
 		ModelDir: layout.ModelDir,
 		Source:   mic.Get(),
 		Paused:   func() bool { return privacy.Get().MicMuted() || call.Get().PausesWake() },
 		Settings: config.VoiceSection,
+		Home:     homeassistant.Get(),
+		Peers:    discovery.Get().PeerNames,
+		Retired: []string{
+			layout.StateDir + "/bin/lanovo-voice",
+			layout.ModelDir + "/whistle-*.cact",
+		},
 	})}
 	return c
 })

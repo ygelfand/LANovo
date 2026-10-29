@@ -8,6 +8,6 @@ var camshim []byte
 
 var camera []byte
 
-var voice []byte
+var speech []byte
 
 var airplay []byte

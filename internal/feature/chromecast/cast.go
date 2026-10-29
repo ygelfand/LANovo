@@ -3,6 +3,7 @@ package chromecast
 import (
 	"context"
 	"log/slog"
+	"net/http"
 	"os"
 	"sync"
 
@@ -27,6 +28,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
 	"github.com/ygelfand/LANovo/internal/feature/playout"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
+	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/layout"
@@ -35,6 +37,12 @@ import (
 
 func init() {
 	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(60))
+	web.HandlePeerOpen(
+		"GET /setup/*",
+		http.HandlerFunc(
+			func(w http.ResponseWriter, r *http.Request) { Get().Setup().ServeHTTP(w, r) },
+		),
+	)
 }
 
 var Preferences = castreceiver.Preferences("lanovo", config.CastSection)
@@ -81,7 +89,8 @@ func build() *castreceiver.Receiver {
 		Network:  func(ctx context.Context) bool { return dhcp.Get().Wait(ctx) },
 		Server: castreceiver.Config{
 			Name:            deviceName,
-			Model:           layout.Model,
+			Manufacturer:    layout.Manufacturer,
+			Model:           board.Current().Model,
 			Version:         layout.Version,
 			Hardware:        hardware,
 			Host:            layout.Slug,

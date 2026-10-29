@@ -1,10 +1,12 @@
 package control
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spf13/cobra"
 
+	"github.com/ygelfand/libcountertop/pkg/inference/asr"
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/alarmcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/castcmd"
@@ -16,6 +18,8 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/mixercmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/playercmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/speechcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/thermostatcmd"
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/alarm"
@@ -30,12 +34,14 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/poster"
 	panel "github.com/ygelfand/LANovo/internal/feature/settings"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/thermostat"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/logging"
+	"github.com/ygelfand/LANovo/internal/parts"
 )
 
 func (c *Control) tree() *cobra.Command {
@@ -54,6 +60,7 @@ func (c *Control) tree() *cobra.Command {
 	t.Top(castcmd.Command(chromecast.Page))
 	t.Top(doorbellcmd.Command(doorbell.Get))
 	t.Top(homealarmcmd.Command(homealarm.Get, homealarm.Shown))
+	t.Top(thermostatcmd.Command(thermostat.Get, thermostat.Shown))
 	return t.Root()
 }
 
@@ -182,5 +189,8 @@ func sounding() []*cobra.Command {
 			Args:  cobra.ExactArgs(2),
 		}, level),
 		mixercmd.Command(speaker.Card),
+		speechcmd.Command(func(ctx context.Context) (asr.Options, error) {
+			return asr.Prepare(ctx, layout.SpeechHelper, parts.Speech(), layout.ModelDir)
+		}),
 	}
 }

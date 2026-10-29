@@ -144,6 +144,8 @@ var inTables = map[string]string{
 	"HomeAlarm.Settled.Show":    "homealarm.settled.show",
 	"HomeAlarm.Settled.Sound":   "homealarm.settled.sound",
 	"HomeAlarm.SettledFor":      "homealarm.settled.for",
+	"Thermostat.Look":           "thermostat.look",
+	"Thermostat.Tab":            "thermostat.tab",
 	"Network.HomeKey":           "network.home_key",
 	"Microphone.Gain":           "microphone.gain",
 	"Microphone.Leveling":       "microphone.leveling",
@@ -168,6 +170,7 @@ var inTables = map[string]string{
 	"Todo.Completed":            "todo.completed",
 	"Voice.Commands":            "voice.commands",
 	"Voice.Actions":             "voice.actions",
+	"Voice.Label":               "voice.label",
 	"Weather.Alerts":            "weather.alerts",
 	"Weather.RadarSource":       "weather.radar_source",
 	"Weather.RadarRange":        "weather.radar_range",
@@ -206,6 +209,8 @@ var byHand = map[string]string{
 	"Device.Model": "the same, read from the hardware",
 
 	"HomeAlarm.Hide": "the home alarm's zone list page, one toggle per discovered zone",
+
+	"Thermostat.Entities": "the thermostat page's climate list, one toggle per entity, up to four",
 
 	"Volume.Main":     "the volume command sets these, by stream",
 	"Volume.Media":    "the volume command",

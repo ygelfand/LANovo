@@ -9,10 +9,8 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
+	"github.com/ygelfand/LANovo/internal/feature/product"
 	featureremember "github.com/ygelfand/LANovo/internal/feature/remember"
-	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/layout"
 )
 
 func init() {
@@ -20,13 +18,11 @@ func init() {
 }
 
 var get = sync.OnceValue(func() *nws.NWS {
-	return nws.New(nws.Options{
-		Controller: homeassistant.Get(),
-		Agent:      "(LANovo " + layout.Version + ", github.com/ygelfand/LANovo)",
-		Settings:   config.WeatherSection,
-		Dismissed:  remember.NewSlot[[]string](featureremember.Get(), "weather.dismissed"),
-		Redraw:     func() { shell.Get().Redraw() },
-	})
+	return nws.Build(
+		product.Get(),
+		config.WeatherSection,
+		remember.NewSlot[[]string](featureremember.Get(), "weather.dismissed"),
+	)
 })
 
 func Get() *nws.NWS { return get() }

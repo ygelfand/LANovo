@@ -77,19 +77,15 @@ const (
 
 	ModelDir = StateDir + "/models"
 
-	VoiceHelper = StateDir + "/bin/lanovo-voice"
+	SpeechHelper = StateDir + "/bin/lanovo-asr"
 
 	AirPlayHelper = StateDir + "/bin/lanovo-airplay"
 
 	AirPlayKey = StateDir + "/airplay.pem"
 
-	TileDir = StateDir + "/tiles"
-
 	RecordingDir = StateDir + "/recordings"
 
 	ToneDir = StateDir + "/tones"
-
-	PhotoDir = StateDir + "/photos"
 )
 
 const (

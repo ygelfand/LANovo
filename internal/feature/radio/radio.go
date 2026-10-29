@@ -6,18 +6,16 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/homeassistant/radio"
 
 	"github.com/ygelfand/LANovo/internal/config"
-	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
-	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/product"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 )
 
 var get = sync.OnceValue(func() *radio.Radio {
-	return radio.New(radio.Options{
-		Controller: homeassistant.Get(),
-		MAC:        func() string { return wifi.Get().MAC() },
-		Settings:   config.RadioSection,
-		Redraw:     func() { shell.Get().Redraw() },
-	})
+	return radio.Build(
+		product.Get(),
+		config.RadioSection,
+		func() string { return wifi.Get().MAC() },
+	)
 })
 
 func Get() *radio.Radio { return get() }
