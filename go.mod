@@ -5,7 +5,7 @@ go 1.27.0
 require (
 	charm.land/lipgloss/v2 v2.0.6
 	github.com/charmbracelet/colorprofile v0.4.3
-	github.com/go-gui-org/go-gui v0.91.0
+	github.com/go-gui-org/go-gui v0.94.0
 	github.com/spf13/cobra v1.10.2
 	github.com/ygelfand/go-esphome-device v0.0.17
 	github.com/ygelfand/libcountertop v0.1.1-0.20261031165839-a69147f1221a

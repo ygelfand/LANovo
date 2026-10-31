@@ -16,6 +16,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/bluetooth"
 	"github.com/ygelfand/LANovo/internal/feature/voice"
+	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/logging"
@@ -29,6 +30,7 @@ func init() {
 var get = sync.OnceValue(func() *nativeapi.Server {
 	s := nativeapi.New(nativeapi.Dependencies{
 		KeyPath:      layout.KeyPath,
+		DialPath:     layout.DialPath,
 		Identity:     identity,
 		Bluetooth:    func() esphome.BluetoothFeature { return bluetooth.Get().Features() },
 		Registry:     component.Default(),
@@ -70,6 +72,7 @@ func identity() (nativeapi.Identity, error) {
 			ProjectName:   layout.Manufacturer + "." + board.Current().Name,
 			Devices:       devices,
 			VoiceFeatures: voice.Features,
+			WebserverPort: web.Port,
 		},
 	}, nil
 }

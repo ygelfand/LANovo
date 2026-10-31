@@ -46,7 +46,8 @@ const (
 
 	NamePath = StateDir + "/name"
 
-	KeyPath = StateDir + "/psk"
+	KeyPath  = StateDir + "/psk"
+	DialPath = StateDir + "/dial-target"
 
 	CertDirs = "/system/etc/security/cacerts:/data/misc/keychain/certs-added"
 
