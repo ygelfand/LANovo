@@ -129,6 +129,7 @@ var inTables = map[string]string{
 	"Doorbell.Chime":            "doorbell.chime",
 	"Doorbell.Notify":           "doorbell.notify",
 	"Doorbell.RingFor":          "doorbell.ring_for",
+	"Doorbell.LiveFor":          "doorbell.live_for",
 	"Doorbell.Style":            "doorbell.style",
 	"Doorbell.Visitor":          "doorbell.visitor",
 	"Doorbell.Tab":              "doorbell.tab",
@@ -201,6 +202,9 @@ var inTables = map[string]string{
 	"Diag.LowMemory":            "diag.low_memory",
 	"Diag.PageMemory":           "diag.page_memory",
 	"Wake.Stop.Threshold":       "assistants.stop_sensitivity",
+	"Wake.Pryon":                "assistants.pryon",
+	"Wake.Stop.Pryon":           "assistants.pryon_stop",
+	"Wake.Gemini":               "assistants.gemini",
 }
 
 var byHand = map[string]string{

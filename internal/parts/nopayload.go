@@ -10,4 +10,6 @@ var camera []byte
 
 var speech []byte
 
+var pryon []byte
+
 var airplay []byte

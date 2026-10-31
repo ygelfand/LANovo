@@ -15,7 +15,8 @@ RELEASES ?= https://github.com/$(REPO)/releases
 BUILDVARS := github.com/ygelfand/LANovo/internal/layout
 LDFLAGS := -X '$(BUILDVARS).Version=$(VERSION)' \
 	-X '$(BUILDVARS).GitCommit=$(GIT_COMMIT)' \
-	-X '$(BUILDVARS).BuildDate=$(BUILD_DATE)'
+	-X '$(BUILDVARS).BuildDate=$(BUILD_DATE)' \
+	$(if $(COUNTERTOP_FILES_URL),-X 'github.com/ygelfand/libcountertop/pkg/network/releases.files=$(COUNTERTOP_FILES_URL)')
 
 comma := ,
 TAGS ?=
@@ -69,8 +70,9 @@ SURFACE := /system/bin/lanovo-surface
 CAMSHIM_BIN = $(BUILD_DIR)/liblanovo-camshim-api$(NATIVE_API).so
 CAMERA_BIN = $(BUILD_DIR)/lanovo-camera-api$(NATIVE_API)
 ASR_BIN = $(BUILD_DIR)/lanovo-asr-api$(NATIVE_API)
+PRYON_BIN = $(BUILD_DIR)/lanovo-pryon-api$(NATIVE_API)
 AIRPLAY_BIN = $(BUILD_DIR)/lanovo-airplay-api$(NATIVE_API)
-COUNTERTOP_NATIVE = $(MAKE) -f "$(LIBCOUNTERTOP_DIR)/native/Makefile" API="$(NATIVE_API)" PREFIX=lanovo OUT="$(abspath $(BUILD_DIR))" NDK="$(NDK)" SURFACE_BIN="$(abspath $(SURFACE_BIN))" CAMERA_BIN="$(abspath $(CAMERA_BIN))" CAMSHIM_BIN="$(abspath $(CAMSHIM_BIN))" ASR_BIN="$(abspath $(ASR_BIN))" AIRPLAY_BIN="$(abspath $(AIRPLAY_BIN))"
+COUNTERTOP_NATIVE = $(MAKE) -f "$(LIBCOUNTERTOP_DIR)/native/Makefile" API="$(NATIVE_API)" PREFIX=lanovo OUT="$(abspath $(BUILD_DIR))" NDK="$(NDK)" SURFACE_BIN="$(abspath $(SURFACE_BIN))" CAMERA_BIN="$(abspath $(CAMERA_BIN))" CAMSHIM_BIN="$(abspath $(CAMSHIM_BIN))" ASR_BIN="$(abspath $(ASR_BIN))" PRYON_BIN="$(abspath $(PRYON_BIN))" AIRPLAY_BIN="$(abspath $(AIRPLAY_BIN))"
 PARTS_DIR := internal/parts/payload
 
 .PHONY: build
@@ -82,12 +84,13 @@ build-lanovo: ## Build the host CLI into ./bin
 	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovo ./cmd/lanovo
 
 .PHONY: build-lanovod
-build-lanovod: build-surface build-camshim build-camera build-asr build-airplay ## Cross-compile lanovod for the display, carrying its native parts (PACK=bin/upx-5.3.0/build/upx to compress it)
+build-lanovod: build-surface build-camshim build-camera build-asr build-pryon build-airplay ## Cross-compile lanovod for the display, carrying its native parts (PACK=bin/upx-5.3.0/build/upx to compress it)
 	@mkdir -p $(BUILD_DIR) $(PARTS_DIR)
 	cp $(SURFACE_BIN) $(PARTS_DIR)/lanovo-surface
 	cp $(CAMSHIM_BIN) $(PARTS_DIR)/liblanovo-camshim.so
 	cp $(CAMERA_BIN) $(PARTS_DIR)/lanovo-camera
 	cp $(ASR_BIN) $(PARTS_DIR)/lanovo-asr
+	cp $(PRYON_BIN) $(PARTS_DIR)/lanovo-pryon
 	cp $(AIRPLAY_BIN) $(PARTS_DIR)/lanovo-airplay
 	$(DEVICE_ENV) go build -tags "payload$(if $(TAGS),$(comma)$(TAGS))" -ldflags "$(DEVICE_LDFLAGS)" -o $(DEVICE_BIN) ./cmd/lanovod
 	$(if $(PACK),$(PACK) -q $(DEVICE_BIN))
@@ -123,6 +126,10 @@ build-camera: countertop-native-source ## Build the camera helper with the NDK
 .PHONY: build-asr
 build-asr: countertop-native-source ## Build the speech recognizer helper with the NDK
 	+$(COUNTERTOP_NATIVE) asr
+
+.PHONY: build-pryon
+build-pryon: countertop-native-source ## Build the Pryon wake word helper with the NDK
+	+$(COUNTERTOP_NATIVE) pryon
 
 .PHONY: build-airplay
 build-airplay: countertop-native-source ## Build the AirPlay mirroring helper with the NDK

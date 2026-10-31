@@ -6,6 +6,7 @@ import (
 	sharedha "github.com/ygelfand/libcountertop/pkg/homeassistant"
 
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/detect"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/tones"
@@ -19,6 +20,9 @@ func assistantPages() *sharedsettings.AssistantPages {
 	return sharedsettings.NewAssistantPages(
 		sharedsettings.AssistantDependencies{
 			Slots:       wakeword.Slots,
+			Pryon:       detect.Get().Pryon(),
+			PryonStop:   detect.Get().Pryon().Stop(),
+			Gemini:      detect.Get().Gemini(),
 			Preferences: preferences(),
 			Models:      wake.Lib().Ours,
 			Phrases:     wake.Lib().Phrases,

@@ -34,6 +34,8 @@ func (p Part) Data() []byte { return p.data }
 
 func Speech() []byte { return speech }
 
+func Pryon() []byte { return pryon }
+
 func AirPlay() []byte { return airplay }
 
 func (p Part) For(soc board.SoC) bool { return p.SoC == "" || p.SoC == soc }

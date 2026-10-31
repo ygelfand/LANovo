@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	sharedapps "github.com/ygelfand/libcountertop/pkg/display/apps"
 	"github.com/ygelfand/libcountertop/pkg/inference/asr"
 	harness "github.com/ygelfand/libcountertop/pkg/runtime/control"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/alarmcmd"
@@ -23,6 +24,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/alarm"
+	"github.com/ygelfand/LANovo/internal/feature/apps"
 	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/doorbell"
@@ -121,6 +123,7 @@ func showing() []*cobra.Command {
 		screencmd.Timer(timer.Get),
 		screencmd.Warning(nws.Get),
 		screencmd.Wallpaper(poster.Get),
+		screencmd.App(func() []sharedapps.App { return apps.Get().List() }),
 		says(&cobra.Command{
 			Use:   "stack",
 			Short: "The screens on the shell's stack, top first, and which are held up",

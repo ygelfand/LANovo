@@ -77,6 +77,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	hwtouch "github.com/ygelfand/LANovo/internal/hardware/touch"
+	wakelib "github.com/ygelfand/LANovo/internal/lib/wake"
 	lanovoui "github.com/ygelfand/LANovo/internal/ui"
 	"github.com/ygelfand/LANovo/internal/ui/theme"
 )
@@ -235,14 +236,10 @@ var Get = sync.OnceValue(func() *screens.App {
 		Drawer:    drawer.Get(),
 		Tabs:      dashboard.Tabs(),
 		Boards: map[string]screens.Board{
-			cameraview.TabKind:    {Glyph: cameras.Get().Glyph, Draw: cameras.Get().Board},
-			doorbellview.TabKind:  {Glyph: doorbell.View().Glyph, Draw: doorbell.View().Board},
-			homealarmview.TabKind: {Glyph: alarmPanel.Glyph, Draw: alarmPanel.Board},
-			thermostatview.TabKind: {
-				Glyph:  climate.Glyph,
-				Draw:   climate.Board,
-				Ground: climate.Ground,
-			},
+			cameraview.TabKind:     {Glyph: cameras.Get().Glyph, Draw: cameras.Get().Board},
+			doorbellview.TabKind:   {Glyph: doorbell.View().Glyph, Draw: doorbell.View().Board},
+			homealarmview.TabKind:  {Glyph: alarmPanel.Glyph, Draw: alarmPanel.Board},
+			thermostatview.TabKind: {Glyph: climate.Glyph, Draw: climate.Board},
 		},
 		Home:    homecontrol.Get(),
 		HomeHA:  homeassistant.Get(),
@@ -276,10 +273,16 @@ var Get = sync.OnceValue(func() *screens.App {
 		Streams:         config.Streams(),
 
 		Upgrade: func() widgets.Upgrade {
-			up := firmware.Get().Upgrade()
-			return widgets.Upgrade{Active: up.Active(), At: up.At, Version: up.Version}
+			if up := firmware.Get().Upgrade(); up.Active() {
+				return widgets.Upgrade{Active: true, At: up.At, Version: up.Version}
+			}
+			p := wakelib.Lib().Preparation()
+			return widgets.Upgrade{Active: p.Active(), At: p.At, Label: p.Phrase}
 		},
-		Upgrading: screens.On(&firmware.Get().Upgrading),
+		Upgrading: screens.All(
+			screens.On(&firmware.Get().Upgrading),
+			screens.On(&wakelib.Lib().Preparing),
+		),
 		Marks: func() screens.Marks {
 			m := privacy.Get().Current()
 			return screens.Marks{Mic: m.MicMuted, Camera: m.CameraBlocked}

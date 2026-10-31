@@ -1,14 +1,18 @@
 package detect
 
 import (
+	"log/slog"
 	"sync"
 	"time"
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/libcountertop/pkg/inference/detect"
+	"github.com/ygelfand/libcountertop/pkg/inference/pryon"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
+	"github.com/ygelfand/libcountertop/pkg/runtime/payload"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
+	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
@@ -20,6 +24,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
+	"github.com/ygelfand/LANovo/internal/parts"
 )
 
 func init() {
@@ -29,7 +34,9 @@ func init() {
 
 type Detect struct {
 	*detect.Engine
-	stop *detect.StopWord
+	stop   *detect.StopWord
+	pryon  *detect.PryonSwitch
+	gemini *detect.GeminiSwitch
 }
 
 var (
@@ -59,12 +66,42 @@ func newDetect() *Detect {
 		}
 		voice.Get().Start(slot)
 	}
+	if helper := parts.Pryon(); helper != nil {
+		e.Pryon = func() (pryon.Options, error) {
+			if err := payload.Install(layout.PryonHelper, helper); err != nil {
+				return pryon.Options{}, err
+			}
+			return pryon.Options{Helper: layout.PryonHelper, Library: wake.Pryon().Library()}, nil
+		}
+	}
 
 	d := &Detect{Engine: e}
+	reload := func() {
+		wake.Lib().Reload()
+		if err := e.Load(); err != nil {
+			slog.Error("reloading wake words failed", "err", err)
+		}
+		component.Reconnect.Emit(struct{}{})
+	}
+	d.pryon = detect.NewPryonSwitch(e, detect.PryonOptions{
+		Read:    func() schema.Wake { return config.Get().Wake },
+		Save:    config.Set().Pryon().Set,
+		Changed: reload,
+	})
+	component.Settings.Add(d.pryon.Controls())
+	d.gemini = detect.NewGeminiSwitch(e, detect.GeminiOptions{
+		Read:    func() bool { return config.Get().Wake.Gemini },
+		Save:    config.Set().Gemini().On,
+		Changed: reload,
+	})
+	component.Settings.Add(d.gemini.Controls())
 	d.stop = detect.NewStopWord(e, detect.StopOptions{
 		Directory: layout.StateDir, DeviceID: component.DeviceMicrophone,
 		Read: func() float64 { return config.Get().Wake.Stop.Threshold },
 		Save: func(v float64) error { return config.Set().Stop().Threshold(v) },
+
+		PryonOn:    d.pryon.Stop().On,
+		PryonModel: wake.Pryon().Stop,
 	})
 	component.Settings.Add(d.stop.Controls())
 
@@ -88,8 +125,10 @@ func newDetect() *Detect {
 	return d
 }
 
-func (d *Detect) Entities() []esphome.Entity { return []esphome.Entity{d.stop.Entity} }
-func (d *Detect) Restore(c config.Config)    { d.stop.Restore(c.Wake.Stop.Threshold) }
+func (d *Detect) Entities() []esphome.Entity   { return []esphome.Entity{d.stop.Entity} }
+func (d *Detect) Pryon() *detect.PryonSwitch   { return d.pryon }
+func (d *Detect) Gemini() *detect.GeminiSwitch { return d.gemini }
+func (d *Detect) Restore(c config.Config)      { d.stop.Restore(c.Wake.Stop.Threshold) }
 
 func (d *Detect) load(ids []string) []string {
 	accepted, _ := detect.Choose(d.Engine, wake.Lib().Ensure(ids), ids, wakeword.Slots)

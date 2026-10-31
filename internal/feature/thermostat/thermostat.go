@@ -7,8 +7,6 @@ import (
 	esphome "github.com/ygelfand/go-esphome-device"
 
 	"github.com/ygelfand/libcountertop/pkg/display/thermostatview"
-	"github.com/ygelfand/libcountertop/pkg/display/visual"
-	"github.com/ygelfand/libcountertop/pkg/display/visualview"
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 	shared "github.com/ygelfand/libcountertop/pkg/homeassistant/thermostat"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
@@ -19,10 +17,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
 	"github.com/ygelfand/LANovo/internal/feature/product"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
-	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/feature/weather"
-	"github.com/ygelfand/LANovo/internal/hardware/display"
-	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 )
 
 func init() {
@@ -53,22 +48,6 @@ func NewView(ui *widgets.UI) *thermostatview.View {
 				return 0, false
 			}
 			return *r.Temperature, true
-		},
-		Backdrop: func(kind visual.Kind, showing func() bool) thermostatview.Backdrop {
-			return visualview.New(
-				visualview.Fixed(visuals.Get(), kind),
-				visualview.Dependencies{
-					GPU:      gpu.Get(),
-					Display:  display.Get(),
-					Shell:    shell.Get(),
-					Settings: config.VisualSection,
-					Showing:  showing,
-				},
-			)
-		},
-		Tabbed: func() bool {
-			t, tabbed := dashboard.Tabs().Showing()
-			return tabbed && t.Kind == thermostatview.TabKind && !shell.Get().Covered()
 		},
 	})
 	shown.Store(v)

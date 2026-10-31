@@ -75,9 +75,12 @@ const (
 
 	BondPath = StateDir + "/bonds"
 
-	ModelDir = StateDir + "/models"
+	ModelDir  = StateDir + "/models"
+	PryonDir  = ModelDir + "/pryon"
+	GeminiDir = ModelDir + "/gemini"
 
 	SpeechHelper = StateDir + "/bin/lanovo-asr"
+	PryonHelper  = StateDir + "/bin/lanovo-pryon"
 
 	AirPlayHelper = StateDir + "/bin/lanovo-airplay"
 

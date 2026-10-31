@@ -16,5 +16,8 @@ var camera []byte
 //go:embed payload/lanovo-asr
 var speech []byte
 
+//go:embed payload/lanovo-pryon
+var pryon []byte
+
 //go:embed payload/lanovo-airplay
 var airplay []byte
