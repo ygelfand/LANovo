@@ -3,6 +3,7 @@ package volume
 import (
 	"sync"
 
+	"github.com/ygelfand/libcountertop/pkg/display/idleview"
 	sharedshell "github.com/ygelfand/libcountertop/pkg/display/shell"
 	sharedview "github.com/ygelfand/libcountertop/pkg/display/volume"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
@@ -10,6 +11,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
+	"github.com/ygelfand/LANovo/internal/feature/tessera"
 )
 
 var page = sync.OnceValue(func() *sharedshell.Page {
@@ -31,6 +33,9 @@ type shows interface{ Shows(config.Stream) bool }
 func showing(s config.Stream) bool {
 	top := shell.Get().Top()
 	if top == sharedshell.View(page()) {
+		return true
+	}
+	if _, idle := top.(*idleview.View); idle && s == config.StreamMedia && tessera.Firmware().SaverUp() {
 		return true
 	}
 	v, ok := top.(shows)
