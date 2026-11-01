@@ -36,6 +36,7 @@ import (
 )
 
 func init() {
+	component.Register(sharedcomponent.Device, Engine, sharedcomponent.Order(59))
 	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(60))
 	web.HandlePeerOpen(
 		"GET /setup/*",
@@ -58,6 +59,23 @@ var tuning = sync.OnceValue(func() *engine.Tuning {
 })
 
 func Tuning() *engine.Tuning { return tuning() }
+
+var host = sync.OnceValue(func() *engine.Host {
+	return engine.NewHost(engine.HostOptions{
+		Dir:         layout.CastEngineDir,
+		State:       layout.CastEngineState,
+		Args:        webreceiver.EngineArgs(),
+		Nameservers: nameservers,
+		Network:     func(ctx context.Context) bool { return dhcp.Get().Wait(ctx) },
+		Screen: func() (int, int) {
+			t := video.Target(display.Get(), board.Current().MaxFPS)
+			return t.Width, t.Height
+		},
+		Tuning: Tuning(),
+	})
+})
+
+func Engine() *engine.Host { return host() }
 
 func helper() *surface.Client { return display.Get().Helper() }
 
@@ -118,12 +136,9 @@ func build() *castreceiver.Receiver {
 			},
 			Apps: []cast.Maker{
 				webreceiver.Maker(webreceiver.Options{
-					Dir:         layout.CastEngineDir,
-					State:       layout.CastEngineState,
-					Nameservers: nameservers,
-					Helper:      helper,
-					Built:       page.keep,
-					Tuning:      Tuning(),
+					Engine: Engine(),
+					Helper: helper,
+					Built:  page.keep,
 				}),
 			},
 			Preferences: Preferences,

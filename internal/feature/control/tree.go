@@ -30,6 +30,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/doorbell"
 	"github.com/ygelfand/LANovo/internal/feature/firmware"
 	"github.com/ygelfand/LANovo/internal/feature/homealarm"
+	"github.com/ygelfand/LANovo/internal/feature/lovelace"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/nws"
@@ -123,6 +124,7 @@ func showing() []*cobra.Command {
 		screencmd.Timer(timer.Get),
 		screencmd.Warning(nws.Get),
 		screencmd.Wallpaper(poster.Get),
+		screencmd.Reload(lovelace.Get),
 		screencmd.App(func() []sharedapps.App { return apps.Get().List() }),
 		says(&cobra.Command{
 			Use:   "stack",

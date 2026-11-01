@@ -21,7 +21,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Privacy marks | On | On, Off | `switch.<device>_screen_privacy_marks` |
 | Alert style | Banner | Banner, Card, Full screen, Toast | `select.<device>_screen_alert_style` |
 | Keyboard size | Compact | Compact, Standard, Large | `select.<device>_screen_keyboard_size` |
-| Language | English | English | `select.<device>_screen_language` |
+| Language | English | English, Italiano | `select.<device>_screen_language` |
 | Auto brightness | On | On, Off | `switch.<device>_screen_auto_brightness` |
 | Size | large (Smart Display 10), medium (JBL Link View), compact (Smart Display 7), medium (ThinkSmart View), medium (Smart Display 8) | mini, compact, medium, large, xlarge | `select.<device>_screen_size` |
 | Style | standard | standard, material, glass, eink, metro, terminal, hifi, neon, skeuo | `select.<device>_screen_style` |
@@ -46,7 +46,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Screen saver photo fit | Slow pan | Auto, Fill, Fit, blurred edges, Fit, plain edges, Framed, Slow pan | `select.<device>_screen_screen_saver_photo_fit` |
 | Screen saver photo transition | Fade | None, Fade, Slide, Zoom, Wipe, Dissolve | `select.<device>_screen_screen_saver_photo_transition` |
 | Idle clock vertical position | Random | Top, Center, Bottom, Random | `select.<device>_screen_idle_clock_vertical_position` |
-| Screen saver mode | Native | Native, Tessera | `select.<device>_screen_screen_saver_mode` |
+| Screen saver mode | Native | Native, Tessera, Home Assistant | `select.<device>_screen_screen_saver_mode` |
 | Idle clock size | Large | Nano, Micro, Mini, Small, Medium, Large | `select.<device>_screen_idle_clock_size` |
 | Idle visual 1 | None | None, any [visual](/use/visuals/) | `select.<device>_screen_idle_visual_1` |
 | Idle visual 1 listens to | Microphone and speaker | Microphone and speaker, Microphone, Speaker | `select.<device>_screen_idle_visual_1_listens_to` |
@@ -204,6 +204,13 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Home alarm dashboard tab | Off | On, Off | `switch.<device>_screen_home_alarm_dashboard_tab` |
 | Home alarm show when triggered | On | On, Off | `switch.<device>_screen_home_alarm_show_when_triggered` |
 | Home alarm triggered sound | Trouble | None, Chirp, Ding, Rise, Timer, Trouble | `select.<device>_screen_home_alarm_triggered_sound` |
+
+## Thermostat
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Thermostat look | Dial | Dial, Column, Wheel, Bars, Split, Terminal, Brass, Mission | `select.<device>_screen_thermostat_look` |
+| Thermostat dashboard tab | Off | On, Off | `switch.<device>_screen_thermostat_dashboard_tab` |
 
 ## Apps
 
@@ -372,6 +379,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
 | Home key | — | Text | `text.<device>_home_key` |
+| Download through Home Assistant | Off | On, Off | `switch.<device>_download_through_home_assistant` |
 | Verify certificates | On | On, Off | `switch.<device>_verify_certificates` |
 
 ## Certificate
@@ -406,11 +414,4 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Install version | Select for rollback | The available versions | `select.<device>_install_version` |
 | Time zone | Home Assistant | Home Assistant, UTC, Europe/London, Europe/Lisbon, Europe/Paris, Europe/Berlin and 34 more | `select.<device>_time_zone` |
 | Update channel | stable | stable, dev | `select.<device>_update_channel` |
-
-## Thermostat
-
-| Setting | Default | Choices | Entity |
-|---|---|---|---|
-| Thermostat look | Dial | Dial, Column, Wheel, Bars, Split, Terminal, Brass, Mission | `select.<device>_screen_thermostat_look` |
-| Thermostat dashboard tab | Off | On, Off | `switch.<device>_screen_thermostat_dashboard_tab` |
 

@@ -29,6 +29,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
+	"github.com/ygelfand/libcountertop/pkg/say"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 	tesseraview "github.com/ygelfand/libcountertop/pkg/tessera/widgets"
 
@@ -42,6 +43,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/calendar"
 	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/cameras"
+	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/commands"
 	"github.com/ygelfand/LANovo/internal/feature/configsync"
 	"github.com/ygelfand/LANovo/internal/feature/dashboard"
@@ -55,6 +57,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/idle"
 	"github.com/ygelfand/LANovo/internal/feature/lock"
+	"github.com/ygelfand/LANovo/internal/feature/lovelace"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/nws"
@@ -254,6 +257,7 @@ var Get = sync.OnceValue(func() *screens.App {
 			Logo:          lanovoui.Logo(),
 		}),
 		Firmware:  tessera.Firmware(),
+		Lovelace:  lovelace.Get(),
 		Forecast:  weather.Get(),
 		Warnings:  nws.Get(),
 		Alarms:    alarm.Get(),
@@ -276,11 +280,15 @@ var Get = sync.OnceValue(func() *screens.App {
 			if up := firmware.Get().Upgrade(); up.Active() {
 				return widgets.Upgrade{Active: true, At: up.At, Version: up.Version}
 			}
+			if in := chromecast.Engine().Installation(); in.Active {
+				return widgets.Upgrade{Active: true, At: in.At, Label: say.T("upgrade.engine")}
+			}
 			p := wakelib.Lib().Preparation()
 			return widgets.Upgrade{Active: p.Active(), At: p.At, Label: p.Phrase}
 		},
 		Upgrading: screens.All(
 			screens.On(&firmware.Get().Upgrading),
+			screens.On(&chromecast.Engine().Installing),
 			screens.On(&wakelib.Lib().Preparing),
 		),
 		Marks: func() screens.Marks {
