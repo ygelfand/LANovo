@@ -3,6 +3,7 @@ package sendspin
 import (
 	"sync"
 
+	"github.com/ygelfand/libcountertop/pkg/homeassistant/musicassistant"
 	sharedplayer "github.com/ygelfand/libcountertop/pkg/media/sendspin"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/clock"
 	"github.com/ygelfand/LANovo/internal/feature/media"
+	"github.com/ygelfand/LANovo/internal/feature/product"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 )
 
@@ -26,12 +28,15 @@ var get = sync.OnceValue(func() *sharedplayer.Player {
 		DeviceID:    component.DevicePlayback,
 		Clock:       clock.Get(),
 		Media:       media.Get(),
+		Queue:       musicassistant.Build(product.Get(), ClientID),
 	})
 	component.Settings.Add(p.Settings())
 	return p
 })
 
 func Get() *sharedplayer.Player { return get() }
+
+func ClientID() string { return identity{}.Identity().ID }
 func init() {
 	component.Register(
 		sharedcomponent.Device,

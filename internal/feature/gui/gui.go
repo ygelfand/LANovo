@@ -17,6 +17,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/doorbellview"
 	"github.com/ygelfand/libcountertop/pkg/display/homealarmview"
 	"github.com/ygelfand/libcountertop/pkg/display/mirror"
+	"github.com/ygelfand/libcountertop/pkg/display/musicapp"
 	"github.com/ygelfand/libcountertop/pkg/display/photosview"
 	"github.com/ygelfand/libcountertop/pkg/display/radarview"
 	"github.com/ygelfand/libcountertop/pkg/display/screens"
@@ -27,6 +28,9 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/thermostatview"
 	"github.com/ygelfand/libcountertop/pkg/display/tuner"
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
+	"github.com/ygelfand/libcountertop/pkg/fetch"
+	"github.com/ygelfand/libcountertop/pkg/homeassistant/musicassistant"
+	"github.com/ygelfand/libcountertop/pkg/media/lyrics"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 	"github.com/ygelfand/libcountertop/pkg/say"
@@ -64,9 +68,11 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/photos"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
+	"github.com/ygelfand/LANovo/internal/feature/product"
 	"github.com/ygelfand/LANovo/internal/feature/radar"
 	"github.com/ygelfand/LANovo/internal/feature/radio"
 	"github.com/ygelfand/LANovo/internal/feature/screen"
+	"github.com/ygelfand/LANovo/internal/feature/sendspin"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/feature/settings"
 	featureshell "github.com/ygelfand/LANovo/internal/feature/shell"
@@ -160,6 +166,18 @@ var Get = sync.OnceValue(func() *screens.App {
 		Redraw: func() { featureshell.Get().Redraw() },
 	})
 	apps.Get().Add(dial.App())
+	music := musicapp.New(musicapp.Options{
+		UI:     look,
+		Shell:  featureshell.Get(),
+		Music:  musicassistant.BuildMusic(product.Get(), sendspin.ClientID),
+		Peers:  discovery.Get(),
+		Logo:   sharedsettings.Themed(lanovoui.Logo().Light, lanovoui.Logo().Dark),
+		Site:   cameras.Site().URL,
+		Client: fetch.Client(musicapp.FetchTime),
+		Gate:   func(w *gogui.Window) gogui.View { return app.Gate(w) },
+		Redraw: func() { featureshell.Get().Redraw() },
+	})
+	apps.Get().Add(music.App())
 	sky := radarview.New(radarview.Options{
 		UI:       look,
 		Shell:    featureshell.Get(),
@@ -246,6 +264,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		},
 		Home:    homecontrol.Get(),
 		HomeHA:  homeassistant.Get(),
+		Adopted: func() bool { return config.Get().API.Adopted },
 		Saver:   idle.Get(),
 		Visuals: settings.Visuals(),
 		Tessera: tesseraview.New(tesseraview.Dependencies{
@@ -272,6 +291,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		ThermostatPage:  func() shell.View { return climate.Page() },
 		Player:          media.Get(),
 		PlayerPage:      media.Page,
+		Lyrics:          lyrics.Build(product.Get()),
 		MediaVolume:     sharedvolume.For(volume.Get(), config.StreamMedia),
 		Volume:          volume.Get(),
 		Streams:         config.Streams(),
@@ -309,6 +329,7 @@ var Get = sync.OnceValue(func() *screens.App {
 			shop.Screen,
 			diary.Screen,
 			dial.Screen,
+			music.Screen,
 			sky.Screen,
 			cameras.Get().Screen,
 			doorbell.View().Screen,
