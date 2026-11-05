@@ -180,6 +180,7 @@ var inTables = map[string]string{
 	"Calendar.Span":             "calendar.span",
 	"Todo.Entity":               "todo.entity",
 	"Todo.Completed":            "todo.completed",
+	"TV.Default":                "tv.default",
 	"Voice.Commands":            "voice.commands",
 	"Voice.Actions":             "voice.actions",
 	"Voice.Label":               "voice.label",

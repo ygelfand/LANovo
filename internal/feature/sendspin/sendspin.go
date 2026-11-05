@@ -29,6 +29,7 @@ var get = sync.OnceValue(func() *sharedplayer.Player {
 		Clock:       clock.Get(),
 		Media:       media.Get(),
 		Queue:       musicassistant.Build(product.Get(), ClientID),
+		Favorite:    musicassistant.BuildLikes(product.Get(), ClientID),
 	})
 	component.Settings.Add(p.Settings())
 	return p

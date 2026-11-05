@@ -27,9 +27,11 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/syncview"
 	"github.com/ygelfand/libcountertop/pkg/display/thermostatview"
 	"github.com/ygelfand/libcountertop/pkg/display/tuner"
+	"github.com/ygelfand/libcountertop/pkg/display/tvapp"
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 	"github.com/ygelfand/libcountertop/pkg/fetch"
 	"github.com/ygelfand/libcountertop/pkg/homeassistant/musicassistant"
+	"github.com/ygelfand/libcountertop/pkg/homeassistant/yttv"
 	"github.com/ygelfand/libcountertop/pkg/media/lyrics"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
@@ -127,7 +129,9 @@ var Get = sync.OnceValue(func() *screens.App {
 	}
 	var mirrors []func(shell.View) *screens.Screen
 	if board.Current().CameraWidth > 0 {
-		m := mirror.New(mirror.Options{Shell: featureshell.Get(), Camera: settings.Preview()})
+		m := mirror.New(
+			mirror.Options{UI: look, Shell: featureshell.Get(), Camera: settings.Preview()},
+		)
 		apps.Get().Add(m.App())
 		commands.Get().Listen(m.Command())
 		mirrors = append(mirrors, m.Screen)
@@ -141,10 +145,11 @@ var Get = sync.OnceValue(func() *screens.App {
 	})
 	var app *screens.App
 	shop := shopping.New(shopping.Options{
-		UI:    look,
-		Shell: featureshell.Get(),
-		Todo:  todo.Get().Todo,
-		Gate:  func(w *gogui.Window) gogui.View { return app.Gate(w) },
+		UI:       look,
+		Shell:    featureshell.Get(),
+		Todo:     todo.Get().Todo,
+		Gate:     func(w *gogui.Window) gogui.View { return app.Gate(w) },
+		Settings: func() *shell.Page { return app.TodoLists() },
 	})
 	apps.Get().Add(shop.App())
 	diary := agenda.New(agenda.Options{
@@ -155,6 +160,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		TwentyFour: func() bool {
 			return config.Get().Screen.Hours == schema.TwentyFourHour
 		},
+		Settings: func() *shell.Page { return app.CalendarPage() },
 	})
 	apps.Get().Add(diary.App())
 	dial := tuner.New(tuner.Options{
@@ -178,6 +184,18 @@ var Get = sync.OnceValue(func() *screens.App {
 		Redraw: func() { featureshell.Get().Redraw() },
 	})
 	apps.Get().Add(music.App())
+	tv := tvapp.New(tvapp.Options{
+		UI:      look,
+		Shell:   featureshell.Get(),
+		Guide:   yttv.Build(product.Get(), config.TVSection, chromecast.ID),
+		Player:  media.Get(),
+		Loud:    func() { volume.Get().Show(config.StreamMedia) },
+		Client:  fetch.Client(musicapp.FetchTime),
+		Gate:    func(w *gogui.Window) gogui.View { return app.Gate(w) },
+		Clock24: func() bool { return config.Get().Screen.Hours == schema.TwentyFourHour },
+		Redraw:  func() { featureshell.Get().Redraw() },
+	})
+	apps.Get().Add(tv.App())
 	sky := radarview.New(radarview.Options{
 		UI:       look,
 		Shell:    featureshell.Get(),
@@ -289,6 +307,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		DoorbellPage:    func() shell.View { return doorbell.View().Page() },
 		HomeAlarmPage:   func() shell.View { return alarmPanel.Page() },
 		ThermostatPage:  func() shell.View { return climate.Page() },
+		YouTubeTVPage:   func() shell.View { return tv.Page() },
 		Player:          media.Get(),
 		PlayerPage:      media.Page,
 		Lyrics:          lyrics.Build(product.Get()),
@@ -330,6 +349,7 @@ var Get = sync.OnceValue(func() *screens.App {
 			diary.Screen,
 			dial.Screen,
 			music.Screen,
+			tv.Screen,
 			sky.Screen,
 			cameras.Get().Screen,
 			doorbell.View().Screen,
