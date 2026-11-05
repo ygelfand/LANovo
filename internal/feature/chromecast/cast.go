@@ -147,7 +147,6 @@ func build() *castreceiver.Receiver {
 			},
 		},
 	})
-	r.Settings().Table = r.Settings().Table.Without("youtube.lounge")
 	component.Settings.Add(r.Settings())
 	return r
 }
