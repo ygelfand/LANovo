@@ -306,10 +306,15 @@ func finish(
 	}
 	fmt.Fprintf(out, "  %-18s %s\n", "started", styleDone.Render("lanovod running"))
 
-	if err := takeover.WaitParts(ctx, d, paths); err != nil {
-		return err
+	waited := takeover.WaitParts(ctx, d, paths)
+	if ctx.Err() != nil {
+		return ctx.Err()
 	}
-	if down := takeover.Down(d); len(down) > 0 {
+	down := takeover.Down(d)
+	if waited != nil && len(down) == 0 {
+		return waited
+	}
+	if len(down) > 0 {
 		fmt.Fprintf(
 			out,
 			"  %-18s %s\n",

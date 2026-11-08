@@ -132,11 +132,12 @@ func Ensure() (rebootPending bool) {
 		}
 		slog.Info("part updated", "part", p.Name, "path", p.Path)
 		for _, svc := range p.Services {
-			if state, _ := prop.Local.Getprop("init.svc." + svc); state != "running" {
-				continue
+			act := prop.Start
+			if state, _ := prop.Local.Getprop(prop.ServiceState(svc)); state == "running" {
+				act = prop.Restart
 			}
-			if err := prop.Restart(prop.Local, svc); err != nil {
-				slog.Error("restarting a service failed", "service", svc, "err", err)
+			if err := act(prop.Local, svc); err != nil {
+				slog.Error("starting a service failed", "service", svc, "err", err)
 			}
 		}
 		rebootPending = rebootPending || p.Boot

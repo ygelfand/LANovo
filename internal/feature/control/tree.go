@@ -17,6 +17,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/homealarmcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/i2ccmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/mixercmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/netcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/playercmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/speechcmd"
@@ -64,6 +65,7 @@ func (c *Control) tree() *cobra.Command {
 	t.Top(doorbellcmd.Command(doorbell.Get))
 	t.Top(homealarmcmd.Command(homealarm.Get, homealarm.Shown))
 	t.Top(thermostatcmd.Command(thermostat.Get, thermostat.Shown))
+	t.Top(netcmd.Command(layout.WifiIface))
 	return t.Root()
 }
 
