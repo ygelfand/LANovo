@@ -38,6 +38,8 @@ func TestEachBoardIsFoundByItsHardware(t *testing.T) {
 		{device("U:800x1280p-60", "qpnp_pon", "fts_ts", "msm8953-openq624-snd-card Button Jack"), "opal"},
 		{device("U:800x1280p-60", "qpnp_pon", "msm8953-openq624-snd-card Headset Jack",
 			"msm8953-openq624-snd-card Button Jack", "himax-touchscreen"), "amber"},
+		{device("U:800x1280p-60", "qpnp_pon", "msm8953-openq624-snd-card Headset Jack",
+			"msm8953-openq624-snd-card Button Jack", "Elan Touchscreen"), "amber"},
 		{device("U:800x1280p-60", "qpnp_pon", "hbtp_vm", "msm8953-snd-card-mtp Headset Jack",
 			"msm8953-snd-card-mtp Button Jack", "himax-touchscreen"), "penghu"},
 		{device("U:800x1280p-60", "qpnp_pon", "fts_ts", "hbtp_vm", "msm8953-snd-card-mtp Headset Jack",
