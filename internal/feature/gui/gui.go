@@ -31,7 +31,6 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/widgets"
 	"github.com/ygelfand/libcountertop/pkg/fetch"
 	"github.com/ygelfand/libcountertop/pkg/homeassistant/musicassistant"
-	"github.com/ygelfand/libcountertop/pkg/homeassistant/yttv"
 	"github.com/ygelfand/libcountertop/pkg/media/lyrics"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
@@ -82,6 +81,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/thermostat"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
 	"github.com/ygelfand/LANovo/internal/feature/todo"
+	featuretv "github.com/ygelfand/LANovo/internal/feature/tv"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/feature/weather"
@@ -187,7 +187,7 @@ var Get = sync.OnceValue(func() *screens.App {
 	tv := tvapp.New(tvapp.Options{
 		UI:      look,
 		Shell:   featureshell.Get(),
-		Guide:   yttv.Build(product.Get(), config.TVSection, chromecast.ID),
+		Guide:   featuretv.Get(),
 		Player:  media.Get(),
 		Loud:    func() { volume.Get().Show(config.StreamMedia) },
 		Client:  fetch.Client(musicapp.FetchTime),

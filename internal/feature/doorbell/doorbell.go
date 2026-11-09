@@ -61,4 +61,4 @@ type sound struct{}
 
 func (sound) Play(pcm []int16) { speaker.Get().PlayStream(config.StreamVoice, pcm) }
 
-func (sound) Queued() int { return speaker.Get().Queued() }
+func (sound) Queued() int { return speaker.Get().Lane(config.StreamVoice).Queued() }

@@ -26,6 +26,19 @@ func (s *Speaker) Take() []int16 { return s.bus.Take(schema.StreamMedia) }
 
 func (s *Speaker) Adjust(rewrite func([]int16)) { s.bus.Adjust(schema.StreamMedia, rewrite) }
 
+type Lane struct {
+	s      *Speaker
+	stream schema.Stream
+}
+
+func (s *Speaker) Lane(stream schema.Stream) Lane { return Lane{s: s, stream: stream} }
+
+func (l Lane) Play(samples []int16)         { l.s.PlayStream(l.stream, samples) }
+func (l Lane) Take() []int16                { return l.s.bus.Take(l.stream) }
+func (l Lane) Adjust(rewrite func([]int16)) { l.s.bus.Adjust(l.stream, rewrite) }
+func (l Lane) Queued() int                  { return l.s.bus.StreamLen(l.stream) / Channels }
+func (l Lane) Drain()                       { l.s.bus.ClearStream(l.stream) }
+
 func (s *Speaker) Heard(stream schema.Stream, within time.Duration) bool {
 	return s.bus.Heard(stream, within)
 }

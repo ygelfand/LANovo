@@ -18,6 +18,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
 	"github.com/ygelfand/LANovo/internal/feature/states"
+	"github.com/ygelfand/LANovo/internal/feature/tv"
 )
 
 func init() { component.Register(sharedcomponent.Network, Get) }
@@ -29,6 +30,7 @@ var get = sync.OnceValue(func() *Actions {
 	a.reg.Add(call.Get().Action(discovery.Get().Peers, board.Current().CameraWidth > 0))
 	a.reg.Add(broadcast.Get().Action())
 	a.reg.Add(alarm.Get().VoiceAction())
+	a.reg.Add(tv.Get().VoiceAction())
 	for _, action := range call.Get().ControlActions() {
 		a.reg.Add(action)
 	}

@@ -42,7 +42,7 @@ func Get() *Player {
 	once.Do(func() {
 		shared = &Player{}
 		shared.Player = mediaplayer.New(mediaplayer.Options[*speaker.Speaker]{
-			Speaker:  speaker.Get(),
+			Media:    speaker.Get().Lane(config.StreamMedia),
 			Sound:    speaker.Sound(),
 			Rate:     speaker.Rate,
 			Channels: speaker.Channels,
