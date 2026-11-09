@@ -28,13 +28,16 @@ func (panel) Native() (w, h int) {
 func (panel) Orientation() geometry.Orientation { return display.Get().Orientation() }
 
 var get = sync.OnceValue(func() *touch.Screen {
-	return touch.New(device(), panel{})
+	name := device(board.Current().Touch, touch.Find)
+	if name == board.AmberElanTouch {
+		return touch.NewWithAxisNormalization(name, panel{})
+	}
+	return touch.New(name, panel{})
 })
 
-func device() string {
-	names := board.Current().Touch
+func device(names []string, find func(string) (string, error)) string {
 	for _, name := range names {
-		if _, err := touch.Find(name); err == nil {
+		if _, err := find(name); err == nil {
 			return name
 		}
 	}
