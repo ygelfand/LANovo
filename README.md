@@ -67,6 +67,16 @@ cameras, doorbells and your alarm panel. Pick lights and switches by area, label
   <img src="assets/readme/home-lights.webp" alt="The Lights tab, with room cards" width="360">
 </p>
 
+### Rings dashboard
+
+Your Home Assistant devices as rings: floors, rooms, device types and devices. Tap a ring to zoom
+in and a device to control it. Three looks (Wheel, Icicle, Burst), with filters by area, type and
+label.
+
+<p align="center">
+  <a href="https://www.lanovo.link/use/dashboards/#rings"><img src="docs/public/anim/rings-burst.webp" alt="The Rings dashboard in the Burst look, zooming into a floor and a room and opening a light's controls" width="640"></a>
+</p>
+
 ### Tessera dashboards
 
 Design pages in [Tessera](https://github.com/MaxGramser/homeassistant_espscreen) in Home Assistant.
