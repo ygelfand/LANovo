@@ -2,8 +2,6 @@ package board
 
 import "github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
 
-const AmberElanTouch = "Elan Touchscreen"
-
 var Amber = Board{
 	NativeAPI:    27,
 	Name:         "amber",
@@ -23,7 +21,7 @@ var Amber = Board{
 	UISize:       "medium",
 	Diagonal:     8,
 	Tessera:      Tessera{Board: "jc8012p4a1", Columns: 6, Rows: 4},
-	Touch:        []string{"himax-touchscreen", AmberElanTouch},
+	Touch:        []string{"himax-touchscreen", "Elan Touchscreen"},
 	Thermal:      Blueberry.Thermal,
 	SoundCard:    "msm8953-openq624-snd-card",
 	Buttons:      Blueberry.Buttons,
