@@ -8,6 +8,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/desktop"
 	"github.com/ygelfand/libcountertop/pkg/input/textentry"
 	"github.com/ygelfand/libcountertop/pkg/input/touch"
+	sharedwifi "github.com/ygelfand/libcountertop/pkg/network/wifi"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/webapi"
@@ -27,6 +28,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	hwtouch "github.com/ygelfand/LANovo/internal/hardware/touch"
+	hwwifi "github.com/ygelfand/LANovo/internal/hardware/wifi"
 	"github.com/ygelfand/LANovo/internal/layout"
 )
 
@@ -62,6 +64,7 @@ var get = sync.OnceValue(func() *webapi.API {
 			}
 			return ""
 		},
+		Wifi: sharedwifi.NewMover(hwwifi.Get(), dhcp.Get().Fresh),
 	})
 	component.Settings.Add(a.Controls())
 	return a
