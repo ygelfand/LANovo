@@ -4,7 +4,9 @@ import (
 	"log/slog"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime/debug"
+	"strings"
 	"syscall"
 	"time"
 
@@ -74,6 +76,7 @@ func newRunCmd() *cobra.Command {
 				}
 			}
 
+			addOEMFonts()
 			return boot.Run(ctx)
 		},
 	}
@@ -81,4 +84,18 @@ func newRunCmd() *cobra.Command {
 	cmd.Flags().StringVar(&tryVideoFile, "try-video", "",
 		"play an H.264 (Annex-B with AUDs) or IVF file on the video pipe, 15s after start")
 	return cmd
+}
+
+// lanovod uses the Linux font scanner, which discovers additional fonts
+// under the fonts subdirectories of XDG_DATA_DIRS.
+func addOEMFonts() {
+	const oem = "/oem"
+	if _, err := os.Stat(oem + "/fonts/NotoSansCJK-Regular.ttc"); err != nil {
+		return
+	}
+	const key = "XDG_DATA_DIRS"
+	dirs := append([]string{oem}, filepath.SplitList(os.Getenv(key))...)
+	if err := os.Setenv(key, strings.Join(dirs, string(os.PathListSeparator))); err != nil {
+		slog.Warn("could not include OEM fonts", "err", err)
+	}
 }
