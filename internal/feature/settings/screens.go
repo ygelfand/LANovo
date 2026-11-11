@@ -148,7 +148,7 @@ func featuresPage() *sharedshell.Page {
 			{
 				Key: "features.speaker",
 				Page: func() sharedshell.View {
-					return sharedsettings.ServicePage(say.T("features.speaker"), a2dp.Get().Controls())
+					return sharedsettings.BluetoothSpeakerPage(a2dp.Get())
 				},
 			},
 			{Key: "features.rtsp", Page: func() sharedshell.View { return streamPage() }},

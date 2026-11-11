@@ -41,6 +41,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/a2dp"
 	"github.com/ygelfand/LANovo/internal/feature/alarm"
 	"github.com/ygelfand/LANovo/internal/feature/alerts"
 	"github.com/ygelfand/LANovo/internal/feature/apps"
@@ -310,10 +311,13 @@ var Get = sync.OnceValue(func() *screens.App {
 		YouTubeTVPage:   func() shell.View { return tv.Page() },
 		Player:          media.Get(),
 		PlayerPage:      media.Page,
-		Lyrics:          lyrics.Build(product.Get()),
-		MediaVolume:     sharedvolume.For(volume.Get(), config.StreamMedia),
-		Volume:          volume.Get(),
-		Streams:         config.Streams(),
+		BluetoothSources: func() shell.View {
+			return sharedsettings.BluetoothSourcesPage(a2dp.Get(), featureshell.Get())
+		},
+		Lyrics:      lyrics.Build(product.Get()),
+		MediaVolume: sharedvolume.For(volume.Get(), config.StreamMedia),
+		Volume:      volume.Get(),
+		Streams:     config.Streams(),
 
 		Upgrade: func() widgets.Upgrade {
 			if up := firmware.Get().Upgrade(); up.Active() {
