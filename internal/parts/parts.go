@@ -38,6 +38,8 @@ func Pryon() []byte { return pryon }
 
 func AirPlay() []byte { return airplay }
 
+func X501FAudio() []byte { return x501fAudio }
+
 func (p Part) For(soc board.SoC) bool { return p.SoC == "" || p.SoC == soc }
 
 func (p Part) at(path string) Part {

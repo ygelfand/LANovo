@@ -21,3 +21,6 @@ var pryon []byte
 
 //go:embed payload/lanovo-airplay
 var airplay []byte
+
+//go:embed payload/x501f-hal-tone
+var x501fAudio []byte

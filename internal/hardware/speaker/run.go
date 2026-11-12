@@ -5,15 +5,21 @@ import (
 	"encoding/binary"
 	"log/slog"
 	"math"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
 	"github.com/ygelfand/libcountertop/pkg/audio/mix"
 	"github.com/ygelfand/libcountertop/pkg/audio/volume"
+	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 )
 
 func (s *Speaker) Run(ctx context.Context) error {
+	if s.androidPCM != "" {
+		return s.runAndroid(ctx)
+	}
 	buf := make([]byte, period*Channels*Bits/8)
 	var warned bool
 
@@ -122,7 +128,43 @@ func (s *Speaker) fill(buf []byte) {
 	}
 }
 
-func (s *Speaker) open() bool { return s.device() != nil }
+func (s *Speaker) open() bool { return s.androidReady.Load() || s.device() != nil }
+
+func (s *Speaker) runAndroid(ctx context.Context) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, s.androidPCM, "--stdin")
+	cmd.Stderr = os.Stderr
+	input, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+	if err := cmd.Start(); err != nil {
+		input.Close()
+		return err
+	}
+	defer func() {
+		s.androidReady.Store(false)
+		input.Close()
+		cancel()
+		_ = cmd.Wait()
+	}()
+	s.androidReady.Store(true)
+	s.amp.Store(&sharedcomponent.Progress{Done: true})
+	slog.Info("Android PCM playback started")
+	buf := make([]byte, period*FrameBytes)
+	for ctx.Err() == nil {
+		s.fill(buf)
+		if _, err := input.Write(buf); err != nil {
+			if ctx.Err() != nil {
+				return nil
+			}
+			return err
+		}
+		s.written.Add(period)
+	}
+	return nil
+}
 
 func (s *Speaker) device() *alsa.Playback {
 	s.mu.Lock()

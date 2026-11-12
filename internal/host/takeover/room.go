@@ -15,7 +15,7 @@ const RoomMargin = 4 << 20
 // adb push truncates the destination before it writes.
 func Room(d *adb.Device, paths layout.Paths, need int64) (Check, error) {
 	mount := "/"
-	if !paths.OnSystem() {
+	if !paths.OnSystem() || strings.HasPrefix(paths.Binary, "/data/") {
 		mount = "/data"
 	}
 	free, err := freeOn(d, mount)

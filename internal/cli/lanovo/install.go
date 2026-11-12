@@ -187,7 +187,7 @@ func newInstallCmd() *cobra.Command {
 			fmt.Fprintf(out, "  %-18s %s\n", "lanovod", styleDetail.Render(from))
 
 			paths := detected.Paths()
-			if paths.OnSystem() {
+			if paths.OnSystem() && detected.Name != "sd-x501f" {
 				moved, err := takeover.Stash(d)
 				for _, s := range moved {
 					fmt.Fprintf(out, "  %-18s %s\n", s.What, styleDetail.Render(s.Note))

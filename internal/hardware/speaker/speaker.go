@@ -34,9 +34,11 @@ const (
 const FrameBytes = Channels * Bits / 8
 
 type Speaker struct {
-	mu    sync.Mutex
-	out   *alsa.Playback
-	mixer *alsa.Mixer
+	mu           sync.Mutex
+	out          *alsa.Playback
+	mixer        *alsa.Mixer
+	androidPCM   string
+	androidReady atomic.Bool
 
 	hwOnce     sync.Once
 	hwOut      output
@@ -103,7 +105,14 @@ func Get() *Speaker { once.Do(func() { shared = &Speaker{} }); return shared }
 
 func (s *Speaker) Name() string { return "speaker" }
 
+// AndroidPCM selects a helper that accepts 48 kHz stereo S16_LE on stdin.
+// Set it before starting the speaker service.
+func (s *Speaker) AndroidPCM(path string) { s.androidPCM = path }
+
 func (s *Speaker) Start(context.Context) error {
+	if s.androidPCM != "" {
+		return nil
+	}
 	if s.open() {
 		return nil
 	}
@@ -166,6 +175,9 @@ func (s *Speaker) Open() error {
 }
 
 func (s *Speaker) Close() error {
+	if s.androidPCM != "" {
+		return nil
+	}
 	s.mu.Lock()
 	out, mixer := s.out, s.mixer
 	s.out, s.mixer = nil, nil

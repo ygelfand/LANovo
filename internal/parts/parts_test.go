@@ -28,6 +28,17 @@ func TestRC(t *testing.T) {
 			absent: []string{"ro.logd.auditd", "lanovo_widevine"},
 		},
 		{
+			name:  "x501f",
+			paths: board.X501F.Paths(),
+			want: []string{
+				"service lanovod /system/bin/sh /data/misc/lanovo/bin/launch-lanovod.sh",
+				"on property:sys.boot_completed=1\n    start lanovo_wait",
+				"on property:lanovo.takeover=1\n    mkdir /data/misc/lanovo",
+				"exec u:r:su:s0 root root -- /system/bin/setenforce 0",
+			},
+			absent: []string{"on zygote-start", "stop audioserver", "stop audio-hal-2-0"},
+		},
+		{
 			name:  "data",
 			paths: board.Penghu.Paths(),
 			want: []string{
@@ -51,6 +62,7 @@ func TestRC(t *testing.T) {
 				t.Fatalf("RC(%+v) = %v", tt.paths, err)
 			}
 			got := string(rc)
+			got = strings.ReplaceAll(got, "\r\n", "\n")
 			if strings.Contains(got, "{{") {
 				t.Errorf("RC(%s) left a template action unrendered", tt.name)
 			}

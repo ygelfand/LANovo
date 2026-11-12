@@ -16,15 +16,19 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	_ "github.com/ygelfand/LANovo/internal/component/all"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/alarm"
+	"github.com/ygelfand/LANovo/internal/feature/control"
 	"github.com/ygelfand/LANovo/internal/feature/firmware"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
+	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
+	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/layout"
 	"github.com/ygelfand/LANovo/internal/parts"
 	"github.com/ygelfand/LANovo/internal/update"
 )
 
-func Run(ctx context.Context) error {
+func Run(ctx context.Context, keepAndroid, audioTrial, skipParts bool) error {
 	done, err := Only()
 	if err != nil {
 		// init discards stderr.
@@ -65,12 +69,25 @@ func Run(ctx context.Context) error {
 		slog.Error("reading the saved config failed, continuing with defaults", "err", err)
 	}
 
-	firmware.Get().RebootPending(parts.Ensure())
-	update.Settle()
+	if audioTrial {
+		volume.Get().Restore(config.Get())
+		group := service.New()
+		group.Add(speaker.Get())
+		group.Add(alarm.Get())
+		group.Add(control.Get())
+		return group.Run(ctx)
+	}
+
+	if !keepAndroid && !skipParts {
+		firmware.Get().RebootPending(parts.Ensure())
+		update.Settle()
+	}
 
 	sensors.Get().Orient()
 
-	markBooted()
+	if !keepAndroid {
+		markBooted()
+	}
 	startSplash(ctx)
 
 	component.Default().Restore(config.Get())
@@ -80,6 +97,14 @@ func Run(ctx context.Context) error {
 
 	group := service.New()
 	component.Default().AddTo(group)
+
+	if keepAndroid {
+		console := control.Get()
+		if err := console.Start(); err != nil {
+			return err
+		}
+		defer console.Close()
+	}
 
 	slog.Info("resident")
 	return group.Run(leaving(ctx))

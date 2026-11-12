@@ -112,7 +112,7 @@ func Preflight(d *adb.Device, boardName string) ([]Check, error) {
 			Name:  "build type",
 			Got:   props["ro.build.type"],
 			Want:  "userdebug",
-			OK:    props["ro.build.type"] == "userdebug",
+			OK:    props["ro.build.type"] == "userdebug" || (b.Name == "sd-x501f" && props["ro.build.type"] == "user" && props["ro.build.version.incremental"] == "5459842" && props["ro.debuggable"] == "1" && root),
 			Fatal: true,
 			Fix:   "flash the Android 8.1 Debug Firmware — a user build cannot boot permissive",
 		},

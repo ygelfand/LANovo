@@ -84,7 +84,7 @@ build-lanovo: ## Build the host CLI into ./bin
 	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovo ./cmd/lanovo
 
 .PHONY: build-lanovod
-build-lanovod: build-surface build-camshim build-camera build-asr build-pryon build-airplay ## Cross-compile lanovod for the display, carrying its native parts (PACK=bin/upx-5.3.0/build/upx to compress it)
+build-lanovod: build-surface build-camshim build-camera build-asr build-pryon build-airplay build-x501f-audio ## Build the device daemon with SD-X501F audio helper
 	@mkdir -p $(BUILD_DIR) $(PARTS_DIR)
 	cp $(SURFACE_BIN) $(PARTS_DIR)/lanovo-surface
 	cp $(CAMSHIM_BIN) $(PARTS_DIR)/liblanovo-camshim.so
@@ -95,6 +95,11 @@ build-lanovod: build-surface build-camshim build-camera build-asr build-pryon bu
 	$(DEVICE_ENV) go build -tags "payload$(if $(TAGS),$(comma)$(TAGS))" -ldflags "$(DEVICE_LDFLAGS)" -o $(DEVICE_BIN) ./cmd/lanovod
 	$(if $(PACK),$(PACK) -q $(DEVICE_BIN))
 	$(if $(PACK),$(firstword $(PACK)) -q -t $(DEVICE_BIN))
+
+.PHONY: build-x501f-audio
+build-x501f-audio:
+	@mkdir -p $(PARTS_DIR)
+	$(NDK)/toolchains/llvm/prebuilt/$(NDK_HOST)/bin/armv7a-linux-androideabi27-clang -O2 -Wall -Werror tools/x501f-hal-tone.c -lOpenSLES -lm -o $(PARTS_DIR)/x501f-hal-tone
 
 .PHONY: upx
 upx: $(UPX) ## Build the pinned UPX that packs device binaries

@@ -43,3 +43,6 @@ scratch/
 # Local multi-repository development
 go.work
 go.work.sum
+
+# Generated pinned dependency with local X501F patch
+/third_party/libcountertop/
