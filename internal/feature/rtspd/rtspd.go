@@ -17,7 +17,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
+	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/vision"
+	"github.com/ygelfand/LANovo/internal/hardware/mic"
 )
 
 const (
@@ -51,12 +53,18 @@ func Get() *Server {
 			Bitrate:  livecam.Get().Bitrate,
 			ONVIF:    describe,
 			Auth:     camerartspd.Credentials(func() schema.RTSP { return config.Get().RTSP }),
+			Mic:      microphone{},
+			MicMuted: privacy.Get().MicMuted,
 		})}
 		shared.build()
 		livecam.Get().StreamsChanged.Listen(func([]int) { shared.reload() })
 	})
 	return shared
 }
+
+type microphone struct{}
+
+func (microphone) Frames() (<-chan []int16, func()) { return mic.Get().Listen("rtsp") }
 
 func describe() onvif.Config {
 	dev := config.Get().Device
