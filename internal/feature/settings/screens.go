@@ -122,10 +122,11 @@ func networkPage() *sharedshell.Page {
 			c.Renew = l.Renew
 		}
 		return c
-	}, network.Get().SetVerify, network.Get().SetViaHome, &sharedsettings.WebAccess{
-		Admin:       frontend.Get(),
-		Certificate: certs.Get(),
-	}, shell.Get())
+	}, network.Get().SetVerify, network.Get().SetViaHome,
+		sharedsettings.NewWifiPages(network.Get().Wifi(), shell.Get()), &sharedsettings.WebAccess{
+			Admin:       frontend.Get(),
+			Certificate: certs.Get(),
+		}, shell.Get())
 }
 
 func callsPage() *sharedshell.Page { return callPages().Calls() }
