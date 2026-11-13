@@ -28,7 +28,7 @@ Unlock the display using the community guide for its model before installing LAN
    [Smart Display 8/10](https://xdaforums.com/t/lenovo-smart-display-8-10-amber-blueberry-avb-bootloader-unlock-firmware.4472049/)
    (also for the JBL Link View) or the
    [Smart Display 7](https://xdaforums.com/t/cd-17302f-lenovo-smart-display-7-ivy-avb-bootloader-unlock-firmware.4472041/).
-   For the ThinkSmart View, ask on [Discord](https://discord.gg/efWnv89pg2).
+   For the ThinkSmart View, follow [ThinkSmart View](#thinksmart-view) below instead.
 
 2. Flash the **Android 8.1 Debug Firmware**. The regular firmware won't work.
 
@@ -42,8 +42,45 @@ Unlock the display using the community guide for its model before installing LAN
 
 </Steps>
 
+## ThinkSmart View
+
+The ThinkSmart View is flashed whole over EDL, with LANovo's boot image in place of the stock one.
+You need [edl](https://github.com/bkerler/edl) or Qualcomm's QFIL. For help, join the community
+on [Discord](https://discord.gg/efWnv89pg2).
+
+<Steps>
+
+1. Download `CD-18781Y.201006.099@Teams&Others.zip` from the
+   [ThinkSmart View XDA thread](https://xdaforums.com/t/cd-18781y-lenovo-thinksmart-view-bootloader-firmware-zoom-teams-conversion-normal-android.4426029/)
+   and unzip it.
+
+2. Put the display in EDL mode and back up its current firmware with edl.
+
+3. Download
+   [boot_penghu_lanovo.bin](https://github.com/ygelfand/LANovo/raw/main/assets/boot_penghu_lanovo.bin)
+   and copy it over the firmware's boot image:
+
+   ```sh
+   cp boot_penghu_lanovo.bin image/boot.img
+   ```
+
+4. Flash the whole firmware with edl or QFIL.
+
+5. Reboot. The display stays on the logo; that's expected.
+
+6. Plug the display in and run:
+
+   ```sh
+   adb devices
+   ```
+
+   You should see one device listed.
+
+</Steps>
+
 <Aside type="caution">
-There's no uninstaller. To go back, reflash the stock firmware from the same XDA thread.
+There's no uninstaller. To go back, reflash the stock firmware from the same XDA thread, or the
+backup you made.
 </Aside>
 
 Next: [install](/start/install/).

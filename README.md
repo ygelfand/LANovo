@@ -173,8 +173,9 @@ You need an unlocked display connected over USB. Follow the XDA guide for the
 [Smart Display 8/10 and JBL Link View](https://xdaforums.com/t/lenovo-smart-display-8-10-amber-blueberry-avb-bootloader-unlock-firmware.4472049/)
 or the
 [Smart Display 7](https://xdaforums.com/t/cd-17302f-lenovo-smart-display-7-ivy-avb-bootloader-unlock-firmware.4472041/)
-and flash the **Android 8.1 Debug Firmware**. For the ThinkSmart View, ask on
-[Discord](https://discord.gg/efWnv89pg2).
+and flash the **Android 8.1 Debug Firmware**. The ThinkSmart View is flashed whole over EDL with
+LANovo's boot image; see [ThinkSmart View](https://www.lanovo.link/start/before/#thinksmart-view), or join the
+community on [Discord](https://discord.gg/efWnv89pg2) for help.
 
 Then download `lanovo` from the [releases page](https://github.com/ygelfand/LANovo/releases):
 
