@@ -32,6 +32,7 @@ func Get() *WakeWord {
 	once.Do(func() {
 		shared = &WakeWord{wakesettings.New(wakesettings.Options{
 			Slots:    Slots,
+			Screen:   true,
 			DeviceID: component.AssistantDevice,
 			Read:     func() schema.Wake { return config.Get().Wake },
 			Write:    func(slot int) schema.WakeWriter { return config.Set().Wake(slot) },

@@ -8,6 +8,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/feature/idle"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
 	"github.com/ygelfand/LANovo/internal/feature/voice"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
@@ -18,7 +19,12 @@ import (
 func init() { component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(45)) }
 
 var get = sync.OnceValue(func() *sharedscreen.Assistant {
-	a := sharedscreen.New(sharedscreen.Dependencies{Microphone: mic.Get(), Controller: voice.Get()})
+	a := sharedscreen.New(sharedscreen.Dependencies{
+		Microphone: mic.Get(),
+		Controller: voice.Get(),
+		Words:      config.WakeSection,
+		Screen:     idle.Get(),
+	})
 	voice.Shown.Listen(a.Show)
 	return a
 })
