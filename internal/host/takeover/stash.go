@@ -35,7 +35,7 @@ func Stash(d *adb.Device) ([]Step, error) {
 		return nil, nil
 	}
 
-	restore, err := Writable(d)
+	restore, err := Writable(d, false)
 	if err != nil {
 		return nil, err
 	}

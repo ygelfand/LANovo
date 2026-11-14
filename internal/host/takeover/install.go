@@ -25,7 +25,8 @@ type Step struct {
 type Result struct {
 	Steps []Step
 
-	Settles bool
+	Settles        bool
+	RemountPending bool
 }
 
 func Install(d *adb.Device, binary []byte, b board.Board) (res Result, err error) {
@@ -68,12 +69,18 @@ func Install(d *adb.Device, binary []byte, b board.Board) (res Result, err error
 		}
 	}
 
-	restore, err := Writable(d)
+	restore, err := Writable(d, paths.X501F)
 	if err != nil {
 		return res, err
 	}
 	defer func() {
 		if restoreErr := restore(); restoreErr != nil {
+			if paths.X501F && err == nil && errors.Is(restoreErr, errRemountBusy) {
+				res.Settles = true
+				res.RemountPending = true
+				res.Steps = append(res.Steps, Step{What: "remount read-only", Note: "system busy after sync; reboot required"})
+				return
+			}
 			res.Steps = append(res.Steps, Step{What: "remount read-only", Note: restoreErr.Error()})
 			if paths.X501F {
 				err = errors.Join(err, restoreErr)
@@ -155,10 +162,22 @@ func Install(d *adb.Device, binary []byte, b board.Board) (res Result, err error
 		)
 	}
 	if paths.X501F {
-		if err := write(paths.Binary, binary, parts.Lanovod.Mode); err != nil {
-			return res, fmt.Errorf("installing %s: %w", paths.Binary, err)
+		note := paths.Binary + " unchanged (SHA-256 matched)"
+		if !CanReuseDaemon(d, paths, binary) {
+			// Recheck space in case the daemon changed after the CLI checked room.
+			room, err := Room(d, paths, int64(len(binary)))
+			if err != nil {
+				return res, err
+			}
+			if !room.OK {
+				return res, fmt.Errorf("installing needs %s, have %s", room.Want, room.Got)
+			}
+			if err := write(paths.Binary, binary, parts.Lanovod.Mode); err != nil {
+				return res, fmt.Errorf("installing %s: %w", paths.Binary, err)
+			}
+			note = paths.Binary
 		}
-		res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: paths.Binary})
+		res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: note})
 	}
 	reboot, err := configureDefaultProp(d, b)
 	if err != nil {

@@ -1,6 +1,37 @@
 package takeover
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/ygelfand/LANovo/internal/board"
+)
+
+func TestDaemonReuseOnlyForX501F(t *testing.T) {
+	for _, b := range board.All() {
+		if b.Paths().X501F {
+			if b.Name != board.X501F.Name {
+				t.Errorf("unexpected X501F paths on %s", b.Name)
+			}
+			continue
+		}
+		t.Run(b.Name, func(t *testing.T) {
+			// A nil device also verifies the check does not issue any ADB commands.
+			if CanReuseDaemon(nil, b.Paths(), []byte("payload")) {
+				t.Fatal("daemon reuse was enabled on an existing board")
+			}
+		})
+	}
+}
+
+func TestDaemonHashMatches(t *testing.T) {
+	const report = "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad  /system/bin/lanovod\n"
+	if !daemonHashMatches(report, []byte("abc")) {
+		t.Fatal("identical daemon rejected")
+	}
+	if daemonHashMatches(report, []byte("abd")) || daemonHashMatches("", []byte("abc")) {
+		t.Fatal("accepted a different daemon or missing checksum")
+	}
+}
 
 // What `stat -f -c "%f %S" /` prints on the device.
 func TestReadingFreeSpace(t *testing.T) {

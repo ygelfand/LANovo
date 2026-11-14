@@ -205,7 +205,11 @@ func newInstallCmd() *cobra.Command {
 				}
 			}
 
-			room, err := takeover.Room(d, paths, int64(len(payload)))
+			need := int64(len(payload))
+			if takeover.CanReuseDaemon(d, paths, payload) {
+				need = 0
+			}
+			room, err := takeover.Room(d, paths, need)
 			if err != nil {
 				return err
 			}
@@ -239,6 +243,9 @@ func newInstallCmd() *cobra.Command {
 			choice := rebootChoiceOf(doReboot, noReboot)
 
 			if paths.X501F && settles && choice == rebootNo {
+				if res.RemountPending {
+					fmt.Fprintln(out, "System is still mounted read-write. Reboot manually before continuing.")
+				}
 				fmt.Fprintln(out, "Reboot the device to load the SD-X501F init service, then rerun install to finish setup.")
 				return nil
 			}
@@ -255,6 +262,12 @@ func newInstallCmd() *cobra.Command {
 				}
 				if err := d.Root(ctx); err != nil {
 					return err
+				}
+				if res.RemountPending {
+					if err := takeover.CheckSystemReadOnly(d); err != nil {
+						return fmt.Errorf("checking system after reboot: %w", err)
+					}
+					fmt.Fprintf(out, "  %-18s %s\n", "system mount", styleDone.Render("read-only after reboot"))
 				}
 				fmt.Fprintf(
 					out,
