@@ -100,6 +100,7 @@ build-lanovod: build-surface build-camshim build-camera build-asr build-pryon bu
 build-x501f-audio:
 	@mkdir -p $(PARTS_DIR)
 	$(NDK)/toolchains/llvm/prebuilt/$(NDK_HOST)/bin/armv7a-linux-androideabi27-clang -O2 -Wall -Werror tools/x501f-hal-tone.c -lOpenSLES -lm -o $(PARTS_DIR)/x501f-hal-tone
+	$(NDK)/toolchains/llvm/prebuilt/$(NDK_HOST)/bin/armv7a-linux-androideabi27-clang -O2 -Wall -Werror tools/x501f-audio-policy.c -ldl -o $(PARTS_DIR)/x501f-audio-policy
 
 .PHONY: upx
 upx: $(UPX) ## Build the pinned UPX that packs device binaries

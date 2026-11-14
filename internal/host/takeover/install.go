@@ -85,7 +85,7 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 	}
 	res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: paths.Binary})
 	if b.Name == "sd-x501f" {
-		wrapper := []byte("#!/system/bin/sh\nexec /system/bin/lanovod run --android-pcm /data/misc/lanovo/bin/x501f-hal-tone\n")
+		wrapper := []byte("#!/system/bin/sh\n/data/misc/lanovo/bin/x501f-audio-policy 100 || log -t lanovo 'failed to set Android speaker volume'\nexec /system/bin/lanovod run --android-pcm /data/misc/lanovo/bin/x501f-hal-tone\n")
 		if err := d.WriteFile("/data/misc/lanovo/bin/launch-lanovod.sh", wrapper, 0755); err != nil {
 			return res, fmt.Errorf("installing LANovo launch wrapper: %w", err)
 		}
@@ -95,6 +95,12 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 		}
 		if len(parts.X501FAudio()) == 0 {
 			return res, errors.New("missing SD-X501F AudioTrack helper")
+		}
+		if len(parts.X501FAudioPolicy()) == 0 {
+			return res, errors.New("missing SD-X501F audio policy helper")
+		}
+		if err := d.WriteFile("/data/misc/lanovo/bin/x501f-audio-policy", parts.X501FAudioPolicy(), 0755); err != nil {
+			return res, fmt.Errorf("installing SD-X501F audio policy helper: %w", err)
 		}
 		if err := d.WriteFile("/data/misc/lanovo/bin/x501f-hal-tone", parts.X501FAudio(), 0755); err != nil {
 			return res, fmt.Errorf("installing SD-X501F AudioTrack helper: %w", err)

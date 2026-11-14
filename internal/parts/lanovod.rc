@@ -111,6 +111,9 @@ on post-fs-data
 {{- end}}
 
     setprop debug.sf.nobootanimation 1
+{{- if .X501F}}
+    stop bootanim
+{{- end}}
 
     # sound card
 {{- if not .X501F}}
@@ -236,6 +239,12 @@ on property:init.svc.cnss-daemon=running && property:ro.board.platform=msm8953
 
 on property:init.svc.camerahalserver=running && property:ro.board.platform=mt8167
     stop camerahalserver
+
+{{- if .X501F}}
+# Android Things can restart bootanim after LANovo stops zygote.
+on property:init.svc.bootanim=running && property:init.svc.lanovod=running
+    stop bootanim
+{{- end}}
 
 # init.rc starts zygote here by name, which clears the disable a post-fs-data stop would set
 {{- if not .X501F}}

@@ -15,3 +15,5 @@ var pryon []byte
 var airplay []byte
 
 var x501fAudio []byte
+
+var x501fAudioPolicy []byte
