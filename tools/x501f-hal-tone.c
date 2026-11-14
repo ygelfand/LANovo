@@ -88,4 +88,3 @@ int main(int argc, char **argv) {
     (*engine_object)->Destroy(engine_object);
     return state.count != 0;
 }
-
