@@ -107,3 +107,32 @@ func TestCarriedLeavesTheBootImageRC(t *testing.T) {
 		}
 	}
 }
+
+func TestX501FTakeoverDoesNotLeakToOtherBoards(t *testing.T) {
+	for _, b := range board.All() {
+		t.Run(b.Name, func(t *testing.T) {
+			rc, err := RC(b.Paths())
+			if err != nil {
+				t.Fatal(err)
+			}
+			x501f := b.Name == board.X501F.Name
+			for _, directive := range []string{"setenv COUNTERTOP_X501F 1", "stop bootanim", "lanovo.takeover=1", "start audioserver", "start audio-hal-2-0"} {
+				if strings.Contains(string(rc), directive) != x501f {
+					t.Errorf("unexpected presence of %q for %s", directive, b.Name)
+				}
+			}
+			for _, directive := range []string{"stop audioserver", "stop audio-hal-2-0", "on zygote-start"} {
+				if strings.Contains(string(rc), directive) == x501f {
+					t.Errorf("unexpected presence of %q for %s", directive, b.Name)
+				}
+			}
+			wifiStops := 1 // The upstream msm8953-specific action.
+			if x501f {
+				wifiStops++
+			}
+			if got := strings.Count(string(rc), "stop wpa_supplicant"); got != wifiStops {
+				t.Errorf("stop wpa_supplicant occurs %d times, want %d", got, wifiStops)
+			}
+		})
+	}
+}

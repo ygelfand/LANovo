@@ -25,8 +25,8 @@ var X501F = Board{
 	UISize:       "medium",
 	Touch:        []string{"goodix-ts"},
 	SoundCard:    "msm8953-openq624-snd-card",
-	// GPIO 68 is the Qualcomm Smart Display speaker-enable line; the SD-X501F
-	// amp register table is intentionally unset until its exact chip is identified.
+	// GPIO 68 is inherited from the Qualcomm speaker path and has not been
+	// independently verified on SD-X501F. Use Android audio for this board.
 	AmpPins: []int{68},
 	// Physical buttons were confirmed active-high on these lines on one SD-X501F test device.
 	Buttons: []Button{

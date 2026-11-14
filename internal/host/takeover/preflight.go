@@ -44,18 +44,21 @@ type Check struct {
 }
 
 const (
-	WantIncremental = "5307861"
-	WantIoT         = "1.1.0"
+	WantIncremental  = "5307861"
+	WantIoT          = "1.1.0"
+	x501fIncremental = "5459842"
 )
 
-func PatchesBoot(b board.Board) bool { return b.Name != board.Penghu.Name }
+// X501F keeps its rooted boot image. The vendor user build needs the
+// runtime SELinux transition in the takeover action even with a boot patch.
+func PatchesBoot(b board.Board) bool { return b.Name != board.Penghu.Name && !b.Paths().X501F }
 
 func Preflight(d *adb.Device, boardName string) ([]Check, error) {
 	b, err := DetectBoard(d, boardName)
 	if err != nil && boardName != "" {
 		return nil, err
 	}
-	if err == nil && !PatchesBoot(b) {
+	if err == nil && b.Name == board.Penghu.Name {
 		return lockedPreflight(d, b)
 	}
 
@@ -112,7 +115,7 @@ func Preflight(d *adb.Device, boardName string) ([]Check, error) {
 			Name:  "build type",
 			Got:   props["ro.build.type"],
 			Want:  "userdebug",
-			OK:    props["ro.build.type"] == "userdebug" || (b.Name == "sd-x501f" && props["ro.build.type"] == "user" && props["ro.build.version.incremental"] == "5459842" && props["ro.debuggable"] == "1" && root),
+			OK:    props["ro.build.type"] == "userdebug",
 			Fatal: true,
 			Fix:   "flash the Android 8.1 Debug Firmware — a user build cannot boot permissive",
 		},
@@ -132,6 +135,33 @@ func Preflight(d *adb.Device, boardName string) ([]Check, error) {
 			Fatal: true,
 			Fix:   "adb root",
 		},
+	}
+
+	if b.Paths().X501F {
+		sdk, err := d.Getprop("ro.build.version.sdk")
+		if err != nil {
+			return nil, err
+		}
+		for i := range checks {
+			switch checks[i].Name {
+			case "model":
+				checks[i] = Check{Name: "board", Got: b.Model, Want: b.Model, OK: true}
+			case "build type":
+				checks[i] = Check{
+					Name: "build type", Got: props["ro.build.type"], Want: "rooted user or userdebug",
+					OK:    props["ro.debuggable"] == "1" && (props["ro.build.type"] == "user" || props["ro.build.type"] == "userdebug"),
+					Fatal: true, Fix: "use the SD-X501F Android 8.1 root build",
+				}
+			case "firmware":
+				checks[i] = Check{
+					Name: "firmware", Got: props["ro.build.version.incremental"] + " / API " + sdk,
+					Want: x501fIncremental + " / API 27", OK: props["ro.build.version.incremental"] == x501fIncremental && sdk == "27",
+					Fatal: true, Fix: "install the supported SD-X501F firmware first",
+				}
+			}
+		}
+		active := props[prop.SlotSuffix]
+		return append(checks, Check{Name: "active slot", Got: active, Want: "_a or _b", OK: active == "_a" || active == "_b", Fatal: true}), nil
 	}
 
 	for _, slot := range mustSlots(d) {

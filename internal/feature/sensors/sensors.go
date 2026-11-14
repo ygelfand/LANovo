@@ -15,7 +15,6 @@ import (
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
-
 	"github.com/ygelfand/libcountertop/pkg/system/i2c"
 
 	"github.com/ygelfand/LANovo/internal/board"

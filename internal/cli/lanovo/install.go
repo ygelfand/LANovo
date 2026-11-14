@@ -14,6 +14,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/host/takeover"
 	"github.com/ygelfand/LANovo/internal/layout"
+	"github.com/ygelfand/LANovo/internal/parts"
 )
 
 func newInstallCmd() *cobra.Command {
@@ -68,9 +69,17 @@ func newInstallCmd() *cobra.Command {
 				return err
 			}
 
+			detected, detectErr := takeover.DetectBoard(d, boardName)
+			if boardName != "" && detectErr != nil {
+				return detectErr
+			}
+			if detected.Paths().X501F && !parts.HasX501FAudio() {
+				return fmt.Errorf("missing SD-X501F audio helpers; run make BOARD=sd-x501f dist")
+			}
+
 			if mode, err := d.Shell(
 				"getenforce",
-			); err == nil &&
+			); !detected.Paths().X501F && err == nil &&
 				strings.TrimSpace(mode) == "Enforcing" {
 				if _, err := d.Shell("setenforce 0"); err != nil {
 					return fmt.Errorf("selinux: %w", err)
@@ -120,9 +129,8 @@ func newInstallCmd() *cobra.Command {
 				}
 			}
 
-			detected, err := takeover.DetectBoard(d, boardName)
-			if err != nil {
-				return err
+			if detectErr != nil {
+				return detectErr
 			}
 			fmt.Fprintf(out, "  %-18s %s\n", "board", styleDone.Render(detected.Name))
 
@@ -208,6 +216,12 @@ func newInstallCmd() *cobra.Command {
 			}
 			fmt.Fprintf(out, "  %-18s %s\n", room.Name, styleDetail.Render(room.Got))
 
+			if paths.X501F {
+				// The stock user build can still be enforcing after a reboot.
+				if _, err := d.Shell("setenforce 0"); err != nil {
+					return fmt.Errorf("preparing SD-X501F system install: %w", err)
+				}
+			}
 			res, err := takeover.Install(d, payload, detected)
 			for _, s := range res.Steps {
 				fmt.Fprintf(out, "  %-18s %s\n", s.What, styleDetail.Render(s.Note))
@@ -223,6 +237,11 @@ func newInstallCmd() *cobra.Command {
 
 			settles := res.Settles
 			choice := rebootChoiceOf(doReboot, noReboot)
+
+			if paths.X501F && settles && choice == rebootNo {
+				fmt.Fprintln(out, "Reboot the device to load the SD-X501F init service, then rerun install to finish setup.")
+				return nil
+			}
 
 			if settles && choice != rebootNo {
 				fmt.Fprintf(out, "  %-18s %s\n", "rebooting",

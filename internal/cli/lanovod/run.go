@@ -110,6 +110,11 @@ func newRunCmd() *cobra.Command {
 					slog.Warn("could not stop", "service", svc, "err", err)
 				}
 			}
+			if !keepAndroid && board.Current().Name == board.X501F.Name {
+				if err := stopService("bootanim"); err != nil {
+					slog.Warn("could not stop", "service", "bootanim", "err", err)
+				}
+			}
 
 			return boot.Run(ctx, keepAndroid, androidPCM != "" && keepAndroid && surfaceSocket == "", skipParts)
 		},

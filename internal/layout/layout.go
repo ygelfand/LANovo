@@ -187,9 +187,6 @@ const (
 // Stopping zygote takes the sparrow OEM app, which holds the buttons and I2C2.
 var Displace = []string{
 	"zygote",
-	// Android Things may leave its boot logo animation above SurfaceFlinger
-	// takeover layers after zygote stops; it must be displaced too.
-	"bootanim",
 	"audioserver",
 	"audio-hal-2-0",
 	"update_engine",

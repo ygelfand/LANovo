@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -27,13 +28,14 @@ type Result struct {
 	Settles bool
 }
 
-func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
-	var res Result
-
+func Install(d *adb.Device, binary []byte, b board.Board) (res Result, err error) {
 	if len(binary) == 0 {
 		return res, errors.New("no lanovod to install")
 	}
 	paths := b.Paths()
+	if paths.X501F && !parts.HasX501FAudio() {
+		return res, errors.New("missing SD-X501F audio helpers; build with BOARD=sd-x501f")
+	}
 	if !paths.OnSystem() {
 		return installData(d, binary, b, paths)
 	}
@@ -51,9 +53,15 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 		// Its init.msm8x53.rc lives at the system-as-root mount point, so add
 		// one import there while keeping the OEM file and LANovo rc separate.
 		initImportPath = "/init.msm8x53.rc"
+		if _, err := d.Shell("test -s " + initImportPath); err != nil {
+			return res, fmt.Errorf("checking %s: %w", initImportPath, err)
+		}
 		initImport, err = d.ReadFile(initImportPath)
 		if err != nil {
 			return res, fmt.Errorf("reading %s: %w", initImportPath, err)
+		}
+		if len(bytes.TrimSpace(initImport)) == 0 {
+			return res, fmt.Errorf("%s is empty; restore the OEM init file first", initImportPath)
 		}
 		if !hasInitImport(initImport, paths.InitRC) {
 			res.Settles = true
@@ -65,12 +73,31 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 		return res, err
 	}
 	defer func() {
-		if err := restore(); err != nil {
-			res.Steps = append(res.Steps, Step{What: "remount read-only", Note: err.Error()})
+		if restoreErr := restore(); restoreErr != nil {
+			res.Steps = append(res.Steps, Step{What: "remount read-only", Note: restoreErr.Error()})
+			if paths.X501F {
+				err = errors.Join(err, restoreErr)
+			}
 		}
 	}()
 
-	// The running service holds the binary open.
+	addImport := initImportPath != "" && !hasInitImport(initImport, paths.InitRC)
+	if addImport {
+		backup, err := backupOEMInit(d, initImportPath, initImport)
+		if err != nil {
+			return res, err
+		}
+		res.Steps = append(res.Steps, Step{What: "init backup", Note: backup})
+	}
+
+	write := d.WriteFile
+	if paths.X501F {
+		write = func(path string, data []byte, mode os.FileMode) error {
+			return stageInstallFile(d, path, data, mode)
+		}
+	}
+
+	// Stop the running instance before upgrading files used by its helpers.
 	if err := prop.Stop(d, layout.Service); err != nil {
 		return res, err
 	}
@@ -80,29 +107,25 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 		}
 	}
 
-	if err := d.WriteFile(paths.Binary, binary, parts.Lanovod.Mode); err != nil {
-		return res, fmt.Errorf("installing %s: %w", paths.Binary, err)
+	if !paths.X501F {
+		if err := write(paths.Binary, binary, parts.Lanovod.Mode); err != nil {
+			return res, fmt.Errorf("installing %s: %w", paths.Binary, err)
+		}
+		res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: paths.Binary})
 	}
-	res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: paths.Binary})
 	if b.Name == "sd-x501f" {
 		wrapper := []byte("#!/system/bin/sh\n/data/misc/lanovo/bin/x501f-audio-policy 100 || log -t lanovo 'failed to set Android speaker volume'\nexec /system/bin/lanovod run --android-pcm /data/misc/lanovo/bin/x501f-hal-tone\n")
-		if err := d.WriteFile("/data/misc/lanovo/bin/launch-lanovod.sh", wrapper, 0755); err != nil {
+		if err := write("/data/misc/lanovo/bin/launch-lanovod.sh", wrapper, 0755); err != nil {
 			return res, fmt.Errorf("installing LANovo launch wrapper: %w", err)
 		}
 		waiter := []byte("#!/system/bin/sh\nwhile :; do\n  read uptime rest < /proc/uptime || exit 1\n  uptime=${uptime%%.*}\n  case \"$uptime\" in *[!0-9]*|\x27\x27) exit 1 ;; esac\n  [ \"$uptime\" -ge 20 ] && break\n  sleep 1\ndone\nsetprop lanovo.takeover 1\n")
-		if err := d.WriteFile("/data/misc/lanovo/bin/wait-lanovo.sh", waiter, 0755); err != nil {
+		if err := write("/data/misc/lanovo/bin/wait-lanovo.sh", waiter, 0755); err != nil {
 			return res, fmt.Errorf("installing LANovo boot waiter: %w", err)
 		}
-		if len(parts.X501FAudio()) == 0 {
-			return res, errors.New("missing SD-X501F AudioTrack helper")
-		}
-		if len(parts.X501FAudioPolicy()) == 0 {
-			return res, errors.New("missing SD-X501F audio policy helper")
-		}
-		if err := d.WriteFile("/data/misc/lanovo/bin/x501f-audio-policy", parts.X501FAudioPolicy(), 0755); err != nil {
+		if err := write("/data/misc/lanovo/bin/x501f-audio-policy", parts.X501FAudioPolicy(), 0755); err != nil {
 			return res, fmt.Errorf("installing SD-X501F audio policy helper: %w", err)
 		}
-		if err := d.WriteFile("/data/misc/lanovo/bin/x501f-hal-tone", parts.X501FAudio(), 0755); err != nil {
+		if err := write("/data/misc/lanovo/bin/x501f-hal-tone", parts.X501FAudio(), 0755); err != nil {
 			return res, fmt.Errorf("installing SD-X501F AudioTrack helper: %w", err)
 		}
 		carried, err := parts.Carried(paths)
@@ -113,18 +136,15 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 			if part.Boot || len(part.Data()) == 0 {
 				continue
 			}
-			if err := d.WriteFile(part.Path, part.Data(), part.Mode); err != nil {
+			if err := write(part.Path, part.Data(), part.Mode); err != nil {
 				return res, fmt.Errorf("installing %s: %w", part.Path, err)
-			}
-			if _, err := d.Shell("restorecon " + part.Path); err != nil {
-				return res, fmt.Errorf("labelling %s: %w", part.Path, err)
 			}
 			res.Steps = append(res.Steps, Step{What: part.Name, Note: part.Path})
 		}
 	}
 
 	if res.Settles {
-		if err := d.WriteFile(paths.InitRC, rc, parts.InitRC.Mode); err != nil {
+		if err := write(paths.InitRC, rc, parts.InitRC.Mode); err != nil {
 			return res, fmt.Errorf("installing %s: %w", paths.InitRC, err)
 		}
 		res.Steps = append(res.Steps, Step{What: parts.InitRC.Name, Note: paths.InitRC})
@@ -134,32 +154,25 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 			Step{What: parts.InitRC.Name, Note: paths.InitRC + " unchanged"},
 		)
 	}
-	if initImportPath != "" && !hasInitImport(initImport, paths.InitRC) {
-		backupPath := initImportPath + ".lanovo.bak"
-		if _, err := d.Shell("test -e " + backupPath); err != nil {
-			if err := d.WriteFile(backupPath, initImport, parts.InitRC.Mode); err != nil {
-				return res, fmt.Errorf("backing up %s to %s: %w", initImportPath, backupPath, err)
-			}
-			res.Steps = append(res.Steps, Step{What: "init backup", Note: backupPath})
+	if paths.X501F {
+		if err := write(paths.Binary, binary, parts.Lanovod.Mode); err != nil {
+			return res, fmt.Errorf("installing %s: %w", paths.Binary, err)
 		}
-		updated := appendInitImport(initImport, paths.InitRC)
-		if err := d.WriteFile(initImportPath, updated, parts.InitRC.Mode); err != nil {
-			return res, fmt.Errorf("adding LANovo import to %s: %w", initImportPath, err)
-		}
-		res.Steps = append(res.Steps, Step{What: "init import", Note: initImportPath})
+		res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: paths.Binary})
 	}
-
-	secured, err := MakeInsecure(d, b.Name)
+	reboot, err := configureDefaultProp(d, b)
 	if err != nil {
 		return res, err
 	}
 	if err := nameBoard(d, b); err != nil {
 		return res, err
 	}
-	res.Settles = res.Settles || secured
+	res.Settles = res.Settles || reboot
 
 	note := Insecure + " already set"
-	if secured {
+	if paths.X501F {
+		note = prop.Board + "=" + b.Name
+	} else if reboot {
 		note = Insecure + " — adbd starts as root from the next boot"
 	}
 	res.Steps = append(res.Steps, Step{What: "default.prop", Note: note})
@@ -173,13 +186,84 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 		res.Steps = append(res.Steps, Step{What: "restorecon", Note: err.Error()})
 	}
 
+	if addImport {
+		updated := appendInitImport(initImport, paths.InitRC)
+		if err := stageInstallFile(d, initImportPath, updated, parts.InitRC.Mode); err != nil {
+			return res, fmt.Errorf("adding LANovo import to %s: %w", initImportPath, err)
+		}
+		res.Steps = append(res.Steps, Step{What: "init import", Note: initImportPath})
+	}
+
 	return res, nil
 }
 
+type installFiles interface {
+	ReadFile(string) ([]byte, error)
+	WriteFile(string, []byte, os.FileMode) error
+	Shell(string) (string, error)
+	ShellCode(string) (string, int, error)
+}
+
+func backupOEMInit(d installFiles, path string, original []byte) (string, error) {
+	backup := path + ".lanovo.bak"
+	// A hard link preserves the OEM inode and metadata. A retry may reuse it
+	// only when it still matches the live file before inserting the import.
+	_, code, err := d.ShellCode("test -e " + backup)
+	if err != nil {
+		return "", err
+	}
+	switch code {
+	case 0:
+	case 1:
+		if _, err := d.Shell("ln " + path + " " + backup + " && sync"); err != nil {
+			return "", fmt.Errorf("backing up %s: %w", path, err)
+		}
+	default:
+		return "", fmt.Errorf("checking %s: exit status %d", backup, code)
+	}
+	saved, err := d.ReadFile(backup)
+	if err != nil {
+		return "", fmt.Errorf("reading init backup: %w", err)
+	}
+	if !bytes.Equal(saved, original) {
+		return "", fmt.Errorf("init backup %s differs from the current OEM file", backup)
+	}
+	return backup, nil
+}
+
+// Stage on the same filesystem so an interrupted transfer leaves the live file intact.
+func stageInstallFile(d installFiles, path string, data []byte, mode os.FileMode) error {
+	out, err := d.Shell("mktemp " + path + ".lanovo.XXXXXXXX")
+	if err != nil {
+		return err
+	}
+	temp := strings.TrimSpace(out)
+	suffix, ok := strings.CutPrefix(temp, path+".lanovo.")
+	if !ok || len(suffix) != 8 || strings.ContainsFunc(suffix, func(r rune) bool {
+		return !(r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9')
+	}) {
+		return fmt.Errorf("unexpected init staging path %q", temp)
+	}
+	defer func() { _, _ = d.Shell("rm -f " + temp) }()
+	if err := d.WriteFile(temp, data, mode); err != nil {
+		return err
+	}
+	got, err := d.ReadFile(temp)
+	if err != nil {
+		return err
+	}
+	if !bytes.Equal(got, data) {
+		return errors.New("staged init file did not pass readback")
+	}
+	_, err = d.Shell("chown 0:0 " + temp + " && restorecon " + temp +
+		" && sync && mv -f " + temp + " " + path + " && restorecon " + path + " && sync")
+	return err
+}
+
 func hasInitImport(rc []byte, path string) bool {
-	want := "import " + path
 	for _, line := range strings.Split(string(rc), "\n") {
-		if strings.TrimSpace(line) == want {
+		fields := strings.Fields(line)
+		if len(fields) == 2 && fields[0] == "import" && strings.Trim(fields[1], "\"") == path {
 			return true
 		}
 	}
@@ -196,12 +280,14 @@ func appendInitImport(rc []byte, path string) []byte {
 	}
 	lines := bytes.SplitAfter(rc, newline)
 	var offset int
+header:
 	for _, line := range lines {
-		trimmed := bytes.TrimSpace(line)
-		if bytes.HasPrefix(trimmed, []byte("import ")) ||
-			bytes.HasPrefix(trimmed, []byte("on ")) ||
-			bytes.HasPrefix(trimmed, []byte("service ")) {
-			break
+		fields := bytes.Fields(line)
+		if len(fields) > 0 {
+			switch string(fields[0]) {
+			case "import", "on", "service":
+				break header
+			}
 		}
 		offset += len(line)
 	}

@@ -3,7 +3,6 @@ package buttons
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"sync"
 
 	"github.com/ygelfand/libcountertop/pkg/input"
@@ -24,28 +23,22 @@ func watchEvdev() (*evdev, []error) {
 	if err != nil {
 		return e, []error{fmt.Errorf("listing input devices: %w", err)}
 	}
+	e.devices = devices
+
 	var problems []error
-	keys := board.Current().Keys
-	for _, d := range devices {
-		var supported []string
-		for code, name := range keys {
+	for code, name := range board.Current().Keys {
+		for _, d := range devices {
 			if !d.HasKey(code) {
 				continue
 			}
 			on, err := d.Key(code)
 			if err != nil {
-				problems = append(problems, fmt.Errorf("%s on %s: %w", name, d.Path, err))
-				continue
+				problems = append(problems, fmt.Errorf("%s: %w", name, err))
+				break
 			}
 			e.last[Button(name)] = on
-			supported = append(supported, name)
+			break
 		}
-		if len(supported) == 0 {
-			_ = d.Close()
-			continue
-		}
-		e.devices = append(e.devices, d)
-		slog.Info("monitoring hardware buttons", "path", d.Path, "device", d.Name, "keys", supported)
 	}
 	return e, problems
 }
@@ -91,7 +84,6 @@ func (e *evdev) watch(ctx context.Context, d *input.Device, emit func(Event)) er
 
 		b := Button(name)
 		pressed := ev.Value == 1
-		slog.Info("hardware key event", "path", d.Path, "key", name, "value", ev.Value)
 
 		e.mu.Lock()
 		if was, known := e.last[b]; known && was == pressed {

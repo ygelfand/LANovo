@@ -38,6 +38,9 @@ service lanovo_wpa /vendor/bin/hw/wpa_supplicant -i wlan0 -Dnl80211 -c /data/mis
     disabled
 
 service lanovo_surface {{.Surface}}
+{{- if .X501F}}
+    setenv COUNTERTOP_X501F 1
+{{- end}}
     class core
     user root
     group root graphics system
@@ -72,6 +75,9 @@ service lanovo_wlan /system/bin/sh -c "n=0; while [ ! -e /sys/class/net/wlan0 ] 
     oneshot
 
 service lanovo_camera {{.Camera}}
+{{- if .X501F}}
+    setenv COUNTERTOP_X501F 1
+{{- end}}
     class core
     user root
     group root camera graphics media system
@@ -159,7 +165,9 @@ on post-fs-data
     stop memtrack-hal-1-0
 
     # wifi is ours: our own supplicant, our own dhcp
+{{- if .X501F}}
     stop wpa_supplicant
+{{- end}}
     stop wificond
     stop wifi_hal_legacy
 
@@ -169,6 +177,11 @@ on post-fs-data
     # Android's bluetooth stack dies with zygote
     stop bluetooth-1-0
 
+{{- if .X501F}}
+    # The OpenSLES helper needs the stock Qualcomm speaker route.
+    start audio-hal-2-0
+    start audioserver
+{{- end}}
     start lanovo_surface
     start lanovod
 
@@ -194,10 +207,6 @@ on property:lanovo.takeover=1
 {{- else}}
 on post-fs-data && property:ro.board.platform=msm8x53
 {{- end}}
-    # Keep the Android audio HAL alive on the SD-X501F. Its WSA881x speaker
-    # route is initialized by audio-hal; LANovo's direct ALSA stream uses it.
-    start audio-hal-2-0
-    start audioserver
     start qcamerasvr
     start camera-provider-2-4
     start lanovo_camserver

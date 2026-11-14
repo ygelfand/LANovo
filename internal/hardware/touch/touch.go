@@ -26,13 +26,17 @@ func (panel) Native() (w, h int) {
 }
 
 func (panel) Orientation() geometry.Orientation {
-	if board.Current().Name == "sd-x501f" {
+	return touchOrientation(board.Current(), display.Get().Orientation())
+}
+
+func touchOrientation(b board.Board, orientation geometry.Orientation) geometry.Orientation {
+	if b.Name == board.X501F.Name {
 		// The Goodix controller reports the panel in its native 800x1280
 		// coordinate space while SurfaceFlinger presents a landscape 1280x800
 		// screen. Map touch points independently of the compositor orientation.
-		return geometry.Orientation((90 + int(display.Get().Orientation())) % 360)
+		return geometry.Orientation((90 + int(orientation)) % 360)
 	}
-	return display.Get().Orientation()
+	return orientation
 }
 
 var get = sync.OnceValue(func() *touch.Screen {

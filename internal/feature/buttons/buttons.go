@@ -33,7 +33,7 @@ func Get() *Buttons {
 func (b *Buttons) Name() string { return "button actions" }
 
 func (b *Buttons) on(e buttons.Event) {
-	slog.Info("button event", "which", e.Button, "pressed", e.Pressed)
+	slog.Debug("button", "which", e.Button, "pressed", e.Pressed)
 
 	if !e.Pressed {
 		return

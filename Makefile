@@ -74,6 +74,7 @@ PRYON_BIN = $(BUILD_DIR)/lanovo-pryon-api$(NATIVE_API)
 AIRPLAY_BIN = $(BUILD_DIR)/lanovo-airplay-api$(NATIVE_API)
 COUNTERTOP_NATIVE = $(MAKE) -f "$(LIBCOUNTERTOP_DIR)/native/Makefile" API="$(NATIVE_API)" PREFIX=lanovo OUT="$(abspath $(BUILD_DIR))" NDK="$(NDK)" SURFACE_BIN="$(abspath $(SURFACE_BIN))" CAMERA_BIN="$(abspath $(CAMERA_BIN))" CAMSHIM_BIN="$(abspath $(CAMSHIM_BIN))" ASR_BIN="$(abspath $(ASR_BIN))" PRYON_BIN="$(abspath $(PRYON_BIN))" AIRPLAY_BIN="$(abspath $(AIRPLAY_BIN))"
 PARTS_DIR := internal/parts/payload
+PAYLOAD_TAGS = payload$(if $(filter sd-x501f,$(BOARD)),$(comma)x501fpayload)$(if $(TAGS),$(comma)$(TAGS))
 
 .PHONY: build
 build: build-lanovo build-lanovod ## Build everything
@@ -84,7 +85,7 @@ build-lanovo: ## Build the host CLI into ./bin
 	CGO_ENABLED=0 go build -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovo ./cmd/lanovo
 
 .PHONY: build-lanovod
-build-lanovod: build-surface build-camshim build-camera build-asr build-pryon build-airplay build-x501f-audio ## Build the device daemon with SD-X501F audio helper
+build-lanovod: build-surface build-camshim build-camera build-asr build-pryon build-airplay $(if $(filter sd-x501f,$(BOARD)),build-x501f-audio) ## Cross-compile lanovod with the native helpers for the selected board
 	@mkdir -p $(BUILD_DIR) $(PARTS_DIR)
 	cp $(SURFACE_BIN) $(PARTS_DIR)/lanovo-surface
 	cp $(CAMSHIM_BIN) $(PARTS_DIR)/liblanovo-camshim.so
@@ -92,7 +93,7 @@ build-lanovod: build-surface build-camshim build-camera build-asr build-pryon bu
 	cp $(ASR_BIN) $(PARTS_DIR)/lanovo-asr
 	cp $(PRYON_BIN) $(PARTS_DIR)/lanovo-pryon
 	cp $(AIRPLAY_BIN) $(PARTS_DIR)/lanovo-airplay
-	$(DEVICE_ENV) go build -tags "payload$(if $(TAGS),$(comma)$(TAGS))" -ldflags "$(DEVICE_LDFLAGS)" -o $(DEVICE_BIN) ./cmd/lanovod
+	$(DEVICE_ENV) go build -tags "$(PAYLOAD_TAGS)" -ldflags "$(DEVICE_LDFLAGS)" -o $(DEVICE_BIN) ./cmd/lanovod
 	$(if $(PACK),$(PACK) -q $(DEVICE_BIN))
 	$(if $(PACK),$(firstword $(PACK)) -q -t $(DEVICE_BIN))
 
@@ -254,7 +255,7 @@ payload: ## Stage lanovod for embedding into the host CLI
 .PHONY: dist
 dist: payload ## Full build: lanovod, then the lanovo CLI carrying it
 	@mkdir -p $(BUILD_DIR)
-	CGO_ENABLED=0 go build -tags payload -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovo ./cmd/lanovo
+	CGO_ENABLED=0 go build -tags "$(PAYLOAD_TAGS)" -ldflags "$(LDFLAGS)" -o $(BUILD_DIR)/lanovo ./cmd/lanovo
 
 .PHONY: install-lanovod
 install-lanovod: build-lanovod device ## Install lanovod, which puts its other parts in place as it starts
