@@ -1,4 +1,8 @@
+{{- if .X501F}}
+service lanovod /system/bin/sh /data/misc/lanovo/bin/launch-lanovod.sh
+{{- else}}
 service lanovod {{.Binary}} run
+{{- end}}
     class core
     user root
     group root system graphics input audio inet net_raw net_admin
@@ -8,6 +12,19 @@ service lanovod {{.Binary}} run
     seclabel u:r:init:s0
 {{- end}}
     disabled
+
+{{- if .X501F}}
+service lanovo_wait /system/bin/sh /data/misc/lanovo/bin/wait-lanovo.sh
+    class core
+    user root
+    group root system
+    seclabel u:r:su:s0
+    disabled
+    oneshot
+
+on property:sys.boot_completed=1
+    start lanovo_wait
+{{- end}}
 
 # init's service rather than lanovod's child: ctl.stop kills the cgroup, and a forked supplicant
 # inherits lanovod's. init restarts it if it dies, which is why there is no -B.
@@ -21,6 +38,9 @@ service lanovo_wpa /vendor/bin/hw/wpa_supplicant -i wlan0 -Dnl80211 -c /data/mis
     disabled
 
 service lanovo_surface {{.Surface}}
+{{- if .X501F}}
+    setenv COUNTERTOP_X501F 1
+{{- end}}
     class core
     user root
     group root graphics system
@@ -55,6 +75,9 @@ service lanovo_wlan /system/bin/sh -c "n=0; while [ ! -e /sys/class/net/wlan0 ] 
     oneshot
 
 service lanovo_camera {{.Camera}}
+{{- if .X501F}}
+    setenv COUNTERTOP_X501F 1
+{{- end}}
     class core
     user root
     group root camera graphics media system
@@ -82,14 +105,27 @@ on post-fs-data
     start lanovo_widevine
 {{- end}}
 
+{{- if .X501F}}
+on property:lanovo.takeover=1
+{{- else}}
 on post-fs-data
+{{- end}}
     mkdir /data/misc/lanovo 0700 root root
+{{- if .X501F}}
+    # The X501F user build boots enforcing even with androidboot.selinux=permissive.
+    exec u:r:su:s0 root root -- /system/bin/setenforce 0
+{{- end}}
 
     setprop debug.sf.nobootanimation 1
+{{- if .X501F}}
+    stop bootanim
+{{- end}}
 
     # sound card
+{{- if not .X501F}}
     stop audioserver
     stop audio-hal-2-0
+{{- end}}
 
     # OTA
     stop update_engine
@@ -129,6 +165,9 @@ on post-fs-data
     stop memtrack-hal-1-0
 
     # wifi is ours: our own supplicant, our own dhcp
+{{- if .X501F}}
+    stop wpa_supplicant
+{{- end}}
     stop wificond
     stop wifi_hal_legacy
 
@@ -138,6 +177,11 @@ on post-fs-data
     # Android's bluetooth stack dies with zygote
     stop bluetooth-1-0
 
+{{- if .X501F}}
+    # The OpenSLES helper needs the stock Qualcomm speaker route.
+    start audio-hal-2-0
+    start audioserver
+{{- end}}
     start lanovo_surface
     start lanovod
 
@@ -158,7 +202,11 @@ on post-fs-data && property:ro.board.platform=mt8167
     start lanovo_camserver
     start lanovo_camera
 
+{{- if .X501F}}
+on property:lanovo.takeover=1
+{{- else}}
 on post-fs-data && property:ro.board.platform=msm8x53
+{{- end}}
     start qcamerasvr
     start camera-provider-2-4
     start lanovo_camserver
@@ -201,10 +249,18 @@ on property:init.svc.cnss-daemon=running && property:ro.board.platform=msm8953
 on property:init.svc.camerahalserver=running && property:ro.board.platform=mt8167
     stop camerahalserver
 
+{{- if .X501F}}
+# Android Things can restart bootanim after LANovo stops zygote.
+on property:init.svc.bootanim=running && property:init.svc.lanovod=running
+    stop bootanim
+{{- end}}
+
 # init.rc starts zygote here by name, which clears the disable a post-fs-data stop would set
+{{- if not .X501F}}
 on zygote-start
     stop zygote
     stop webview_zygote32
 
 on property:init.svc.zygote=running
     stop zygote
+{{- end}}

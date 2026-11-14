@@ -1,8 +1,11 @@
 package takeover
 
 import (
+	"errors"
 	"fmt"
+	"slices"
 	"strings"
+	"time"
 
 	"github.com/ygelfand/libcountertop/pkg/host/adb"
 
@@ -36,7 +39,7 @@ func systemMount(d *adb.Device) (string, error) {
 }
 
 // remount,rw succeeds and does nothing while the block device is BLKROSET; sysfs ro is 0444.
-func Writable(d *adb.Device) (restore func() error, err error) {
+func Writable(d *adb.Device, retryBusy bool) (restore func() error, err error) {
 	slot, err := d.Getprop(prop.SlotSuffix)
 	if err != nil {
 		return nil, err
@@ -63,14 +66,60 @@ func Writable(d *adb.Device) (restore func() error, err error) {
 	}
 
 	return func() error {
-		// The remount can report busy while writes are outstanding.
-		_, _ = d.Shell("sync")
+		return restoreReadOnly(d, mount, part, retryBusy, time.Sleep)
+	}, nil
+}
+
+var errRemountBusy = errors.New("filesystem busy after sync")
+
+type shellRunner interface {
+	Shell(string) (string, error)
+}
+
+func restoreReadOnly(d shellRunner, mount, part string, retryBusy bool, pause func(time.Duration)) error {
+	if _, err := d.Shell("sync"); err != nil && retryBusy {
+		return fmt.Errorf("sync before remount: %w", err)
+	}
+	for attempt := 1; ; attempt++ {
 		if _, err := d.Shell("mount -o remount,ro " + mount); err != nil {
-			return fmt.Errorf("remounting %s read-only: %w", mount, err)
+			mountErr := fmt.Errorf("remounting %s read-only: %w", mount, err)
+			if !retryBusy || !strings.Contains(strings.ToLower(err.Error()), "device or resource busy") {
+				return mountErr
+			}
+			if attempt == 3 {
+				return errors.Join(errRemountBusy, mountErr)
+			}
+			pause(time.Second)
+			continue
+		}
+		if retryBusy {
+			if err := requireReadOnly(d, mount); err != nil {
+				return err
+			}
 		}
 		_, err := d.Shell("blockdev --setro " + part)
 		return err
-	}, nil
+	}
+}
+
+// CheckSystemReadOnly confirms the active system mount after an install reboot.
+func CheckSystemReadOnly(d *adb.Device) error {
+	mount, err := systemMount(d)
+	if err != nil {
+		return err
+	}
+	return requireReadOnly(d, mount)
+}
+
+func requireReadOnly(d shellRunner, mount string) error {
+	options, err := mountOptions(d, mount)
+	if err != nil {
+		return err
+	}
+	if !slices.Contains(options, "ro") {
+		return fmt.Errorf("%s is still mounted read-write", mount)
+	}
+	return nil
 }
 
 func isWritable(d *adb.Device, mount string) (bool, error) {
@@ -83,4 +132,18 @@ func isWritable(d *adb.Device, mount string) (bool, error) {
 		return false, fmt.Errorf("unreadable mount line: %q", out)
 	}
 	return strings.HasPrefix(fields[3], "rw"), nil
+}
+
+func mountOptions(d shellRunner, mount string) ([]string, error) {
+	out, err := d.Shell("cat /proc/mounts")
+	if err != nil {
+		return nil, err
+	}
+	for line := range strings.Lines(out) {
+		fields := strings.Fields(line)
+		if len(fields) >= 4 && fields[1] == mount {
+			return strings.Split(fields[3], ","), nil
+		}
+	}
+	return nil, fmt.Errorf("mount %s missing from /proc/mounts", mount)
 }

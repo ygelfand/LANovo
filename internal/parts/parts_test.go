@@ -28,6 +28,17 @@ func TestRC(t *testing.T) {
 			absent: []string{"ro.logd.auditd", "lanovo_widevine"},
 		},
 		{
+			name:  "x501f",
+			paths: board.X501F.Paths(),
+			want: []string{
+				"service lanovod /system/bin/sh /data/misc/lanovo/bin/launch-lanovod.sh",
+				"on property:sys.boot_completed=1\n    start lanovo_wait",
+				"on property:lanovo.takeover=1\n    mkdir /data/misc/lanovo",
+				"exec u:r:su:s0 root root -- /system/bin/setenforce 0",
+			},
+			absent: []string{"on zygote-start", "stop audioserver", "stop audio-hal-2-0"},
+		},
+		{
 			name:  "data",
 			paths: board.Penghu.Paths(),
 			want: []string{
@@ -51,6 +62,7 @@ func TestRC(t *testing.T) {
 				t.Fatalf("RC(%+v) = %v", tt.paths, err)
 			}
 			got := string(rc)
+			got = strings.ReplaceAll(got, "\r\n", "\n")
 			if strings.Contains(got, "{{") {
 				t.Errorf("RC(%s) left a template action unrendered", tt.name)
 			}
@@ -93,5 +105,34 @@ func TestCarriedLeavesTheBootImageRC(t *testing.T) {
 		if hasRC != tt.wantRC {
 			t.Errorf("Carried(%s) carries the rc = %v, want %v", tt.name, hasRC, tt.wantRC)
 		}
+	}
+}
+
+func TestX501FTakeoverDoesNotLeakToOtherBoards(t *testing.T) {
+	for _, b := range board.All() {
+		t.Run(b.Name, func(t *testing.T) {
+			rc, err := RC(b.Paths())
+			if err != nil {
+				t.Fatal(err)
+			}
+			x501f := b.Name == board.X501F.Name
+			for _, directive := range []string{"setenv COUNTERTOP_X501F 1", "stop bootanim", "lanovo.takeover=1", "start audioserver", "start audio-hal-2-0"} {
+				if strings.Contains(string(rc), directive) != x501f {
+					t.Errorf("unexpected presence of %q for %s", directive, b.Name)
+				}
+			}
+			for _, directive := range []string{"stop audioserver", "stop audio-hal-2-0", "on zygote-start"} {
+				if strings.Contains(string(rc), directive) == x501f {
+					t.Errorf("unexpected presence of %q for %s", directive, b.Name)
+				}
+			}
+			wifiStops := 1 // The upstream msm8953-specific action.
+			if x501f {
+				wifiStops++
+			}
+			if got := strings.Count(string(rc), "stop wpa_supplicant"); got != wifiStops {
+				t.Errorf("stop wpa_supplicant occurs %d times, want %d", got, wifiStops)
+			}
+		})
 	}
 }

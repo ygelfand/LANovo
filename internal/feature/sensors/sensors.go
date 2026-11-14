@@ -15,7 +15,6 @@ import (
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/runtime/service"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
-
 	"github.com/ygelfand/libcountertop/pkg/system/i2c"
 
 	"github.com/ygelfand/LANovo/internal/board"
@@ -131,7 +130,7 @@ func (s *Sensors) Orient() {
 		return
 	}
 
-	s.tracker.Update(r)
+	s.tracker.Update(calibrateMotion(r))
 	rot := s.tracker.Orientation()
 
 	display.Get().SetOrientation(rot)
@@ -218,7 +217,7 @@ func (s *Sensors) follow() {
 		slog.Warn("reading the accelerometer failed", "err", err)
 		return
 	}
-	if !s.tracker.Update(r) {
+	if !s.tracker.Update(calibrateMotion(r)) {
 		return
 	}
 
@@ -313,4 +312,12 @@ func (s *Sensors) build() {
 		},
 	}
 	s.facing.Set(s.tracker.Orientation().String())
+}
+
+// Align the X501F accelerometer to its fixed landscape projection.
+func calibrateMotion(r motion.Reading) motion.Reading {
+	if board.Current().Name == "sd-x501f" {
+		r.X, r.Y = r.Y, -r.X
+	}
+	return r
 }

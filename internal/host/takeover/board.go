@@ -14,11 +14,17 @@ func DetectBoard(d *adb.Device, name string) (board.Board, error) {
 		if !ok {
 			return board.Board{}, fmt.Errorf("no board %q", name)
 		}
-		return b, nil
+		if !b.Paths().X501F {
+			return b, nil
+		}
 	}
 	f, err := board.Read(d)
 	if err != nil {
 		return board.Board{}, err
 	}
-	return board.Detect(f)
+	b, err := board.Detect(f)
+	if err == nil && name != "" && b.Name != name {
+		return board.Board{}, fmt.Errorf("requested board %s, detected %s", name, b.Name)
+	}
+	return b, err
 }

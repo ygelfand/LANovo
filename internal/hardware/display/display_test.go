@@ -36,6 +36,19 @@ func TestIvyIsMountedTheOtherWayUp(t *testing.T) {
 	}
 }
 
+func TestX501FUsesSurfaceFlingerLandscapeCoordinates(t *testing.T) {
+	board.Set(board.X501F)
+	defer board.Set(board.Blueberry)
+
+	if got := Mounted(); got != geometry.Rotate0 {
+		t.Fatalf("SD-X501F UI orientation is %v, want %v", got, geometry.Rotate0)
+	}
+	c := config()
+	if c.Width != 1280 || c.Height != 800 || c.Mounted != geometry.Rotate0 || c.SurfaceZ != 1_000_000 {
+		t.Errorf("SD-X501F SurfaceFlinger config is %dx%d %v at Z=%d", c.Width, c.Height, c.Mounted, c.SurfaceZ)
+	}
+}
+
 func TestTheConfigFollowsTheBoard(t *testing.T) {
 	board.Set(board.Ivy)
 	defer board.Set(board.Blueberry)

@@ -25,6 +25,9 @@ const downloadTimeout = 10 * time.Minute
 var installing sync.Mutex
 
 func Install(ctx context.Context, m Manifest, progress func(float32)) error {
+	if board.Current().Name == "sd-x501f" {
+		return fmt.Errorf("update: disabled for the experimental SD-X501F build")
+	}
 	if !installing.TryLock() {
 		return fmt.Errorf("update: an install is already running")
 	}

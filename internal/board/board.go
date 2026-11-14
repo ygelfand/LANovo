@@ -90,7 +90,13 @@ type Board struct {
 	Root string
 }
 
-func (b Board) Paths() layout.Paths { return layout.For(b.Root) }
+func (b Board) Paths() layout.Paths {
+	p := layout.For(b.Root)
+	if b.Name == "sd-x501f" {
+		p.X501F = true
+	}
+	return p
+}
 
 type Cap uint64
 

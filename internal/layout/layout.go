@@ -101,6 +101,7 @@ const (
 
 // A service takes its SELinux domain from the label of the file init execs.
 type Paths struct {
+	X501F      bool
 	Root       string
 	Binary     string
 	PrevBinary string

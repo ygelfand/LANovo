@@ -22,7 +22,17 @@ var qualcommRoute = []setting{
 // RX digital volume 84 is 0 dB.
 const rxUnity = 84
 
+var x501fRoute = []setting{
+	{name: "QUAT_MI2S_RX Audio Mixer MultiMedia1", value: 1},
+	{name: "RX3 MIX1 INP1", choice: "RX1"},
+	{name: "RX3 Digital Volume", value: rxUnity},
+	{name: "LINE_OUT", choice: "ZERO"},
+	{name: "WSA Spk Switch", choice: "ZERO"},
+	{name: "SPK", choice: "Switch"},
+}
+
 type qualcomm struct {
+	x501f  bool
 	wired  []int
 	both   bool
 	pins   []gpio.Pin
@@ -30,7 +40,12 @@ type qualcomm struct {
 	loaded bool
 }
 
-func (q *qualcomm) route() []setting { return qualcommRoute }
+func (q *qualcomm) route() []setting {
+	if q.x501f {
+		return x501fRoute
+	}
+	return qualcommRoute
+}
 
 func (q *qualcomm) stereo() bool { return q.both }
 

@@ -1,6 +1,8 @@
 package takeover
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"strconv"
 	"strings"
@@ -12,6 +14,24 @@ import (
 
 const RoomMargin = 4 << 20
 
+// CanReuseDaemon checks the installed executable without pulling it over ADB.
+func CanReuseDaemon(d *adb.Device, paths layout.Paths, binary []byte) bool {
+	if !paths.X501F {
+		return false
+	}
+	out, err := d.Shell("test -x " + paths.Binary + " && sha256sum " + paths.Binary)
+	return err == nil && daemonHashMatches(out, binary)
+}
+
+func daemonHashMatches(out string, binary []byte) bool {
+	fields := strings.Fields(out)
+	if len(fields) != 2 {
+		return false
+	}
+	sum := sha256.Sum256(binary)
+	return strings.EqualFold(fields[0], hex.EncodeToString(sum[:]))
+}
+
 // adb push truncates the destination before it writes.
 func Room(d *adb.Device, paths layout.Paths, need int64) (Check, error) {
 	mount := "/"
@@ -22,12 +42,15 @@ func Room(d *adb.Device, paths layout.Paths, need int64) (Check, error) {
 	if err != nil {
 		return Check{}, err
 	}
-	existing, err := sizeOf(d, paths.Binary)
-	if err != nil {
-		return Check{}, err
+	have := free
+	if !paths.X501F {
+		existing, err := sizeOf(d, paths.Binary)
+		if err != nil {
+			return Check{}, err
+		}
+		have += existing
 	}
 
-	have := free + existing
 	want := need + RoomMargin
 
 	return Check{
