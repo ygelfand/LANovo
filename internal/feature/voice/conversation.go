@@ -10,6 +10,7 @@ import (
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/activity"
+	"github.com/ygelfand/LANovo/internal/feature/arbitration"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
 	"github.com/ygelfand/LANovo/internal/feature/media"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
@@ -60,6 +61,7 @@ func dependencies() turn.Dependencies {
 		},
 		Muted:        func() (bool, error) { return privacy.Get().MicMuted(), nil },
 		Presentation: &turn.Presentation{Settings: config.WakeSection, Shown: &Shown},
+		Arbiter:      arbitration.Get(),
 	}
 }
 

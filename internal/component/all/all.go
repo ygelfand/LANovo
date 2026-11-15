@@ -8,6 +8,7 @@ import (
 	_ "github.com/ygelfand/LANovo/internal/feature/airplay"
 	_ "github.com/ygelfand/LANovo/internal/feature/alarm"
 	_ "github.com/ygelfand/LANovo/internal/feature/api"
+	_ "github.com/ygelfand/LANovo/internal/feature/arbitration"
 	_ "github.com/ygelfand/LANovo/internal/feature/assistant"
 	_ "github.com/ygelfand/LANovo/internal/feature/bluetooth"
 	_ "github.com/ygelfand/LANovo/internal/feature/buttons"
