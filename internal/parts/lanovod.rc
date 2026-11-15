@@ -85,6 +85,12 @@ on post-fs-data
 on post-fs-data
     mkdir /data/misc/lanovo 0700 root root
 
+    # Chromium keeps its shared memory, every rendered frame included, under TMPDIR. On /data that
+    # was a steady stream of flash writes; in RAM it costs only the pages Chromium already holds.
+    mkdir /data/misc/lanovo/engine-state 0700 root root
+    mkdir /data/misc/lanovo/engine-state/tmp 0700 root root
+    mount tmpfs tmpfs /data/misc/lanovo/engine-state/tmp nosuid nodev mode=0700,uid=0,gid=0,size=192m
+
     setprop debug.sf.nobootanimation 1
 
     # sound card

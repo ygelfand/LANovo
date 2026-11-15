@@ -24,6 +24,8 @@ func TestRC(t *testing.T) {
 				"setenv LD_PRELOAD /system/lib/liblanovo-camshim.so",
 				"service lanovo_camera /system/bin/lanovo-camera",
 				"group root system graphics input audio inet net_raw net_admin\n    seclabel u:r:su:s0\n    disabled",
+				"mount tmpfs tmpfs /data/misc/lanovo/engine-state/tmp nosuid nodev " +
+					"mode=0700,uid=0,gid=0,size=192m\n",
 			},
 			absent: []string{"ro.logd.auditd", "lanovo_widevine"},
 		},
