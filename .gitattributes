@@ -1,0 +1,4 @@
+# Files embedded into lanovod and installed on the device must keep LF endings: Android init and
+# /system/bin/sh misread CRLF, and a Windows checkout with core.autocrlf would otherwise convert them.
+*.rc text eol=lf
+*.sh text eol=lf
