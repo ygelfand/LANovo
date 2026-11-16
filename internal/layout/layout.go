@@ -82,6 +82,7 @@ const (
 
 	VoiceprintDir = ModelDir + "/voiceprint"
 	VoicesPath    = StateDir + "/voices.json"
+	VoicesOutbox  = StateDir + "/voices-outbox.json"
 
 	SpeechHelper = StateDir + "/bin/lanovo-asr"
 	PryonHelper  = StateDir + "/bin/lanovo-pryon"

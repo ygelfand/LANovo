@@ -25,6 +25,7 @@ var Opal = Board{
 	Thermal:        Blueberry.Thermal,
 	AmpPins:        []int{127, 98, 0},
 	SpeakerRoute:   Blueberry.SpeakerRoute,
+	SpeakerTuning:  "opal",
 	MicSensitivity: -27,
 	Stereo:         true,
 	MaxFPS:         60,

@@ -84,6 +84,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/todo"
 	featuretv "github.com/ygelfand/LANovo/internal/feature/tv"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
+	"github.com/ygelfand/LANovo/internal/feature/voicematch"
+	"github.com/ygelfand/LANovo/internal/feature/voicematch/panel"
 	"github.com/ygelfand/LANovo/internal/feature/volume"
 	"github.com/ygelfand/LANovo/internal/feature/weather"
 	"github.com/ygelfand/LANovo/internal/feature/web"
@@ -240,6 +242,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		}
 		return 1, dawnview.Showing(alarm.Get())
 	})
+	panel.Follow()
 	app = screens.New(screens.Options{
 		Name:       "lanovo",
 		UISize:     board.Current().UISize,
@@ -251,6 +254,7 @@ var Get = sync.OnceValue(func() *screens.App {
 				Clock:   c.Clock,
 				Idle:    c.Idle,
 				Weather: c.Weather,
+				Media:   c.Media,
 			}
 		},
 		UI:           look,
@@ -271,6 +275,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		Messages:  message.Get(),
 		Assistant: assistant.Get(),
 		Stage:     assistant.Stage(),
+		Badge:     panel.People().Badge,
 		Timers:    timer.Get(),
 		Poster:    poster.Get(),
 		Drawer:    drawer.Get(),
@@ -343,11 +348,13 @@ var Get = sync.OnceValue(func() *screens.App {
 			screens.On(&firmware.Get().Listed),
 			screens.On(&privacy.Get().Changed),
 			screens.On(&web.Get().Offered),
+			screens.On(&voicematch.Get().Changed),
 		},
 
 		Views: append([]func(shell.View) *screens.Screen{
 			calls.Screen,
 			syncs.Screen,
+			panel.Get().Screen,
 			lock.Get().Gate().Views(look),
 			shop.Screen,
 			diary.Screen,

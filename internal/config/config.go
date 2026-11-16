@@ -13,6 +13,7 @@ type Config struct {
 	Volume     Volume     `json:"volume"`
 	Microphone Microphone `json:"microphone"`
 	Presence   Presence   `json:"presence"`
+	Speaker    Speaker    `json:"speaker"`
 }
 
 const metricsInterval = 60
@@ -23,6 +24,7 @@ func Defaults() Config {
 		Volume:     defaultVolume(),
 		Microphone: defaultMicrophone(),
 		Presence:   defaultPresence(),
+		Speaker:    defaultSpeaker(),
 	}
 	c.Visual.Label = layout.Manufacturer
 	c.Diag.Interval = metricsInterval

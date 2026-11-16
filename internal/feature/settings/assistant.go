@@ -11,6 +11,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/tones"
+	"github.com/ygelfand/LANovo/internal/feature/voicematch/panel"
 	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/hardware/wifi"
@@ -42,8 +43,9 @@ func assistantPages() *sharedsettings.AssistantPages {
 				Speaker:  speaker.Sound(),
 				Sounds:   tones.Get(),
 			},
-			Look:  lookPages(),
-			Shell: shell.Get(),
+			Look:       lookPages(),
+			Shell:      shell.Get(),
+			VoiceMatch: panel.Get().Page,
 		},
 	)
 }

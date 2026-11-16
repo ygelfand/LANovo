@@ -18,6 +18,7 @@ var coverage = settingtest.Shared.With(settingtest.Coverage{
 		"Microphone.Sensitivity":    "microphone.sensitivity",
 		"Presence.Wake":             "presence.wake",
 		"Presence.Range":            "presence.range",
+		"Speaker.EQ":                "speaker.eq",
 	},
 	ByHand: map[string]string{
 		"Device.Name":  "told to the process at start-up, never written to the file",

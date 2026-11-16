@@ -86,8 +86,18 @@ func (s *Speaker) fill(buf []byte) {
 		out = 1
 	}
 	stereo := s.hw().stereo()
+	tuned := s.tuning()
+	if tuned != nil {
+		on := s.eqWanted.Load()
+		if on && !tuned.on {
+			tuned.reset()
+		}
+		tuned.on = on
+	}
+	shaping := tuned != nil && tuned.on
 	var energy float64
 	var sums [Channels]int32
+	var shaped [Channels]float32
 	for f := range period {
 		var both int32
 		for c := range Channels {
@@ -102,16 +112,28 @@ func (s *Speaker) fill(buf []byte) {
 
 		s.mono[f] = mix.Clamp(int32(float32(both) / Channels * gain))
 		for c := range Channels {
-			v := mix.Clamp(int32(float32(both) / Channels * out))
+			x := float32(both) / Channels * out
 			if stereo {
-				v = mix.Clamp(int32(float32(sums[c]) * out))
+				x = float32(sums[c]) * out
 			}
+			if shaping {
+				x = tuned.step(c, x)
+				shaped[c] = x
+			}
+			v := mix.Clamp(int32(x))
 			binary.LittleEndian.PutUint16(buf[(f*Channels+c)*2:], uint16(v))
 			heard := float64(v) * float64(gain/out)
 			if out == 0 {
 				heard = 0
 			}
 			energy += heard * heard
+		}
+		if shaping {
+			var m float32
+			if out != 0 {
+				m = (shaped[0] + shaped[1]) / Channels * gain / out
+			}
+			s.mono[f] = mix.Clamp(int32(m))
 		}
 	}
 	if energy/float64(want) > audible {

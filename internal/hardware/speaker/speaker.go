@@ -68,6 +68,10 @@ type Speaker struct {
 	echo echo
 
 	loud atomic.Int64
+
+	eqOnce   sync.Once
+	eqChains *eq
+	eqWanted atomic.Bool
 }
 
 const audible = 1e-6 * 32768 * 32768

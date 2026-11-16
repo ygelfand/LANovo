@@ -73,6 +73,8 @@ type Board struct {
 
 	SpeakerRoute []Mixer
 
+	SpeakerTuning string
+
 	// dBFS for 94 dB SPL at the vendor gain, from the OEM app's CastAudioMicSensitivity.
 	MicSensitivity int
 
