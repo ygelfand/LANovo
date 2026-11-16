@@ -10,7 +10,7 @@ import (
 )
 
 type output interface {
-	route() []setting
+	route() []board.Mixer
 	stereo() bool
 	power(out *alsa.Playback, on bool) error
 	pipeline() time.Duration
@@ -21,7 +21,7 @@ func outputFor(b board.Board) output {
 	if b.SoC == board.MediaTek {
 		return newMediatek(b)
 	}
-	return &qualcomm{chip: b.Amp, wired: b.AmpPins, both: b.Stereo}
+	return &qualcomm{chip: b.Amp, wired: b.AmpPins, both: b.Stereo, routed: b.SpeakerRoute}
 }
 
 func (s *Speaker) hw() output {

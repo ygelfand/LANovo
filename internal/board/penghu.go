@@ -35,6 +35,7 @@ var Penghu = Board{
 	// The kernel TAS5782M codec loads its own table on first playback.
 	// Only drive the enable pin here; a userspace table load races that work.
 	AmpPins:               Blueberry.AmpPins,
+	SpeakerRoute:          Blueberry.SpeakerRoute,
 	MicNoTertiaryChannels: true,
 	// Provisional until Penghu's microphone sensitivity is measured.
 	MicSensitivity: Blueberry.MicSensitivity,

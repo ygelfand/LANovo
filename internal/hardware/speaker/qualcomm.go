@@ -11,26 +11,16 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/qcomaudio"
 )
 
-var qualcommRoute = []setting{
-	{name: "QUAT_MI2S_RX Audio Mixer MultiMedia1", value: 1},
-	{name: "RX3 MIX1 INP1", choice: "RX1"},
-	{name: "RX3 Digital Volume", value: rxUnity},
-	{name: "LINE_OUT", choice: "Switch"},
-	{name: "WSA Spk Switch", choice: "WSA"},
-}
-
-// RX digital volume 84 is 0 dB.
-const rxUnity = 84
-
 type qualcomm struct {
 	wired  []int
 	both   bool
+	routed []board.Mixer
 	pins   []gpio.Pin
 	chip   *board.Chip
 	loaded bool
 }
 
-func (q *qualcomm) route() []setting { return qualcommRoute }
+func (q *qualcomm) route() []board.Mixer { return q.routed }
 
 func (q *qualcomm) stereo() bool { return q.both }
 

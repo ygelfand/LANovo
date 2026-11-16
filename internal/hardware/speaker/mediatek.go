@@ -23,7 +23,7 @@ type mediatek struct {
 
 func newMediatek(b board.Board) *mediatek { return &mediatek{chip: b.Amp, both: b.Stereo} }
 
-func (m *mediatek) route() []setting { return nil }
+func (m *mediatek) route() []board.Mixer { return nil }
 
 func (m *mediatek) stereo() bool { return m.both }
 

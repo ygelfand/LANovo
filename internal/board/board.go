@@ -71,6 +71,8 @@ type Board struct {
 
 	AmpPins []int
 
+	SpeakerRoute []Mixer
+
 	// dBFS for 94 dB SPL at the vendor gain, from the OEM app's CastAudioMicSensitivity.
 	MicSensitivity int
 
@@ -113,6 +115,15 @@ type Chip struct {
 	Reset  int
 	Table  string
 }
+
+type Mixer struct {
+	Name   string
+	Value  uint32
+	Choice string
+}
+
+// RX digital volume 84 is 0 dB.
+const RXUnity = 84
 
 type Button struct {
 	Control   string

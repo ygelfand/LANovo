@@ -24,6 +24,7 @@ var Opal = Board{
 	SoundCard:      "msm8953-openq624-snd-card",
 	Thermal:        Blueberry.Thermal,
 	AmpPins:        []int{127, 98, 0},
+	SpeakerRoute:   Blueberry.SpeakerRoute,
 	MicSensitivity: -27,
 	Stereo:         true,
 	MaxFPS:         60,

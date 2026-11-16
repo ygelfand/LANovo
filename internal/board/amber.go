@@ -27,6 +27,7 @@ var Amber = Board{
 	Buttons:      Blueberry.Buttons,
 	Amp:          &Chip{Bus: 1, Addr: 0x49, Table: "amber"},
 	AmpPins:      Blueberry.AmpPins,
+	SpeakerRoute: Blueberry.SpeakerRoute,
 	// Inferred from blueberry's hardware; not yet tested on amber.
 	MicSensitivity: Blueberry.MicSensitivity,
 }
