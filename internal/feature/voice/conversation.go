@@ -16,6 +16,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/recording"
 	"github.com/ygelfand/LANovo/internal/feature/tones"
+	"github.com/ygelfand/LANovo/internal/feature/voicematch"
 	"github.com/ygelfand/LANovo/internal/hardware/mic"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
 	"github.com/ygelfand/LANovo/internal/lib/wake"
@@ -62,6 +63,7 @@ func dependencies() turn.Dependencies {
 		Muted:        func() (bool, error) { return privacy.Get().MicMuted(), nil },
 		Presentation: &turn.Presentation{Settings: config.WakeSection, Shown: &Shown},
 		Arbiter:      arbitration.Get(),
+		Voices:       voicematch.Get(),
 	}
 }
 

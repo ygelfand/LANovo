@@ -8,6 +8,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/ygelfand/libcountertop/pkg/assistant/voicematch"
 	"github.com/ygelfand/libcountertop/pkg/audio/aec"
 	"github.com/ygelfand/libcountertop/pkg/audio/alsa"
 	"github.com/ygelfand/libcountertop/pkg/audio/capture"
@@ -88,7 +89,7 @@ func Get() *Mics {
 		cfg := config.Get().Microphone
 		lift := board.Current().MicLift()
 		shared = &Mics{
-			History: capture.NewHistory(Voice, time.Second),
+			History: capture.NewHistory(Voice, voicematch.Span),
 			Leveler: level.New(level.Config{
 				Rate:        Voice,
 				Frame:       VoiceSamples,

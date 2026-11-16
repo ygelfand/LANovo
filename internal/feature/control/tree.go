@@ -22,6 +22,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/screencmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/speechcmd"
 	"github.com/ygelfand/libcountertop/pkg/runtime/control/thermostatcmd"
+	"github.com/ygelfand/libcountertop/pkg/runtime/control/voiceprintcmd"
 
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/alarm"
@@ -40,6 +41,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/thermostat"
 	"github.com/ygelfand/LANovo/internal/feature/timer"
+	"github.com/ygelfand/LANovo/internal/feature/voicematch"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 	"github.com/ygelfand/LANovo/internal/hardware/speaker"
@@ -199,5 +201,6 @@ func sounding() []*cobra.Command {
 		speechcmd.Command(func(ctx context.Context) (asr.Options, error) {
 			return asr.Prepare(ctx, layout.SpeechHelper, parts.Speech(), layout.ModelDir)
 		}),
+		voiceprintcmd.Command(func() voiceprintcmd.Source { return voicematch.Get() }),
 	}
 }

@@ -80,6 +80,9 @@ const (
 	PryonDir  = ModelDir + "/pryon"
 	GeminiDir = ModelDir + "/gemini"
 
+	VoiceprintDir = ModelDir + "/voiceprint"
+	VoicesPath    = StateDir + "/voices.json"
+
 	SpeechHelper = StateDir + "/bin/lanovo-asr"
 	PryonHelper  = StateDir + "/bin/lanovo-pryon"
 
