@@ -18,9 +18,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
 	"github.com/ygelfand/LANovo/internal/feature/visuals"
-	"github.com/ygelfand/LANovo/internal/feature/voice"
 	"github.com/ygelfand/LANovo/internal/feature/voicematch"
-	"github.com/ygelfand/LANovo/internal/feature/wakeword"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	"github.com/ygelfand/LANovo/internal/hardware/gpu"
 )
@@ -47,7 +45,7 @@ var Get = sync.OnceValue(func() *voicematchview.View {
 		Shell:   shell.Get(),
 		Voices:  voicematch.Get(),
 		People:  People(),
-		Wake:    wake,
+		Changed: &voicematch.Get().Changed,
 		GPU:     gpu.Get(),
 		Display: display.Get(),
 		Visuals: visuals.Get(),
@@ -64,13 +62,3 @@ var Follow = sync.OnceFunc(func() {
 		assistant.Get().Spoke(sharedscreen.Speaker{ID: p.Who(), Name: p.Name}, i.At)
 	})
 })
-
-func wake() string {
-	t := voice.Get().Turn()
-	for slot := range wakeword.Slots {
-		if phrase, ok := t.PhraseFor(slot); ok {
-			return phrase
-		}
-	}
-	return ""
-}

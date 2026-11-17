@@ -1,11 +1,13 @@
 package frontend
 
 import (
+	"context"
 	"image"
 	"net/http"
 	"sync"
 
 	"github.com/ygelfand/libcountertop/pkg/display/desktop"
+	"github.com/ygelfand/libcountertop/pkg/homeassistant/people"
 	"github.com/ygelfand/libcountertop/pkg/input/textentry"
 	"github.com/ygelfand/libcountertop/pkg/input/touch"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
@@ -24,7 +26,9 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
+	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/network"
+	"github.com/ygelfand/LANovo/internal/feature/voicematch"
 	"github.com/ygelfand/LANovo/internal/feature/web"
 	"github.com/ygelfand/LANovo/internal/hardware/display"
 	hwtouch "github.com/ygelfand/LANovo/internal/hardware/touch"
@@ -48,6 +52,7 @@ var get = sync.OnceValue(func() *webapi.API {
 			"alarms":    alarm.Get().Handler(alerts.Get().Tones),
 			"call":      call.Get().Handler(discovery.Get().Peers),
 			"broadcast": broadcast.Get().WebHandler(),
+			"voices":    voicematch.Get().Handler(householdPeople),
 			"desktop": desktop.New(
 				display.Get(),
 				func(c touch.Contact) { hwtouch.Get().Feed(c) },
@@ -57,6 +62,7 @@ var get = sync.OnceValue(func() *webapi.API {
 		LogTag: layout.LogTag,
 		Screen: func() (image.Image, error) { return screencmd.Composed(display.Get()) },
 		Input:  input,
+		Fired:  &component.Fire,
 		Address: func() string {
 			if lease := dhcp.Get().Lease(); lease != nil {
 				return lease.Address.IP.String()
@@ -85,6 +91,10 @@ func init() {
 		}),
 	)
 	web.Get().PublicRoot(webui.Handler())
+}
+
+func householdPeople(ctx context.Context) ([]people.Person, error) {
+	return people.List(ctx, homeassistant.Get())
 }
 
 func device() webapi.Device {
