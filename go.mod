@@ -8,7 +8,7 @@ require (
 	github.com/go-gui-org/go-gui v0.94.0
 	github.com/spf13/cobra v1.10.2
 	github.com/ygelfand/go-esphome-device v0.0.20
-	github.com/ygelfand/libcountertop v0.1.1-0.20261116015754-76e15cdab475
+	github.com/ygelfand/libcountertop v0.1.1-0.20261116235953-38d829964ed2
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 )
 
