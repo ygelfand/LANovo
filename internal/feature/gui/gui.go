@@ -199,6 +199,8 @@ var Get = sync.OnceValue(func() *screens.App {
 		Redraw:  func() { featureshell.Get().Redraw() },
 	})
 	apps.Get().Add(tv.App())
+	yt := youTube(look)
+	apps.Get().Add(yt.App())
 	sky := radarview.New(radarview.Options{
 		UI:       look,
 		Shell:    featureshell.Get(),
@@ -361,6 +363,7 @@ var Get = sync.OnceValue(func() *screens.App {
 			dial.Screen,
 			music.Screen,
 			tv.Screen,
+			yt.Screen,
 			sky.Screen,
 			cameras.Get().Screen,
 			doorbell.View().Screen,
