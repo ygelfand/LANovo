@@ -8,7 +8,7 @@ require (
 	github.com/go-gui-org/go-gui v0.94.0
 	github.com/spf13/cobra v1.10.2
 	github.com/ygelfand/go-esphome-device v0.0.20
-	github.com/ygelfand/libcountertop v0.1.1-0.20261116235953-38d829964ed2
+	github.com/ygelfand/libcountertop v0.1.1-0.20261118015123-4989b570658d
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 )
 
@@ -26,6 +26,7 @@ require (
 	github.com/at-wat/ebml-go v0.19.4 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/beevik/ntp v1.5.0 // indirect
+	github.com/bitly/go-simplejson v0.5.1 // indirect
 	github.com/bluenviron/gohlslib/v2 v2.4.5 // indirect
 	github.com/bluenviron/mediacommon/v2 v2.9.5 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
@@ -38,17 +39,21 @@ require (
 	github.com/charmbracelet/x/windows v0.2.2 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
+	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/dlclark/regexp2/v2 v2.2.2 // indirect
+	github.com/dop251/goja v0.0.0-20260311135729-065cd970411c // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/flynn/noise v1.1.0 // indirect
 	github.com/gen2brain/jpegn v0.6.2 // indirect
 	github.com/go-chi/chi/v5 v5.5.0 // indirect
 	github.com/go-gui-org/go-glyph v1.26.4 // indirect
 	github.com/go-pdf/fpdf v0.9.0 // indirect
+	github.com/go-sourcemap/sourcemap v2.1.4+incompatible // indirect
 	github.com/go-text/typesetting v0.3.5 // indirect
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/flatbuffers v25.12.19+incompatible // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/google/pprof v0.0.0-20260302011040-a15ffb7f9dcc // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gopacket/gopacket v1.7.7 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
@@ -61,7 +66,8 @@ require (
 	github.com/jfreymuth/vorbis v1.0.2 // indirect
 	github.com/josharian/native v1.1.0 // indirect
 	github.com/jsimonetti/rtnetlink v1.4.2 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
+	github.com/kkdai/youtube/v2 v2.10.6 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/libp2p/zeroconf/v2 v2.2.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.1 // indirect
 	github.com/mattn/go-runewidth v0.0.24 // indirect
@@ -98,7 +104,6 @@ require (
 	github.com/pion/turn/v5 v5.1.2 // indirect
 	github.com/pion/webrtc/v4 v4.2.22 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
