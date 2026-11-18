@@ -161,7 +161,7 @@ See [In a browser](https://www.lanovo.link/use/web/).
 ## The optional integration
 
 Everything above works with stock Home Assistant. The
-[EchoLocal integration](https://github.com/ygelfand/echolocal-hacs) (HACS), shared with our sister
+[EchoLocal integration](https://github.com/ygelfand/echolocal-ha) (HACS), shared with our sister
 project, adds a card for each display with its screen drawn live, a dashboard with every display
 and Echo, Fleet to compare settings across devices and copy them from one to the others, calls from
 a dashboard, turn history with recordings, a wake word library, custom tones, groups and a health
