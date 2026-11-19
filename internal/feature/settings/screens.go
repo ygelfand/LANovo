@@ -15,6 +15,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/airplay"
 	"github.com/ygelfand/LANovo/internal/feature/bluetooth"
 	"github.com/ygelfand/LANovo/internal/feature/certs"
+	"github.com/ygelfand/LANovo/internal/feature/chromecast"
 	"github.com/ygelfand/LANovo/internal/feature/dhcp"
 	"github.com/ygelfand/LANovo/internal/feature/frontend"
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
@@ -131,8 +132,6 @@ func networkPage() *sharedshell.Page {
 
 func callsPage() *sharedshell.Page { return callPages().Calls() }
 
-func castPage() *sharedshell.Page { return servicePages().Cast() }
-
 func airplayPage() *sharedshell.Page {
 	return sharedsettings.ServicePage(say.T("features.airplay"), airplay.Get().Settings())
 }
@@ -142,7 +141,7 @@ func featuresPage() *sharedshell.Page {
 		c := config.Get()
 		return []sharedsettings.Feature{
 			{Key: "features.sendspin", On: c.Sendspin.Enabled, Set: sendspin.Get().SetEnabled},
-			{Key: "features.cast", Page: func() sharedshell.View { return castPage() }},
+			{Key: "features.cast", On: c.Cast.Receiver, Set: chromecast.Get().SetReceiver},
 			{Key: "features.airplay", Page: func() sharedshell.View { return airplayPage() }},
 			{Key: "call.settings", Page: func() sharedshell.View { return callsPage() }},
 			{Key: "features.proxy", On: c.Bluetooth.Proxy, Set: bluetooth.Get().SetProxy},
