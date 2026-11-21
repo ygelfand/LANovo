@@ -46,6 +46,7 @@ func TestEachBoardIsFoundByItsHardware(t *testing.T) {
 			"msm8953-snd-card-mtp Button Jack"), "penghu"},
 		{device("U:600x1024p-0", "mtk-pmic-keys", "fts_ts", "mtk-tpd"), "ivy"},
 		{device("U:600x1024p-0", "mtk-pmic-keys", "mtk-tpd"), "ivy"},
+		{device("U:480x800p-0", "mtk-pmic-keys", "mtk-tpd"), "cube"},
 	} {
 		b, err := Resolve(fakeProps{}, c.files)
 		if err != nil || b.Name != c.want {

@@ -18,6 +18,14 @@ func TestSecureVideo(t *testing.T) {
 			t.Errorf("%s.Has(SecureVideo) = %v, want %v", tt.board.Name, got, tt.want)
 		}
 	}
+	for _, b := range []Board{Blueberry, Opal, Ivy, Penghu} {
+		if !b.Has(Camera) {
+			t.Errorf("%s has no camera", b.Name)
+		}
+	}
+	if Cube.Has(Camera) {
+		t.Error("cube has a camera")
+	}
 	if !Penghu.Has(0) {
 		t.Errorf("Penghu.Has(0) = false, want true")
 	}

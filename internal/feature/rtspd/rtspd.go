@@ -14,6 +14,7 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
@@ -28,7 +29,12 @@ const (
 )
 
 func init() {
-	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(70))
+	component.Register(
+		sharedcomponent.Device,
+		Get,
+		sharedcomponent.Order(70),
+		component.Needs(board.Camera),
+	)
 }
 
 type Server struct {

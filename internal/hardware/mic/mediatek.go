@@ -32,7 +32,7 @@ func (a *mediatek) open(*alsa.Mixer) error {
 	if a.loaded {
 		return nil
 	}
-	t, err := mtkaudio.Stock()
+	t, err := mtkaudio.Stock(a.chip.Table)
 	if err != nil {
 		return err
 	}

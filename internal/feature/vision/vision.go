@@ -6,13 +6,19 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/camera/vision"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/livecam"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 )
 
 func init() {
-	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(40))
+	component.Register(
+		sharedcomponent.Device,
+		Get,
+		sharedcomponent.Order(40),
+		component.Needs(board.Camera),
+	)
 }
 
 var Get = sync.OnceValue(func() *vision.Vision {

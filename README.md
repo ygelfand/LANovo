@@ -38,6 +38,7 @@ through the ESPHome native API.
 | Lenovo Smart Display 7  | ivy       | Android Things 8.x | Supported |
 | JBL Link View           | opal      | Android Things 8.x | Supported |
 | Lenovo ThinkSmart View  | penghu    | Android 8.x        | Supported |
+| Lenovo Smart Clock      | cube      | Android Things 8.x | Supported |
 
 ## Additional devices supported by our sister project [EchoLocal](https://github.com/ygelfand/echolocal)
 
@@ -175,7 +176,10 @@ or the
 [Smart Display 7](https://xdaforums.com/t/cd-17302f-lenovo-smart-display-7-ivy-avb-bootloader-unlock-firmware.4472041/)
 and flash the **Android 8.1 Debug Firmware**. The ThinkSmart View is flashed whole over EDL with
 LANovo's boot image; see [ThinkSmart View](https://www.lanovo.link/start/before/#thinksmart-view), or join the
-community on [Discord](https://discord.gg/efWnv89pg2) for help.
+community on [Discord](https://discord.gg/efWnv89pg2) for help. The Smart Clock is unlocked with its
+[XDA guide](https://xdaforums.com/t/lenovo-smart-clock-bootloader-avb-unlock-firmware-region-changer-kernel-source.4130295/)
+and installed from fastboot with `lanovo install --board cube`; see
+[Smart Clock](https://www.lanovo.link/start/before/#smart-clock).
 
 Then download `lanovo` from the [releases page](https://github.com/ygelfand/LANovo/releases):
 

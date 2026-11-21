@@ -5,13 +5,16 @@ import (
 	"time"
 
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/hardware/light"
 )
+
+var testRises = light.Rises{150, 60, 18, 6, 3}
 
 func feed(p *presence, at *time.Time, v float64, n int) (near, changed bool) {
 	for range n {
 		*at = at.Add(interval)
 		var c bool
-		near, c = p.update(v, rise(config.DefaultPresenceRange), *at)
+		near, c = p.update(v, rise(testRises, config.DefaultPresenceRange), *at)
 		changed = changed || c
 	}
 	return near, changed

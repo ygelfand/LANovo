@@ -45,7 +45,7 @@ func newMTKAudioCmd() *cobra.Command {
 				return errors.New("this board has no MediaTek amplifier driven from userspace")
 			}
 
-			t, err := mtkaudio.Stock()
+			t, err := mtkaudio.Stock(b.Amp.Table)
 			if err != nil {
 				return err
 			}

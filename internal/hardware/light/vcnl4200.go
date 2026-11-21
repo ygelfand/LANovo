@@ -6,10 +6,10 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/system/i2c"
 )
 
-const Address = 0x51
+const vcnl4200Address = 0x51
 
 // i2c-2 carries the speaker amplifiers and i2c-3 the touchscreen, both bound to kernel drivers.
-var buses = []int{1, 0, 2, 3}
+var vcnl4200Buses = []int{1, 0, 2, 3}
 
 // Every register is 16 bits, low byte first.
 const (
@@ -37,24 +37,12 @@ const (
 
 const window = 35
 
-type Sensor struct{ dev *i2c.Device }
+var vcnl4200Rises = Rises{150, 60, 18, 6, 3}
 
-func Open() (*Sensor, i2c.Bus, error) {
-	dev, bus, err := i2c.Find(buses, Address, identify)
-	if err != nil {
-		return nil, nil, fmt.Errorf("light: %w", err)
-	}
+type VCNL4200 struct{ dev *i2c.Device }
 
-	s, err := Attach(dev)
-	if err != nil {
-		_ = bus.Close()
-		return nil, nil, err
-	}
-	return s, bus, nil
-}
-
-func Attach(dev *i2c.Device) (*Sensor, error) {
-	s := &Sensor{dev: dev}
+func AttachVCNL4200(dev *i2c.Device) (*VCNL4200, error) {
+	s := &VCNL4200{dev: dev}
 
 	if err := s.dev.WriteU16(regALSConf, running); err != nil {
 		return nil, fmt.Errorf("light: starting the ambient light sensor: %w", err)
@@ -68,12 +56,12 @@ func Attach(dev *i2c.Device) (*Sensor, error) {
 	return s, nil
 }
 
-func identify(d *i2c.Device) bool {
+func isVCNL4200(d *i2c.Device) bool {
 	id, err := d.ReadU16(regDeviceID)
 	return err == nil && id == deviceID
 }
 
-func (s *Sensor) Lux() (float64, error) {
+func (s *VCNL4200) Lux() (float64, error) {
 	counts, err := s.dev.ReadU16(regALSData)
 	if err != nil {
 		return 0, fmt.Errorf("light: reading the ambient light: %w", err)
@@ -81,10 +69,12 @@ func (s *Sensor) Lux() (float64, error) {
 	return float64(counts) * luxPerCount * window, nil
 }
 
-func (s *Sensor) Proximity() (int, error) {
+func (s *VCNL4200) Proximity() (int, error) {
 	counts, err := s.dev.ReadU16(regPSData)
 	if err != nil {
 		return 0, fmt.Errorf("light: reading proximity: %w", err)
 	}
 	return int(counts), nil
 }
+
+func (s *VCNL4200) Rises() Rises { return vcnl4200Rises }

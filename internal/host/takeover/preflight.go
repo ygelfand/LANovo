@@ -48,12 +48,17 @@ const (
 	WantIoT         = "1.1.0"
 )
 
-func PatchesBoot(b board.Board) bool { return b.Name != board.Penghu.Name }
+func PatchesBoot(b board.Board) bool {
+	return b.Name != board.Penghu.Name && b.Name != board.Cube.Name
+}
 
 func Preflight(d *adb.Device, boardName string) ([]Check, error) {
 	b, err := DetectBoard(d, boardName)
 	if err != nil && boardName != "" {
 		return nil, err
+	}
+	if err == nil && b.Name == board.Cube.Name {
+		return cubePreflight(d, b)
 	}
 	if err == nil && !PatchesBoot(b) {
 		return lockedPreflight(d, b)
@@ -152,6 +157,38 @@ func Preflight(d *adb.Device, boardName string) ([]Check, error) {
 	}
 
 	return checks, nil
+}
+
+func cubePreflight(d *adb.Device, b board.Board) ([]Check, error) {
+	root, err := d.IsRoot()
+	if err != nil {
+		return nil, err
+	}
+	mode, err := d.Shell("getenforce")
+	if err != nil {
+		return nil, err
+	}
+	mode = strings.TrimSpace(mode)
+
+	return []Check{
+		{Name: "board", Got: b.Model, Want: b.Model, OK: true},
+		{
+			Name:  "adb root",
+			Got:   fmt.Sprintf("%v", root),
+			Want:  "true",
+			OK:    root,
+			Fatal: true,
+			Fix:   "the recovery patch makes adbd keep root",
+		},
+		{
+			Name:  "selinux",
+			Got:   mode,
+			Want:  "Permissive",
+			OK:    mode == "Permissive",
+			Fatal: true,
+			Fix:   "the flashed boot image boots permissive",
+		},
+	}, nil
 }
 
 func lockedPreflight(d *adb.Device, b board.Board) ([]Check, error) {

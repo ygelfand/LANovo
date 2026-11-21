@@ -37,7 +37,7 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 		return installData(d, binary, b, paths)
 	}
 
-	rc, err := parts.RC(paths)
+	rc, err := parts.RC(paths, b.HasCamera())
 	if err != nil {
 		return res, err
 	}
@@ -99,7 +99,7 @@ func Install(d *adb.Device, binary []byte, b board.Board) (Result, error) {
 	return res, nil
 }
 
-// The boot image carries root, the permissive policy and the service definition.
+// Off-system boards keep lanovod on /data; the service definition lives in the boot image or on /system.
 func installData(d *adb.Device, binary []byte, b board.Board, paths layout.Paths) (Result, error) {
 	var res Result
 	if err := prop.Stop(d, layout.Service); err != nil {
@@ -109,10 +109,11 @@ func installData(d *adb.Device, binary []byte, b board.Board, paths layout.Paths
 		return res, fmt.Errorf("installing %s: %w", paths.Binary, err)
 	}
 	res.Steps = append(res.Steps, Step{What: parts.Lanovod.Name, Note: paths.Binary})
-	res.Steps = append(
-		res.Steps,
-		Step{What: parts.InitRC.Name, Note: paths.InitRC + " in the boot image"},
-	)
+	note := paths.InitRC
+	if b.BootImageRC {
+		note += " in the boot image"
+	}
+	res.Steps = append(res.Steps, Step{What: parts.InitRC.Name, Note: note})
 	return res, nameBoard(d, b)
 }
 
@@ -142,11 +143,13 @@ func WaitParts(ctx context.Context, d *adb.Device, paths layout.Paths) error {
 }
 
 // init disables a service whose program was missing when it tried to start it.
-var placedServices = []string{layout.SurfaceService, layout.CameraService}
-
-func Down(d *adb.Device) []string {
+func Down(d *adb.Device, hasCamera bool) []string {
+	services := []string{layout.SurfaceService}
+	if hasCamera {
+		services = append(services, layout.CameraService)
+	}
 	var down []string
-	for _, s := range placedServices {
+	for _, s := range services {
 		if !prop.Running(d, s) {
 			down = append(down, s)
 		}

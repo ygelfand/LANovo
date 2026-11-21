@@ -92,18 +92,28 @@ type Board struct {
 	SubWidth, SubHeight int
 
 	Root string
+
+	BootImageRC bool
 }
 
-func (b Board) Paths() layout.Paths { return layout.For(b.Root) }
+func (b Board) Paths() layout.Paths { return layout.For(b.Root, b.BootImageRC) }
+
+func (b Board) HasCamera() bool { return b.CameraWidth != 0 }
 
 type Cap uint64
 
-const SecureVideo Cap = 1 << iota
+const (
+	SecureVideo Cap = 1 << iota
+	Camera
+)
 
 func (b Board) Caps() Cap {
 	var c Cap
 	if len(b.SecureDecoders) > 0 {
 		c |= SecureVideo
+	}
+	if b.HasCamera() {
+		c |= Camera
 	}
 	return c
 }

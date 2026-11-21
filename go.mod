@@ -3,6 +3,8 @@ module github.com/ygelfand/LANovo
 go 1.27.0
 
 require (
+	charm.land/bubbles/v2 v2.0.0
+	charm.land/bubbletea/v2 v2.0.2
 	charm.land/lipgloss/v2 v2.0.6
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/go-gui-org/go-gui v0.94.0
@@ -13,8 +15,6 @@ require (
 )
 
 require (
-	charm.land/bubbles/v2 v2.0.0 // indirect
-	charm.land/bubbletea/v2 v2.0.2 // indirect
 	charm.land/huh/v2 v2.0.3 // indirect
 	filippo.io/cpace v0.0.0-20210101143347-24d601e2e469 // indirect
 	github.com/Sendspin/sendspin-go v1.8.2 // indirect

@@ -57,7 +57,7 @@ type Sensors struct {
 
 	mu      sync.Mutex
 	bus     i2c.Bus
-	light   *light.Sensor
+	light   light.Sensor
 	motion  *motion.Sensor
 	tracker *motion.Tracker
 }
@@ -252,7 +252,11 @@ func (s *Sensors) publish() {
 			s.proximity.Set(float32(near))
 		}
 		now := time.Now()
-		here, changed := s.nearby.update(float64(near), rise(config.Get().Presence.Range), now)
+		here, changed := s.nearby.update(
+			float64(near),
+			rise(l.Rises(), config.Get().Presence.Range),
+			now,
+		)
 		if here {
 			s.seen.Store(now.UnixNano())
 		}

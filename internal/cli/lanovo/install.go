@@ -18,16 +18,17 @@ import (
 
 func newInstallCmd() *cobra.Command {
 	var (
-		binary   string
-		name     string
-		yes      bool
-		noBoot   bool
-		ssid     string
-		password string
-		wps      bool
-		doReboot bool
-		noReboot bool
-		genKey   bool
+		binary    string
+		bootImage string
+		name      string
+		yes       bool
+		noBoot    bool
+		ssid      string
+		password  string
+		wps       bool
+		doReboot  bool
+		noReboot  bool
+		genKey    bool
 	)
 
 	c := &cobra.Command{
@@ -38,11 +39,16 @@ func newInstallCmd() *cobra.Command {
 		Args:         cobra.NoArgs,
 		SilenceUsage: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			d, err := connect(cmd.Context(), cmd.OutOrStdout())
+			ctx, out := cmd.Context(), cmd.OutOrStdout()
+
+			if err := cubeTakeover(ctx, out, boardName, bootImage, yes); err != nil {
+				return err
+			}
+
+			d, err := connect(ctx, out)
 			if err != nil {
 				return err
 			}
-			ctx, out := cmd.Context(), cmd.OutOrStdout()
 
 			if yes || !prompt.IsTerminal() {
 				fmt.Fprintf(out, "%s\n", styleTitle.Render("Installing on "+d.Serial()))
@@ -256,11 +262,13 @@ func newInstallCmd() *cobra.Command {
 				return err
 			}
 
-			return finish(ctx, out, d, paths, settles, choice, genKey)
+			return finish(ctx, out, d, paths, detected.HasCamera(), settles, choice, genKey)
 		},
 	}
 
 	c.Flags().StringVar(&binary, "binary", "", "install this lanovod rather than the one built in")
+	c.Flags().
+		StringVar(&bootImage, "boot-image", "", "flash this recovery boot image rather than the published one (cube)")
 	nameFlag(c, &name)
 	c.Flags().BoolVar(&yes, "yes", false, "do not ask before installing")
 	c.Flags().BoolVar(&noBoot, "no-boot-patch", false, "leave the boot command line alone")
@@ -297,6 +305,7 @@ func finish(
 	out io.Writer,
 	d *adb.Device,
 	paths layout.Paths,
+	hasCamera bool,
 	settles bool,
 	choice rebootChoice,
 	genKey bool,
@@ -310,7 +319,7 @@ func finish(
 	if ctx.Err() != nil {
 		return ctx.Err()
 	}
-	down := takeover.Down(d)
+	down := takeover.Down(d, hasCamera)
 	if waited != nil && len(down) == 0 {
 		return waited
 	}

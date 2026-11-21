@@ -9,16 +9,15 @@ import (
 	setting "github.com/ygelfand/libcountertop/pkg/settings"
 
 	"github.com/ygelfand/LANovo/internal/config"
+	"github.com/ygelfand/LANovo/internal/hardware/light"
 )
 
 type Setting = setting.Setting[config.Presence]
 
 const PresenceGroup setting.Group = "Presence"
 
-var rises = [config.PresenceRangeMax + 1]float64{0, 150, 60, 18, 6, 3}
-
-func rise(r int) float64 {
-	return rises[max(config.PresenceRangeMin, min(r, config.PresenceRangeMax))]
+func rise(rises light.Rises, r int) float64 {
+	return rises[max(config.PresenceRangeMin, min(r, config.PresenceRangeMax))-config.PresenceRangeMin]
 }
 
 var (

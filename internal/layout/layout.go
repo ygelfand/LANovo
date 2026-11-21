@@ -101,6 +101,8 @@ const (
 
 	// init.rc imports /init.${ro.hardware}.rc; the stock ramdisk carries no /init.qcom.rc.
 	BootRC = "/init.qcom.rc"
+
+	CodecLibDir = "/data/misc/lanovo_codec"
 )
 
 // A service takes its SELinux domain from the label of the file init execs.
@@ -112,14 +114,16 @@ type Paths struct {
 	Surface    string
 	CamShim    string
 	Camera     string
+	CodecLib   string
+	MTKDrvb    string
 }
 
-func For(root string) Paths {
+func For(root string, bootImageRC bool) Paths {
 	if root == "" {
 		root = SystemRoot
 	}
-	rc := root + "/etc/init/lanovod.rc"
-	if root != SystemRoot {
+	rc := SystemRoot + "/etc/init/lanovod.rc"
+	if bootImageRC {
 		rc = BootRC
 	}
 	return Paths{
@@ -130,6 +134,8 @@ func For(root string) Paths {
 		Surface:    root + "/bin/lanovo-surface",
 		CamShim:    root + "/lib/liblanovo-camshim.so",
 		Camera:     root + "/bin/lanovo-camera",
+		CodecLib:   CodecLibDir,
+		MTKDrvb:    CodecLibDir + "/libmtk_drvb.so",
 	}
 }
 

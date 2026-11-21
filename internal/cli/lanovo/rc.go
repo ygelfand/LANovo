@@ -25,7 +25,7 @@ func newRCCmd() *cobra.Command {
 			if !ok {
 				return fmt.Errorf("no board %q", boardName)
 			}
-			rc, err := parts.RC(b.Paths())
+			rc, err := parts.RC(b.Paths(), b.HasCamera())
 			if err != nil {
 				return err
 			}

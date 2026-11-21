@@ -9,7 +9,7 @@ func newToolsCmd() *cobra.Command {
 		Long: "Direct access to the display's audio and sensor hardware, for characterizing it\n" +
 			"and for checking a unit after install.",
 	}
-	c.AddCommand(newMixerCmd(), newOrientCmd(), newProbeCmd(),
+	c.AddCommand(newLightCmd(), newMixerCmd(), newOrientCmd(), newProbeCmd(),
 		newToneCmd(), newMTKAudioCmd())
 	return c
 }

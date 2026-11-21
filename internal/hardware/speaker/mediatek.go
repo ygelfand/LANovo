@@ -43,7 +43,7 @@ func (m *mediatek) power(out *alsa.Playback, on bool) error {
 		return nil
 	}
 
-	t, err := mtkaudio.Stock()
+	t, err := mtkaudio.Stock(m.chip.Table)
 	if err != nil {
 		return err
 	}

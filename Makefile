@@ -293,6 +293,19 @@ AT ?= $(VERSION)
 FROM ?= $(RELEASES)/download/$(AT)
 PAGE ?= $(RELEASES)/tag/$(AT)
 
+BOOT_TAG := boot-images
+BOOT_DIR := assets/boot
+
+.PHONY: boot-images
+boot-images: ## Publish the recovery boot images the lanovo CLI fetches at install time (run once per board)
+	@command -v gh >/dev/null || { echo "needs the gh CLI: brew install gh"; exit 1; }
+	@go test ./internal/host/takeover/ -run TestCubeImageMatchesTheCommittedFile
+	@gh release view $(BOOT_TAG) >/dev/null 2>&1 || \
+		gh release create $(BOOT_TAG) --title "Boot images" \
+			--notes "Per-board recovery boot images, fetched by the lanovo CLI at install time against a hash compiled into it."
+	gh release upload $(BOOT_TAG) $(BOOT_DIR)/*.img --clobber
+	@echo "$(BOOT_TAG) now serves the boot images"
+
 .PHONY: manifest
 manifest: build-lanovod ## Build lanovod and write the manifest a device fetches to find this build
 	@$(MAKE) --no-print-directory manifest-json

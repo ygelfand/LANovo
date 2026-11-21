@@ -12,7 +12,7 @@ Unlock the display using the community guide for its model before installing LAN
 - A supported [display](/start/devices/)
 - A computer running macOS, Linux or Windows
 - A USB cable
-- **Android platform-tools** (`adb`)
+- **Android platform-tools** (`adb`, and `fastboot` for the Smart Clock)
   - macOS: `brew install --cask android-platform-tools`
   - Debian or Ubuntu: `sudo apt install android-sdk-platform-tools`
   - Other: [download from Google](https://developer.android.com/tools/releases/platform-tools)
@@ -28,7 +28,8 @@ Unlock the display using the community guide for its model before installing LAN
    [Smart Display 8/10](https://xdaforums.com/t/lenovo-smart-display-8-10-amber-blueberry-avb-bootloader-unlock-firmware.4472049/)
    (also for the JBL Link View) or the
    [Smart Display 7](https://xdaforums.com/t/cd-17302f-lenovo-smart-display-7-ivy-avb-bootloader-unlock-firmware.4472041/).
-   For the ThinkSmart View, follow [ThinkSmart View](#thinksmart-view) below instead.
+   For the ThinkSmart View or the Smart Clock, follow [ThinkSmart View](#thinksmart-view) or
+   [Smart Clock](#smart-clock) below instead.
 
 2. Flash the **Android 8.1 Debug Firmware**. The regular firmware won't work.
 
@@ -82,5 +83,28 @@ on [Discord](https://discord.gg/efWnv89pg2).
 There's no uninstaller. To go back, reflash the stock firmware from the same XDA thread, or the
 backup you made.
 </Aside>
+
+## Smart Clock
+
+The Smart Clock has no `adb` until LANovo is installed, so `lanovo` takes it over from fastboot
+instead. There's no debug firmware to flash.
+
+<Steps>
+
+1. Unlock the bootloader with the
+   [Smart Clock XDA guide](https://xdaforums.com/t/lenovo-smart-clock-bootloader-avb-unlock-firmware-region-changer-kernel-source.4130295/).
+
+2. Check it: hold volume up while plugging the clock in, then run:
+
+   ```sh
+   fastboot getvar unlocked
+   fastboot getvar secure
+   ```
+
+   You should see `unlocked: yes` and `secure: no`.
+
+3. Unplug the clock and go on to [install](/start/install/#smart-clock).
+
+</Steps>
 
 Next: [install](/start/install/).

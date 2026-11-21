@@ -103,6 +103,7 @@ func Page() castcmd.Page {
 
 func build() *castreceiver.Receiver {
 	r := castreceiver.NewReceiver(castreceiver.ReceiverOptions{
+		DeviceID: component.DevicePlayback,
 		Settings: config.CastSection,
 		Network:  func(ctx context.Context) bool { return dhcp.Get().Wait(ctx) },
 		Server: castreceiver.Config{

@@ -42,7 +42,8 @@ var Penghu = Board{
 	DecodeWidth:    3840,
 	DecodeHeight:   2160,
 	// aboot power-on write-protects the eMMC group that holds system's superblock.
-	Root: "/data/misc/lanovo",
+	Root:        "/data/misc/lanovo",
+	BootImageRC: true,
 	Buttons: []Button{
 		{"volume up", 85, true},
 		{"mic mute", 86, false},

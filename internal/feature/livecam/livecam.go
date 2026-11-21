@@ -20,7 +20,12 @@ import (
 )
 
 func init() {
-	component.Register(sharedcomponent.Device, Get, sharedcomponent.Order(36))
+	component.Register(
+		sharedcomponent.Device,
+		Get,
+		sharedcomponent.Order(36),
+		component.Needs(board.Camera),
+	)
 }
 
 type Camera struct{ *live.Camera }
@@ -60,7 +65,9 @@ var Get = sync.OnceValue(func() Camera {
 		o.Turn = func() int { return 0 }
 	}
 	c := Camera{live.New(o)}
-	component.Settings.Add(c.Controls())
+	if b.Has(board.Camera) {
+		component.Settings.Add(c.Controls())
+	}
 	return c
 })
 

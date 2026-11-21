@@ -4,7 +4,6 @@ import (
 	"embed"
 	"fmt"
 	"math"
-	"sync"
 	"time"
 
 	"github.com/ygelfand/libcountertop/pkg/system/i2c"
@@ -13,7 +12,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/hardware/gpio"
 )
 
-//go:embed tables/*.bin
+//go:embed tables/*/*.bin
 var files embed.FS
 
 type Rows [][2]byte
@@ -22,9 +21,10 @@ type Tables struct {
 	AmpInit, AmpHiZ, AmpPlay, AmpSleep, AmpMute, MicInit Rows
 }
 
-var Stock = sync.OnceValues(load)
-
-func load() (Tables, error) {
+func Stock(set string) (Tables, error) {
+	if set == "" {
+		return Tables{}, fmt.Errorf("mtkaudio: the chip names no register tables")
+	}
 	var t Tables
 	for name, into := range map[string]*Rows{
 		"amp_init":  &t.AmpInit,
@@ -34,7 +34,7 @@ func load() (Tables, error) {
 		"amp_mute":  &t.AmpMute,
 		"mic_init":  &t.MicInit,
 	} {
-		b, err := files.ReadFile("tables/" + name + ".bin")
+		b, err := files.ReadFile("tables/" + set + "/" + name + ".bin")
 		if err != nil {
 			return Tables{}, fmt.Errorf("mtkaudio: %w", err)
 		}

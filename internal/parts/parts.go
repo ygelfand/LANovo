@@ -17,6 +17,9 @@ import (
 //go:embed lanovod.rc
 var initRC string
 
+//go:embed mtk/libmtk_drvb.so
+var mtkDrvb []byte
+
 var rcTemplate = template.Must(template.New("lanovod.rc").Option("missingkey=error").Parse(initRC))
 
 type Part struct {
@@ -66,23 +69,32 @@ var (
 	}
 	Camera = Part{Name: "camera helper", Mode: 0o755,
 		Services: []string{layout.CameraService}, data: camera}
+	MTKDrvb = Part{Name: "video codec driver", Mode: 0o644, SoC: board.MediaTek, data: mtkDrvb}
 )
 
-func RC(p layout.Paths) ([]byte, error) {
+type rcData struct {
+	layout.Paths
+	HasCamera bool
+}
+
+func RC(p layout.Paths, hasCamera bool) ([]byte, error) {
 	var b bytes.Buffer
-	if err := rcTemplate.Execute(&b, p); err != nil {
+	if err := rcTemplate.Execute(&b, rcData{Paths: p, HasCamera: hasCamera}); err != nil {
 		return nil, fmt.Errorf("parts: rendering %s: %w", rcTemplate.Name(), err)
 	}
 	return b.Bytes(), nil
 }
 
 // A board with its root off /system carries the service definition in its boot image.
-func Carried(p layout.Paths) ([]Part, error) {
-	carried := []Part{Surface.at(p.Surface), CamShim.at(p.CamShim), Camera.at(p.Camera)}
+func Carried(p layout.Paths, hasCamera bool) ([]Part, error) {
+	carried := []Part{Surface.at(p.Surface), MTKDrvb.at(p.MTKDrvb)}
+	if hasCamera {
+		carried = append(carried, CamShim.at(p.CamShim), Camera.at(p.Camera))
+	}
 	if !p.OnSystem() {
 		return carried, nil
 	}
-	rc, err := RC(p)
+	rc, err := RC(p, hasCamera)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +106,7 @@ func Carried(p layout.Paths) ([]Part, error) {
 func Ensure() (rebootPending bool) {
 	b := board.Current()
 	paths := b.Paths()
-	carried, err := Carried(paths)
+	carried, err := Carried(paths, b.HasCamera())
 	if err != nil {
 		slog.Error("listing parts failed", "err", err)
 		return false
@@ -146,7 +158,7 @@ func Ensure() (rebootPending bool) {
 }
 
 func Replace(path string, data []byte, mode os.FileMode, labelFrom string) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	if err := makeDir(filepath.Dir(path)); err != nil {
 		return err
 	}
 	tmp := path + ".new"
@@ -165,4 +177,14 @@ func Replace(path string, data []byte, mode os.FileMode, labelFrom string) error
 		return fmt.Errorf("parts: replacing %s: %w", path, err)
 	}
 	return nil
+}
+
+func makeDir(dir string) error {
+	if _, err := os.Stat(dir); err == nil {
+		return nil
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	return os.Chmod(dir, 0o755)
 }

@@ -36,16 +36,16 @@ func (c *chip) Transfer(msgs ...i2c.Msg) error {
 	return nil
 }
 
-func attached(t *testing.T, c *chip) *Sensor {
+func attached(t *testing.T, c *chip) *VCNL4200 {
 	t.Helper()
 
-	dev, err := i2c.At(c, Address)
+	dev, err := i2c.At(c, vcnl4200Address)
 	if err != nil {
 		t.Fatalf("At: %v", err)
 	}
-	s, err := Attach(dev)
+	s, err := AttachVCNL4200(dev)
 	if err != nil {
-		t.Fatalf("Attach: %v", err)
+		t.Fatalf("AttachVCNL4200: %v", err)
 	}
 	return s
 }
@@ -71,16 +71,16 @@ func TestAttachStartsBothHalves(t *testing.T) {
 func TestIdentify(t *testing.T) {
 	c := newChip()
 
-	dev, err := i2c.At(c, Address)
+	dev, err := i2c.At(c, vcnl4200Address)
 	if err != nil {
 		t.Fatalf("At: %v", err)
 	}
-	if !identify(dev) {
+	if !isVCNL4200(dev) {
 		t.Error("the part did not identify itself")
 	}
 
 	c.regs[regDeviceID] = 0x0000
-	if identify(dev) {
+	if isVCNL4200(dev) {
 		t.Error("a chip with the wrong id identified as this one")
 	}
 }
@@ -89,11 +89,11 @@ func TestIdentifyRejectsABusThatFails(t *testing.T) {
 	c := newChip()
 	c.err = errors.New("no acknowledgement")
 
-	dev, err := i2c.At(c, Address)
+	dev, err := i2c.At(c, vcnl4200Address)
 	if err != nil {
 		t.Fatalf("At: %v", err)
 	}
-	if identify(dev) {
+	if isVCNL4200(dev) {
 		t.Error("a bus that failed identified as the part")
 	}
 }
