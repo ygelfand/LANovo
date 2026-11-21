@@ -19,26 +19,26 @@ through the ESPHome native API.
   <a href="https://www.lanovo.link/use/visuals/"><img src="docs/public/visuals/synthwave.webp" alt="Animated Synthwave audio visual" width="230"></a>
 </p>
 
-| Nixie clock | Hardware alarm panel |
-|:---:|:---:|
+|                                                 Nixie clock                                                  |                                                Hardware alarm panel                                                 |
+| :----------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: |
 | <img src="docs/public/carousel/faces-20.png" alt="Nixie clock in the Amber theme, in landscape" width="350"> | <img src="docs/public/carousel/homealarm-6.webp" alt="Hardware alarm-panel design with rehearsal data" width="350"> |
 
-| Tessera in Neon | Photos |
-|:---:|:---:|
+|                                                Tessera in Neon                                                |                                                           Photos                                                           |
+| :-----------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------: |
 | <img src="docs/public/carousel/styles-7.png" alt="Landscape Tessera dashboard in the Neon style" width="350"> | <img src="docs/src/assets/screens/app-photos.webp" alt="Full-screen Photos app showing a Google Photos album" width="350"> |
 
 [Interface gallery](https://www.lanovo.link/use/gallery/) · [Setup guide](https://www.lanovo.link/start/devices/) · [Releases](https://github.com/ygelfand/LANovo/releases)
 
 ## Devices
 
-| Device                  | Codename  | OS                 | Status    |
-| ----------------------- | --------- | ------------------ | --------- |
-| Lenovo Smart Display 10 | blueberry | Android Things 8.x | Supported |
-| Lenovo Smart Display 8  | amber     | Android Things 8.x | Supported |
-| Lenovo Smart Display 7  | ivy       | Android Things 8.x | Supported |
-| JBL Link View           | opal      | Android Things 8.x | Supported |
-| Lenovo ThinkSmart View  | penghu    | Android 8.x        | Supported |
-| Lenovo Smart Clock      | cube      | Android Things 8.x | Supported |
+| Device                   | Codename  | OS                 | Status    |
+| ------------------------ | --------- | ------------------ | --------- |
+| Lenovo Smart Display 10  | blueberry | Android Things 8.x | Supported |
+| Lenovo Smart Display 8   | amber     | Android Things 8.x | Supported |
+| Lenovo Smart Display 7   | ivy       | Android Things 8.x | Supported |
+| JBL Link View            | opal      | Android Things 8.x | Supported |
+| Lenovo ThinkSmart View   | penghu    | Android 8.x        | Supported |
+| Lenovo Smart Clock Gen 1 | cube      | Android Things 8.x | Supported |
 
 ## Additional devices supported by our sister project [EchoLocal](https://github.com/ygelfand/echolocal)
 
