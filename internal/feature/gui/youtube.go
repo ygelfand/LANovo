@@ -33,6 +33,7 @@ func youTube(look *widgets.UI) *youtubeapp.App {
 		Resolver: r,
 		Output:   playout.New(),
 		Skip:     func() []string { return config.Get().Cast.YouTube.Skip },
+		Autoplay: func() bool { return config.Get().Media.Autoplay },
 		Client:   client,
 		Redraw:   func() { featureshell.Get().Redraw() },
 	})

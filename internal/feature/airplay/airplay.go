@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/ygelfand/libcountertop/pkg/display/geometry"
+	"github.com/ygelfand/libcountertop/pkg/display/video"
 	sharedairplay "github.com/ygelfand/libcountertop/pkg/media/airplay"
 	"github.com/ygelfand/libcountertop/pkg/media/playback"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
@@ -49,11 +50,15 @@ var get = sync.OnceValue(func() *Receiver {
 			return display.Get().Orientation().Size(w, h)
 		},
 		Largest: image.Pt(board.Current().DecodeWidth, board.Current().DecodeHeight),
+		Video: func() playback.Target {
+			return video.Target(display.Get(), board.Current().MaxFPS)
+		},
 		Output: func(ended func()) playback.Output {
 			o := playout.New()
 			o.SetEnded(ended)
 			return o
 		},
+		Volume:   mediaVolume{},
 		Rate:     speaker.Rate,
 		Channels: speaker.Channels,
 	})}

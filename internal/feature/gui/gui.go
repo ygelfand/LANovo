@@ -10,6 +10,7 @@ import (
 	sharedalarm "github.com/ygelfand/libcountertop/pkg/assistant/alarm"
 	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
 	"github.com/ygelfand/libcountertop/pkg/display/agenda"
+	"github.com/ygelfand/libcountertop/pkg/display/airplayview"
 	"github.com/ygelfand/libcountertop/pkg/display/alarms"
 	"github.com/ygelfand/libcountertop/pkg/display/callview"
 	"github.com/ygelfand/libcountertop/pkg/display/cameraview"
@@ -42,6 +43,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/config"
 	"github.com/ygelfand/LANovo/internal/feature/a2dp"
+	"github.com/ygelfand/LANovo/internal/feature/airplay"
 	"github.com/ygelfand/LANovo/internal/feature/alarm"
 	"github.com/ygelfand/LANovo/internal/feature/alerts"
 	"github.com/ygelfand/LANovo/internal/feature/apps"
@@ -146,6 +148,8 @@ var Get = sync.OnceValue(func() *screens.App {
 		Peers: discovery.Get(),
 		Logo:  sharedsettings.Themed(lanovoui.Logo().Light, lanovoui.Logo().Dark),
 	})
+	codes := airplayview.New(airplayview.Options{UI: look, Shell: featureshell.Get()})
+	airplay.Get().ShowCodes(codes.Show)
 	var app *screens.App
 	shop := shopping.New(shopping.Options{
 		UI:       look,
@@ -321,10 +325,9 @@ var Get = sync.OnceValue(func() *screens.App {
 		BluetoothSources: func() shell.View {
 			return sharedsettings.BluetoothSourcesPage(a2dp.Get(), featureshell.Get())
 		},
-		Lyrics:      lyrics.Build(product.Get()),
-		MediaVolume: sharedvolume.For(volume.Get(), config.StreamMedia),
-		Volume:      volume.Get(),
-		Streams:     config.Streams(),
+		Lyrics:  lyrics.Build(product.Get()),
+		Volume:  volume.Get(),
+		Streams: config.Streams(),
 
 		Upgrade: func() widgets.Upgrade {
 			if up := firmware.Get().Upgrade(); up.Active() {
@@ -356,6 +359,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		Views: append([]func(shell.View) *screens.Screen{
 			calls.Screen,
 			syncs.Screen,
+			codes.Screen,
 			panel.Get().Screen,
 			lock.Get().Gate().Views(look),
 			shop.Screen,

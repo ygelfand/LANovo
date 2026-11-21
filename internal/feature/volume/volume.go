@@ -85,6 +85,7 @@ func (v *Volume) Set(s config.Stream, level int) {
 }
 
 func (v *Volume) Adjust(s config.Stream, steps int) {
+	v.Mute(s, false)
 	v.Set(s, v.Level(s)+steps*Step)
 	feedback.Preview(s)
 

@@ -38,6 +38,7 @@ func (l Lane) Take() []int16                { return l.s.bus.Take(l.stream) }
 func (l Lane) Adjust(rewrite func([]int16)) { l.s.bus.Adjust(l.stream, rewrite) }
 func (l Lane) Queued() int                  { return l.s.bus.StreamLen(l.stream) / Channels }
 func (l Lane) Drain()                       { l.s.bus.ClearStream(l.stream) }
+func (l Lane) Speed(times int)              { l.s.bus.SetSpeed(l.stream, times, Channels) }
 
 func (s *Speaker) Heard(stream schema.Stream, within time.Duration) bool {
 	return s.bus.Heard(stream, within)
