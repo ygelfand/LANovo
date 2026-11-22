@@ -21,8 +21,8 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Privacy marks | On | On, Off | `switch.<device>_screen_privacy_marks` |
 | Alert style | Banner | Banner, Card, Full screen, Toast | `select.<device>_screen_alert_style` |
 | Font | Style default | Style default, Roboto, Atkinson Hyperlegible, Nunito, Fredoka, Comfortaa, Barlow Condensed, Oswald, Roboto Slab, Lora, Space Grotesk, Exo 2 | `select.<device>_screen_font` |
-| Keyboard size | Compact | Compact, Standard, Large | `select.<device>_screen_keyboard_size` |
-| Language | English | English, Italiano | `select.<device>_screen_language` |
+| Keyboard size | Compact | Compact, Standard, Large, Full width | `select.<device>_screen_keyboard_size` |
+| Language | English | English, Italiano, Tiếng Việt | `select.<device>_screen_language` |
 | Auto brightness | On | On, Off | `switch.<device>_screen_auto_brightness` |
 | Size | large (Smart Display 10), medium (JBL Link View), compact (Smart Display 7), medium (ThinkSmart View), medium (Smart Display 8) | mini, compact, medium, large, xlarge | `select.<device>_screen_size` |
 | Style | standard | standard, material, glass, eink, metro, terminal, hifi, neon, skeuo | `select.<device>_screen_style` |
@@ -235,17 +235,21 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
 | AirPlay | Off | On, Off | `switch.<device>_playback_airplay` |
+| Background play | Off | On, Off | `switch.<device>_playback_background_play` |
 | AirPlay audio mode | Instant | Instant, Synced with video | `select.<device>_playback_airplay_audio_mode` |
 | Music ducking | -15 dB | -40 to -3 dB | `number.<device>_playback_music_ducking` |
+| Mini player | On | On, Off | `switch.<device>_playback_mini_player` |
+| Player on start | Full player | Full player, Nothing | `select.<device>_playback_player_on_start` |
 | Sendspin | Off | On, Off | `switch.<device>_playback_sendspin` |
 | Volume buttons | What's playing | Main volume, What's playing | `select.<device>_playback_volume_buttons` |
+| Autoplay | Off | On, Off | `switch.<device>_playback_autoplay` |
 
 ## Cast receiver
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
-| Cast receiver | Off | On, Off | `switch.<device>_cast_receiver` |
-| YouTube SponsorBlock categories | sponsor | Text | `text.<device>_youtube_sponsorblock_categories` |
+| Cast receiver | Off | On, Off | `switch.<device>_playback_cast_receiver` |
+| YouTube SponsorBlock categories | sponsor | Text | `text.<device>_playback_youtube_sponsorblock_categories` |
 
 ## Bluetooth
 
@@ -328,6 +332,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Stop word sensitivity | 70 | 50 to 100 % | On the screen only |
 | Follow-up time | 0 s | 0 to 30 s | `number.<device>_assistant_N_follow_up_time` |
 | Recordings kept | 0 | 0 to 10 | `number.<device>_assistant_N_recordings_kept` |
+| Recognized voices only | Off | On, Off | `switch.<device>_assistant_N_recognized_voices_only` |
 | Max listening time | 15 s | 5 to 60 s | `number.<device>_assistant_N_max_listening_time` |
 | Max thinking time | 90 s | 5 to 300 s | `number.<device>_assistant_N_max_thinking_time` |
 | Reply buffer | 650 ms | 0 to 3000 ms | `number.<device>_assistant_N_reply_buffer` |
@@ -366,6 +371,7 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
 | RTSP server | Off | On, Off | `switch.<device>_camera_rtsp_server` |
+| RTSP audio | On | On, Off | `switch.<device>_camera_rtsp_audio` |
 | RTSP password | — | Text | `text.<device>_camera_rtsp_password` |
 | RTSP username | admin | Text | `text.<device>_camera_rtsp_username` |
 
@@ -373,6 +379,13 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
+| Cast bundle | — | Text | `text.<device>_playback_cast_bundle` |
+| Cast oracle | — | Text | `text.<device>_playback_cast_oracle` |
+| Alerts mute | Off | On, Off | `switch.<device>_playback_alerts_mute` |
+| Feedback mute | Off | On, Off | `switch.<device>_playback_feedback_mute` |
+| Main mute | Off | On, Off | `switch.<device>_playback_main_mute` |
+| Media mute | Off | On, Off | `switch.<device>_playback_media_mute` |
+| Voice mute | Off | On, Off | `switch.<device>_playback_voice_mute` |
 | White noise layer 1 | None | None, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | `select.<device>_playback_white_noise_layer_1` |
 | White noise layer 2 | None | None, White, Pink, Brown, Rain, Ocean, Brook, Wind, Fire, Crickets, Fan, Cabin | `select.<device>_playback_white_noise_layer_2` |
 | Alerts volume | 100 % | 0 to 100 % | `number.<device>_playback_alerts_volume` |
@@ -380,6 +393,14 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 | Main volume | 40 % | 0 to 100 % | `number.<device>_playback_main_volume` |
 | Media volume | 100 % | 0 to 100 % | `number.<device>_playback_media_volume` |
 | Voice volume | 100 % | 0 to 100 % | `number.<device>_playback_voice_volume` |
+
+## Speaker
+
+On the JBL Link View only.
+
+| Setting | Default | Choices | Entity |
+|---|---|---|---|
+| Speaker EQ | On | On, Off | `switch.<device>_playback_speaker_eq` |
 
 ## Diagnostics
 
@@ -422,8 +443,6 @@ For what each setting does, see [Settings on the screen](/use/settings/) and
 
 | Setting | Default | Choices | Entity |
 |---|---|---|---|
-| Cast bundle | — | Text | `text.<device>_cast_bundle` |
-| Cast oracle | — | Text | `text.<device>_cast_oracle` |
 | Install version | Select for rollback | The available versions | `select.<device>_install_version` |
 | Time zone | Home Assistant | Home Assistant, UTC, Europe/London, Europe/Lisbon, Europe/Paris, Europe/Berlin and 34 more | `select.<device>_time_zone` |
 | Update channel | stable | stable, dev | `select.<device>_update_channel` |

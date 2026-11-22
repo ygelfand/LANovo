@@ -9,8 +9,8 @@ require (
 	github.com/charmbracelet/colorprofile v0.4.3
 	github.com/go-gui-org/go-gui v0.94.0
 	github.com/spf13/cobra v1.10.2
-	github.com/ygelfand/go-esphome-device v0.0.20
-	github.com/ygelfand/libcountertop v0.1.1-0.20261121224652-85b7505f45fd
+	github.com/ygelfand/go-esphome-device v0.0.21
+	github.com/ygelfand/libcountertop v0.1.1-0.20261122161807-4f57bb4c376e
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 )
 

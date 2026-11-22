@@ -62,7 +62,7 @@ The Wi‑Fi network, IP and MAC address, router and DHCP lease, all read-only. C
 | Setting | What it does | Default | Entity |
 |---|---|---|---|
 | Sendspin | A [Music Assistant](/features/music/#sendspin) player for whole-home audio | Off | `switch.<device>_playback_sendspin` |
-| Cast receiver → | Chromecast, with a page per app ([below](#cast-receiver)) | Off | `switch.<device>_cast_receiver` |
+| Cast receiver → | Chromecast, with a page per app ([below](#cast-receiver)) | Off | `switch.<device>_playback_cast_receiver` |
 | AirPlay | Mirror the screen and sound from a Mac, iPhone or iPad ([Music and casting](/features/music/#airplay)) | Off | `switch.<device>_playback_airplay` |
 | Intercom → | Calls with other devices ([below](#intercom)) | | |
 | Bluetooth proxy | A Bluetooth LE proxy for Home Assistant | Off | `switch.<device>_bluetooth_proxy` |
@@ -82,8 +82,8 @@ The Wi‑Fi network, IP and MAC address, router and DHCP lease, all read-only. C
 
 | Setting | Choices | Default | Entity |
 |---|---|---|---|
-| Enable | On, Off | Off | `switch.<device>_cast_receiver` |
-| Skip segments | YouTube's SponsorBlock categories: sponsor, self-promotion, interaction reminder, intro, outro, preview, hook, non-music section, filler | Sponsor | `text.<device>_youtube_sponsorblock_categories` |
+| Enable | On, Off | Off | `switch.<device>_playback_cast_receiver` |
+| Skip segments | YouTube's SponsorBlock categories: sponsor, self-promotion, interaction reminder, intro, outro, preview, hook, non-music section, filler | Sponsor | `text.<device>_playback_youtube_sponsorblock_categories` |
 
 ### Intercom
 
@@ -287,6 +287,10 @@ A page per assistant ([Voice assistants](/features/voice/)):
 | Response playback | Download the reply first, or stream it as it arrives |
 | Visuals | Where the assistant's visual goes (Default, Full screen, In the panel) and a visual for Listening, Waiting and Responding |
 | Wake the screen | Close the screen saver and end night mode when this assistant starts. Off by default |
+| Recognized voices only | Answer only voices [voice match](/features/voice/#voice-match) recognizes. Off by default |
+
+**Voice match**, below the assistants, lists the saved voices and adds new ones
+([Voice match](/features/voice/#voice-match)).
 
 Timing, follow-up and recordings are in [Home Assistant](/use/entities/#voice-assistants).
 
