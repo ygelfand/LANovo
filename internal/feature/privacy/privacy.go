@@ -11,6 +11,7 @@ import (
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
 
+	"github.com/ygelfand/LANovo/internal/board"
 	"github.com/ygelfand/LANovo/internal/component"
 	"github.com/ygelfand/LANovo/internal/feature/feedback"
 	"github.com/ygelfand/LANovo/internal/feature/screen"
@@ -46,15 +47,22 @@ func Get() *Privacy {
 
 func (p *Privacy) Name() string { return "privacy" }
 
+type control struct {
+	button buttons.Button
+	sensor *esphome.BinarySensor
+	what   string
+}
+
+func (p *Privacy) controls() []control {
+	out := []control{{buttons.MicMute, p.micMuted, "microphone"}}
+	if board.Current().HasCamera() {
+		out = append(out, control{buttons.CameraCover, p.camera, "camera"})
+	}
+	return out
+}
+
 func (p *Privacy) Start(context.Context) error {
-	for _, at := range []struct {
-		button buttons.Button
-		sensor *esphome.BinarySensor
-		what   string
-	}{
-		{buttons.MicMute, p.micMuted, "microphone"},
-		{buttons.CameraCover, p.camera, "camera"},
-	} {
+	for _, at := range p.controls() {
 		on, ok := buttons.Get().State(at.button)
 		if !ok {
 			slog.Warn("cannot tell where the slider is", "control", at.button)
@@ -70,7 +78,11 @@ func (p *Privacy) Start(context.Context) error {
 }
 
 func (p *Privacy) Entities() []esphome.Entity {
-	return []esphome.Entity{p.micMuted, p.camera}
+	var out []esphome.Entity
+	for _, at := range p.controls() {
+		out = append(out, at.sensor)
+	}
+	return out
 }
 
 func (p *Privacy) MicMuted() bool { return p.micMuted.Get() }
