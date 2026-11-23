@@ -56,6 +56,7 @@ func Get() *Server {
 			Helper:   "lanovo-camera",
 			Served:   livecam.Get().Served,
 			FPS:      live.FPS,
+			Profile:  livecam.Get().Profile(),
 			Bitrate:  livecam.Get().Bitrate,
 			ONVIF:    describe,
 			Auth:     camerartspd.Credentials(func() schema.RTSP { return config.Get().RTSP }),

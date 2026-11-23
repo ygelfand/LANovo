@@ -1,6 +1,9 @@
 package board
 
-import "github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
+import (
+	"github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
+	"github.com/ygelfand/libcountertop/pkg/media/h264"
+)
 
 var Blueberry = Board{
 	NativeAPI:    27,
@@ -20,15 +23,16 @@ var Blueberry = Board{
 		"800x600",
 		"640x480",
 	},
-	SubWidth:   640,
-	SubHeight:  480,
-	CameraTurn: 3,
-	Motion:     true,
-	Mounted:    90,
-	UISize:     "large",
-	Diagonal:   10.03,
-	Tessera:    Tessera{Board: "jc8012p4a1", Columns: 8, Rows: 5},
-	Touch:      []string{"goodix-ts"},
+	CameraProfile: h264.High,
+	SubWidth:      640,
+	SubHeight:     480,
+	CameraTurn:    3,
+	Motion:        true,
+	Mounted:       90,
+	UISize:        "large",
+	Diagonal:      10.03,
+	Tessera:       Tessera{Board: "jc8012p4a1", Columns: 8, Rows: 5},
+	Touch:         []string{"goodix-ts"},
 	// deca-cpu-max-step is the SoC's hottest-core reading; throttling follows it.
 	Thermal: Thermal{
 		CPU:       []string{"deca-cpu-max-step"},

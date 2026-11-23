@@ -43,6 +43,7 @@ var Get = sync.OnceValue(func() Camera {
 	o := live.Options{
 		Vendor: qualcomm,
 		Streams: live.Streams{
+			Profile:     b.CameraProfile,
 			Main:        b.CameraSizes,
 			MainDefault: fmt.Sprintf("%dx%d", b.CameraWidth, b.CameraHeight),
 			Sub:         subWidths,

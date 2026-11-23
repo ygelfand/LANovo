@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 
 	"github.com/ygelfand/libcountertop/pkg/bluetooth/hci"
+	"github.com/ygelfand/libcountertop/pkg/media/h264"
 
 	"github.com/ygelfand/LANovo/internal/android/prop"
 	"github.com/ygelfand/LANovo/internal/layout"
@@ -88,6 +89,7 @@ type Board struct {
 
 	CameraWidth, CameraHeight int
 	CameraSizes               []string
+	CameraProfile             h264.Profile
 
 	SubWidth, SubHeight int
 

@@ -44,7 +44,7 @@ func Get() *sharedcall.Calls {
 			Stage:    callview.NewStage(shell.Get()),
 			Video: callvideo.New(callvideo.Dependencies{
 				Display: display.Get(),
-				Camera:  callvideo.NewCamera(livecam.Get().Sessions()),
+				Camera:  callvideo.NewCamera(livecam.Get().Sessions(), livecam.Get().Profile()),
 			}),
 			Messages: message.Get(),
 			Home:     homeassistant.Get(),
