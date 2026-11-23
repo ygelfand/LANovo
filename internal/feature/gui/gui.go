@@ -163,6 +163,7 @@ var Get = sync.OnceValue(func() *screens.App {
 		UI:       look,
 		Shell:    featureshell.Get(),
 		Calendar: calendar.Get().Calendar,
+		Forecast: weather.Get(),
 		Gate:     func(w *gogui.Window) gogui.View { return app.Gate(w) },
 		TwentyFour: func() bool {
 			return config.Get().Screen.Hours == schema.TwentyFourHour
