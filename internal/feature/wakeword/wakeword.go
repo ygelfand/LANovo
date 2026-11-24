@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/ygelfand/libcountertop/pkg/assistant/wakesettings"
+	"github.com/ygelfand/libcountertop/pkg/display/visual"
 	"github.com/ygelfand/libcountertop/pkg/hook"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/settings/schema"
@@ -38,6 +39,7 @@ func Get() *WakeWord {
 			Write:    func(slot int) schema.WakeWriter { return config.Set().Wake(slot) },
 			Wake:     Requested.Emit,
 			Tones:    tones.Get().Choices,
+			Looks:    visual.Choices(),
 		})}
 		component.Settings.Add(shared.Controls())
 		tones.Get().Changed.Listen(func(struct{}) {
