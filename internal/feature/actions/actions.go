@@ -17,6 +17,7 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/broadcast"
 	"github.com/ygelfand/LANovo/internal/feature/call"
 	"github.com/ygelfand/LANovo/internal/feature/discovery"
+	"github.com/ygelfand/LANovo/internal/feature/recipes"
 	"github.com/ygelfand/LANovo/internal/feature/states"
 	"github.com/ygelfand/LANovo/internal/feature/tv"
 )
@@ -31,6 +32,7 @@ var get = sync.OnceValue(func() *Actions {
 	a.reg.Add(broadcast.Get().Action())
 	a.reg.Add(alarm.Get().VoiceAction())
 	a.reg.Add(tv.Get().VoiceAction())
+	a.reg.Add(recipes.Get().VoiceAction())
 	for _, action := range call.Get().ControlActions() {
 		a.reg.Add(action)
 	}

@@ -24,6 +24,7 @@ var (
 	PhotosSection     = sections.Photos
 	DoorbellSection   = sections.Doorbell
 	LovelaceSection   = sections.Lovelace
+	MealieSection     = sections.Mealie
 	HomeAlarmSection  = sections.HomeAlarm
 	ThermostatSection = sections.Thermostat
 	CamerasSection    = sections.Cameras
@@ -46,6 +47,7 @@ var (
 	AirPlaySection    = sections.AirPlay
 
 	YouTubeAccountsSection = sections.YouTubeAccounts
+	PlexSection            = sections.Plex
 
 	LiftSection = storage.Bind(
 		func() *storage.Store[Config] { return store().Store },

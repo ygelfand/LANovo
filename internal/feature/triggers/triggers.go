@@ -5,6 +5,7 @@ import (
 
 	esphome "github.com/ygelfand/go-esphome-device"
 
+	"github.com/ygelfand/libcountertop/pkg/media/mealie"
 	sharedcomponent "github.com/ygelfand/libcountertop/pkg/runtime/component"
 	"github.com/ygelfand/libcountertop/pkg/say"
 	setting "github.com/ygelfand/libcountertop/pkg/settings"
@@ -44,7 +45,7 @@ var get = sync.OnceValue(func() *Triggers {
 func Get() *Triggers { return get() }
 
 func Commands() []string {
-	out := []string{"radar"}
+	out := []string{"radar", mealie.CookCommand}
 	if board.Current().CameraWidth > 0 {
 		out = append(out, "mirror")
 	}

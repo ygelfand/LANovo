@@ -4,6 +4,8 @@ import (
 	gogui "github.com/go-gui-org/go-gui/gui"
 
 	sharedvolume "github.com/ygelfand/libcountertop/pkg/audio/volume"
+	"github.com/ygelfand/libcountertop/pkg/display/plexapp"
+	sharedrecipes "github.com/ygelfand/libcountertop/pkg/display/recipes"
 	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
 	sharedshell "github.com/ygelfand/libcountertop/pkg/display/shell"
 	sharedvisual "github.com/ygelfand/libcountertop/pkg/display/visual"
@@ -21,6 +23,8 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/homeassistant"
 	"github.com/ygelfand/LANovo/internal/feature/homecontrol"
 	"github.com/ygelfand/LANovo/internal/feature/network"
+	"github.com/ygelfand/LANovo/internal/feature/plex"
+	"github.com/ygelfand/LANovo/internal/feature/recipes"
 	"github.com/ygelfand/LANovo/internal/feature/sendspin"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
 	"github.com/ygelfand/LANovo/internal/feature/shell"
@@ -152,6 +156,18 @@ func featuresPage() *sharedshell.Page {
 				},
 			},
 			{Key: "features.rtsp", Page: func() sharedshell.View { return streamPage() }},
+			{
+				Key: "features.mealie",
+				Page: func() sharedshell.View {
+					return sharedrecipes.SettingsPage(recipes.Get())
+				},
+			},
+			{
+				Key: "features.plex",
+				Page: func() sharedshell.View {
+					return plexapp.SettingsPage(plex.Get(), shell.Get())
+				},
+			},
 		}
 	}, shell.Get().Push)
 }

@@ -20,7 +20,9 @@ import (
 	"github.com/ygelfand/libcountertop/pkg/display/mirror"
 	"github.com/ygelfand/libcountertop/pkg/display/musicapp"
 	"github.com/ygelfand/libcountertop/pkg/display/photosview"
+	"github.com/ygelfand/libcountertop/pkg/display/plexapp"
 	"github.com/ygelfand/libcountertop/pkg/display/radarview"
+	"github.com/ygelfand/libcountertop/pkg/display/recipes"
 	"github.com/ygelfand/libcountertop/pkg/display/screens"
 	sharedsettings "github.com/ygelfand/libcountertop/pkg/display/settings"
 	"github.com/ygelfand/libcountertop/pkg/display/shell"
@@ -70,11 +72,13 @@ import (
 	"github.com/ygelfand/LANovo/internal/feature/message"
 	"github.com/ygelfand/LANovo/internal/feature/nws"
 	"github.com/ygelfand/LANovo/internal/feature/photos"
+	featureplex "github.com/ygelfand/LANovo/internal/feature/plex"
 	"github.com/ygelfand/LANovo/internal/feature/poster"
 	"github.com/ygelfand/LANovo/internal/feature/privacy"
 	"github.com/ygelfand/LANovo/internal/feature/product"
 	"github.com/ygelfand/LANovo/internal/feature/radar"
 	"github.com/ygelfand/LANovo/internal/feature/radio"
+	featurerecipes "github.com/ygelfand/LANovo/internal/feature/recipes"
 	"github.com/ygelfand/LANovo/internal/feature/screen"
 	"github.com/ygelfand/LANovo/internal/feature/sendspin"
 	"github.com/ygelfand/LANovo/internal/feature/sensors"
@@ -204,6 +208,21 @@ var Get = sync.OnceValue(func() *screens.App {
 		Redraw:  func() { featureshell.Get().Redraw() },
 	})
 	apps.Get().Add(tv.App())
+	kitchen := recipes.New(recipes.Options{
+		UI:      look,
+		Shell:   featureshell.Get(),
+		Kitchen: featurerecipes.Get(),
+		Voice:   commands.Get(),
+		Redraw:  func() { featureshell.Get().Redraw() },
+	})
+	apps.Get().Add(kitchen.App())
+	movies := plexapp.New(plexapp.Options{
+		UI:     look,
+		Shell:  featureshell.Get(),
+		Plex:   featureplex.Get(),
+		Redraw: func() { featureshell.Get().Redraw() },
+	})
+	apps.Get().Add(movies.App())
 	yt := youTube(look)
 	apps.Get().Add(yt.App())
 	sky := radarview.New(radarview.Options{
@@ -368,6 +387,8 @@ var Get = sync.OnceValue(func() *screens.App {
 			dial.Screen,
 			music.Screen,
 			tv.Screen,
+			kitchen.Screen,
+			movies.Screen,
 			yt.Screen,
 			sky.Screen,
 			cameras.Get().Screen,
