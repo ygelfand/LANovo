@@ -10,7 +10,7 @@ require (
 	github.com/go-gui-org/go-gui v0.94.0
 	github.com/spf13/cobra v1.10.2
 	github.com/ygelfand/go-esphome-device v0.0.21
-	github.com/ygelfand/libcountertop v0.1.1-0.20261125033114-9563d01c40f5
+	github.com/ygelfand/libcountertop v0.1.1-0.20261127032339-ec9453dbff99
 	golang.org/x/exp/shiny v0.0.0-20260908205506-85c1c2202aba
 )
 
@@ -111,6 +111,7 @@ require (
 	github.com/ulikunitz/xz v0.5.17 // indirect
 	github.com/wlynxg/anet v0.0.5 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
+	github.com/ygelfand/plexgo v0.31.6 // indirect
 	github.com/ygelfand/reolinkproxy v0.0.0-20261026000641-3a2fddcfed4f // indirect
 	github.com/yuin/goldmark v1.8.5 // indirect
 	github.com/yuin/goldmark-emoji v1.0.6 // indirect
